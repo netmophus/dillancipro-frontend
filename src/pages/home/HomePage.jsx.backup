@@ -1,0 +1,2082 @@
+import React, { useState, useEffect } from "react";
+import api from "../../services/api";
+import {
+  Box,
+  Container,
+  Typography,
+  Button,
+  Grid,
+  Card,
+  CardContent,
+  CardMedia,
+  Chip,
+  Stack,
+  Avatar,
+  Divider,
+  Paper,
+  IconButton,
+  Tooltip,
+  useTheme,
+  useMediaQuery,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Fade,
+  Drawer,
+  Pagination,
+  CircularProgress,
+  Alert,
+} from "@mui/material";
+import {
+  Business,
+  AccountBalance,
+  Landscape,
+  Home,
+  TrendingUp,
+  Security,
+  Speed,
+  Groups,
+  CheckCircle,
+  ArrowForward,
+  LocationOn,
+  AttachMoney,
+  VerifiedUser,
+  Star,
+  Phone,
+  Close as CloseIcon,
+  Bed,
+  SquareFoot,
+  Email,
+  Login,
+  AppRegistration,
+  KeyboardArrowRight,
+  Dashboard,
+  Notifications,
+  Person,
+  Call,
+  WhatsApp,
+  ContentCopy,
+} from "@mui/icons-material";
+import { useNavigate } from "react-router-dom";
+import PageLayout from "../../components/shared/PageLayout";
+
+const HomePage = () => {
+  const navigate = useNavigate();
+  const [openPartenaireDialog, setOpenPartenaireDialog] = useState(false);
+  const [openLocationsDrawer, setOpenLocationsDrawer] = useState(false);
+  const [allLocations, setAllLocations] = useState([]);
+  const [loadingLocations, setLoadingLocations] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const locationsPerPage = 6;
+  
+  // États pour les locations dynamiques de la page d'accueil
+  const [homepageLocations, setHomepageLocations] = useState([]);
+  const [loadingHomepageLocations, setLoadingHomepageLocations] = useState(false);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+
+  // Fonction utilitaire pour corriger les URLs d'images
+  const fixImageUrl = (imageUrl) => {
+    if (!imageUrl) return null;
+    
+    // Corriger les séparateurs de chemin
+    const correctedPath = imageUrl.replace(/\\/g, '/');
+    
+    // Si l'URL commence déjà par http, la retourner telle quelle
+    if (correctedPath.startsWith('http')) {
+      return correctedPath;
+    }
+    
+    // Sinon, construire l'URL complète
+    return `http://localhost:5000/${correctedPath}`;
+  };
+
+  // Fonction pour charger toutes les locations depuis l'API
+  const fetchAllLocations = async () => {
+    setLoadingLocations(true);
+    try {
+      const response = await api.get("/agence/locations");
+      const locations = response.data.locations || response.data || [];
+      
+      // Transformer les données de l'API pour correspondre au format attendu
+      const transformedLocations = locations.map((location, index) => ({
+        id: location._id,
+        titre: location.titre,
+        ville: location.ville,
+        superficie: location.superficie?.toString() || "0",
+        chambres: location.chambres || 0,
+        prix: location.prixMensuel || 0,
+        type: location.type || "Appartement",
+        gradient: [
+          ["#11998e", "#38ef7d"],
+          ["#e94057", "#f27121"],
+          ["#8e2de2", "#4a00e0"],
+          ["#667eea", "#764ba2"],
+          ["#f093fb", "#f5576c"],
+          ["#4facfe", "#00f2fe"]
+        ][index % 6],
+        image: location.images?.[0]?.url ? fixImageUrl(location.images[0].url) : "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&h=600&fit=crop&q=90",
+        description: location.description || "Bien immobilier de qualité",
+        disponibilite: location.statut === "disponible" ? "Immédiate" : "Sur demande",
+        meuble: location.meuble || false,
+        features: [
+          location.climatisation && "Climatisation",
+          location.internet && "Internet",
+          location.parking && "Parking",
+          location.garage && "Garage",
+          location.balcon && "Balcon",
+          location.ascenseur && "Ascenseur"
+        ].filter(Boolean)
+      }));
+      
+      setAllLocations(transformedLocations);
+      setTotalPages(Math.ceil(transformedLocations.length / locationsPerPage));
+    } catch (error) {
+      console.error("Erreur lors du chargement des locations:", error);
+      // En cas d'erreur, utiliser les données statiques comme fallback
+      setAllLocations(locationsData);
+      setTotalPages(Math.ceil(locationsData.length / locationsPerPage));
+    } finally {
+      setLoadingLocations(false);
+    }
+  };
+
+  // Fonction pour ouvrir le drawer
+  const handleOpenLocationsDrawer = () => {
+    setOpenLocationsDrawer(true);
+    if (allLocations.length === 0) {
+      fetchAllLocations();
+    }
+  };
+
+  // Fonction pour changer de page
+  const handlePageChange = (event, page) => {
+    setCurrentPage(page);
+  };
+
+  // Fonction pour charger les locations de la page d'accueil
+  const fetchHomepageLocations = async () => {
+    setLoadingHomepageLocations(true);
+    try {
+      const response = await api.get("/agence/locations");
+      const locations = response.data.locations || response.data || [];
+      
+      // Transformer les données de l'API pour correspondre au format attendu
+      const transformedLocations = locations.slice(0, 3).map((location, index) => ({
+        id: location._id,
+        titre: location.titre,
+        ville: location.ville,
+        superficie: location.superficie?.toString() || "0",
+        chambres: location.chambres || 0,
+        prix: location.prixMensuel || 0,
+        type: location.type || "Appartement",
+        gradient: [
+          ["#11998e", "#38ef7d"],
+          ["#e94057", "#f27121"],
+          ["#8e2de2", "#4a00e0"],
+          ["#667eea", "#764ba2"],
+          ["#f093fb", "#f5576c"],
+          ["#4facfe", "#00f2fe"]
+        ][index % 6],
+        image: location.images?.[0]?.url ? fixImageUrl(location.images[0].url) : "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&h=600&fit=crop&q=90",
+        description: location.description || "Bien immobilier de qualité",
+        disponibilite: location.statut === "disponible" ? "Immédiate" : "Sur demande",
+        meuble: location.meuble || false,
+        features: [
+          location.climatisation && "Climatisation",
+          location.internet && "Internet",
+          location.parking && "Parking",
+          location.garage && "Garage",
+          location.balcon && "Balcon",
+          location.ascenseur && "Ascenseur"
+        ].filter(Boolean)
+      }));
+      
+      setHomepageLocations(transformedLocations);
+    } catch (error) {
+      console.error("Erreur lors du chargement des locations:", error);
+      // En cas d'erreur, utiliser les données statiques comme fallback
+      setHomepageLocations(locationsData.slice(0, 3));
+    } finally {
+      setLoadingHomepageLocations(false);
+    }
+  };
+
+  // Charger les locations au montage du composant
+  useEffect(() => {
+    fetchAllLocations();
+    fetchHomepageLocations();
+  }, []);
+
+  // Données des locations affichées sur la page d'accueil
+  const locationsData = [
+    {
+      id: 1,
+      titre: "Villa moderne 3 chambres",
+      ville: "Niamey",
+      superficie: "120",
+      chambres: 3,
+      prix: 150000,
+      type: "Villa",
+      gradient: ["#11998e", "#38ef7d"],
+      image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&h=600&fit=crop&q=90",
+      description: "Villa moderne avec jardin, proche du centre-ville",
+      disponibilite: "Immédiate",
+      meuble: true,
+      features: ["Jardin", "Garage", "Climatisation"]
+    },
+    {
+      id: 2,
+      titre: "Appartement 2 chambres",
+      ville: "Maradi",
+      superficie: "80",
+      chambres: 2,
+      prix: 80000,
+      type: "Appartement",
+      gradient: ["#e94057", "#f27121"],
+      image: "https://images.unsplash.com/photo-1600607687644-c7171b42498b?w=800&h=600&fit=crop&q=90",
+      description: "Appartement meublé, proche des commerces",
+      disponibilite: "1er décembre",
+      meuble: true,
+      features: ["Meublé", "Balcon", "Internet"]
+    },
+    {
+      id: 3,
+      titre: "Studio meublé",
+      ville: "Zinder",
+      superficie: "35",
+      chambres: 1,
+      prix: 45000,
+      type: "Studio",
+      gradient: ["#8e2de2", "#4a00e0"],
+      image: "https://images.unsplash.com/photo-1600607687644-c7171b42498b?w=800&h=600&fit=crop&q=90",
+      description: "Studio entièrement meublé, idéal pour étudiant",
+      disponibilite: "Immédiate",
+      meuble: true,
+      features: ["Meublé", "Internet", "Sécurité"]
+    },
+    {
+      id: 4,
+      titre: "Maison familiale 4 chambres",
+      ville: "Tahoua",
+      superficie: "150",
+      chambres: 4,
+      prix: 200000,
+      type: "Maison",
+      gradient: ["#667eea", "#764ba2"],
+      image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&h=600&fit=crop&q=90",
+      description: "Maison spacieuse avec garage et jardin",
+      disponibilite: "15 janvier",
+      meuble: false,
+      features: ["Jardin", "Garage", "Parking"]
+    },
+    {
+      id: 5,
+      titre: "Duplex moderne",
+      ville: "Agadez",
+      superficie: "100",
+      chambres: 3,
+      prix: 120000,
+      type: "Duplex",
+      gradient: ["#f0932b", "#f5576c"],
+      image: "https://images.unsplash.com/photo-1600607687644-c7171b42498b?w=800&h=600&fit=crop&q=90",
+      description: "Duplex moderne avec terrasse privée",
+      disponibilite: "Immédiate",
+      meuble: true,
+      features: ["Terrasse", "Meublé", "Vue panoramique"]
+    },
+    {
+      id: 6,
+      titre: "Appartement 1 chambre",
+      ville: "Dosso",
+      superficie: "50",
+      chambres: 1,
+      prix: 60000,
+      type: "Appartement",
+      gradient: ["#4facfe", "#00f2fe"],
+      image: "https://images.unsplash.com/photo-1600607687644-c7171b42498b?w=800&h=600&fit=crop&q=90",
+      description: "Appartement cosy, proche des transports",
+      disponibilite: "1er février",
+      meuble: false,
+      features: ["Proche transports", "Ascenseur", "Sécurité"]
+    }
+  ];
+
+  // Données statiques pour la démonstration
+  const stats = {
+    agences: 12,
+    banques: 5,
+    parcelles: 450,
+    biens: 128,
+    clients: 1850,
+    transactions: 340,
+  };
+
+  const agencesPartenaires = [
+    { nom: "IMMO KATAKO", ville: "Niamey", parcelles: 85, note: 4.8 },
+    { nom: "Agence Premium", ville: "Maradi", parcelles: 62, note: 4.9 },
+    { nom: "Foncier Plus", ville: "Zinder", parcelles: 48, note: 4.7 },
+    { nom: "Habitat Pro", ville: "Tahoua", parcelles: 55, note: 4.6 },
+  ];
+
+  const banquesPartenaires = [
+    { nom: "BOA Niger", services: "Financement immobilier" },
+    { nom: "BIA Niger", services: "Prêts fonciers" },
+    { nom: "Ecobank", services: "Crédit habitat" },
+    { nom: "SONIBANK", services: "Financement terrain" },
+  ];
+
+  const parcellesVedettes = [
+    { ref: "P-001", ville: "Niamey", superficie: 500, prix: 15000000, ilot: "A12" },
+    { ref: "P-045", ville: "Maradi", superficie: 750, prix: 8500000, ilot: "B08" },
+    { ref: "P-128", ville: "Zinder", superficie: 400, prix: 6000000, ilot: "C05" },
+    { ref: "P-234", ville: "Tahoua", superficie: 600, prix: 7200000, ilot: "D14" },
+  ];
+
+  const biensVedettes = [
+    { titre: "Villa moderne 4 chambres", ville: "Niamey", type: "Villa", prix: 45000000, superficie: 250 },
+    { titre: "Appartement standing", ville: "Maradi", type: "Appartement", prix: 28000000, superficie: 120 },
+    { titre: "Maison familiale", ville: "Zinder", type: "Maison", prix: 35000000, superficie: 200 },
+  ];
+
+  const features = [
+    {
+      icon: <Security fontSize="large" />,
+      title: "Sécurité garantie",
+      description: "Vérification de tous les biens et transactions sécurisées",
+      color: "#4caf50",
+    },
+    {
+      icon: <LocationOn fontSize="large" />,
+      title: "Géolocalisation",
+      description: "Tous les biens sont géolocalisés avec précision sur carte",
+      color: "#2196f3",
+    },
+    {
+      icon: <Speed fontSize="large" />,
+      title: "Processus rapide",
+      description: "Inscription et mise en vente en quelques minutes",
+      color: "#ff9800",
+    },
+    {
+      icon: <Groups fontSize="large" />,
+      title: "Multi-acteurs",
+      description: "Agences, banques, état et particuliers réunis",
+      color: "#9c27b0",
+    },
+  ];
+
+  const formatMoney = (amount) => {
+    return new Intl.NumberFormat("fr-FR").format(amount) + " FCFA";
+  };
+
+  return (
+    <PageLayout>
+      {/* Hero Section */}
+      <Box
+        sx={{
+          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          color: "white",
+          py: { xs: 8, md: 12 },
+          position: "relative",
+          overflow: "hidden",
+        }}
+      >
+        <Container maxWidth="lg">
+          <Grid container spacing={4} alignItems="center">
+            <Grid item xs={12} md={6}>
+              <Chip
+                label="🆕 Plateforme Officielle"
+                sx={{ bgcolor: "rgba(255,255,255,0.2)", color: "white", mb: 2 }}
+              />
+              <Typography variant="h2" fontWeight="bold" gutterBottom sx={{ fontSize: { xs: "2rem", md: "3rem" } }}>
+                DillanciPro
+              </Typography>
+              <Typography variant="h5" sx={{ mb: 2, opacity: 0.9, fontSize: { xs: "1.2rem", md: "1.5rem" } }}>
+                La plateforme de référence pour la gestion foncière et immobilière au Niger
+              </Typography>
+              <Typography variant="h6" sx={{ mb: 3, opacity: 0.8, fontSize: { xs: "1rem", md: "1.2rem" }, fontStyle: "italic" }}>
+                Manhajar dillancin gidaje mai sauƙi da sauri
+              </Typography>
+              <Typography variant="body1" sx={{ mb: 4, fontSize: "1.1rem", opacity: 0.85 }}>
+                Connectez agences immobilières, banques partenaires, gestion du patrimoine de l'État et particuliers 
+                sur une seule plateforme sécurisée et géolocalisée.
+              </Typography>
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+                <Button
+                  variant="contained"
+                  size="large"
+                  onClick={() => navigate("/register")}
+                  sx={{
+                    bgcolor: "white",
+                    color: "primary.main",
+                    fontWeight: "bold",
+                    px: 4,
+                    py: 1.5,
+                    "&:hover": { bgcolor: "grey.100" },
+                  }}
+                  endIcon={<AppRegistration />}
+                >
+                  S'inscrire gratuitement
+                </Button>
+                <Button
+                  variant="outlined"
+                  size="large"
+                  onClick={() => navigate("/login")}
+                  sx={{
+                    borderColor: "white",
+                    color: "white",
+                    fontWeight: "bold",
+                    px: 4,
+                    py: 1.5,
+                    "&:hover": { borderColor: "white", bgcolor: "rgba(255,255,255,0.1)" },
+                  }}
+                  endIcon={<Login />}
+                >
+                  Se connecter
+                </Button>
+              </Stack>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Paper
+                elevation={10}
+                sx={{
+                  p: 3,
+                  borderRadius: 4,
+                  bgcolor: "rgba(255,255,255,0.95)",
+                  backdropFilter: "blur(10px)",
+                }}
+              >
+                <Grid container spacing={2}>
+                  <Grid item xs={6}>
+                    <Box textAlign="center" p={2}>
+                      <Typography variant="h4" fontWeight="bold" color="primary">
+                        {stats.agences}+
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Agences
+                      </Typography>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Box textAlign="center" p={2}>
+                      <Typography variant="h4" fontWeight="bold" color="success.main">
+                        {stats.parcelles}+
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Parcelles
+                      </Typography>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Box textAlign="center" p={2}>
+                      <Typography variant="h4" fontWeight="bold" color="warning.main">
+                        {stats.biens}+
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Biens
+                      </Typography>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Box textAlign="center" p={2}>
+                      <Typography variant="h4" fontWeight="bold" color="error.main">
+                        {stats.clients}+
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Clients
+                      </Typography>
+                    </Box>
+                  </Grid>
+                </Grid>
+              </Paper>
+            </Grid>
+          </Grid>
+        </Container>
+
+        {/* Forme décorative */}
+        <Box
+          sx={{
+            position: "absolute",
+            bottom: -50,
+            left: 0,
+            right: 0,
+            height: 100,
+            background: "white",
+            clipPath: "polygon(0 50%, 100% 0, 100% 100%, 0 100%)",
+          }}
+        />
+      </Box>
+
+      {/* Notaires Partenaires Section */}
+      <Box 
+        sx={{ 
+          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          py: 10,
+          position: "relative",
+          overflow: "hidden",
+          "&::before": {
+            content: '""',
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: "url('data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\"><defs><pattern id=\"grain\" width=\"100\" height=\"100\" patternUnits=\"userSpaceOnUse\"><circle cx=\"50\" cy=\"50\" r=\"1\" fill=\"white\" opacity=\"0.1\"/></pattern></defs><rect width=\"100\" height=\"100\" fill=\"url(%23grain)\"/></svg>')",
+            opacity: 0.3,
+          }
+        }}
+      >
+        <Container maxWidth="lg" sx={{ position: "relative", zIndex: 1 }}>
+          <Box textAlign="center" mb={8}>
+            <Typography 
+              variant="h3" 
+              fontWeight="bold" 
+              sx={{ 
+                color: "white", 
+                mb: 2,
+                textShadow: "0 2px 4px rgba(0,0,0,0.3)"
+              }}
+            >
+              ⚖️ Notaires Partenaires
+            </Typography>
+            <Typography 
+              variant="h6" 
+              sx={{ 
+                color: "white", 
+                opacity: 0.9,
+                maxWidth: 600,
+                mx: "auto",
+                textShadow: "0 1px 2px rgba(0,0,0,0.3)"
+              }}
+            >
+              Des professionnels du droit notarial à votre service pour sécuriser vos transactions
+            </Typography>
+          </Box>
+
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: {
+                xs: "1fr",
+                sm: "repeat(2, 1fr)",
+                md: "repeat(3, 1fr)",
+              },
+              gap: 4,
+              maxWidth: 1200,
+              mx: "auto",
+            }}
+          >
+            {[
+              { nom: "Maître Diallo", specialite: "Droit immobilier", ville: "Niamey", experience: "15 ans", telephone: "+227 XX XX XX XX", email: "diallo@notaire.ne", color: "#ff6b6b" },
+              { nom: "Maître Traoré", specialite: "Successions", ville: "Maradi", experience: "12 ans", telephone: "+227 XX XX XX XX", email: "traore@notaire.ne", color: "#4ecdc4" },
+              { nom: "Maître Oumarou", specialite: "Contrats", ville: "Zinder", experience: "18 ans", telephone: "+227 XX XX XX XX", email: "oumarou@notaire.ne", color: "#45b7d1" },
+              { nom: "Maître Ibrahim", specialite: "Droit foncier", ville: "Tahoua", experience: "10 ans", telephone: "+227 XX XX XX XX", email: "ibrahim@notaire.ne", color: "#f9ca24" },
+              { nom: "Maître Ali", specialite: "Sociétés", ville: "Agadez", experience: "14 ans", telephone: "+227 XX XX XX XX", email: "ali@notaire.ne", color: "#f0932b" },
+              { nom: "Maître Hassane", specialite: "Famille", ville: "Dosso", experience: "16 ans", telephone: "+227 XX XX XX XX", email: "hassane@notaire.ne", color: "#eb4d4b" },
+            ].map((notaire, index) => (
+              <Card
+                key={index}
+                elevation={8}
+                sx={{
+                  height: 450,
+                  transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                  display: "flex",
+                  flexDirection: "column",
+                  background: "rgba(255, 255, 255, 0.95)",
+                  backdropFilter: "blur(10px)",
+                  border: "1px solid rgba(255, 255, 255, 0.2)",
+                  "&:hover": {
+                    transform: "translateY(-12px) scale(1.02)",
+                    boxShadow: "0 20px 40px rgba(0,0,0,0.2)",
+                    background: "rgba(255, 255, 255, 1)",
+                  },
+                }}
+              >
+                <Box
+                  sx={{
+                    height: 80,
+                    background: `linear-gradient(135deg, ${notaire.color} 0%, ${notaire.color}dd 100%)`,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    position: "relative",
+                    "&::after": {
+                      content: '""',
+                      position: "absolute",
+                      bottom: -1,
+                      left: 0,
+                      right: 0,
+                      height: 20,
+                      background: `linear-gradient(to bottom, ${notaire.color}dd, transparent)`,
+                      opacity: 0.3,
+                    }
+                  }}
+                >
+                  <Avatar 
+                    sx={{ 
+                      bgcolor: "white", 
+                      width: 60, 
+                      height: 60,
+                      boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+                      fontSize: "1.5rem"
+                    }}
+                  >
+                    ⚖️
+                  </Avatar>
+                </Box>
+
+                <CardContent sx={{ p: 3, flex: 1, display: "flex", flexDirection: "column" }}>
+                  <Box mb={3}>
+                    <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ color: notaire.color }}>
+                      {notaire.nom}
+                    </Typography>
+                    <Chip 
+                      label={notaire.specialite} 
+                      size="small" 
+                      sx={{ 
+                        bgcolor: notaire.color,
+                        color: "white",
+                        fontWeight: "bold",
+                        fontSize: "0.75rem"
+                      }} 
+                    />
+                  </Box>
+                  
+                  <Stack spacing={1.5} mb={2}>
+                    <Box display="flex" alignItems="center" gap={1.5}>
+                      <Box sx={{ bgcolor: notaire.color, borderRadius: "50%", p: 0.5 }}>
+                        <LocationOn fontSize="small" sx={{ color: "white" }} />
+                      </Box>
+                      <Typography variant="body2" fontWeight="500">{notaire.ville}</Typography>
+                    </Box>
+                    <Box display="flex" alignItems="center" gap={1.5}>
+                      <Box sx={{ bgcolor: notaire.color, borderRadius: "50%", p: 0.5 }}>
+                        <Star fontSize="small" sx={{ color: "white" }} />
+                      </Box>
+                      <Typography variant="body2" fontWeight="500">{notaire.experience} d'expérience</Typography>
+                    </Box>
+                    <Box display="flex" alignItems="center" gap={1.5}>
+                      <Box sx={{ bgcolor: notaire.color, borderRadius: "50%", p: 0.5 }}>
+                        <Phone fontSize="small" sx={{ color: "white" }} />
+                      </Box>
+                      <Typography variant="body2" fontWeight="500">{notaire.telephone}</Typography>
+                    </Box>
+                    <Box display="flex" alignItems="center" gap={1.5}>
+                      <Box sx={{ bgcolor: notaire.color, borderRadius: "50%", p: 0.5 }}>
+                        <Email fontSize="small" sx={{ color: "white" }} />
+                      </Box>
+                      <Typography variant="body2" fontWeight="500">{notaire.email}</Typography>
+                    </Box>
+                  </Stack>
+
+                  <Box sx={{ mt: "auto", pt: 3, pb: 3 }}>
+                    <Button
+                      fullWidth
+                      variant="contained"
+                      size="large"
+                      sx={{ 
+                        bgcolor: notaire.color,
+                        color: "white",
+                        fontWeight: "bold",
+                        py: 1.5,
+                        fontSize: "1rem",
+                        textTransform: "none",
+                        borderRadius: 2,
+                        boxShadow: `0 4px 12px ${notaire.color}30`,
+                        "&:hover": {
+                          bgcolor: notaire.color,
+                          transform: "scale(1.05)",
+                          boxShadow: `0 8px 20px ${notaire.color}50`,
+                        },
+                        transition: "all 0.3s ease"
+                      }}
+                      onClick={() => navigate("/login")}
+                    >
+                      📞 Contacter
+                    </Button>
+                  </Box>
+                </CardContent>
+              </Card>
+            ))}
+          </Box>
+        </Container>
+      </Box>
+
+      {/* Features Section */}
+      <Container maxWidth="lg" sx={{ py: 8 }}>
+        <Typography variant="h4" fontWeight="bold" textAlign="center" gutterBottom>
+          🌟 Pourquoi choisir DillanciPro ?
+        </Typography>
+        <Typography variant="body1" textAlign="center" color="text.secondary" sx={{ mb: 6, maxWidth: 700, mx: "auto" }}>
+          Une plateforme tout-en-un pour simplifier et sécuriser toutes vos transactions foncières et immobilières
+        </Typography>
+
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: {
+              xs: "1fr",
+              sm: "repeat(2, 1fr)",
+            },
+            gap: 4,
+            maxWidth: 800,
+            mx: "auto",
+          }}
+        >
+          {features.map((feature, index) => (
+            <Card
+              key={index}
+              elevation={3}
+              sx={{
+                height: 280,
+                textAlign: "center",
+                transition: "all 0.3s",
+                display: "flex",
+                flexDirection: "column",
+                "&:hover": {
+                  transform: "translateY(-8px)",
+                  boxShadow: 6,
+                },
+              }}
+            >
+              <CardContent sx={{ p: 3, flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+                <Avatar
+                  sx={{
+                    bgcolor: feature.color,
+                    width: 70,
+                    height: 70,
+                    mx: "auto",
+                    mb: 2,
+                  }}
+                >
+                  {feature.icon}
+                </Avatar>
+                <Typography variant="h6" fontWeight="bold" gutterBottom>
+                  {feature.title}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {feature.description}
+                </Typography>
+              </CardContent>
+            </Card>
+          ))}
+        </Box>
+      </Container>
+
+      {/* Agences Partenaires Section */}
+      <Box sx={{ bgcolor: "grey.50", py: 8 }}>
+        <Container maxWidth="lg">
+          <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
+            <Box>
+              <Typography variant="h4" fontWeight="bold" gutterBottom sx={{ fontSize: "1.875rem" }}>
+                🏢 Agences Immobilières Partenaires
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                Des professionnels certifiés à votre service
+              </Typography>
+            </Box>
+            <Button
+              variant="contained"
+              endIcon={<ArrowForward />}
+              onClick={() => setOpenPartenaireDialog(true)}
+              sx={{ display: { xs: "none", md: "flex" } }}
+            >
+              Devenir partenaire
+            </Button>
+          </Box>
+
+          <Grid container spacing={3}>
+            {agencesPartenaires.map((agence, index) => (
+              <Grid item xs={12} sm={6} md={3} key={index}>
+                <Card
+                  elevation={2}
+                  sx={{
+                    height: "100%",
+                    transition: "all 0.3s",
+                    "&:hover": {
+                      transform: "translateY(-4px)",
+                      boxShadow: 4,
+                    },
+                  }}
+                >
+                  <CardContent>
+                    <Box display="flex" alignItems="center" gap={1} mb={2}>
+                      <Avatar sx={{ bgcolor: "primary.main" }}>
+                        <Business />
+                      </Avatar>
+                      <Box flex={1}>
+                        <Typography variant="subtitle1" fontWeight="bold">
+                          {agence.nom}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          📍 {agence.ville}
+                        </Typography>
+                      </Box>
+                    </Box>
+                    <Divider sx={{ my: 1.5 }} />
+                    <Box display="flex" justifyContent="space-between" alignItems="center">
+                      <Chip
+                        label={`${agence.parcelles} parcelles`}
+                        size="small"
+                        color="primary"
+                        variant="outlined"
+                      />
+                      <Box display="flex" alignItems="center" gap={0.5}>
+                        <Star sx={{ fontSize: 16, color: "warning.main" }} />
+                        <Typography variant="body2" fontWeight="bold">
+                          {agence.note}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+
+          <Box textAlign="center" mt={4}>
+            <Button
+              variant="outlined"
+              size="large"
+              endIcon={<ArrowForward />}
+              onClick={() => navigate("/register")}
+            >
+              Voir toutes les agences
+            </Button>
+          </Box>
+        </Container>
+      </Box>
+
+      {/* Banques Partenaires Section */}
+      <Container maxWidth="lg" sx={{ py: 8 }}>
+        <Typography variant="h4" fontWeight="bold" textAlign="center" gutterBottom>
+          🏦 Banques Partenaires
+        </Typography>
+        <Typography variant="body1" textAlign="center" color="text.secondary" sx={{ mb: 6 }}>
+          Financez votre projet immobilier avec nos partenaires financiers
+        </Typography>
+
+        <Grid container spacing={3}>
+          {banquesPartenaires.map((banque, index) => (
+            <Grid item xs={12} sm={6} md={3} key={index}>
+              <Card
+                elevation={3}
+                sx={{
+                  textAlign: "center",
+                  p: 3,
+                  transition: "all 0.3s",
+                  "&:hover": {
+                    transform: "scale(1.05)",
+                    boxShadow: 6,
+                  },
+                }}
+              >
+                <Avatar
+                  sx={{
+                    bgcolor: "success.main",
+                    width: 60,
+                    height: 60,
+                    mx: "auto",
+                    mb: 2,
+                  }}
+                >
+                  <AccountBalance fontSize="large" />
+                </Avatar>
+                <Typography variant="h6" fontWeight="bold" gutterBottom>
+                  {banque.nom}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {banque.services}
+                </Typography>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      </Container>
+
+      {/* Parcelles à vendre Section */}
+      <Box sx={{ bgcolor: "primary.light", py: 8 }}>
+        <Container maxWidth="lg">
+          <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
+            <Box>
+              <Typography variant="h4" fontWeight="bold" gutterBottom>
+                🏘️ Parcelles à vendre
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                Découvrez notre sélection de terrains viabilisés
+              </Typography>
+            </Box>
+            <Button
+              variant="contained"
+              color="primary"
+              endIcon={<ArrowForward />}
+              onClick={() => navigate("/login")}
+              sx={{ display: { xs: "none", md: "flex" } }}
+            >
+              Voir toutes
+            </Button>
+          </Box>
+
+          <Grid container spacing={3}>
+            {parcellesVedettes.map((parcelle, index) => (
+              <Grid item xs={12} sm={6} md={3} key={index}>
+                <Card
+                  elevation={3}
+                  sx={{
+                    height: "100%",
+                    transition: "all 0.3s",
+                    "&:hover": { transform: "translateY(-6px)", boxShadow: 8 },
+                  }}
+                >
+                  <Box
+                    sx={{
+                      height: 140,
+                      background: `linear-gradient(135deg, ${["#667eea", "#f093fb", "#4facfe", "#43e97b"][index % 4]} 0%, ${["#764ba2", "#f5576c", "#00f2fe", "#38f9d7"][index % 4]} 100%)`,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Landscape sx={{ fontSize: 80, color: "white", opacity: 0.8 }} />
+                  </Box>
+                  <CardContent>
+                    <Chip
+                      label={`Îlot ${parcelle.ilot}`}
+                      size="small"
+                      color="primary"
+                      sx={{ mb: 1 }}
+                    />
+                    <Typography variant="h6" fontWeight="bold" gutterBottom>
+                      {parcelle.ref}
+                    </Typography>
+                    <Stack spacing={1} mb={2}>
+                      <Box display="flex" alignItems="center" gap={1}>
+                        <LocationOn fontSize="small" color="action" />
+                        <Typography variant="body2">{parcelle.ville}</Typography>
+                      </Box>
+                      <Box display="flex" alignItems="center" gap={1}>
+                        <Home fontSize="small" color="action" />
+                        <Typography variant="body2">{parcelle.superficie} m²</Typography>
+                      </Box>
+                    </Stack>
+                    <Divider sx={{ my: 1.5 }} />
+                    <Typography variant="h6" color="primary" fontWeight="bold">
+                      {formatMoney(parcelle.prix)}
+                    </Typography>
+                    <Button
+                      fullWidth
+                      variant="outlined"
+                      size="small"
+                      sx={{ mt: 2 }}
+                      endIcon={<KeyboardArrowRight />}
+                      onClick={() => navigate("/login")}
+                    >
+                      Voir détails
+                    </Button>
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        </Container>
+      </Box>
+
+      {/* Biens Immobiliers Section */}
+      <Container maxWidth="lg" sx={{ py: 8 }}>
+        <Typography variant="h4" fontWeight="bold" textAlign="center" gutterBottom>
+          🏠 Biens Immobiliers à vendre
+        </Typography>
+        <Typography variant="body1" textAlign="center" color="text.secondary" sx={{ mb: 6 }}>
+          Villas, appartements et maisons de qualité
+        </Typography>
+
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: {
+              xs: "1fr",
+              sm: "repeat(2, 1fr)",
+              md: "repeat(3, 1fr)",
+            },
+            gap: 4,
+            maxWidth: 1200,
+            mx: "auto",
+          }}
+        >
+          {biensVedettes.map((bien, index) => (
+            <Card
+              key={index}
+              elevation={4}
+              sx={{
+                height: 450,
+                transition: "all 0.3s",
+                display: "flex",
+                flexDirection: "column",
+                "&:hover": { transform: "translateY(-8px)", boxShadow: 10 },
+              }}
+            >
+              <Box
+                sx={{
+                  height: 200,
+                  background: `linear-gradient(135deg, ${["#11998e", "#e94057", "#8e2de2"][index % 3]} 0%, ${["#38ef7d", "#f27121", "#4a00e0"][index % 3]} 100%)`,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Home sx={{ fontSize: 100, color: "white", opacity: 0.9 }} />
+              </Box>
+              <CardContent sx={{ p: 3, flex: 1, display: "flex", flexDirection: "column" }}>
+                <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+                  <Chip label={bien.type} color="secondary" size="small" />
+                  <Chip
+                    icon={<VerifiedUser />}
+                    label="Vérifié"
+                    color="success"
+                    size="small"
+                    variant="outlined"
+                  />
+                </Box>
+                <Typography variant="h6" fontWeight="bold" gutterBottom>
+                  {bien.titre}
+                </Typography>
+                <Stack spacing={1} mb={2}>
+                  <Box display="flex" alignItems="center" gap={1}>
+                    <LocationOn fontSize="small" color="action" />
+                    <Typography variant="body2" color="text.secondary">
+                      {bien.ville}
+                    </Typography>
+                  </Box>
+                  <Box display="flex" alignItems="center" gap={1}>
+                    <Home fontSize="small" color="action" />
+                    <Typography variant="body2" color="text.secondary">
+                      {bien.superficie} m²
+                    </Typography>
+                  </Box>
+                </Stack>
+                <Divider sx={{ my: 2 }} />
+                <Typography variant="h5" color="primary" fontWeight="bold" gutterBottom>
+                  {formatMoney(bien.prix)}
+                </Typography>
+                <Button
+                  fullWidth
+                  variant="contained"
+                  color="primary"
+                  endIcon={<ArrowForward />}
+                  onClick={() => navigate("/login")}
+                  sx={{ mt: "auto" }}
+                >
+                  Découvrir
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
+        </Box>
+      </Container>
+
+      {/* Locations Proposées Section */}
+      <Box sx={{ bgcolor: "grey.50", py: 10 }}>
+        <Container maxWidth="lg">
+          <Box textAlign="center" mb={8}>
+            <Typography variant="h3" fontWeight="bold" gutterBottom sx={{ 
+              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+              backgroundClip: "text",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              textShadow: "0 2px 4px rgba(0,0,0,0.1)"
+            }}>
+              🏠 Les locations proposées
+            </Typography>
+            <Typography variant="h6" color="text.secondary" sx={{ mb: 4, maxWidth: 600, mx: "auto" }}>
+              Trouvez votre prochain logement parmi nos offres de location premium
+            </Typography>
+            <Button
+              variant="contained"
+              size="large"
+              endIcon={<ArrowForward />}
+              onClick={handleOpenLocationsDrawer}
+              sx={{
+                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                px: 4,
+                py: 1.5,
+                borderRadius: 3,
+                textTransform: "none",
+                fontSize: "1.1rem",
+                fontWeight: "bold",
+                boxShadow: "0 8px 32px rgba(102, 126, 234, 0.3)",
+                "&:hover": {
+                  transform: "translateY(-2px)",
+                  boxShadow: "0 12px 40px rgba(102, 126, 234, 0.4)",
+                },
+                transition: "all 0.3s ease"
+              }}
+            >
+              Découvrir toutes les locations
+            </Button>
+          </Box>
+
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: {
+                xs: "1fr",
+                sm: "repeat(2, 1fr)",
+                md: "repeat(3, 1fr)",
+              },
+              gap: 4,
+              maxWidth: 1200,
+              mx: "auto",
+            }}
+          >
+            {loadingHomepageLocations ? (
+              <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: 200, gridColumn: "1 / -1" }}>
+                <CircularProgress size={60} />
+                <Typography variant="h6" sx={{ ml: 2 }}>
+                  Chargement des locations...
+                </Typography>
+              </Box>
+            ) : homepageLocations.map((location, index) => (
+                ville: "Niamey",
+                superficie: "120",
+                chambres: 3,
+                prix: 150000,
+                type: "Villa",
+                gradient: ["#11998e", "#38ef7d"],
+                image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&h=600&fit=crop&q=90",
+                description: "Villa moderne avec jardin, proche du centre-ville",
+                disponibilite: "Immédiate",
+                meuble: true,
+                features: ["Jardin", "Garage", "Climatisation"]
+              },
+              {
+                id: 2,
+                titre: "Appartement 2 chambres",
+                ville: "Maradi",
+                superficie: "80",
+                chambres: 2,
+                prix: 80000,
+                type: "Appartement",
+                gradient: ["#e94057", "#f27121"],
+                image: "https://images.unsplash.com/photo-1600607687644-c7171b42498b?w=800&h=600&fit=crop&q=90",
+                description: "Appartement meublé, proche des commerces",
+                disponibilite: "1er décembre",
+                meuble: true,
+                features: ["Meublé", "Balcon", "Internet"]
+              },
+              {
+                id: 3,
+                titre: "Studio meublé",
+                ville: "Zinder",
+                superficie: "35",
+                chambres: 1,
+                prix: 45000,
+                type: "Studio",
+                gradient: ["#8e2de2", "#4a00e0"],
+                image: "https://images.unsplash.com/photo-1600607687644-c7171b42498b?w=800&h=600&fit=crop&q=90",
+                description: "Studio entièrement meublé, idéal pour étudiant",
+                disponibilite: "Immédiate",
+                meuble: true,
+                features: ["Meublé", "Internet", "Sécurité"]
+              },
+              {
+                id: 4,
+                titre: "Maison familiale 4 chambres",
+                ville: "Tahoua",
+                superficie: "150",
+                chambres: 4,
+                prix: 200000,
+                type: "Maison",
+                gradient: ["#667eea", "#764ba2"],
+                image: "https://images.unsplash.com/photo-1600607687644-c7171b42498b?w=800&h=600&fit=crop&q=90",
+                description: "Maison spacieuse avec garage et jardin",
+                disponibilite: "15 janvier",
+                meuble: false,
+                features: ["Jardin", "Garage", "Parking"]
+              },
+              {
+                id: 5,
+                titre: "Duplex moderne",
+                ville: "Agadez",
+                superficie: "100",
+                chambres: 3,
+                prix: 120000,
+                type: "Duplex",
+                gradient: ["#f0932b", "#f5576c"],
+                image: "https://images.unsplash.com/photo-1600607687644-c7171b42498b?w=800&h=600&fit=crop&q=90",
+                description: "Duplex moderne avec terrasse privée",
+                disponibilite: "Immédiate",
+                meuble: true,
+                features: ["Terrasse", "Meublé", "Vue panoramique"]
+              },
+              {
+                id: 6,
+                titre: "Appartement 1 chambre",
+                ville: "Dosso",
+                superficie: "50",
+                chambres: 1,
+                prix: 60000,
+                type: "Appartement",
+                gradient: ["#4facfe", "#00f2fe"],
+                image: "https://images.unsplash.com/photo-1600607687644-c7171b42498b?w=800&h=600&fit=crop&q=90",
+                description: "Appartement cosy, proche des transports",
+                disponibilite: "1er février",
+                meuble: false,
+                features: ["Proche transports", "Ascenseur", "Sécurité"]
+              }
+            ].map((location, index) => (
+              <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: 200, gridColumn: "1 / -1" }}>
+                <CircularProgress size={60} />
+                <Typography variant="h6" sx={{ ml: 2 }}>
+                  Chargement des locations...
+                </Typography>
+              </Box>
+            ) : allLocations.slice(0, 3).map((location, index) => (
+              <Card
+                key={location.id}
+                elevation={8}
+                sx={{
+                  height: 760,
+                  transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                  display: "flex",
+                  flexDirection: "column",
+                  background: "rgba(255, 255, 255, 0.95)",
+                  backdropFilter: "blur(10px)",
+                  border: "1px solid rgba(255, 255, 255, 0.2)",
+                  borderRadius: 4,
+                  overflow: "hidden",
+                  position: "relative",
+                  "&:hover": {
+                    transform: "translateY(-12px) scale(1.02)",
+                    boxShadow: "0 20px 40px rgba(0,0,0,0.15)",
+                    "& .location-image": {
+                      transform: "scale(1.05)"
+                    }
+                  },
+                }}
+              >
+                {/* Image de la maison - Zone très agrandie */}
+                <Box
+                  sx={{
+                    height: 560,
+                    position: "relative",
+                    overflow: "hidden",
+                    "&::before": {
+                      content: '""',
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      background: `linear-gradient(135deg, ${location.gradient[0]}10 0%, ${location.gradient[1]}10 100%)`,
+                      zIndex: 1
+                    }
+                  }}
+                >
+                  <Box
+                    component="img"
+                    src={location.image}
+                    alt={location.titre}
+                    className="location-image"
+                    sx={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      objectPosition: "center",
+                      transition: "all 0.3s ease",
+                      zIndex: 2,
+                      position: "relative",
+                      "&:hover": {
+                        transform: "scale(1.05)"
+                      }
+                    }}
+                  />
+                  
+                  {/* Badges en overlay */}
+                  <Box sx={{ position: "absolute", top: 16, left: 16, zIndex: 3 }}>
+                    <Chip
+                      label={location.type}
+                      sx={{
+                        bgcolor: "rgba(255,255,255,0.9)",
+                        color: location.gradient[0],
+                        fontWeight: "bold",
+                        fontSize: "0.75rem"
+                      }}
+                    />
+                  </Box>
+                  
+                  <Box sx={{ position: "absolute", top: 16, right: 16, zIndex: 3 }}>
+                    <Chip
+                      icon={location.meuble ? <CheckCircle /> : <Home />}
+                      label={location.meuble ? "Meublé" : "Non meublé"}
+                      sx={{
+                        bgcolor: "rgba(255,255,255,0.9)",
+                        color: location.gradient[0],
+                        fontWeight: "bold",
+                        fontSize: "0.75rem"
+                      }}
+                    />
+                  </Box>
+                </Box>
+
+                <CardContent sx={{ p: 3, flex: 1, display: "flex", flexDirection: "column" }}>
+                  <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ 
+                    color: "text.primary",
+                    lineHeight: 1.3,
+                    mb: 1,
+                    fontSize: "1.1rem"
+                  }}>
+                    {location.titre}
+                  </Typography>
+                  
+                  <Typography variant="body2" color="text.secondary" sx={{ 
+                    mb: 2,
+                    lineHeight: 1.4,
+                    minHeight: "2.6em",
+                    fontSize: "0.85rem"
+                  }}>
+                    {location.description}
+                  </Typography>
+
+                  {/* Features */}
+                  <Box sx={{ mb: 2 }}>
+                    <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap>
+                      {location.features.map((feature, idx) => (
+                        <Chip
+                          key={idx}
+                          label={feature}
+                          size="small"
+                          variant="outlined"
+                          sx={{
+                            fontSize: "0.7rem",
+                            height: 24,
+                            borderColor: location.gradient[0],
+                            color: location.gradient[0],
+                            "&:hover": {
+                              bgcolor: `${location.gradient[0]}10`
+                            }
+                          }}
+                        />
+                      ))}
+                    </Stack>
+                  </Box>
+
+                  <Stack spacing={1.2} mb={2}>
+                    <Box display="flex" alignItems="center" gap={1.2}>
+                      <LocationOn fontSize="small" sx={{ color: location.gradient[0] }} />
+                      <Typography variant="body2" fontWeight="500" sx={{ fontSize: "0.8rem" }}>
+                        {location.ville}
+                      </Typography>
+                    </Box>
+                    <Box display="flex" alignItems="center" gap={1.2}>
+                      <Home fontSize="small" sx={{ color: location.gradient[0] }} />
+                      <Typography variant="body2" fontWeight="500" sx={{ fontSize: "0.8rem" }}>
+                        {location.superficie} m² • {location.chambres} chambre{location.chambres > 1 ? 's' : ''}
+                      </Typography>
+                    </Box>
+                    <Box display="flex" alignItems="center" gap={1.2}>
+                      <CheckCircle fontSize="small" sx={{ color: "success.main" }} />
+                      <Typography variant="body2" color="success.main" fontWeight="600" sx={{ fontSize: "0.8rem" }}>
+                        Disponible : {location.disponibilite}
+                      </Typography>
+                    </Box>
+                  </Stack>
+
+                  <Divider sx={{ my: 2, borderColor: "grey.200" }} />
+                  
+                  <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+                    <Typography variant="h5" fontWeight="bold" sx={{ 
+                      color: location.gradient[0],
+                      background: `linear-gradient(135deg, ${location.gradient[0]} 0%, ${location.gradient[1]} 100%)`,
+                      backgroundClip: "text",
+                      WebkitBackgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
+                      fontSize: "1.4rem"
+                    }}>
+                      {formatMoney(location.prix)}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" fontWeight="500" sx={{ fontSize: "0.8rem" }}>
+                      /mois
+                    </Typography>
+                  </Box>
+
+                  <Button
+                    fullWidth
+                    variant="contained"
+                    size="medium"
+                    endIcon={<ArrowForward />}
+                    onClick={() => navigate("/login")}
+                    sx={{
+                      mt: "auto",
+                      background: `linear-gradient(135deg, ${location.gradient[0]} 0%, ${location.gradient[1]} 100%)`,
+                      color: "white",
+                      fontWeight: "bold",
+                      py: 1.2,
+                      borderRadius: 2,
+                      textTransform: "none",
+                      fontSize: "0.9rem",
+                      boxShadow: `0 4px 16px ${location.gradient[0]}30`,
+                      "&:hover": {
+                        transform: "translateY(-2px)",
+                        boxShadow: `0 8px 24px ${location.gradient[0]}40`,
+                        background: `linear-gradient(135deg, ${location.gradient[0]} 0%, ${location.gradient[1]} 100%)`,
+                      },
+                      transition: "all 0.3s ease"
+                    }}
+                  >
+                    Voir la location
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </Box>
+        </Container>
+      </Box>
+
+      {/* Qui peut s'inscrire Section */}
+      <Box sx={{ bgcolor: "grey.100", py: 8 }}>
+        <Container maxWidth="lg">
+          <Typography variant="h4" fontWeight="bold" textAlign="center" gutterBottom>
+            👥 Qui peut rejoindre la plateforme ?
+          </Typography>
+          <Typography variant="body1" textAlign="center" color="text.secondary" sx={{ mb: 6 }}>
+            DillanciPro est ouvert à tous les acteurs du secteur foncier et immobilier
+          </Typography>
+
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: {
+                xs: "1fr",
+                sm: "repeat(2, 1fr)",
+              },
+              gap: 3,
+              maxWidth: 1000,
+              mx: "auto",
+            }}
+          >
+            {/* Agences */}
+            <Card 
+              elevation={3} 
+              sx={{ 
+                p: 3, 
+                height: 400,
+                display: "flex",
+                flexDirection: "column",
+              }}
+            >
+              <Box display="flex" alignItems="flex-start" gap={2} mb={2}>
+                <Avatar sx={{ bgcolor: "primary.main", width: 60, height: 60 }}>
+                  <Business fontSize="large" />
+                </Avatar>
+                <Box flex={1}>
+                  <Typography variant="h6" fontWeight="bold" gutterBottom>
+                    Agences Immobilières
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Créez votre agence, gérez vos commerciaux, vos parcelles et biens immobiliers. 
+                    Système multi-agence avec séparation complète des données.
+                  </Typography>
+                </Box>
+              </Box>
+              <Stack spacing={1} mt="auto">
+                <Box display="flex" alignItems="center" gap={1}>
+                  <CheckCircle fontSize="small" color="success" />
+                  <Typography variant="body2">Gestion complète des parcelles</Typography>
+                </Box>
+                <Box display="flex" alignItems="center" gap={1}>
+                  <CheckCircle fontSize="small" color="success" />
+                  <Typography variant="body2">Équipe de commerciaux</Typography>
+                </Box>
+                <Box display="flex" alignItems="center" gap={1}>
+                  <CheckCircle fontSize="small" color="success" />
+                  <Typography variant="body2">Suivi des ventes et commissions</Typography>
+                </Box>
+              </Stack>
+            </Card>
+
+            {/* Banques */}
+            <Card 
+              elevation={3} 
+              sx={{ 
+                p: 3, 
+                height: 400,
+                display: "flex",
+                flexDirection: "column",
+              }}
+            >
+              <Box display="flex" alignItems="flex-start" gap={2} mb={2}>
+                <Avatar sx={{ bgcolor: "success.main", width: 60, height: 60 }}>
+                  <AccountBalance fontSize="large" />
+                </Avatar>
+                <Box flex={1}>
+                  <Typography variant="h6" fontWeight="bold" gutterBottom>
+                    Banques Partenaires
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Accédez aux données foncières pour faciliter l'octroi de crédits immobiliers 
+                    et sécuriser vos financements.
+                  </Typography>
+                </Box>
+              </Box>
+              <Stack spacing={1} mt="auto">
+                <Box display="flex" alignItems="center" gap={1}>
+                  <CheckCircle fontSize="small" color="success" />
+                  <Typography variant="body2">Vérification des biens</Typography>
+                </Box>
+                <Box display="flex" alignItems="center" gap={1}>
+                  <CheckCircle fontSize="small" color="success" />
+                  <Typography variant="body2">Suivi des garanties</Typography>
+                </Box>
+                <Box display="flex" alignItems="center" gap={1}>
+                  <CheckCircle fontSize="small" color="success" />
+                  <Typography variant="body2">Partenariat privilégié</Typography>
+                </Box>
+              </Stack>
+            </Card>
+
+            {/* État/Ministère */}
+            <Card 
+              elevation={3} 
+              sx={{ 
+                p: 3, 
+                height: 400,
+                display: "flex",
+                flexDirection: "column",
+              }}
+            >
+              <Box display="flex" alignItems="flex-start" gap={2} mb={2}>
+                <Avatar sx={{ bgcolor: "warning.main", width: 60, height: 60 }}>
+                  <Landscape fontSize="large" />
+                </Avatar>
+                <Box flex={1}>
+                  <Typography variant="h6" fontWeight="bold" gutterBottom>
+                    Ministère / État
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Gérez le patrimoine foncier de l'État, suivez les attributions et 
+                    contrôlez l'aménagement du territoire.
+                  </Typography>
+                </Box>
+              </Box>
+              <Stack spacing={1} mt="auto">
+                <Box display="flex" alignItems="center" gap={1}>
+                  <CheckCircle fontSize="small" color="success" />
+                  <Typography variant="body2">Gestion du patrimoine national</Typography>
+                </Box>
+                <Box display="flex" alignItems="center" gap={1}>
+                  <CheckCircle fontSize="small" color="success" />
+                  <Typography variant="body2">Statistiques en temps réel</Typography>
+                </Box>
+                <Box display="flex" alignItems="center" gap={1}>
+                  <CheckCircle fontSize="small" color="success" />
+                  <Typography variant="body2">Supervision des transactions</Typography>
+                </Box>
+              </Stack>
+            </Card>
+
+            {/* Particuliers */}
+            <Card 
+              elevation={3} 
+              sx={{ 
+                p: 3, 
+                height: 400,
+                display: "flex",
+                flexDirection: "column",
+              }}
+            >
+              <Box display="flex" alignItems="flex-start" gap={2} mb={2}>
+                <Avatar sx={{ bgcolor: "info.main", width: 60, height: 60 }}>
+                  <Groups fontSize="large" />
+                </Avatar>
+                <Box flex={1}>
+                  <Typography variant="h6" fontWeight="bold" gutterBottom>
+                    Particuliers / Clients
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Enregistrez votre patrimoine foncier, achetez des parcelles via les agences, 
+                    et proposez vos biens à la vente.
+                  </Typography>
+                </Box>
+              </Box>
+              <Stack spacing={1} mt="auto">
+                <Box display="flex" alignItems="center" gap={1}>
+                  <CheckCircle fontSize="small" color="success" />
+                  <Typography variant="body2">Géolocalisation de vos biens</Typography>
+                </Box>
+                <Box display="flex" alignItems="center" gap={1}>
+                  <CheckCircle fontSize="small" color="success" />
+                  <Typography variant="body2">Suivi des paiements</Typography>
+                </Box>
+                <Box display="flex" alignItems="center" gap={1}>
+                  <CheckCircle fontSize="small" color="success" />
+                  <Typography variant="body2">Proposer vos parcelles à la vente</Typography>
+                </Box>
+              </Stack>
+            </Card>
+          </Box>
+        </Container>
+      </Box>
+
+      {/* CTA Section */}
+      <Container maxWidth="md" sx={{ py: 10, textAlign: "center" }}>
+        <Paper
+          elevation={8}
+          sx={{
+            p: 6,
+            borderRadius: 4,
+            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            color: "white",
+          }}
+        >
+          <Typography variant="h3" fontWeight="bold" gutterBottom sx={{ fontSize: { xs: "2rem", md: "3rem" } }}>
+            Prêt à commencer ?
+          </Typography>
+          <Typography variant="h6" sx={{ mb: 4, opacity: 0.9 }}>
+            Rejoignez la plateforme DillanciPro dès aujourd'hui et digitalisez votre activité
+          </Typography>
+          <Stack direction={{ xs: "column", sm: "row" }} spacing={2} justifyContent="center">
+            <Button
+              variant="contained"
+              size="large"
+              onClick={() => navigate("/register")}
+              sx={{
+                bgcolor: "white",
+                color: "primary.main",
+                fontWeight: "bold",
+                px: 5,
+                py: 2,
+                fontSize: "1.1rem",
+                "&:hover": { bgcolor: "grey.100" },
+              }}
+              endIcon={<AppRegistration />}
+            >
+              Créer mon compte
+            </Button>
+            <Button
+              variant="outlined"
+              size="large"
+              onClick={() => navigate("/login")}
+              sx={{
+                borderColor: "white",
+                color: "white",
+                fontWeight: "bold",
+                px: 5,
+                py: 2,
+                fontSize: "1.1rem",
+                "&:hover": { borderColor: "white", bgcolor: "rgba(255,255,255,0.1)" },
+              }}
+              endIcon={<Login />}
+            >
+              Se connecter
+            </Button>
+          </Stack>
+        </Paper>
+      </Container>
+
+      {/* Dialogue Devenir Partenaire */}
+      <Dialog
+        open={openPartenaireDialog}
+        onClose={() => setOpenPartenaireDialog(false)}
+        maxWidth="sm"
+        fullWidth
+        TransitionComponent={Fade}
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            color: "white",
+            overflow: "hidden",
+            position: "relative",
+            "&::before": {
+              content: '""',
+              position: "absolute",
+              top: 0,
+              right: 0,
+              width: "150px",
+              height: "150px",
+              background: "rgba(255,255,255,0.1)",
+              borderRadius: "50%",
+              transform: "translate(50%, -50%)",
+            }
+          }
+        }}
+      >
+        <DialogTitle sx={{ textAlign: "center", pb: 1, position: "relative", zIndex: 1 }}>
+          <Box display="flex" alignItems="center" justifyContent="center" gap={2} mb={2}>
+            <Avatar sx={{ bgcolor: "rgba(255,255,255,0.2)", width: 60, height: 60 }}>
+              <Business fontSize="large" />
+            </Avatar>
+            <Box>
+              <Typography variant="h4" fontWeight="bold" sx={{ textShadow: "0 2px 4px rgba(0,0,0,0.3)" }}>
+                🏢 Devenir Partenaire
+              </Typography>
+              <Typography variant="body2" sx={{ opacity: 0.9, mt: 0.5 }}>
+                Rejoignez notre réseau d'agences immobilières
+              </Typography>
+            </Box>
+          </Box>
+        </DialogTitle>
+
+        <DialogContent sx={{ textAlign: "center", position: "relative", zIndex: 1 }}>
+          <Typography variant="h6" sx={{ mb: 3, fontWeight: 500, lineHeight: 1.6 }}>
+            Pour devenir partenaire de <strong>DillanciPro</strong>, 
+            merci de nous contacter directement :
+          </Typography>
+
+          <Box sx={{ 
+            bgcolor: "rgba(255,255,255,0.15)", 
+            borderRadius: 3, 
+            p: 3, 
+            mb: 3,
+            backdropFilter: "blur(10px)",
+            border: "1px solid rgba(255,255,255,0.2)"
+          }}>
+            <Typography variant="h4" fontWeight="bold" sx={{ mb: 2, textShadow: "0 2px 4px rgba(0,0,0,0.3)" }}>
+              📞 +227 80 64 83 83
+            </Typography>
+            <Typography variant="body1" sx={{ opacity: 0.9, mb: 2 }}>
+              Appelez-nous pour discuter de votre intégration
+            </Typography>
+            
+            <Stack direction="row" spacing={2} justifyContent="center">
+              <Button
+                variant="contained"
+                startIcon={<Call />}
+                onClick={() => window.open("tel:+22780648383")}
+                sx={{
+                  bgcolor: "rgba(255,255,255,0.2)",
+                  color: "white",
+                  fontWeight: "bold",
+                  px: 3,
+                  py: 1.5,
+                  "&:hover": {
+                    bgcolor: "rgba(255,255,255,0.3)",
+                    transform: "scale(1.05)"
+                  },
+                  transition: "all 0.3s ease"
+                }}
+              >
+                Appeler
+              </Button>
+              <Button
+                variant="contained"
+                startIcon={<WhatsApp />}
+                onClick={() => window.open("https://wa.me/22780648383")}
+                sx={{
+                  bgcolor: "#25D366",
+                  color: "white",
+                  fontWeight: "bold",
+                  px: 3,
+                  py: 1.5,
+                  "&:hover": {
+                    bgcolor: "#128C7E",
+                    transform: "scale(1.05)"
+                  },
+                  transition: "all 0.3s ease"
+                }}
+              >
+                WhatsApp
+              </Button>
+              <Button
+                variant="outlined"
+                startIcon={<ContentCopy />}
+                onClick={() => {
+                  navigator.clipboard.writeText("+22780648383");
+                  // Vous pourriez ajouter une notification ici
+                }}
+                sx={{
+                  borderColor: "rgba(255,255,255,0.5)",
+                  color: "white",
+                  fontWeight: "bold",
+                  px: 3,
+                  py: 1.5,
+                  "&:hover": {
+                    borderColor: "white",
+                    bgcolor: "rgba(255,255,255,0.1)",
+                    transform: "scale(1.05)"
+                  },
+                  transition: "all 0.3s ease"
+                }}
+              >
+                Copier
+              </Button>
+            </Stack>
+          </Box>
+
+          <Typography variant="body2" sx={{ opacity: 0.8, fontStyle: "italic" }}>
+            Nos équipes sont disponibles du lundi au vendredi, de 8h à 18h
+          </Typography>
+        </DialogContent>
+
+        <DialogActions sx={{ justifyContent: "center", pb: 3, position: "relative", zIndex: 1 }}>
+          <Button
+            onClick={() => setOpenPartenaireDialog(false)}
+            variant="outlined"
+            sx={{
+              borderColor: "rgba(255,255,255,0.5)",
+              color: "white",
+              fontWeight: "bold",
+              px: 4,
+              py: 1.5,
+              "&:hover": {
+                borderColor: "white",
+                bgcolor: "rgba(255,255,255,0.1)"
+              }
+            }}
+          >
+            Fermer
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Drawer des locations */}
+      <Drawer
+        anchor="right"
+        open={openLocationsDrawer}
+        onClose={() => setOpenLocationsDrawer(false)}
+        sx={{
+          "& .MuiDrawer-paper": {
+            width: { xs: "100%", sm: "80%", md: "70%", lg: "60%" },
+            maxWidth: "1200px",
+          },
+        }}
+      >
+        <Box sx={{ p: 3, height: "100%", display: "flex", flexDirection: "column" }}>
+          {/* En-tête du drawer */}
+          <Box display="flex" alignItems="center" justifyContent="space-between" mb={3}>
+            <Box>
+              <Typography variant="h4" fontWeight="bold" gutterBottom>
+                🏠 Toutes les Locations
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                Découvrez toutes nos offres de location disponibles
+              </Typography>
+            </Box>
+            <IconButton
+              onClick={() => setOpenLocationsDrawer(false)}
+              sx={{
+                bgcolor: "grey.100",
+                "&:hover": { bgcolor: "grey.200" },
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
+          </Box>
+
+          {/* Contenu du drawer */}
+          <Box sx={{ flex: 1, overflow: "auto" }}>
+            {loadingLocations ? (
+              <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+                <CircularProgress size={60} />
+              </Box>
+            ) : (
+              <>
+                {/* Grille des locations */}
+                <Grid container spacing={3} mb={4}>
+                  {allLocations
+                    .slice((currentPage - 1) * locationsPerPage, currentPage * locationsPerPage)
+                    .map((location) => (
+                      <Grid item xs={12} sm={6} md={4} key={location.id}>
+                        <Card
+                          elevation={4}
+                          sx={{
+                            height: "100%",
+                            transition: "all 0.3s",
+                            "&:hover": {
+                              transform: "translateY(-8px)",
+                              boxShadow: 8,
+                            },
+                          }}
+                        >
+                          {/* Image */}
+                          <Box
+                            sx={{
+                              height: 200,
+                              position: "relative",
+                              overflow: "hidden",
+                              "&::before": {
+                                content: '""',
+                                position: "absolute",
+                                top: 0,
+                                left: 0,
+                                right: 0,
+                                bottom: 0,
+                                background: `linear-gradient(135deg, ${location.gradient[0]}10 0%, ${location.gradient[1]}10 100%)`,
+                                zIndex: 1
+                              }
+                            }}
+                          >
+                            <Box
+                              component="img"
+                              src={location.image}
+                              alt={location.titre}
+                              sx={{
+                                width: "100%",
+                                height: "100%",
+                                objectFit: "cover",
+                                objectPosition: "center",
+                                transition: "all 0.3s ease",
+                                zIndex: 2,
+                                position: "relative",
+                              }}
+                            />
+                            
+                            {/* Badges */}
+                            <Box sx={{ position: "absolute", top: 12, left: 12, zIndex: 3 }}>
+                              <Chip
+                                label={location.type}
+                                sx={{
+                                  bgcolor: "rgba(255,255,255,0.9)",
+                                  color: location.gradient[0],
+                                  fontWeight: "bold",
+                                  fontSize: "0.75rem"
+                                }}
+                              />
+                            </Box>
+                            
+                            <Box sx={{ position: "absolute", top: 12, right: 12, zIndex: 3 }}>
+                              <Chip
+                                icon={location.meuble ? <CheckCircle /> : <Home />}
+                                label={location.meuble ? "Meublé" : "Non meublé"}
+                                sx={{
+                                  bgcolor: "rgba(255,255,255,0.9)",
+                                  color: location.gradient[0],
+                                  fontWeight: "bold",
+                                  fontSize: "0.75rem"
+                                }}
+                              />
+                            </Box>
+                          </Box>
+
+                          <CardContent sx={{ p: 2.5 }}>
+                            <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ 
+                              fontSize: "1rem",
+                              lineHeight: 1.3,
+                            }}>
+                              {location.titre}
+                            </Typography>
+                            
+                            <Typography variant="body2" color="text.secondary" sx={{ 
+                              mb: 2,
+                              fontSize: "0.8rem",
+                              lineHeight: 1.4,
+                            }}>
+                              {location.description}
+                            </Typography>
+
+                            {/* Features */}
+                            <Box sx={{ mb: 2 }}>
+                              <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap>
+                                {location.features.map((feature, idx) => (
+                                  <Chip
+                                    key={idx}
+                                    label={feature}
+                                    size="small"
+                                    variant="outlined"
+                                    sx={{
+                                      fontSize: "0.65rem",
+                                      height: 20,
+                                      borderColor: location.gradient[0],
+                                      color: location.gradient[0],
+                                    }}
+                                  />
+                                ))}
+                              </Stack>
+                            </Box>
+
+                            <Stack spacing={1} mb={2}>
+                              <Box display="flex" alignItems="center" gap={1}>
+                                <LocationOn fontSize="small" sx={{ color: location.gradient[0] }} />
+                                <Typography variant="body2" fontWeight="500" sx={{ fontSize: "0.75rem" }}>
+                                  {location.ville}
+                                </Typography>
+                              </Box>
+                              <Box display="flex" alignItems="center" gap={1}>
+                                <SquareFoot fontSize="small" sx={{ color: location.gradient[0] }} />
+                                <Typography variant="body2" fontWeight="500" sx={{ fontSize: "0.75rem" }}>
+                                  {location.superficie} m² • {location.chambres} chambre{location.chambres > 1 ? 's' : ''}
+                                </Typography>
+                              </Box>
+                              <Box display="flex" alignItems="center" gap={1}>
+                                <CheckCircle fontSize="small" sx={{ color: "success.main" }} />
+                                <Typography variant="body2" color="success.main" fontWeight="600" sx={{ fontSize: "0.75rem" }}>
+                                  Disponible : {location.disponibilite}
+                                </Typography>
+                              </Box>
+                            </Stack>
+
+                            <Divider sx={{ my: 1.5 }} />
+                            
+                            <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+                              <Typography variant="h6" fontWeight="bold" sx={{ 
+                                color: location.gradient[0],
+                                fontSize: "1.2rem"
+                              }}>
+                                {formatMoney(location.prix)}
+                              </Typography>
+                              <Typography variant="body2" color="text.secondary" fontWeight="500" sx={{ fontSize: "0.75rem" }}>
+                                /mois
+                              </Typography>
+                            </Box>
+
+                            <Button
+                              fullWidth
+                              variant="contained"
+                              size="small"
+                              endIcon={<ArrowForward />}
+                              onClick={() => navigate("/login")}
+                              sx={{
+                                background: `linear-gradient(135deg, ${location.gradient[0]} 0%, ${location.gradient[1]} 100%)`,
+                                color: "white",
+                                fontWeight: "bold",
+                                py: 1,
+                                borderRadius: 2,
+                                textTransform: "none",
+                                fontSize: "0.85rem",
+                                "&:hover": {
+                                  transform: "translateY(-1px)",
+                                  boxShadow: `0 4px 12px ${location.gradient[0]}40`,
+                                },
+                                transition: "all 0.3s ease"
+                              }}
+                            >
+                              Voir la location
+                            </Button>
+                          </CardContent>
+                        </Card>
+                      </Grid>
+                    ))}
+                </Grid>
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <Box display="flex" justifyContent="center" mt={4}>
+                    <Pagination
+                      count={totalPages}
+                      page={currentPage}
+                      onChange={handlePageChange}
+                      color="primary"
+                      size="large"
+                      sx={{
+                        "& .MuiPaginationItem-root": {
+                          fontSize: "1rem",
+                          fontWeight: "bold",
+                        },
+                      }}
+                    />
+                  </Box>
+                )}
+              </>
+            )}
+          </Box>
+        </Box>
+      </Drawer>
+
+    </PageLayout>
+  );
+};
+
+export default HomePage;
