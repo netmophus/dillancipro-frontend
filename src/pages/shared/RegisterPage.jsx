@@ -34,6 +34,8 @@ const roles = ["Admin", "Banque", "Agence", "Ministere", "Commercial", "User"];
 
 const RegisterPage = () => {
   const [formData, setFormData] = useState({
+    fullName: "",
+    email: "",
     phone: "",
     password: "",
     role: "",
@@ -69,6 +71,8 @@ const togglePasswordVisibility = () => {
     try {
       const dataToSend = {
         ...formData,
+        fullName: formData.fullName.trim(),
+        email: formData.email.trim(),
         phone: formatPhone(formData.phone),
       };
       await axios.post(`${BASE_URL}/auth/register`, dataToSend);
@@ -105,6 +109,24 @@ const togglePasswordVisibility = () => {
               {successMessage}
             </Alert>
           )}
+          <TextField
+            fullWidth
+            label="Nom complet"
+            name="fullName"
+            value={formData.fullName}
+            onChange={handleChange}
+            margin="normal"
+            required
+          />
+          <TextField
+            fullWidth
+            label="Email"
+            name="email"
+            type="email"
+            value={formData.email}
+            onChange={handleChange}
+            margin="normal"
+          />
         <TextField
             fullWidth
             label="Téléphone"
