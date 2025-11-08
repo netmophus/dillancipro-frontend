@@ -7,12 +7,14 @@ const resolveDefaultBaseUrl = () => {
 
     // En production (hébergée), on force une URL sécurisée si aucune variable n'est définie
     if (isHttps && host && host !== "localhost") {
-      return "https://<REMPLACEZ_PAR_VOTRE_BACKEND_PROD>/api";
+      
+      return "https://dillanciprobackend-e5e16032094e.herokuapp.com/api";
     }
   }
 
   // Valeur par défaut pour le développement local (réseau interne)
-  return "https://dillanciprobackend-e5e16032094e.herokuapp.com/api";
+   return "http://192.168.0.100:5000/api";
+  // return "https://dillanciprobackend-e5e16032094e.herokuapp.com/api";
 
 };
 
