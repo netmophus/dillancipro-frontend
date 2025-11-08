@@ -7,12 +7,14 @@ import {
   Box,
   MenuItem,
   IconButton,
+  InputAdornment,
+  Alert,
+  CircularProgress,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { BASE_URL } from "../../config/config";
 import PageLayout from "../../components/shared/PageLayout";
-import { InputAdornment } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 
 
@@ -36,6 +38,9 @@ const RegisterPage = () => {
     password: "",
     role: "",
   });
+  const [submitting, setSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const navigate = useNavigate();
 
 
@@ -47,20 +52,39 @@ const togglePasswordVisibility = () => {
 
 
   const handleChange = (e) => {
-    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+    setErrorMessage("");
+    setSuccessMessage("");
+    setFormData((prev) => ({
+      ...prev,
+      [name]: name === "phone" ? value.replace(/\s+/g, "") : value,
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitting(true);
+    setErrorMessage("");
+    setSuccessMessage("");
     try {
       const dataToSend = {
         ...formData,
         phone: formatPhone(formData.phone),
       };
       await axios.post(`${BASE_URL}/auth/register`, dataToSend);
-      navigate("/login");
+      setSuccessMessage("✅ Compte créé avec succès. Redirection en cours...");
+      setTimeout(() => navigate("/login"), 1500);
     } catch (error) {
-      console.error("Erreur d'inscription :", error.response?.data?.message);
+      const message =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.response?.data ||
+        error.message ||
+        "Une erreur est survenue lors de l'inscription.";
+      console.error("Erreur d'inscription :", message, error);
+      setErrorMessage(message);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -71,6 +95,16 @@ const togglePasswordVisibility = () => {
           Création de compte
         </Typography>
         <Box component="form" onSubmit={handleSubmit}>
+          {errorMessage && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {errorMessage}
+            </Alert>
+          )}
+          {successMessage && (
+            <Alert severity="success" sx={{ mb: 2 }}>
+              {successMessage}
+            </Alert>
+          )}
         <TextField
             fullWidth
             label="Téléphone"
@@ -120,8 +154,18 @@ const togglePasswordVisibility = () => {
               </MenuItem>
             ))}
           </TextField>
-          <Button type="submit" variant="contained" fullWidth sx={{ mt: 2 }}>
-            S'inscrire
+          <Button
+            type="submit"
+            variant="contained"
+            fullWidth
+            sx={{ mt: 2 }}
+            disabled={submitting}
+          >
+            {submitting ? (
+              <CircularProgress size={24} color="inherit" />
+            ) : (
+              "S'inscrire"
+            )}
           </Button>
         </Box>
       </Container>
