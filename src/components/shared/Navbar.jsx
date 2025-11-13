@@ -83,9 +83,23 @@ const Navbar = () => {
     setAnchorEl(null);
   };
 
+  const handleMobileMenuOpen = (event) => {
+    setMobileMenuAnchor(event.currentTarget);
+  };
+
+  const handleMobileMenuClose = () => {
+    setMobileMenuAnchor(null);
+  };
+
   const handleLogout = () => {
     logout();
     handleClose();
+    navigate("/login");
+  };
+
+  const handleMobileLogout = () => {
+    handleMobileMenuClose();
+    logout();
     navigate("/login");
   };
 
@@ -304,13 +318,18 @@ const Navbar = () => {
       </Box>
 
       <AppBar
-      position="sticky"
-      sx={{
-        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-        boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
-      }}
-    >
-      <Toolbar sx={{ minHeight: { xs: 64, md: 70 } }}>
+        position="sticky"
+        sx={{
+          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+        }}
+      >
+        <Toolbar
+          sx={{
+            minHeight: { xs: 60, md: 72 },
+            px: { xs: 1.5, sm: 3 },
+          }}
+        >
         {/* Logo */}
         <Box
           display="flex"
@@ -325,8 +344,8 @@ const Navbar = () => {
             sx={{
               bgcolor: "white",
               color: "primary.main",
-              width: 45,
-              height: 45,
+              width: { xs: 40, md: 46 },
+              height: { xs: 40, md: 46 },
               boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
             }}
           >
@@ -338,7 +357,8 @@ const Navbar = () => {
               fontWeight="bold"
               sx={{
                 display: { xs: "none", sm: "block" },
-                letterSpacing: 0.5,
+                letterSpacing: 0.4,
+                fontSize: { sm: "1.05rem", md: "1.2rem" },
               }}
             >
               DillanciPro
@@ -357,7 +377,13 @@ const Navbar = () => {
         </Box>
 
         {user ? (
-          <Box display="flex" alignItems="center" gap={1}>
+          <Box
+            sx={{
+              display: { xs: "none", md: "flex" },
+              alignItems: "center",
+              gap: 1,
+            }}
+          >
             {/* Bouton Dashboard */}
             <Button
               color="inherit"
@@ -523,9 +549,8 @@ const Navbar = () => {
               )}
 
               {/* Menu spécifique Admin */}
-              {hasRole("Admin") && [
+              {hasRole("Admin") && (
                 <MenuItem
-                  key="admin-tarifs"
                   component={Link}
                   to="/admin/gestion-tarifs"
                   onClick={handleClose}
@@ -535,9 +560,10 @@ const Navbar = () => {
                     <AttachMoney fontSize="small" />
                   </ListItemIcon>
                   <ListItemText>Gestion Tarifs</ListItemText>
-                </MenuItem>,
+                </MenuItem>
+              )}
+              {hasRole("Admin") && (
                 <MenuItem
-                  key="admin-abonnements"
                   component={Link}
                   to="/admin/gestion-abonnements"
                   onClick={handleClose}
@@ -548,7 +574,7 @@ const Navbar = () => {
                   </ListItemIcon>
                   <ListItemText>Abonnements</ListItemText>
                 </MenuItem>
-              ]}
+              )}
 
               <Divider />
 
@@ -561,7 +587,12 @@ const Navbar = () => {
             </Menu>
           </Box>
         ) : (
-          <Box display="flex" gap={1}>
+          <Box
+            sx={{
+              display: { xs: "none", md: "flex" },
+              gap: 1,
+            }}
+          >
             <Button
               color="inherit"
               component={Link}
@@ -589,8 +620,183 @@ const Navbar = () => {
             </Button>
           </Box>
         )}
+
+        <Box
+          sx={{
+            display: { xs: "flex", md: "none" },
+            alignItems: "center",
+            gap: 0.5,
+          }}
+        >
+          {user && (
+            <>
+              <IconButton
+                color="inherit"
+                onClick={() => setNotificationPanelOpen(true)}
+              >
+                <Badge badgeContent={notificationCount} color="error">
+                  <Notifications />
+                </Badge>
+              </IconButton>
+              <IconButton
+                size="large"
+                edge="end"
+                onClick={handleMenu}
+                sx={{
+                  border: "2px solid rgba(255,255,255,0.3)",
+                }}
+              >
+                <Avatar
+                  src={profilePhoto}
+                  sx={{
+                    bgcolor: getRoleColor(),
+                    width: 34,
+                    height: 34,
+                    fontWeight: "bold",
+                  }}
+                >
+                  {!profilePhoto && (user.fullName || user.phone || "U").charAt(0).toUpperCase()}
+                </Avatar>
+              </IconButton>
+            </>
+          )}
+          <IconButton
+            color="inherit"
+            onClick={handleMobileMenuOpen}
+            aria-label="menu"
+            sx={{ ml: 0.5 }}
+          >
+            <MenuIcon />
+          </IconButton>
+        </Box>
       </Toolbar>
       </AppBar>
+      
+      <Menu
+        anchorEl={mobileMenuAnchor}
+        open={Boolean(mobileMenuAnchor)}
+        onClose={handleMobileMenuClose}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        transformOrigin={{ vertical: "top", horizontal: "right" }}
+        PaperProps={{
+          sx: {
+            mt: 1,
+            minWidth: 220,
+            borderRadius: 2,
+          },
+        }}
+      >
+        {user && (
+          <MenuItem
+            component={Link}
+            to={getDashboardPath()}
+            onClick={handleMobileMenuClose}
+          >
+            <ListItemIcon>
+              <Dashboard fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>Dashboard</ListItemText>
+          </MenuItem>
+        )}
+        {user && hasRole("Agence") && (
+          <MenuItem
+            component={Link}
+            to="/agence/dashboard"
+            onClick={handleMobileMenuClose}
+          >
+            <ListItemIcon>
+              <Business fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>Espace agence</ListItemText>
+          </MenuItem>
+        )}
+        {user && (
+          <MenuItem
+            onClick={() => {
+              setNotificationPanelOpen(true);
+              handleMobileMenuClose();
+            }}
+          >
+            <ListItemIcon>
+              <Notifications fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>Notifications</ListItemText>
+            {notificationCount > 0 && (
+              <Chip
+                size="small"
+                color="error"
+                label={notificationCount}
+                sx={{ ml: 1 }}
+              />
+            )}
+          </MenuItem>
+        )}
+        {user && <Divider sx={{ my: 1 }} />}
+        {user && (
+          <MenuItem
+            component={Link}
+            to="/profile"
+            onClick={handleMobileMenuClose}
+          >
+            <ListItemIcon>
+              <Person fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>Mon profil</ListItemText>
+          </MenuItem>
+        )}
+        {user && (hasRole("User") || hasRole("Client")) && (
+          <MenuItem
+            component={Link}
+            to="/user/mon-patrimoine"
+            onClick={handleMobileMenuClose}
+          >
+            <ListItemIcon>
+              <Landscape fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>Mon patrimoine</ListItemText>
+          </MenuItem>
+        )}
+        {user && <Divider sx={{ my: 1 }} />}
+        {user && (
+          <MenuItem onClick={handleMobileLogout} sx={{ color: "error.main" }}>
+            <ListItemIcon>
+              <Logout fontSize="small" color="error" />
+            </ListItemIcon>
+            <ListItemText>Déconnexion</ListItemText>
+          </MenuItem>
+        )}
+        {!user && (
+          <MenuItem
+            component={Link}
+            to="/login"
+            onClick={handleMobileMenuClose}
+          >
+            <ListItemText>Connexion</ListItemText>
+          </MenuItem>
+        )}
+        {!user && (
+          <MenuItem
+            component={Link}
+            to="/register"
+            onClick={handleMobileMenuClose}
+          >
+            <ListItemText>Inscription</ListItemText>
+          </MenuItem>
+        )}
+        {!user && <Divider sx={{ my: 1 }} />}
+        {!user && (
+          <MenuItem
+            component={Link}
+            to="/"
+            onClick={handleMobileMenuClose}
+          >
+            <ListItemIcon>
+              <Home fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>Accueil</ListItemText>
+          </MenuItem>
+        )}
+      </Menu>
       
       {/* Panel de notifications */}
       <NotificationPanel 

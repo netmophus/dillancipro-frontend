@@ -160,8 +160,12 @@ const CommercialProfilPage = () => {
           actif: typeof p.commission?.actif === "boolean" ? p.commission.actif : true,
         });
 
-        setPhotoUrl(p.photoUrl || "");
-        setPhotoPreview(p.photoUrl || "");
+        // Gérer l'URL de la photo (Cloudinary ou chemin local)
+        const photoUrlValue = p.photoUrl || "";
+        setPhotoUrl(photoUrlValue);
+        // Si c'est une URL Cloudinary (commence par http), l'utiliser directement
+        // Sinon, c'est un chemin local qui sera géré par le backend
+        setPhotoPreview(photoUrlValue);
 
         setPieceIdentite({
           typePiece: p.pieceIdentite?.typePiece || "AUTRE",
@@ -279,6 +283,18 @@ const CommercialProfilPage = () => {
     return exp < new Date();
   }, [pieceIdentite.dateExpiration]);
 
+  // Gérer l'URL de la photo (Cloudinary, chemin local, ou data URI)
+  const photoSrc = useMemo(() => {
+    const p = photoPreview || photoUrl;
+    if (!p) return undefined;
+    // Si c'est un data URI (base64), l'utiliser directement
+    if (p.startsWith("data:")) return p;
+    // Si c'est une URL Cloudinary (commence par http), l'utiliser directement
+    if (p.startsWith("http")) return p;
+    // Sinon, c'est un chemin local
+    return p.startsWith("/") ? p : `/${p}`;
+  }, [photoPreview, photoUrl]);
+
   // Si pas encore de commercial chargé (et pas d'ID dans l'URL)
   if (!id && !commercialLoaded) {
     return (
@@ -392,7 +408,7 @@ const CommercialProfilPage = () => {
 
           <Box display="flex" alignItems="center" gap={2}>
             <Avatar
-              src={photoPreview || photoUrl}
+              src={photoSrc}
               sx={{ bgcolor: "primary.main", width: 80, height: 80 }}
             >
               {(fullName || "U").charAt(0).toUpperCase()}
@@ -439,7 +455,7 @@ const CommercialProfilPage = () => {
                   <Grid item xs={12} md={3}>
                     <Box textAlign="center">
                       <Avatar
-                        src={photoPreview || photoUrl}
+                        src={photoSrc}
                         sx={{ width: 150, height: 150, margin: "0 auto", mb: 2 }}
                       >
                         {(fullName || "U").charAt(0).toUpperCase()}

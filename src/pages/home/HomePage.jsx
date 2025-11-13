@@ -620,27 +620,112 @@ const HomePage = () => {
           overflow: "hidden",
         }}
       >
-        <Container maxWidth="lg">
-          <Grid container spacing={4} alignItems="center">
-            <Grid item xs={12} md={6}>
+        <Container
+          maxWidth="lg"
+          sx={{
+            px: { xs: 1, sm: 3, md: 4 },
+          }}
+        >
+          <Grid
+            container
+            spacing={4}
+            alignItems="center"
+            justifyContent="space-between"
+          >
+            <Grid
+              item
+              xs={12}
+              md={6}
+              sx={{ textAlign: { xs: "center", md: "left" } }}
+            >
               <Chip
                 label="🆕 Plateforme Officielle"
-                sx={{ bgcolor: "rgba(255,255,255,0.2)", color: "white", mb: 2 }}
+                sx={{
+                  bgcolor: "rgba(255,255,255,0.2)",
+                  color: "white",
+                  mb: 2,
+                  mx: { xs: "auto", md: 0 },
+                  display: "inline-flex",
+                  fontSize: { xs: "clamp(0.7rem, 2.2vw, 0.85rem)", sm: "0.9rem" },
+                  px: { xs: 1.1, sm: 2 },
+                  py: { xs: 0.35, sm: 0.75 },
+                  borderRadius: 2.5,
+                  letterSpacing: 0.4,
+                }}
               />
-              <Typography variant="h2" fontWeight="bold" gutterBottom sx={{ fontSize: { xs: "2rem", md: "3rem" } }}>
+              <Typography
+                variant="h2"
+                component="h1"
+                fontWeight="bold"
+                gutterBottom
+                sx={{
+                  fontSize: {
+                    xs: "clamp(1.6rem, 6.5vw, 2.3rem)",
+                    sm: "clamp(2.2rem, 5.5vw, 3rem)",
+                    md: "clamp(2.8rem, 4vw, 3.6rem)",
+                  },
+                  lineHeight: { xs: 1.15, md: 1.2 },
+                  letterSpacing: { xs: 0.5, md: 1 },
+                }}
+              >
                 DillanciPro
               </Typography>
-              <Typography variant="h5" sx={{ mb: 2, opacity: 0.9, fontSize: { xs: "1.2rem", md: "1.5rem" } }}>
+              <Typography
+                variant="h5"
+                sx={{
+                  mb: 2,
+                  opacity: 0.9,
+                  fontSize: {
+                    xs: "clamp(0.95rem, 4.2vw, 1.25rem)",
+                    md: "clamp(1.35rem, 2.6vw, 1.6rem)",
+                  },
+                  lineHeight: { xs: 1.35, md: 1.4 },
+                }}
+              >
                 La plateforme de référence pour la gestion foncière et immobilière au Niger
               </Typography>
-              <Typography variant="h6" sx={{ mb: 3, opacity: 0.8, fontSize: { xs: "1rem", md: "1.2rem" }, fontStyle: "italic" }}>
+              <Typography
+                variant="h6"
+                sx={{
+                  mb: 3,
+                  opacity: 0.8,
+                  fontSize: {
+                    xs: "clamp(0.85rem, 3.2vw, 1rem)",
+                    md: "clamp(1.1rem, 2vw, 1.25rem)",
+                  },
+                  fontStyle: "italic",
+                  lineHeight: { xs: 1.4, md: 1.5 },
+                }}
+              >
                 Manhajar dillancin gidaje mai sauƙi da sauri
               </Typography>
-              <Typography variant="body1" sx={{ mb: 4, fontSize: "1.1rem", opacity: 0.85 }}>
-                Connectez agences immobilières, banques partenaires, gestion du patrimoine de l'État et particuliers 
+              <Typography
+                variant="body1"
+                sx={{
+                  mb: 4,
+                  fontSize: {
+                    xs: "clamp(0.85rem, 3.4vw, 1rem)",
+                    md: "clamp(1.05rem, 2vw, 1.15rem)",
+                  },
+                  opacity: 0.85,
+                  maxWidth: { xs: "100%", md: 520 },
+                  mx: { xs: "auto", md: 0 },
+                  lineHeight: { xs: 1.6, md: 1.7 },
+                }}
+              >
+                Connectez agences immobilières, banques partenaires, gestion du patrimoine de l'État et particuliers
                 sur une seule plateforme sécurisée et géolocalisée.
               </Typography>
-              <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+              <Stack
+                direction={{ xs: "column", sm: "row" }}
+                spacing={2}
+                sx={{
+                  width: { xs: "100%", sm: "auto" },
+                  alignItems: { xs: "stretch", sm: "center" },
+                  justifyContent: { sm: "flex-start" },
+                  gap: { xs: 1.5, sm: 2 },
+                }}
+              >
                 <Button
                   variant="contained"
                   size="large"
@@ -649,9 +734,18 @@ const HomePage = () => {
                     bgcolor: "white",
                     color: "primary.main",
                     fontWeight: "bold",
-                    px: 4,
-                    py: 1.5,
+                    px: { xs: 2.4, md: 4 },
+                    py: { xs: 1.2, md: 1.5 },
+                    width: { xs: "100%", sm: "auto" },
+                    fontSize: {
+                    xs: "clamp(0.75rem, 2.6vw, 0.9rem)",
+                      md: "clamp(1rem, 1.8vw, 1.08rem)",
+                    },
                     "&:hover": { bgcolor: "grey.100" },
+                    "& .MuiButton-endIcon": {
+                      ml: { xs: 0.5, md: 1 },
+                    },
+                    whiteSpace: { xs: "normal", sm: "nowrap" },
                   }}
                   endIcon={<AppRegistration />}
                 >
@@ -665,9 +759,18 @@ const HomePage = () => {
                     borderColor: "white",
                     color: "white",
                     fontWeight: "bold",
-                    px: 4,
-                    py: 1.5,
+                    px: { xs: 2.4, md: 4 },
+                    py: { xs: 1.2, md: 1.5 },
+                    width: { xs: "100%", sm: "auto" },
+                    fontSize: {
+                    xs: "clamp(0.75rem, 2.6vw, 0.9rem)",
+                      md: "clamp(1rem, 1.8vw, 1.08rem)",
+                    },
                     "&:hover": { borderColor: "white", bgcolor: "rgba(255,255,255,0.1)" },
+                    "& .MuiButton-endIcon": {
+                      ml: { xs: 0.5, md: 1 },
+                    },
+                    whiteSpace: { xs: "normal", sm: "nowrap" },
                   }}
                   endIcon={<Login />}
                 >
@@ -688,40 +791,96 @@ const HomePage = () => {
                 <Grid container spacing={2}>
                   <Grid item xs={6}>
                     <Box textAlign="center" p={2}>
-                      <Typography variant="h4" fontWeight="bold" color="primary">
+                      <Typography
+                        variant="h4"
+                        fontWeight="bold"
+                        color="primary"
+                        sx={{
+                          fontSize: { xs: "clamp(1.6rem, 6vw, 2.3rem)", md: "2.6rem" },
+                        }}
+                      >
                         {stats.agences}+
                       </Typography>
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{
+                          fontSize: { xs: "0.7rem", sm: "0.8rem", md: "0.9rem" },
+                          letterSpacing: 0.4,
+                        }}
+                      >
                         Agences
                       </Typography>
                     </Box>
                   </Grid>
                   <Grid item xs={6}>
                     <Box textAlign="center" p={2}>
-                      <Typography variant="h4" fontWeight="bold" color="success.main">
+                      <Typography
+                        variant="h4"
+                        fontWeight="bold"
+                        color="success.main"
+                        sx={{
+                          fontSize: { xs: "clamp(1.6rem, 6vw, 2.3rem)", md: "2.6rem" },
+                        }}
+                      >
                         {stats.parcelles}+
                       </Typography>
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{
+                          fontSize: { xs: "0.7rem", sm: "0.8rem", md: "0.9rem" },
+                          letterSpacing: 0.4,
+                        }}
+                      >
                         Parcelles
                       </Typography>
                     </Box>
                   </Grid>
                   <Grid item xs={6}>
                     <Box textAlign="center" p={2}>
-                      <Typography variant="h4" fontWeight="bold" color="warning.main">
+                      <Typography
+                        variant="h4"
+                        fontWeight="bold"
+                        color="warning.main"
+                        sx={{
+                          fontSize: { xs: "clamp(1.6rem, 6vw, 2.3rem)", md: "2.6rem" },
+                        }}
+                      >
                         {stats.biens}+
                       </Typography>
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{
+                          fontSize: { xs: "0.7rem", sm: "0.8rem", md: "0.9rem" },
+                          letterSpacing: 0.4,
+                        }}
+                      >
                         Biens
                       </Typography>
                     </Box>
                   </Grid>
                   <Grid item xs={6}>
                     <Box textAlign="center" p={2}>
-                      <Typography variant="h4" fontWeight="bold" color="error.main">
+                      <Typography
+                        variant="h4"
+                        fontWeight="bold"
+                        color="error.main"
+                        sx={{
+                          fontSize: { xs: "clamp(1.6rem, 6vw, 2.3rem)", md: "2.6rem" },
+                        }}
+                      >
                         {stats.clients}+
                       </Typography>
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{
+                          fontSize: { xs: "0.7rem", sm: "0.8rem", md: "0.9rem" },
+                          letterSpacing: 0.4,
+                        }}
+                      >
                         Clients
                       </Typography>
                     </Box>
@@ -747,11 +906,44 @@ const HomePage = () => {
       </Box>
 
       {/* Features Section */}
-      <Container maxWidth="lg" sx={{ py: 8 }}>
-        <Typography variant="h4" fontWeight="bold" textAlign="center" gutterBottom>
+      <Container
+        maxWidth="lg"
+        sx={{
+          py: { xs: 6, md: 8 },
+          px: { xs: 2, sm: 3 },
+        }}
+      >
+        <Typography
+          variant="h4"
+          fontWeight="bold"
+          textAlign="center"
+          gutterBottom
+          sx={{
+            fontSize: {
+              xs: "clamp(1.6rem, 7vw, 2.2rem)",
+              md: "clamp(2.2rem, 4vw, 2.6rem)",
+            },
+            mb: { xs: 2.5, md: 3 },
+          }}
+        >
           🌟 Pourquoi choisir DillanciPro ?
         </Typography>
-        <Typography variant="body1" textAlign="center" color="text.secondary" sx={{ mb: 6, maxWidth: 700, mx: "auto" }}>
+        <Typography
+          variant="body1"
+          textAlign="center"
+          color="text.secondary"
+          sx={{
+            mb: { xs: 4, md: 6 },
+            maxWidth: 720,
+            mx: "auto",
+            fontSize: {
+              xs: "clamp(0.9rem, 3.4vw, 1.05rem)",
+              md: "clamp(1.05rem, 2.4vw, 1.15rem)",
+            },
+            lineHeight: { xs: 1.5, md: 1.65 },
+            px: { xs: 1, md: 0 },
+          }}
+        >
           Une plateforme tout-en-un pour simplifier et sécuriser toutes vos transactions foncières et immobilières
         </Typography>
 
@@ -761,9 +953,10 @@ const HomePage = () => {
             gridTemplateColumns: {
               xs: "1fr",
               sm: "repeat(2, 1fr)",
+              md: "repeat(3, 1fr)",
             },
-            gap: 4,
-            maxWidth: 800,
+            gap: { xs: 3, md: 4 },
+            maxWidth: 1024,
             mx: "auto",
           }}
         >
@@ -772,33 +965,66 @@ const HomePage = () => {
               key={index}
               elevation={3}
               sx={{
-                height: 280,
+                minHeight: { xs: 220, md: 260 },
                 textAlign: "center",
                 transition: "all 0.3s",
                 display: "flex",
                 flexDirection: "column",
+                borderRadius: 3,
+                boxShadow: { xs: 2, md: 4 },
+                mb: { xs: 2.5, sm: 0 },
                 "&:hover": {
                   transform: "translateY(-8px)",
                   boxShadow: 6,
                 },
               }}
             >
-              <CardContent sx={{ p: 3, flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+              <CardContent
+                sx={{
+                  p: { xs: 3, md: 3.5 },
+                  flex: 1,
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  gap: { xs: 1.5, md: 2 },
+                }}
+              >
                 <Avatar
                   sx={{
                     bgcolor: feature.color,
-                    width: 70,
-                    height: 70,
+                    width: { xs: 58, md: 68 },
+                    height: { xs: 58, md: 68 },
                     mx: "auto",
                     mb: 2,
                   }}
                 >
                   {feature.icon}
                 </Avatar>
-                <Typography variant="h6" fontWeight="bold" gutterBottom>
+                <Typography
+                  variant="h6"
+                  fontWeight="bold"
+                  gutterBottom
+                  sx={{
+                    fontSize: {
+                      xs: "clamp(1rem, 3.8vw, 1.15rem)",
+                      md: "clamp(1.1rem, 2.2vw, 1.3rem)",
+                    },
+                  }}
+                >
                   {feature.title}
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{
+                    fontSize: {
+                      xs: "clamp(0.85rem, 3.2vw, 0.98rem)",
+                      md: "clamp(0.95rem, 1.9vw, 1.05rem)",
+                    },
+                    lineHeight: { xs: 1.5, md: 1.65 },
+                  }}
+                >
                   {feature.description}
                 </Typography>
               </CardContent>
@@ -810,14 +1036,43 @@ const HomePage = () => {
      
 
    {/* Agences Partenaires Section */}
-      <Box sx={{ bgcolor: "grey.50", py: 8 }}>
-        <Container maxWidth="lg">
-          <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
+      <Box sx={{ bgcolor: "grey.50", py: { xs: 6, md: 8 } }}>
+        <Container maxWidth="lg" sx={{ px: { xs: 2, sm: 3 } }}>
+          <Box
+            display="flex"
+            flexDirection={{ xs: "column", md: "row" }}
+            justifyContent="space-between"
+            alignItems={{ xs: "flex-start", md: "center" }}
+            mb={{ xs: 3, md: 4 }}
+            gap={2}
+          >
             <Box>
-              <Typography variant="h4" fontWeight="bold" gutterBottom sx={{ fontSize: "1.875rem" }}>
+              <Typography
+                variant="h4"
+                fontWeight="bold"
+                gutterBottom
+                sx={{
+                  fontSize: {
+                    xs: "clamp(1.6rem, 7vw, 2.2rem)",
+                    md: "clamp(2.1rem, 4vw, 2.6rem)",
+                  },
+                  lineHeight: { xs: 1.2, md: 1.25 },
+                }}
+              >
                 🏢 Agences Immobilières Partenaires
               </Typography>
-              <Typography variant="body1" color="text.secondary">
+              <Typography
+                variant="body1"
+                color="text.secondary"
+                sx={{
+                  fontSize: {
+                    xs: "clamp(0.9rem, 3.3vw, 1.05rem)",
+                    md: "clamp(1.05rem, 2.2vw, 1.15rem)",
+                  },
+                  lineHeight: { xs: 1.55, md: 1.6 },
+                  maxWidth: 520,
+                }}
+              >
                 Des professionnels certifiés à votre service
               </Typography>
             </Box>
@@ -825,13 +1080,30 @@ const HomePage = () => {
               variant="contained"
               endIcon={<ArrowForward />}
               onClick={() => setOpenPartenaireDialog(true)}
-              sx={{ display: { xs: "none", md: "flex" } }}
+              sx={{
+                alignSelf: { xs: "stretch", md: "center" },
+                display: "inline-flex",
+                justifyContent: "center",
+                fontWeight: "bold",
+                px: { xs: 2.5, md: 3.5 },
+                py: { xs: 1.1, md: 1.2 },
+                fontSize: {
+                  xs: "clamp(0.85rem, 3vw, 0.95rem)",
+                  md: "clamp(0.95rem, 2vw, 1.05rem)",
+                },
+              }}
             >
               Devenir partenaire
             </Button>
           </Box>
 
-          <Grid container spacing={3} sx={{ alignItems: "stretch" }}>
+          <Grid
+            container
+            spacing={{ xs: 2.5, md: 3 }}
+            sx={{
+              alignItems: "stretch",
+            }}
+          >
             {loadingHomepageAgences ? (
               <Grid item xs={12}>
                 <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: 160 }}>
@@ -845,39 +1117,74 @@ const HomePage = () => {
               </Grid>
             ) : (
               homepageAgences.slice(0, agencesVisibleCount).map((agence, index) => (
-                <Grid item xs={12} sm={6} md={4} key={agence.id || index} sx={{ display: "flex" }}>
+                <Grid
+                  item
+                  xs={12}
+                  sm={6}
+                  md={4}
+                  key={agence.id || index}
+                  sx={{ display: "flex" }}
+                >
                   <Card
                     elevation={3}
                     sx={{
                       height: "100%",
                       width: "100%",
                       maxWidth: "100%",
-                      mb: 3,
+                      mb: { xs: 3, sm: 0 },
                       transition: "all 0.3s",
                       display: "flex",
                       flexDirection: "column",
+                      borderRadius: 3,
+                      boxShadow: { xs: 2, md: 4 },
                       "&:hover": {
                         transform: "translateY(-6px)",
                         boxShadow: 6,
                       },
                     }}
                   >
-                    <CardContent sx={{ flexGrow: 1, display: "flex", flexDirection: "column", p: 2.5, overflow: "hidden", minWidth: 0 }}>
+                    <CardContent
+                      sx={{
+                        flexGrow: 1,
+                        display: "flex",
+                        flexDirection: "column",
+                        p: { xs: 2.5, md: 3 },
+                        gap: { xs: 2, md: 2.5 },
+                        overflow: "hidden",
+                        minWidth: 0,
+                      }}
+                    >
                       {/* En-tête avec logo et nom */}
-                      <Box display="flex" alignItems="flex-start" gap={2} mb={2}>
+                      <Box
+                        display="flex"
+                        alignItems="flex-start"
+                        gap={{ xs: 1.5, md: 2 }}
+                        mb={{ xs: 1.5, md: 2 }}
+                      >
                         <Avatar 
                           src={agence.logo || undefined} 
                           sx={{ 
                             bgcolor: "primary.main", 
-                            width: 56, 
-                            height: 56,
+                            width: { xs: 50, md: 56 }, 
+                            height: { xs: 50, md: 56 },
                             boxShadow: 2
                           }}
                         >
                           <Business />
                         </Avatar>
                         <Box flex={1} minWidth={0}>
-                          <Typography variant="h6" fontWeight="bold" gutterBottom noWrap>
+                          <Typography
+                            variant="h6"
+                            fontWeight="bold"
+                            gutterBottom
+                            noWrap
+                            sx={{
+                              fontSize: {
+                                xs: "clamp(1rem, 3.2vw, 1.2rem)",
+                                md: "clamp(1.1rem, 2.2vw, 1.3rem)",
+                              },
+                            }}
+                          >
                             {agence.nom}
                           </Typography>
                           {agence.statutJuridique && (
@@ -886,7 +1193,13 @@ const HomePage = () => {
                               size="small" 
                               color="primary"
                               variant="outlined"
-                              sx={{ mb: 0.5, fontSize: "0.7rem" }}
+                              sx={{
+                                mb: 0.5,
+                                fontSize: {
+                                  xs: "0.68rem",
+                                  md: "0.72rem",
+                                },
+                              }}
                             />
                           )}
                           {agence.statut && (
@@ -894,7 +1207,13 @@ const HomePage = () => {
                               label={agence.statut === "actif" ? "✅ Actif" : agence.statut === "en_attente" ? "⏳ En attente" : agence.statut}
                               size="small"
                               color={agence.statut === "actif" ? "success" : agence.statut === "en_attente" ? "warning" : "default"}
-                              sx={{ ml: 0.5, fontSize: "0.65rem" }}
+                              sx={{
+                                ml: 0.5,
+                                fontSize: {
+                                  xs: "0.62rem",
+                                  md: "0.68rem",
+                                },
+                              }}
                             />
                           )}
                         </Box>
@@ -909,8 +1228,8 @@ const HomePage = () => {
                             variant="body2" 
                             color="text.secondary" 
                             sx={{ 
-                              mb: 2, 
-                              lineHeight: 1.5,
+                              mb: { xs: 1.5, md: 2 }, 
+                              lineHeight: { xs: 1.45, md: 1.55 },
                               display: "-webkit-box",
                               WebkitLineClamp: 2,
                               WebkitBoxOrient: "vertical",
@@ -923,15 +1242,43 @@ const HomePage = () => {
 
                         {/* Adresse */}
                         {(agence.adresse || agence.ville) && (
-                          <Box display="flex" alignItems="flex-start" gap={1} mb={1.5}>
-                            <Typography variant="body2" color="text.primary" sx={{ minWidth: "20px" }}>
+                          <Box
+                            display="flex"
+                            alignItems="flex-start"
+                            gap={1}
+                            mb={{ xs: 1.2, md: 1.5 }}
+                          >
+                            <Typography
+                              variant="body2"
+                              color="text.primary"
+                              sx={{ minWidth: "18px" }}
+                            >
                               📍
                             </Typography>
                             <Box flex={1}>
-                              <Typography variant="body2" color="text.primary" fontWeight="medium">
+                              <Typography
+                                variant="body2"
+                                color="text.primary"
+                                fontWeight="medium"
+                                sx={{
+                                  fontSize: {
+                                    xs: "clamp(0.88rem, 3vw, 0.95rem)",
+                                    md: "clamp(0.95rem, 2vw, 1.05rem)",
+                                  },
+                                }}
+                              >
                                 {agence.adresse && agence.adresse !== "-" ? agence.adresse : ""}
                               </Typography>
-                              <Typography variant="caption" color="text.secondary">
+                              <Typography
+                                variant="caption"
+                                color="text.secondary"
+                                sx={{
+                                  fontSize: {
+                                    xs: "0.7rem",
+                                    md: "0.75rem",
+                                  },
+                                }}
+                              >
                                 {agence.ville} {agence.pays && agence.pays !== "-" ? `, ${agence.pays}` : ""}
                               </Typography>
                             </Box>
@@ -1047,62 +1394,162 @@ const HomePage = () => {
 
 
       {/* Banques Partenaires Section */}
-      <Container maxWidth="lg" sx={{ py: 8 }}>
-        <Typography variant="h4" fontWeight="bold" textAlign="center" gutterBottom>
+      <Container
+        maxWidth="lg"
+        sx={{
+          py: { xs: 6, md: 8 },
+          px: { xs: 2, sm: 3 },
+        }}
+      >
+        <Typography
+          variant="h4"
+          fontWeight="bold"
+          textAlign="center"
+          gutterBottom
+          sx={{ fontSize: { xs: "2rem", md: "2.5rem" } }}
+        >
           🏦 Banques Partenaires
         </Typography>
-        <Typography variant="body1" textAlign="center" color="text.secondary" sx={{ mb: 6 }}>
+        <Typography
+          variant="body1"
+          textAlign="center"
+          color="text.secondary"
+          sx={{
+            mb: { xs: 4, md: 6 },
+            maxWidth: 640,
+            mx: "auto",
+            fontSize: { xs: "0.95rem", md: "1.05rem" },
+          }}
+        >
           Financez votre projet immobilier avec nos partenaires financiers
         </Typography>
 
-        <Grid container spacing={3}>
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: {
+              xs: "1fr",
+              sm: "repeat(2, 1fr)",
+              md: "repeat(3, 1fr)",
+            },
+            gap: 4,
+            maxWidth: 1000,
+            mx: "auto",
+          }}
+        >
           {banquesPartenaires.map((banque, index) => (
-            <Grid item xs={12} sm={6} md={3} key={index}>
-              <Card
-                elevation={3}
+            <Card
+              key={index}
+              elevation={3}
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                textAlign: "center",
+                height: 280,
+                borderRadius: 3,
+                transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                boxShadow: 4,
+                "&:hover": {
+                  transform: "translateY(-6px)",
+                  boxShadow: 8,
+                },
+              }}
+            >
+              <CardContent
                 sx={{
-                  textAlign: "center",
-                  p: 3,
-                  transition: "all 0.3s",
-                  "&:hover": {
-                    transform: "scale(1.05)",
-                    boxShadow: 6,
-                  },
+                  p: { xs: 3, md: 4 },
+                  flex: 1,
+                  width: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 2,
                 }}
               >
                 <Avatar
                   sx={{
                     bgcolor: "success.main",
-                    width: 60,
-                    height: 60,
-                    mx: "auto",
-                    mb: 2,
+                    width: { xs: 64, md: 70 },
+                    height: { xs: 64, md: 70 },
+                    mb: 1,
                   }}
-                >
-                  <AccountBalance fontSize="large" />
+              >
+                  <AccountBalance sx={{ color: "white", fontSize: 32 }} />
                 </Avatar>
-                <Typography variant="h6" fontWeight="bold" gutterBottom>
+                <Typography
+                  variant="h6"
+                  fontWeight="bold"
+                  sx={{ fontSize: { xs: "1.1rem", md: "1.25rem" } }}
+                >
                   {banque.nom}
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{
+                    fontSize: { xs: "0.95rem", md: "1rem" },
+                    lineHeight: 1.6,
+                    textAlign: "center",
+                  }}
+                >
                   {banque.services}
                 </Typography>
-              </Card>
-            </Grid>
+              </CardContent>
+            </Card>
           ))}
-        </Grid>
+        </Box>
       </Container>
 
       {/* Notaires Partenaires Section */}
-      <Container maxWidth="lg" sx={{ py: 8 }}>
-        <Typography variant="h4" fontWeight="bold" textAlign="center" gutterBottom>
+      <Container
+        maxWidth="lg"
+        sx={{
+          py: { xs: 6, md: 8 },
+          px: { xs: 2, sm: 3 },
+        }}
+      >
+        <Typography
+          variant="h4"
+          fontWeight="bold"
+          textAlign="center"
+          gutterBottom
+          sx={{
+            fontSize: {
+              xs: "clamp(1.6rem, 6.8vw, 2.2rem)",
+              md: "clamp(2.2rem, 4vw, 2.6rem)",
+            },
+            mb: { xs: 2.5, md: 3 },
+          }}
+        >
           ⚖️ Notaires Partenaires
         </Typography>
-        <Typography variant="body1" textAlign="center" color="text.secondary" sx={{ mb: 6 }}>
+        <Typography
+          variant="body1"
+          textAlign="center"
+          color="text.secondary"
+          sx={{
+            mb: { xs: 4.5, md: 6 },
+            fontSize: {
+              xs: "clamp(0.92rem, 3.4vw, 1.05rem)",
+              md: "clamp(1.05rem, 2.3vw, 1.15rem)",
+            },
+            lineHeight: { xs: 1.55, md: 1.65 },
+            maxWidth: 720,
+            mx: "auto",
+          }}
+        >
           Faites confiance à nos notaires partenaires pour vos transactions immobilières
         </Typography>
 
-        <Grid container spacing={3}>
+        <Grid
+          container
+          spacing={{ xs: 6, md: 4, lg: 4.5 }}
+          sx={{
+            alignItems: "stretch",
+          }}
+        >
           {loadingHomepageNotaires ? (
             <Grid item xs={12}>
               <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: 200 }}>
@@ -1116,18 +1563,35 @@ const HomePage = () => {
             </Grid>
           ) : (
             homepageNotaires.map((notaire, index) => (
-              <Grid item xs={12} sm={6} md={4} lg={3} key={notaire._id || index}>
+              <Grid
+                item
+                xs={12}
+                sm={6}
+                md={4}
+                lg={3}
+                key={notaire._id || index}
+                sx={{
+                  display: "flex",
+                }}
+              >
                 <Card
                   elevation={3}
                   sx={{
                     textAlign: "center",
-                    p: 3,
+                    p: { xs: 2.5, md: 3 },
                     height: "100%",
                     transition: "all 0.3s",
                     display: "flex",
                     flexDirection: "column",
+                    borderRadius: 3,
+                    boxShadow: { xs: 2, md: 4 },
+                    mb: { xs: 6, sm: 0 },
                     "&:hover": {
-                      transform: "scale(1.05)",
+                      transform: {
+                        xs: "none",
+                        sm: "translateY(-6px)",
+                        md: "scale(1.05)",
+                      },
                       boxShadow: 6,
                     },
                   }}
@@ -1135,28 +1599,62 @@ const HomePage = () => {
                   <Avatar
                     sx={{
                       bgcolor: "primary.main",
-                      width: 70,
-                      height: 70,
+                      width: { xs: 60, md: 70 },
+                      height: { xs: 60, md: 70 },
                       mx: "auto",
                       mb: 2,
-                      fontSize: "2rem",
+                      fontSize: { xs: "1.8rem", md: "2rem" },
                     }}
                   >
                     ⚖️
                   </Avatar>
-                  <Typography variant="h6" fontWeight="bold" gutterBottom>
+                  <Typography
+                    variant="h6"
+                    fontWeight="bold"
+                    gutterBottom
+                    sx={{
+                      fontSize: {
+                        xs: "clamp(1rem, 3.4vw, 1.2rem)",
+                        md: "clamp(1.1rem, 2.2vw, 1.3rem)",
+                      },
+                    }}
+                  >
                     {notaire.fullName || "Notaire"}
                   </Typography>
                   {notaire.cabinetName && (
-                    <Typography variant="body2" color="primary.main" fontWeight="500" gutterBottom>
+                    <Typography
+                      variant="body2"
+                      color="primary.main"
+                      fontWeight="500"
+                      gutterBottom
+                      sx={{
+                        fontSize: {
+                          xs: "clamp(0.88rem, 3vw, 0.98rem)",
+                          md: "1rem",
+                        },
+                      }}
+                    >
                       {notaire.cabinetName}
                     </Typography>
                   )}
-                  <Stack spacing={1} mt={2} sx={{ flexGrow: 1 }}>
+                  <Stack
+                    spacing={1}
+                    mt={2}
+                    sx={{ flexGrow: 1 }}
+                  >
                     {notaire.ville && (
                       <Box display="flex" alignItems="center" justifyContent="center" gap={1}>
                         <LocationOn fontSize="small" color="action" />
-                        <Typography variant="body2" color="text.secondary">
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{
+                            fontSize: {
+                              xs: "0.9rem",
+                              md: "1rem",
+                            },
+                          }}
+                        >
                           {notaire.ville}
                           {notaire.quartier && `, ${notaire.quartier}`}
                         </Typography>
@@ -1173,7 +1671,16 @@ const HomePage = () => {
                     {notaire.email && (
                       <Box display="flex" alignItems="center" justifyContent="center" gap={1}>
                         <Email fontSize="small" color="action" />
-                        <Typography variant="body2" color="text.secondary" sx={{ fontSize: "0.75rem" }}>
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{
+                            fontSize: {
+                              xs: "0.72rem",
+                              md: "0.78rem",
+                            },
+                          }}
+                        >
                           {notaire.email}
                         </Typography>
                       </Box>
@@ -1183,7 +1690,13 @@ const HomePage = () => {
                     label="Notaire Certifié"
                     color="success"
                     size="small"
-                    sx={{ mt: 2 }}
+                    sx={{
+                      mt: 2,
+                      fontSize: {
+                        xs: "0.68rem",
+                        md: "0.72rem",
+                      },
+                    }}
                   />
                 </Card>
               </Grid>
@@ -1734,16 +2247,54 @@ const HomePage = () => {
       </Box>
 
       {/* Biens Immobiliers Section */}
-      <Container maxWidth="lg" sx={{ py: 8 }}>
-        <Typography variant="h4" fontWeight="bold" textAlign="center" gutterBottom>
+      <Container
+        maxWidth="lg"
+        sx={{
+          py: { xs: 6, md: 8 },
+          px: { xs: 2, sm: 3 },
+        }}
+      >
+        <Typography
+          variant="h4"
+          fontWeight="bold"
+          textAlign="center"
+          gutterBottom
+          sx={{
+            fontSize: {
+              xs: "clamp(1.6rem, 6.5vw, 2.2rem)",
+              md: "clamp(2.2rem, 4vw, 2.6rem)",
+            },
+            mb: { xs: 2.5, md: 3 },
+          }}
+        >
           🏠 Biens Immobiliers à vendre
         </Typography>
-        <Typography variant="body1" textAlign="center" color="text.secondary" sx={{ mb: 6 }}>
+        <Typography
+          variant="body1"
+          textAlign="center"
+          color="text.secondary"
+          sx={{
+            mb: { xs: 4, md: 6 },
+            fontSize: {
+              xs: "clamp(0.92rem, 3.4vw, 1.05rem)",
+              md: "clamp(1.05rem, 2.3vw, 1.15rem)",
+            },
+            lineHeight: { xs: 1.55, md: 1.65 },
+            maxWidth: 720,
+            mx: "auto",
+          }}
+        >
           Villas, appartements et maisons de qualité
         </Typography>
 
         {/* Carrousel des biens immobiliers */}
-        <Box sx={{ position: "relative", maxWidth: 1200, mx: "auto" }}>
+        <Box
+          sx={{
+            position: "relative",
+            maxWidth: 1200,
+            mx: "auto",
+          }}
+        >
           {loadingHomepageBiens ? (
             <Box sx={{ 
               display: "flex", 
@@ -1771,7 +2322,7 @@ const HomePage = () => {
                 <Box
                   sx={{
                     display: "flex",
-                    gap: 3,
+                    gap: { xs: 3.5, md: 3 },
                     transition: "transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)",
                     transform: {
                       xs: `translateX(-${biensCarouselIndex * 100}%)`,
@@ -1779,6 +2330,7 @@ const HomePage = () => {
                       md: `translateX(-${biensCarouselIndex * 33.333}%)`,
                     },
                     willChange: "transform",
+                    pb: { xs: 1, md: 0 },
                   }}
                 >
                   {homepageBiens.map((bien, index) => {
@@ -1787,10 +2339,11 @@ const HomePage = () => {
                         key={bien.id || index}
                         elevation={8}
                         sx={{
-                          minWidth: { xs: "100%", sm: "calc(50% - 12px)", md: "calc(33.333% - 16px)" },
-                          maxWidth: { xs: "100%", sm: "calc(50% - 12px)", md: "calc(33.333% - 16px)" },
-                          width: { xs: "100%", sm: "calc(50% - 12px)", md: "calc(33.333% - 16px)" },
-                          height: 500,
+                          minWidth: { xs: "calc(100% - 4px)", sm: "calc(50% - 18px)", md: "calc(33.333% - 20px)" },
+                          maxWidth: { xs: "calc(100% - 4px)", sm: "calc(50% - 18px)", md: "calc(33.333% - 20px)" },
+                          width: { xs: "calc(100% - 4px)", sm: "calc(50% - 18px)", md: "calc(33.333% - 20px)" },
+                          height: { xs: "auto", md: 500 },
+                          minHeight: { xs: 440, md: 500 },
                           transition: "transform 0.3s ease, box-shadow 0.3s ease",
                           display: "flex",
                           flexDirection: "column",
@@ -1799,15 +2352,15 @@ const HomePage = () => {
                           background: "white",
                           flexShrink: 0,
                           "&:hover": { 
-                            transform: "translateY(-8px)", 
-                            boxShadow: "0 20px 40px rgba(0,0,0,0.15)" 
+                            transform: { xs: "none", md: "translateY(-8px)" }, 
+                            boxShadow: { xs: "0 12px 30px rgba(0,0,0,0.12)", md: "0 20px 40px rgba(0,0,0,0.15)" } 
                           },
                         }}
                       >
                 {/* Image du bien */}
                 <Box
                   sx={{
-                    height: 250,
+                    height: { xs: 220, md: 250 },
                     background: `linear-gradient(135deg, ${bien.gradient[0]} 0%, ${bien.gradient[1]} 100%)`,
                     position: "relative",
                     overflow: "hidden"
@@ -1832,8 +2385,8 @@ const HomePage = () => {
                       right: 16,
                       background: "rgba(255, 255, 255, 0.9)",
                       borderRadius: 2,
-                      px: 2,
-                      py: 1
+                      px: { xs: 1.5, md: 2 },
+                      py: { xs: 0.8, md: 1 }
                     }}
                   >
                     <Typography variant="caption" fontWeight="bold" color="primary.main">
@@ -1842,25 +2395,53 @@ const HomePage = () => {
                   </Box>
                 </Box>
 
-                <CardContent sx={{ p: 3, flex: 1, display: "flex", flexDirection: "column" }}>
-                  <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ 
-                    color: "text.primary",
-                    lineHeight: 1.3,
-                    mb: 2
-                  }}>
+                <CardContent
+                  sx={{
+                    p: { xs: 2.5, md: 3 },
+                    flex: 1,
+                    display: "flex",
+                    flexDirection: "column",
+                  }}
+                >
+                  <Typography
+                    variant="h6"
+                    fontWeight="bold"
+                    gutterBottom
+                    sx={{ 
+                      color: "text.primary",
+                      lineHeight: 1.3,
+                      mb: 2,
+                      fontSize: {
+                        xs: "clamp(1.05rem, 3.8vw, 1.25rem)",
+                        md: "1.3rem",
+                      },
+                    }}
+                  >
                     {bien.titre}
                   </Typography>
 
                   <Stack spacing={1.5} mb={3}>
                     <Box display="flex" alignItems="center" gap={1}>
                       <LocationOn fontSize="small" color="primary" />
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{
+                          fontSize: { xs: "0.95rem", md: "1rem" },
+                        }}
+                      >
                         {bien.ville}
                       </Typography>
                     </Box>
                     <Box display="flex" alignItems="center" gap={1}>
                       <Home fontSize="small" color="primary" />
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{
+                          fontSize: { xs: "0.95rem", md: "1rem" },
+                        }}
+                      >
                         {bien.superficie} m²
                       </Typography>
                     </Box>
@@ -1875,7 +2456,18 @@ const HomePage = () => {
 
                   <Divider sx={{ my: 2 }} />
 
-                  <Typography variant="h5" color="primary" fontWeight="bold" gutterBottom>
+                  <Typography
+                    variant="h5"
+                    color="primary"
+                    fontWeight="bold"
+                    gutterBottom
+                    sx={{
+                      fontSize: {
+                        xs: "clamp(1.3rem, 4vw, 1.6rem)",
+                        md: "1.75rem",
+                      },
+                    }}
+                  >
                     {formatMoney(bien.prix)}
                   </Typography>
 
@@ -1887,14 +2479,18 @@ const HomePage = () => {
                     onClick={() => handleOpenBienDetails(bien)}
                     sx={{ 
                       mt: "auto",
-                      py: 1.5,
+                      py: { xs: 1.2, md: 1.5 },
                       borderRadius: 2,
                       textTransform: "none",
                       fontWeight: "bold",
+                      fontSize: {
+                        xs: "clamp(0.9rem, 2.6vw, 1rem)",
+                        md: "1rem",
+                      },
                       background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                       "&:hover": {
                         background: "linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)",
-                        transform: "translateY(-2px)"
+                        transform: { xs: "none", md: "translateY(-2px)" }
                       }
                     }}
                   >
@@ -1914,8 +2510,8 @@ const HomePage = () => {
                     display: "flex",
                     justifyContent: "center",
                     alignItems: "center",
-                    gap: 2,
-                    mt: 4,
+                    gap: { xs: 1.5, md: 2 },
+                    mt: { xs: 3.5, md: 4 },
                   }}
                 >
                   <IconButton
@@ -1925,7 +2521,7 @@ const HomePage = () => {
                     sx={{
                       bgcolor: "primary.main",
                       color: "white",
-                      "&:hover": { bgcolor: "primary.dark", transform: "scale(1.1)" },
+                      "&:hover": { bgcolor: "primary.dark", transform: { xs: "none", md: "scale(1.1)" } },
                       "&:disabled": { bgcolor: "grey.300", cursor: "not-allowed" },
                       transition: "all 0.3s",
                     }}
@@ -1944,7 +2540,7 @@ const HomePage = () => {
                     sx={{
                       bgcolor: "primary.main",
                       color: "white",
-                      "&:hover": { bgcolor: "primary.dark", transform: "scale(1.1)" },
+                      "&:hover": { bgcolor: "primary.dark", transform: { xs: "none", md: "scale(1.1)" } },
                       "&:disabled": { bgcolor: "grey.300", cursor: "not-allowed" },
                       transition: "all 0.3s",
                     }}
