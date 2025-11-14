@@ -27,6 +27,8 @@ import {
   Pagination,
   CircularProgress,
   Alert,
+  Tabs,
+  Tab,
 } from "@mui/material";
 import {
   Business,
@@ -87,9 +89,14 @@ const HomePage = () => {
   const [homepageAgences, setHomepageAgences] = useState([]);
   const [loadingHomepageAgences, setLoadingHomepageAgences] = useState(false);
   const [homepageParcelles, setHomepageParcelles] = useState([]);
+  const [parcellesByAgence, setParcellesByAgence] = useState({}); // Parcelles groupées par agence
+  const [agencesList, setAgencesList] = useState([]); // Liste des agences avec parcelles
+  const [selectedAgenceId, setSelectedAgenceId] = useState("all"); // ID de l'agence sélectionnée ("all" pour toutes)
   const [loadingHomepageParcelles, setLoadingHomepageParcelles] = useState(false);
   const [selectedParcelle, setSelectedParcelle] = useState(null);
   const [openParcelleDrawer, setOpenParcelleDrawer] = useState(false);
+  const parcellesPerAgence = 6; // Nombre de parcelles à afficher par agence sur la homepage
+  const [carouselIndices, setCarouselIndices] = useState({}); // Indices de carrousel pour chaque agence
   const [homepageNotaires, setHomepageNotaires] = useState([]);
   const [loadingHomepageNotaires, setLoadingHomepageNotaires] = useState(false);
   
@@ -107,6 +114,8 @@ const HomePage = () => {
   
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const isTablet = useMediaQuery(theme.breakpoints.between("sm", "md"));
+  const isDesktop = useMediaQuery(theme.breakpoints.up("md"));
 
   // Fonction pour ouvrir le drawer avec les détails d'une location
   const handleOpenLocationDetails = (location) => {
@@ -470,9 +479,41 @@ const HomePage = () => {
         longitude: p.localisation?.lng || p.localisation?.longitude || null,
       }));
       
+      // Grouper les parcelles par agence
+      const groupedByAgence = {};
+      const agencesMap = new Map();
+      
+      transformed.forEach((parcelle) => {
+        const agenceId = parcelle.agenceId || "sans-agence";
+        const agenceNom = parcelle.agenceNom || "Sans agence";
+        
+        if (!groupedByAgence[agenceId]) {
+          groupedByAgence[agenceId] = [];
+          agencesMap.set(agenceId, {
+            id: agenceId,
+            nom: agenceNom,
+            ville: parcelle.agenceVille || "",
+            telephone: parcelle.agenceTelephone || "",
+            count: 0,
+          });
+        }
+        
+        groupedByAgence[agenceId].push(parcelle);
+        const agence = agencesMap.get(agenceId);
+        agence.count = groupedByAgence[agenceId].length;
+      });
+      
+      // Convertir la Map en tableau et trier par nombre de parcelles (décroissant)
+      const agencesArray = Array.from(agencesMap.values()).sort((a, b) => b.count - a.count);
+      
       setHomepageParcelles(transformed);
+      setParcellesByAgence(groupedByAgence);
+      setAgencesList(agencesArray);
     } catch (error) {
+      console.error("Erreur lors du chargement des parcelles:", error);
       setHomepageParcelles([]);
+      setParcellesByAgence({});
+      setAgencesList([]);
     } finally {
       setLoadingHomepageParcelles(false);
     }
@@ -564,6 +605,271 @@ const HomePage = () => {
     },
   ];
 
+  // Fonction helper pour rendre une carte de parcelle (sans Grid pour le carrousel)
+  const renderParcelleCard = (parcelle, index, inCarousel = false) => {
+    const cardContent = (
+      <Card
+        elevation={3}
+        sx={{
+          height: "100%",
+          transition: "all 0.3s",
+          display: "flex",
+          flexDirection: "column",
+          "&:hover": { transform: "translateY(-6px)", boxShadow: 8 },
+        }}
+      >
+        <Box
+          sx={{
+            height: { xs: 120, sm: 140, md: 160 },
+            position: "relative",
+            overflow: "hidden",
+            bgcolor: "#e3f2fd",
+          }}
+        >
+          {(parcelle.latitude && parcelle.longitude) ? (
+            <>
+              <Box
+                component="img"
+                src={getGoogleMapsStaticImage(parcelle.latitude, parcelle.longitude, 400, 140)}
+                alt=""
+                sx={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  cursor: "pointer",
+                  filter: "brightness(0.9)",
+                  bgcolor: "#e3f2fd",
+                }}
+                onClick={() => {
+                  const googleMapsUrl = `https://www.google.com/maps?q=${parcelle.latitude},${parcelle.longitude}`;
+                  window.open(googleMapsUrl, "_blank");
+                }}
+              />
+              <Box
+                sx={{
+                  position: "absolute",
+                  top: "50%",
+                  left: "50%",
+                  transform: "translate(-50%, -50%)",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  pointerEvents: "none",
+                }}
+              >
+                <Box
+                  sx={{
+                    position: "relative",
+                    width: { xs: 32, sm: 40 },
+                    height: { xs: 32, sm: 40 },
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Box
+                    sx={{
+                      position: "absolute",
+                      width: { xs: 32, sm: 40 },
+                      height: { xs: 32, sm: 40 },
+                      borderRadius: "50%",
+                      bgcolor: "rgba(25, 118, 210, 0.3)",
+                      animation: "pulse 2s infinite",
+                      "@keyframes pulse": {
+                        "0%": {
+                          transform: "scale(1)",
+                          opacity: 1,
+                        },
+                        "100%": {
+                          transform: "scale(1.5)",
+                          opacity: 0,
+                        },
+                      },
+                    }}
+                  />
+                  <LocationOn
+                    sx={{
+                      color: "primary.main",
+                      fontSize: { xs: 24, sm: 32 },
+                      filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))",
+                      zIndex: 2,
+                      position: "relative",
+                    }}
+                  />
+                </Box>
+              </Box>
+              <Box
+                sx={{
+                  position: "absolute",
+                  top: { xs: 6, sm: 8 },
+                  right: { xs: 6, sm: 8 },
+                  bgcolor: "rgba(255, 255, 255, 0.95)",
+                  borderRadius: "50%",
+                  width: { xs: 32, sm: 40 },
+                  height: { xs: 32, sm: 40 },
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                  "&:hover": {
+                    bgcolor: "white",
+                    transform: "scale(1.15)",
+                    boxShadow: "0 6px 16px rgba(0,0,0,0.2)",
+                  },
+                  transition: "all 0.3s ease",
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const googleMapsUrl = `https://www.google.com/maps?q=${parcelle.latitude},${parcelle.longitude}`;
+                  window.open(googleMapsUrl, "_blank");
+                }}
+              >
+                <LocationOn sx={{ color: "primary.main", fontSize: { xs: 18, sm: 22 } }} />
+              </Box>
+            </>
+          ) : (
+            <Box
+              sx={{
+                height: "100%",
+                background: parcelle.images && parcelle.images.length > 0
+                  ? `url(${fixImageUrl(parcelle.images[0])}) center/cover`
+                  : `linear-gradient(135deg, ${["#667eea", "#f093fb", "#4facfe", "#43e97b"][index % 4]} 0%, ${["#764ba2", "#f5576c", "#00f2fe", "#38f9d7"][index % 4]} 100%)`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                position: "relative",
+                "&::after": parcelle.images && parcelle.images.length > 0
+                  ? {
+                      content: '""',
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      background: "rgba(0, 0, 0, 0.3)",
+                    }
+                  : {},
+              }}
+            >
+              <Landscape sx={{ fontSize: { xs: 60, sm: 80 }, color: "white", opacity: 0.8, zIndex: 1 }} />
+            </Box>
+          )}
+        </Box>
+        <CardContent sx={{ flexGrow: 1, display: "flex", flexDirection: "column", p: { xs: 1.5, sm: 2 } }}>
+          <Chip
+            label={`Îlot ${parcelle.ilot}`}
+            size="small"
+            color="primary"
+            sx={{ 
+              mb: 1,
+              fontSize: { xs: "0.7rem", sm: "0.75rem" },
+              height: { xs: 20, sm: 24 },
+            }}
+          />
+          <Typography 
+            variant="h6" 
+            fontWeight="bold" 
+            gutterBottom
+            sx={{
+              fontSize: { xs: "1rem", sm: "1.125rem", md: "1.25rem" },
+            }}
+          >
+            {parcelle.ref}
+          </Typography>
+          {parcelle.description && (
+            <Typography 
+              variant="body2" 
+              color="text.secondary" 
+              sx={{ 
+                mb: { xs: 1, sm: 1.5 },
+                fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                display: "-webkit-box",
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: "vertical",
+              }}
+            >
+              {parcelle.description.length > 50 
+                ? `${parcelle.description.substring(0, 50)}...` 
+                : parcelle.description}
+            </Typography>
+          )}
+          <Stack spacing={{ xs: 0.75, sm: 1 }} mb={{ xs: 1.5, sm: 2 }} sx={{ flexGrow: 1 }}>
+            <Box display="flex" alignItems="center" gap={1}>
+              <LocationOn fontSize="small" color="action" sx={{ fontSize: { xs: "1rem", sm: "1.25rem" } }} />
+              <Typography 
+                variant="body2"
+                sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+              >
+                {parcelle.ville}
+              </Typography>
+            </Box>
+            <Box display="flex" alignItems="center" gap={1}>
+              <Home fontSize="small" color="action" sx={{ fontSize: { xs: "1rem", sm: "1.25rem" } }} />
+              <Typography 
+                variant="body2"
+                sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+              >
+                {parcelle.superficie} m²
+              </Typography>
+            </Box>
+            {parcelle.agenceNom && (
+              <Box display="flex" alignItems="center" gap={1}>
+                <Business fontSize="small" color="action" sx={{ fontSize: { xs: "1rem", sm: "1.25rem" } }} />
+                <Typography 
+                  variant="body2" 
+                  color="text.secondary"
+                  sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                >
+                  {parcelle.agenceNom}
+                </Typography>
+              </Box>
+            )}
+          </Stack>
+          <Divider sx={{ my: { xs: 1, sm: 1.5 } }} />
+          <Typography 
+            variant="h6" 
+            color="primary" 
+            fontWeight="bold"
+            sx={{
+              fontSize: { xs: "1rem", sm: "1.125rem", md: "1.25rem" },
+            }}
+          >
+            {parcelle.prix > 0 ? formatMoney(parcelle.prix) : "Prix sur demande"}
+          </Typography>
+          <Button
+            fullWidth
+            variant="outlined"
+            size={isMobile ? "small" : "medium"}
+            sx={{ 
+              mt: { xs: 1.5, sm: 2 },
+              fontSize: { xs: "0.75rem", sm: "0.875rem" },
+              py: { xs: 0.75, sm: 1 },
+            }}
+            endIcon={<KeyboardArrowRight />}
+            onClick={() => handleOpenParcelleDetails(parcelle)}
+          >
+            Voir détails
+          </Button>
+        </CardContent>
+      </Card>
+    );
+
+    // Si dans un carrousel, retourner juste la Card, sinon avec Grid
+    if (inCarousel) {
+      return cardContent;
+    }
+
+    return (
+      <Grid item xs={12} sm={6} md={4} key={parcelle.id || index}>
+        {cardContent}
+      </Grid>
+    );
+  };
+
   const formatMoney = (amount) => {
     return new Intl.NumberFormat("fr-FR").format(amount) + " FCFA";
   };
@@ -585,6 +891,32 @@ const HomePage = () => {
   const handleParcelleCarouselNext = () => {
     const restParcelles = homepageParcelles.slice(6); // Parcelles après les 6 premières
     setParcellesCarouselIndex((prev) => Math.min(restParcelles.length - 3, prev + 3));
+  };
+
+  // Fonctions de navigation du carrousel par agence
+  const handleAgenceCarouselPrev = (agenceId, totalParcelles) => {
+    setCarouselIndices((prev) => {
+      const currentIndex = prev[agenceId] || 0;
+      const itemsPerView = isMobile ? 1 : isDesktop ? 3 : 2;
+      // Déplacer d'un élément à la fois pour un défilement fluide
+      return {
+        ...prev,
+        [agenceId]: Math.max(0, currentIndex - 1),
+      };
+    });
+  };
+
+  const handleAgenceCarouselNext = (agenceId, totalParcelles) => {
+    setCarouselIndices((prev) => {
+      const currentIndex = prev[agenceId] || 0;
+      const itemsPerView = isMobile ? 1 : isDesktop ? 3 : 2;
+      const maxIndex = Math.max(0, totalParcelles - itemsPerView);
+      // Déplacer d'un élément à la fois pour un défilement fluide
+      return {
+        ...prev,
+        [agenceId]: Math.min(maxIndex, currentIndex + 1),
+      };
+    });
   };
 
   // Fonctions de navigation du carrousel des locations
@@ -1706,540 +2038,494 @@ const HomePage = () => {
       </Container>
 
       {/* Parcelles à vendre Section */}
-      <Box sx={{ bgcolor: "primary.light", py: 8 }}>
-        <Container maxWidth="lg">
-          <Box mb={4}>
-            <Typography variant="h4" fontWeight="bold" gutterBottom>
+      <Box sx={{ bgcolor: "primary.light", py: { xs: 4, sm: 6, md: 8 } }}>
+        <Container maxWidth="lg" sx={{ px: { xs: 2, sm: 3 } }}>
+          <Box mb={{ xs: 3, md: 4 }}>
+            <Typography 
+              variant="h4" 
+              fontWeight="bold" 
+              gutterBottom
+              sx={{
+                fontSize: { xs: "1.5rem", sm: "2rem", md: "2.125rem" },
+              }}
+            >
               🏘️ Parcelles à vendre
             </Typography>
-            <Typography variant="body1" color="text.secondary">
+            <Typography 
+              variant="body1" 
+              color="text.secondary"
+              sx={{
+                fontSize: { xs: "0.875rem", sm: "1rem" },
+              }}
+            >
               Découvrez notre sélection de terrains viabilisés
             </Typography>
           </Box>
 
-          {/* Afficher les 6 premières parcelles dans une grille */}
-          <Grid container spacing={3}>
-            {loadingHomepageParcelles ? (
-              <Grid item xs={12}>
-                <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: 200 }}>
-                  <CircularProgress size={48} />
-                  <Typography variant="body1" sx={{ ml: 2 }}>Chargement des parcelles…</Typography>
-                </Box>
-              </Grid>
-            ) : homepageParcelles.length === 0 ? (
-              <Grid item xs={12}>
-                <Alert severity="info">Aucune parcelle disponible pour le moment.</Alert>
-              </Grid>
-            ) : (
-              homepageParcelles.slice(0, 6).map((parcelle, index) => (
-                <Grid item xs={12} sm={6} md={4} key={parcelle.id || index}>
-                  <Card
-                    elevation={3}
-                    sx={{
-                      height: "100%",
-                      transition: "all 0.3s",
-                      display: "flex",
-                      flexDirection: "column",
-                      "&:hover": { transform: "translateY(-6px)", boxShadow: 8 },
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        height: 140,
-                        position: "relative",
-                        overflow: "hidden",
-                        bgcolor: "#e3f2fd", // Couleur de fond par défaut (bleu clair)
-                      }}
-                    >
-                      {/* Afficher la carte Google Maps si les coordonnées GPS sont disponibles */}
-                      {(parcelle.latitude && parcelle.longitude) ? (
-                        <>
-                          <Box
-                            component="img"
-                            src={getGoogleMapsStaticImage(parcelle.latitude, parcelle.longitude, 400, 140)}
-                            alt=""
-                            sx={{
-                              width: "100%",
-                              height: "100%",
-                              objectFit: "cover",
-                              cursor: "pointer",
-                              filter: "brightness(0.9)",
-                              bgcolor: "#e3f2fd", // Couleur de fond bleu clair si l'image ne charge pas
-                            }}
-                            onClick={() => {
-                              const googleMapsUrl = `https://www.google.com/maps?q=${parcelle.latitude},${parcelle.longitude}`;
-                              window.open(googleMapsUrl, "_blank");
-                            }}
-                          />
-                          {/* Icône de géolocalisation au centre de la carte */}
-                          <Box
-                            sx={{
-                              position: "absolute",
-                              top: "50%",
-                              left: "50%",
-                              transform: "translate(-50%, -50%)",
-                              display: "flex",
-                              flexDirection: "column",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              pointerEvents: "none",
-                            }}
-                          >
-                            {/* Marqueur de position animé */}
-                            <Box
-                              sx={{
-                                position: "relative",
-                                width: 40,
-                                height: 40,
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                              }}
-                            >
-                              {/* Cercle externe animé */}
-                              <Box
-                                sx={{
-                                  position: "absolute",
-                                  width: 40,
-                                  height: 40,
-                                  borderRadius: "50%",
-                                  bgcolor: "rgba(25, 118, 210, 0.3)",
-                                  animation: "pulse 2s infinite",
-                                  "@keyframes pulse": {
-                                    "0%": {
-                                      transform: "scale(1)",
-                                      opacity: 1,
-                                    },
-                                    "100%": {
-                                      transform: "scale(1.5)",
-                                      opacity: 0,
-                                    },
-                                  },
-                                }}
-                              />
-                              {/* Icône de localisation au centre */}
-                              <LocationOn
-                                sx={{
-                                  color: "primary.main",
-                                  fontSize: 32,
-                                  filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))",
-                                  zIndex: 2,
-                                  position: "relative",
-                                }}
-                              />
-                            </Box>
-                          </Box>
-                          {/* Bouton d'action en overlay (coin supérieur droit) */}
-                          <Box
-                            sx={{
-                              position: "absolute",
-                              top: 8,
-                              right: 8,
-                              bgcolor: "rgba(255, 255, 255, 0.95)",
-                              borderRadius: "50%",
-                              width: 40,
-                              height: 40,
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              cursor: "pointer",
-                              boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-                              "&:hover": {
-                                bgcolor: "white",
-                                transform: "scale(1.15)",
-                                boxShadow: "0 6px 16px rgba(0,0,0,0.2)",
-                              },
-                              transition: "all 0.3s ease",
-                            }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              const googleMapsUrl = `https://www.google.com/maps?q=${parcelle.latitude},${parcelle.longitude}`;
-                              window.open(googleMapsUrl, "_blank");
-                            }}
-                          >
-                            <LocationOn sx={{ color: "primary.main", fontSize: 22 }} />
-                          </Box>
-                        </>
-                      ) : (
-                        // Si pas de coordonnées GPS, afficher l'image ou le gradient comme avant
-                        <Box
-                          sx={{
-                            height: "100%",
-                            background: parcelle.images && parcelle.images.length > 0
-                              ? `url(${fixImageUrl(parcelle.images[0])}) center/cover`
-                              : `linear-gradient(135deg, ${["#667eea", "#f093fb", "#4facfe", "#43e97b"][index % 4]} 0%, ${["#764ba2", "#f5576c", "#00f2fe", "#38f9d7"][index % 4]} 100%)`,
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            position: "relative",
-                            "&::after": parcelle.images && parcelle.images.length > 0
-                              ? {
-                                  content: '""',
-                                  position: "absolute",
-                                  top: 0,
-                                  left: 0,
-                                  right: 0,
-                                  bottom: 0,
-                                  background: "rgba(0, 0, 0, 0.3)",
-                                }
-                              : {},
-                          }}
-                        >
-                          <Landscape sx={{ fontSize: 80, color: "white", opacity: 0.8, zIndex: 1 }} />
-                        </Box>
-                      )}
-                    </Box>
-                    <CardContent sx={{ flexGrow: 1, display: "flex", flexDirection: "column" }}>
-                      <Chip
-                        label={`Îlot ${parcelle.ilot}`}
-                        size="small"
-                        color="primary"
-                        sx={{ mb: 1 }}
-                      />
-                      <Typography variant="h6" fontWeight="bold" gutterBottom>
-                        {parcelle.ref}
-                      </Typography>
-                      {parcelle.description && (
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }} noWrap>
-                          {parcelle.description.length > 50 
-                            ? `${parcelle.description.substring(0, 50)}...` 
-                            : parcelle.description}
-                        </Typography>
-                      )}
-                      <Stack spacing={1} mb={2} sx={{ flexGrow: 1 }}>
-                        <Box display="flex" alignItems="center" gap={1}>
-                          <LocationOn fontSize="small" color="action" />
-                          <Typography variant="body2">{parcelle.ville}</Typography>
-                        </Box>
-                        <Box display="flex" alignItems="center" gap={1}>
-                          <Home fontSize="small" color="action" />
-                          <Typography variant="body2">{parcelle.superficie} m²</Typography>
-                        </Box>
-                        {parcelle.agenceNom && (
-                          <Box display="flex" alignItems="center" gap={1}>
-                            <Business fontSize="small" color="action" />
-                            <Typography variant="body2" color="text.secondary">
-                              {parcelle.agenceNom}
-                            </Typography>
-                          </Box>
-                        )}
-                      </Stack>
-                      <Divider sx={{ my: 1.5 }} />
-                      <Typography variant="h6" color="primary" fontWeight="bold">
-                        {parcelle.prix > 0 ? formatMoney(parcelle.prix) : "Prix sur demande"}
-                      </Typography>
-                      <Button
-                        fullWidth
-                        variant="outlined"
-                        size="small"
-                        sx={{ mt: 2 }}
-                        endIcon={<KeyboardArrowRight />}
-                        onClick={() => handleOpenParcelleDetails(parcelle)}
-                      >
-                        Voir détails
-                      </Button>
-                  </CardContent>
-                </Card>
-              </Grid>
-              ))
-            )}
-          </Grid>
-
-          {/* Carrousel pour les parcelles restantes (après les 6 premières) */}
-          {homepageParcelles.length > 6 && (
-            <>
-              <Box sx={{ mt: 6, mb: 3 }}>
-                <Typography variant="h6" fontWeight="bold" textAlign="center" gutterBottom>
-                  Plus de parcelles disponibles
-                </Typography>
-                <Typography variant="body2" color="text.secondary" textAlign="center">
-                  Faites défiler pour voir les autres parcelles
-                </Typography>
-              </Box>
-
-              {/* Conteneur du carrousel avec overflow caché */}
-              <Box
+          {/* Onglets pour filtrer par agence */}
+          {agencesList.length > 0 && (
+            <Box sx={{ mb: { xs: 3, md: 4 }, borderBottom: 1, borderColor: "divider", overflowX: "auto" }}>
+              <Tabs
+                value={selectedAgenceId}
+                onChange={(e, newValue) => setSelectedAgenceId(newValue)}
+                variant="scrollable"
+                scrollButtons="auto"
+                allowScrollButtonsMobile
                 sx={{
-                  position: "relative",
-                  overflow: "hidden",
-                  mx: "auto",
-                  maxWidth: "100%",
+                  "& .MuiTab-root": {
+                    textTransform: "none",
+                    fontWeight: 600,
+                    minHeight: { xs: 56, sm: 64 },
+                    px: { xs: 1.5, sm: 2, md: 3 },
+                    fontSize: { xs: "0.75rem", sm: "0.875rem", md: "1rem" },
+                  },
                 }}
               >
-                {/* Wrapper interne qui se déplace horizontalement */}
-                <Box
-                  sx={{
-                    display: "flex",
-                    gap: 3,
-                    transition: "transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)",
-                    transform: {
-                      xs: `translateX(-${parcellesCarouselIndex * 100}%)`,
-                      sm: `translateX(-${parcellesCarouselIndex * 50}%)`,
-                      md: `translateX(-${parcellesCarouselIndex * 33.333}%)`,
-                    },
-                    willChange: "transform",
-                  }}
-                >
-                  {homepageParcelles.slice(6).map((parcelle, index) => {
-                    return (
-                      <Card
-                        key={parcelle.id || `parcelle-${index + 6}`}
-                        elevation={3}
-                        sx={{
-                          minWidth: { xs: "100%", sm: "calc(50% - 12px)", md: "calc(33.333% - 16px)" },
-                          maxWidth: { xs: "100%", sm: "calc(50% - 12px)", md: "calc(33.333% - 16px)" },
-                          width: { xs: "100%", sm: "calc(50% - 12px)", md: "calc(33.333% - 16px)" },
-                          height: "100%",
-                          transition: "transform 0.3s ease, box-shadow 0.3s ease",
-                          display: "flex",
-                          flexDirection: "column",
-                          flexShrink: 0,
-                          "&:hover": { 
-                            transform: "translateY(-6px)", 
-                            boxShadow: 8 
-                          },
+                <Tab
+                  label={
+                    <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: { xs: 0.25, sm: 0.5 } }}>
+                      <Typography 
+                        variant="body1" 
+                        fontWeight="bold"
+                        sx={{ 
+                          fontSize: { xs: "0.75rem", sm: "0.875rem", md: "1rem" },
+                          textAlign: "center",
+                          lineHeight: 1.2,
                         }}
                       >
-                        <Box
-                          sx={{
-                            height: 140,
-                            position: "relative",
+                        Toutes les agences
+                      </Typography>
+                      <Chip
+                        label={homepageParcelles.length}
+                        size="small"
+                        color="primary"
+                        sx={{ 
+                          height: { xs: 18, sm: 20 }, 
+                          fontSize: { xs: "0.6rem", sm: "0.7rem" },
+                          "& .MuiChip-label": {
+                            px: { xs: 0.5, sm: 1 },
+                          },
+                        }}
+                      />
+                    </Box>
+                  }
+                  value="all"
+                />
+                {agencesList.map((agence) => (
+                  <Tab
+                    key={agence.id}
+                    label={
+                      <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: { xs: 0.25, sm: 0.5 } }}>
+                        <Typography 
+                          variant="body1" 
+                          fontWeight="bold" 
+                          sx={{ 
+                            textAlign: "center",
+                            fontSize: { xs: "0.75rem", sm: "0.875rem", md: "1rem" },
+                            lineHeight: 1.2,
+                            maxWidth: { xs: 80, sm: 120, md: "none" },
                             overflow: "hidden",
-                            bgcolor: "#e3f2fd",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
                           }}
                         >
-                          {(parcelle.latitude && parcelle.longitude) ? (
-                            <>
-                              <Box
-                                component="img"
-                                src={getGoogleMapsStaticImage(parcelle.latitude, parcelle.longitude, 400, 140)}
-                                alt=""
-                                sx={{
-                                  width: "100%",
-                                  height: "100%",
-                                  objectFit: "cover",
-                                  cursor: "pointer",
-                                  filter: "brightness(0.9)",
-                                  bgcolor: "#e3f2fd",
-                                }}
-                                onClick={() => {
-                                  const googleMapsUrl = `https://www.google.com/maps?q=${parcelle.latitude},${parcelle.longitude}`;
-                                  window.open(googleMapsUrl, "_blank");
-                                }}
-                              />
-                              <Box
-                                sx={{
-                                  position: "absolute",
-                                  top: "50%",
-                                  left: "50%",
-                                  transform: "translate(-50%, -50%)",
-                                  display: "flex",
-                                  flexDirection: "column",
-                                  alignItems: "center",
-                                  justifyContent: "center",
-                                  pointerEvents: "none",
-                                }}
-                              >
-                                <Box
-                                  sx={{
-                                    position: "relative",
-                                    width: 40,
-                                    height: 40,
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                  }}
-                                >
-                                  <Box
-                                    sx={{
-                                      position: "absolute",
-                                      width: 40,
-                                      height: 40,
-                                      borderRadius: "50%",
-                                      bgcolor: "rgba(25, 118, 210, 0.3)",
-                                      animation: "pulse 2s infinite",
-                                      "@keyframes pulse": {
-                                        "0%": {
-                                          transform: "scale(1)",
-                                          opacity: 1,
-                                        },
-                                        "100%": {
-                                          transform: "scale(1.5)",
-                                          opacity: 0,
-                                        },
-                                      },
-                                    }}
-                                  />
-                                  <LocationOn
-                                    sx={{
-                                      color: "primary.main",
-                                      fontSize: 32,
-                                      filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))",
-                                      zIndex: 2,
-                                      position: "relative",
-                                    }}
-                                  />
-                                </Box>
-                              </Box>
-                              <Box
-                                sx={{
-                                  position: "absolute",
-                                  top: 8,
-                                  right: 8,
-                                  bgcolor: "rgba(255, 255, 255, 0.95)",
-                                  borderRadius: "50%",
-                                  width: 40,
-                                  height: 40,
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "center",
-                                  cursor: "pointer",
-                                  boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-                                  "&:hover": {
-                                    bgcolor: "white",
-                                    transform: "scale(1.15)",
-                                    boxShadow: "0 6px 16px rgba(0,0,0,0.2)",
-                                  },
-                                  transition: "all 0.3s ease",
-                                }}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  const googleMapsUrl = `https://www.google.com/maps?q=${parcelle.latitude},${parcelle.longitude}`;
-                                  window.open(googleMapsUrl, "_blank");
-                                }}
-                              >
-                                <LocationOn sx={{ color: "primary.main", fontSize: 22 }} />
-                              </Box>
-                            </>
-                          ) : (
-                            <Box
+                          {agence.nom}
+                        </Typography>
+                        <Chip
+                          label={`${agence.count} parcelle${agence.count > 1 ? "s" : ""}`}
+                          size="small"
+                          color="primary"
+                          sx={{ 
+                            height: { xs: 18, sm: 20 }, 
+                            fontSize: { xs: "0.6rem", sm: "0.7rem" },
+                            "& .MuiChip-label": {
+                              px: { xs: 0.5, sm: 1 },
+                            },
+                          }}
+                        />
+                      </Box>
+                    }
+                    value={agence.id}
+                  />
+                ))}
+              </Tabs>
+            </Box>
+          )}
+
+          {/* Affichage des parcelles selon l'agence sélectionnée */}
+          {loadingHomepageParcelles ? (
+            <Box sx={{ 
+              display: "flex", 
+              flexDirection: { xs: "column", sm: "row" },
+              justifyContent: "center", 
+              alignItems: "center", 
+              minHeight: 200,
+              gap: { xs: 1, sm: 2 },
+            }}>
+              <CircularProgress size={{ xs: 40, sm: 48 }} />
+              <Typography 
+                variant="body1" 
+                sx={{ 
+                  ml: { xs: 0, sm: 2 },
+                  fontSize: { xs: "0.875rem", sm: "1rem" },
+                  textAlign: { xs: "center", sm: "left" },
+                }}
+              >
+                Chargement des parcelles…
+              </Typography>
+            </Box>
+          ) : (
+            <>
+              {/* Si "Toutes les agences" est sélectionné, afficher par sections d'agences */}
+              {selectedAgenceId === "all" ? (
+                agencesList.length > 0 ? (
+                  agencesList.map((agence) => {
+                    const parcellesAgence = parcellesByAgence[agence.id] || [];
+                    const currentIndex = carouselIndices[agence.id] || 0;
+                    // Calculer le nombre d'éléments visibles selon la taille d'écran
+                    const itemsPerView = isMobile ? 1 : isDesktop ? 3 : 2; // xs: 1, sm: 2, md+: 3
+                    const canScrollPrev = currentIndex > 0;
+                    const canScrollNext = currentIndex < parcellesAgence.length - itemsPerView;
+
+                    return (
+                      <Box key={agence.id} sx={{ mb: { xs: 4, md: 6 } }}>
+                        {/* En-tête de l'agence */}
+                        <Box
+                          sx={{
+                            display: "flex",
+                            flexDirection: { xs: "column", sm: "row" },
+                            justifyContent: "space-between",
+                            alignItems: { xs: "flex-start", sm: "center" },
+                            mb: { xs: 2, md: 3 },
+                            pb: { xs: 1.5, md: 2 },
+                            borderBottom: 2,
+                            borderColor: "primary.main",
+                            gap: { xs: 1.5, sm: 0 },
+                          }}
+                        >
+                          <Box sx={{ flex: 1 }}>
+                            <Typography 
+                              variant="h5" 
+                              fontWeight="bold" 
+                              gutterBottom
                               sx={{
-                                height: "100%",
-                                background: parcelle.images && parcelle.images.length > 0
-                                  ? `url(${fixImageUrl(parcelle.images[0])}) center/cover`
-                                  : `linear-gradient(135deg, ${["#667eea", "#f093fb", "#4facfe", "#43e97b"][index % 4]} 0%, ${["#764ba2", "#f5576c", "#00f2fe", "#38f9d7"][index % 4]} 100%)`,
+                                fontSize: { xs: "1.25rem", sm: "1.5rem", md: "1.75rem" },
                                 display: "flex",
                                 alignItems: "center",
-                                justifyContent: "center",
-                                position: "relative",
-                                "&::after": parcelle.images && parcelle.images.length > 0
-                                  ? {
-                                      content: '""',
-                                      position: "absolute",
-                                      top: 0,
-                                      left: 0,
-                                      right: 0,
-                                      bottom: 0,
-                                      background: "rgba(0, 0, 0, 0.3)",
-                                    }
-                                  : {},
+                                flexWrap: "wrap",
+                                gap: 0.5,
                               }}
                             >
-                              <Landscape sx={{ fontSize: 80, color: "white", opacity: 0.8, zIndex: 1 }} />
+                              <Business sx={{ fontSize: { xs: "1.25rem", sm: "1.5rem", md: "1.75rem" } }} />
+                              {agence.nom}
+                            </Typography>
+                            {agence.ville && (
+                              <Typography 
+                                variant="body2" 
+                                color="text.secondary"
+                                sx={{
+                                  fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                                  display: "flex",
+                                  alignItems: "center",
+                                  mt: { xs: 0.5, sm: 0 },
+                                }}
+                              >
+                                <LocationOn fontSize="small" sx={{ mr: 0.5 }} />
+                                {agence.ville}
+                              </Typography>
+                            )}
+                          </Box>
+                          <Chip
+                            label={`${parcellesAgence.length} parcelle${parcellesAgence.length > 1 ? "s" : ""}`}
+                            color="primary"
+                            sx={{ 
+                              fontWeight: "bold",
+                              fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                              height: { xs: 28, sm: 32 },
+                            }}
+                          />
+                        </Box>
+
+                        {/* Carrousel horizontal des parcelles de l'agence */}
+                        <Box sx={{ position: "relative" }}>
+                          {/* Bouton précédent */}
+                          {parcellesAgence.length > 3 && canScrollPrev && (
+                            <IconButton
+                              onClick={() => handleAgenceCarouselPrev(agence.id, parcellesAgence.length)}
+                              sx={{
+                                position: "absolute",
+                                left: { xs: -8, sm: -12 },
+                                top: "50%",
+                                transform: "translateY(-50%)",
+                                zIndex: 10,
+                                bgcolor: "white",
+                                boxShadow: 3,
+                                "&:hover": {
+                                  bgcolor: "primary.main",
+                                  color: "white",
+                                },
+                                width: { xs: 32, sm: 40 },
+                                height: { xs: 32, sm: 40 },
+                              }}
+                            >
+                              <ChevronLeft />
+                            </IconButton>
+                          )}
+
+                          {/* Conteneur du carrousel avec barre de défilement */}
+                          <Box
+                            ref={(el) => {
+                              // Synchroniser le scroll avec l'index lors des changements programmatiques
+                              if (el && parcellesAgence.length > 0) {
+                                const firstChild = el.querySelector('[data-parcelle-item]');
+                                if (firstChild) {
+                                  const itemWidth = firstChild.offsetWidth;
+                                  const gap = isMobile ? 16 : isDesktop ? 24 : 24; // gap en px (2 * 8px = 16px pour xs, 3 * 8px = 24px pour sm/md)
+                                  const targetScroll = currentIndex * (itemWidth + gap);
+                                  
+                                  // Utiliser requestAnimationFrame pour éviter les conflits avec le scroll manuel
+                                  requestAnimationFrame(() => {
+                                    if (Math.abs(el.scrollLeft - targetScroll) > 5) {
+                                      el.scrollTo({
+                                        left: targetScroll,
+                                        behavior: "smooth",
+                                      });
+                                    }
+                                  });
+                                }
+                              }
+                            }}
+                            sx={{
+                              position: "relative",
+                              overflowX: "auto",
+                              overflowY: "hidden",
+                              mx: { xs: 0, sm: 4 },
+                              scrollBehavior: "smooth",
+                              // Style personnalisé pour la barre de défilement
+                              "&::-webkit-scrollbar": {
+                                height: { xs: 8, sm: 10 },
+                              },
+                              "&::-webkit-scrollbar-track": {
+                                background: "rgba(0, 0, 0, 0.05)",
+                                borderRadius: 10,
+                              },
+                              "&::-webkit-scrollbar-thumb": {
+                                background: (theme) => theme.palette.primary.main,
+                                borderRadius: 10,
+                                "&:hover": {
+                                  background: (theme) => theme.palette.primary.dark,
+                                },
+                              },
+                              // Pour Firefox
+                              scrollbarWidth: "thin",
+                              scrollbarColor: (theme) => `${theme.palette.primary.main} rgba(0, 0, 0, 0.05)`,
+                              // Masquer la barre de défilement si tous les éléments sont visibles
+                              ...(parcellesAgence.length <= itemsPerView && {
+                                overflowX: "hidden",
+                              }),
+                            }}
+                            onScroll={(e) => {
+                              // Synchroniser l'index avec le scroll manuel
+                              const scrollLeft = e.target.scrollLeft;
+                              const firstChild = e.target.querySelector('[data-parcelle-item]');
+                              
+                              if (firstChild) {
+                                const itemWidth = firstChild.offsetWidth;
+                                const gap = isMobile ? 16 : 24; // gap en px
+                                const newIndex = Math.round(scrollLeft / (itemWidth + gap));
+                                
+                                if (newIndex !== currentIndex && newIndex >= 0 && newIndex <= parcellesAgence.length - itemsPerView) {
+                                  setCarouselIndices((prev) => ({
+                                    ...prev,
+                                    [agence.id]: newIndex,
+                                  }));
+                                }
+                              }
+                            }}
+                          >
+                            <Box
+                              sx={{
+                                display: "flex",
+                                gap: { xs: 2, sm: 3 },
+                                width: "max-content", // Permet le scroll horizontal
+                                minWidth: "100%", // Assure que le conteneur prend au moins la largeur du parent
+                              }}
+                            >
+                              {parcellesAgence.map((parcelle, index) => (
+                                <Box
+                                  key={parcelle.id || index}
+                                  data-parcelle-item
+                                  sx={{
+                                    width: { xs: "100%", sm: "calc(50% - 12px)", md: "calc(33.333% - 16px)" },
+                                    minWidth: { xs: "100%", sm: "calc(50% - 12px)", md: "calc(33.333% - 16px)" },
+                                    maxWidth: { xs: "100%", sm: "calc(50% - 12px)", md: "calc(33.333% - 16px)" },
+                                    flexShrink: 0,
+                                  }}
+                                >
+                                  {renderParcelleCard(parcelle, index, true)}
+                                </Box>
+                              ))}
                             </Box>
+                          </Box>
+
+                          {/* Bouton suivant */}
+                          {parcellesAgence.length > 3 && canScrollNext && (
+                            <IconButton
+                              onClick={() => handleAgenceCarouselNext(agence.id, parcellesAgence.length)}
+                              sx={{
+                                position: "absolute",
+                                right: { xs: -8, sm: -12 },
+                                top: "50%",
+                                transform: "translateY(-50%)",
+                                zIndex: 10,
+                                bgcolor: "white",
+                                boxShadow: 3,
+                                "&:hover": {
+                                  bgcolor: "primary.main",
+                                  color: "white",
+                                },
+                                width: { xs: 32, sm: 40 },
+                                height: { xs: 32, sm: 40 },
+                              }}
+                            >
+                              <ChevronRight />
+                            </IconButton>
                           )}
                         </Box>
-                        <CardContent sx={{ flexGrow: 1, display: "flex", flexDirection: "column" }}>
-                          <Chip
-                            label={`Îlot ${parcelle.ilot}`}
-                            size="small"
-                            color="primary"
-                            sx={{ mb: 1 }}
-                          />
-                          <Typography variant="h6" fontWeight="bold" gutterBottom>
-                            {parcelle.ref}
+
+                        {/* Bouton "Voir toutes les parcelles" */}
+                        {parcellesAgence.length > 3 && (
+                          <Box sx={{ display: "flex", justifyContent: "center", mt: { xs: 2, md: 3 } }}>
+                            <Button
+                              variant="contained"
+                              size={isMobile ? "medium" : "large"}
+                              endIcon={<ArrowForward />}
+                              onClick={() => setSelectedAgenceId(agence.id)}
+                              sx={{
+                                px: { xs: 2, sm: 3, md: 4 },
+                                py: { xs: 1, sm: 1.25, md: 1.5 },
+                                fontWeight: "bold",
+                                fontSize: { xs: "0.875rem", sm: "1rem" },
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              Voir toutes les parcelles ({parcellesAgence.length})
+                            </Button>
+                          </Box>
+                        )}
+                      </Box>
+                    );
+                  })
+                ) : (
+                  <Alert severity="info">Aucune parcelle disponible pour le moment.</Alert>
+                )
+              ) : (
+                /* Si une agence spécifique est sélectionnée, afficher toutes ses parcelles */
+                (() => {
+                  const parcellesAgence = parcellesByAgence[selectedAgenceId] || [];
+                  const selectedAgence = agencesList.find((a) => a.id === selectedAgenceId);
+
+                  return parcellesAgence.length > 0 ? (
+                    <Box>
+                      {/* En-tête de l'agence sélectionnée */}
+                      <Box
+                        sx={{
+                          display: "flex",
+                          flexDirection: { xs: "column", sm: "row" },
+                          justifyContent: "space-between",
+                          alignItems: { xs: "flex-start", sm: "center" },
+                          mb: { xs: 2, md: 3 },
+                          pb: { xs: 1.5, md: 2 },
+                          borderBottom: 2,
+                          borderColor: "primary.main",
+                          gap: { xs: 1.5, sm: 0 },
+                        }}
+                      >
+                        <Box sx={{ flex: 1 }}>
+                          <Typography 
+                            variant="h5" 
+                            fontWeight="bold" 
+                            gutterBottom
+                            sx={{
+                              fontSize: { xs: "1.25rem", sm: "1.5rem", md: "1.75rem" },
+                              display: "flex",
+                              alignItems: "center",
+                              flexWrap: "wrap",
+                              gap: 0.5,
+                            }}
+                          >
+                            <Business sx={{ fontSize: { xs: "1.25rem", sm: "1.5rem", md: "1.75rem" } }} />
+                            {selectedAgence?.nom || "Agence"}
                           </Typography>
-                          {parcelle.description && (
-                            <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }} noWrap>
-                              {parcelle.description.length > 50 
-                                ? `${parcelle.description.substring(0, 50)}...` 
-                                : parcelle.description}
+                          {selectedAgence?.ville && (
+                            <Typography 
+                              variant="body2" 
+                              color="text.secondary"
+                              sx={{
+                                fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                                display: "flex",
+                                alignItems: "center",
+                                mt: { xs: 0.5, sm: 0 },
+                              }}
+                            >
+                              <LocationOn fontSize="small" sx={{ mr: 0.5 }} />
+                              {selectedAgence.ville}
                             </Typography>
                           )}
-                          <Stack spacing={1} mb={2} sx={{ flexGrow: 1 }}>
-                            <Box display="flex" alignItems="center" gap={1}>
-                              <LocationOn fontSize="small" color="action" />
-                              <Typography variant="body2">{parcelle.ville}</Typography>
-                            </Box>
-                            <Box display="flex" alignItems="center" gap={1}>
-                              <Home fontSize="small" color="action" />
-                              <Typography variant="body2">{parcelle.superficie} m²</Typography>
-                            </Box>
-                            {parcelle.agenceNom && (
-                              <Box display="flex" alignItems="center" gap={1}>
-                                <Business fontSize="small" color="action" />
-                                <Typography variant="body2" color="text.secondary">
-                                  {parcelle.agenceNom}
-                                </Typography>
-                              </Box>
-                            )}
-                          </Stack>
-                          <Divider sx={{ my: 1.5 }} />
-                          <Typography variant="h6" color="primary" fontWeight="bold">
-                            {parcelle.prix > 0 ? formatMoney(parcelle.prix) : "Prix sur demande"}
-                          </Typography>
-                          <Button
-                            fullWidth
-                            variant="outlined"
-                            size="small"
-                            sx={{ mt: 2 }}
-                            endIcon={<KeyboardArrowRight />}
-                            onClick={() => handleOpenParcelleDetails(parcelle)}
-                          >
-                            Voir détails
-                          </Button>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                </Box>
-              </Box>
+                          {selectedAgence?.telephone && (
+                            <Typography 
+                              variant="body2" 
+                              color="text.secondary" 
+                              sx={{ 
+                                mt: 0.5,
+                                fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                                display: "flex",
+                                alignItems: "center",
+                              }}
+                            >
+                              <Phone fontSize="small" sx={{ mr: 0.5 }} />
+                              {selectedAgence.telephone}
+                            </Typography>
+                          )}
+                        </Box>
+                        <Chip
+                          label={`${parcellesAgence.length} parcelle${parcellesAgence.length > 1 ? "s" : ""}`}
+                          color="primary"
+                          sx={{ 
+                            fontWeight: "bold",
+                            fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                            height: { xs: 28, sm: 32 },
+                          }}
+                        />
+                      </Box>
 
-              {/* Boutons de navigation du carrousel des parcelles */}
-              {homepageParcelles.length > 9 && (
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    gap: 2,
-                    mt: 4,
-                  }}
-                >
-                  <IconButton
-                    onClick={handleParcelleCarouselPrev}
-                    disabled={parcellesCarouselIndex === 0}
-                    size="large"
-                    sx={{
-                      bgcolor: "primary.main",
-                      color: "white",
-                      "&:hover": { bgcolor: "primary.dark", transform: "scale(1.1)" },
-                      "&:disabled": { bgcolor: "grey.300", cursor: "not-allowed" },
-                      transition: "all 0.3s",
-                    }}
-                  >
-                    <ChevronLeft fontSize="large" />
-                  </IconButton>
-                  
-                  <Typography variant="body2" color="text.secondary" sx={{ minWidth: 60, textAlign: "center" }}>
-                    {Math.floor(parcellesCarouselIndex / 3) + 1} / {Math.ceil((homepageParcelles.length - 6) / 3)}
-                  </Typography>
-                  
-                  <IconButton
-                    onClick={handleParcelleCarouselNext}
-                    disabled={parcellesCarouselIndex >= homepageParcelles.length - 9}
-                    size="large"
-                    sx={{
-                      bgcolor: "primary.main",
-                      color: "white",
-                      "&:hover": { bgcolor: "primary.dark", transform: "scale(1.1)" },
-                      "&:disabled": { bgcolor: "grey.300", cursor: "not-allowed" },
-                      transition: "all 0.3s",
-                    }}
-                  >
-                    <ChevronRight fontSize="large" />
-                  </IconButton>
-                </Box>
+                      {/* Grille de toutes les parcelles de l'agence */}
+                      <Grid container spacing={{ xs: 2, sm: 3 }}>
+                        {parcellesAgence.map((parcelle, index) => renderParcelleCard(parcelle, index))}
+                      </Grid>
+
+                      {/* Bouton pour revenir à "Toutes les agences" */}
+                      <Box sx={{ display: "flex", justifyContent: "center", mt: { xs: 3, md: 4 } }}>
+                        <Button
+                          variant="outlined"
+                          size={isMobile ? "medium" : "large"}
+                          startIcon={<ChevronLeft />}
+                          onClick={() => setSelectedAgenceId("all")}
+                          sx={{
+                            px: { xs: 2, sm: 3, md: 4 },
+                            py: { xs: 1, sm: 1.25, md: 1.5 },
+                            fontWeight: "bold",
+                            fontSize: { xs: "0.875rem", sm: "1rem" },
+                          }}
+                        >
+                          Voir toutes les agences
+                        </Button>
+                      </Box>
+                    </Box>
+                  ) : (
+                    <Alert severity="info">Aucune parcelle disponible pour cette agence.</Alert>
+                  );
+                })()
               )}
             </>
           )}
