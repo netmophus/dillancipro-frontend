@@ -26,6 +26,7 @@ import {
   ArrowForward,
   Home,
   LocationCity,
+  CheckCircle,
 } from "@mui/icons-material";
 import { useAuth } from "../../contexts/AuthContext";
 import PageLayout from "../../components/shared/PageLayout";
@@ -127,6 +128,14 @@ const AdminDashboardPage = () => {
       icon: VerifiedUser,
       color: "#2196f3",
       badge: "Badge",
+    },
+    {
+      title: "Vérification Agences",
+      description: "Vérifiez les parcelles et biens publiés par les agences",
+      route: "/admin/verification-agences",
+      icon: CheckCircle,
+      color: "#00bcd4",
+      badge: "Nouveau",
     },
     {
       title: "Gestion des Ventes",

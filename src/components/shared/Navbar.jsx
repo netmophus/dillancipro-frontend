@@ -209,7 +209,7 @@ const Navbar = () => {
               <Phone fontSize="small" sx={{ color: "white" }} />
             </Box>
             <Typography variant="body2" sx={{ fontWeight: "600", color: "white" }}>
-              +227 XX XX XX XX
+              +22780648383
             </Typography>
           </Box>
           <Box display="flex" alignItems="center" gap={1.5}>

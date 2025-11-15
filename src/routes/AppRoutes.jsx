@@ -53,6 +53,7 @@ import CartePatrimoinePage from "../pages/user/CartePatrimoinePage";
 import GestionAbonnementsPage from "../pages/admin/GestionAbonnementsPage";
 import GestionTarifsPage from "../pages/admin/GestionTarifsPage";
 import VerificationBiensPage from "../pages/admin/VerificationBiensPage";
+import AdminVerificationAgencesPage from "../pages/admin/AdminVerificationAgencesPage";
 import GestionVentesPage from "../pages/admin/GestionVentesPage";
 import AdminNotaireManagementPage from "../pages/admin/AdminNotaireManagementPage";
 import NotaireDashboardPage from "../pages/notaire/NotaireDashboardPage";
@@ -148,6 +149,15 @@ const AppRoutes = () => {
   element={
     <ProtectRoute allowedRoles={["Admin"]}>
       <VerificationBiensPage />
+    </ProtectRoute>
+  }
+/>
+
+<Route
+  path="/admin/verification-agences"
+  element={
+    <ProtectRoute allowedRoles={["Admin"]}>
+      <AdminVerificationAgencesPage />
     </ProtectRoute>
   }
 />

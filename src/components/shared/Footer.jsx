@@ -56,7 +56,7 @@ const Footer = () => {
             <Stack spacing={1}>
               <Box display="flex" alignItems="center" gap={1}>
                 <Phone fontSize="small" />
-                <Typography variant="body2">+227 XX XX XX XX</Typography>
+                <Typography variant="body2">+22780648383</Typography>
               </Box>
               <Box display="flex" alignItems="center" gap={1}>
                 <Email fontSize="small" />
