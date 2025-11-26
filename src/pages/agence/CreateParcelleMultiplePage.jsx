@@ -33,7 +33,6 @@ import {
   Add,
   Home,
   Map,
-  Image,
   CheckCircle,
   ArrowBack,
   ArrowForward,
@@ -45,7 +44,6 @@ import {
   ExpandMore,
   ExpandLess,
   Close,
-  VideoLibrary,
   Description,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
@@ -76,7 +74,7 @@ const CreateParcelleMultiplePage = () => {
   // Îlots disponibles
   const [ilots, setIlots] = useState([]);
 
-  const steps = ["Informations communes", "Liste des parcelles", "Coordonnées & Médias", "Confirmation"];
+  const steps = ["Informations communes", "Liste des parcelles", "Coordonnées & Documents", "Confirmation"];
 
   useEffect(() => {
     fetchIlots();
@@ -107,10 +105,7 @@ const CreateParcelleMultiplePage = () => {
       numeroParcelle: num,
       ...commonData,
       localisation: { lat: "", lng: "" },
-      imageFiles: [],
-      imagePreviews: [],
       documentFiles: [],
-      video: "",
       expanded: false,
     }));
 
@@ -133,44 +128,6 @@ const CreateParcelleMultiplePage = () => {
     setParcelles((prev) => {
       const updated = [...prev];
       updated[index].localisation[field] = value;
-      return updated;
-    });
-  };
-
-  // Upload d'images pour une parcelle spécifique
-  const handleImageUpload = (parcelleIndex, e) => {
-    const files = Array.from(e.target.files);
-    
-    setParcelles((prev) => {
-      const updated = [...prev];
-      updated[parcelleIndex].imageFiles = [...(updated[parcelleIndex].imageFiles || []), ...files];
-      
-      // Créer les prévisualisations
-      files.forEach((file) => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setParcelles((prev2) => {
-            const updated2 = [...prev2];
-            updated2[parcelleIndex].imagePreviews = [
-              ...(updated2[parcelleIndex].imagePreviews || []),
-              reader.result,
-            ];
-            return updated2;
-          });
-        };
-        reader.readAsDataURL(file);
-      });
-      
-      return updated;
-    });
-  };
-
-  // Supprimer une image d'une parcelle
-  const removeImage = (parcelleIndex, imageIndex) => {
-    setParcelles((prev) => {
-      const updated = [...prev];
-      updated[parcelleIndex].imageFiles = updated[parcelleIndex].imageFiles.filter((_, i) => i !== imageIndex);
-      updated[parcelleIndex].imagePreviews = updated[parcelleIndex].imagePreviews.filter((_, i) => i !== imageIndex);
       return updated;
     });
   };
@@ -224,28 +181,16 @@ const CreateParcelleMultiplePage = () => {
         statut: p.statut,
         description: p.description,
         localisation: p.localisation,
-        video: p.video || "",
-        imageCount: p.imageFiles?.length || 0,
         documentCount: p.documentFiles?.length || 0,
       }));
 
       console.log("📝 [FRONTEND] Données parcelles:", parcellesData);
       formData.append("parcelles", JSON.stringify(parcellesData));
 
-      // Ajouter toutes les images avec un préfixe indiquant à quelle parcelle elles appartiennent
-      let totalImages = 0;
+      // Ajouter tous les documents avec un préfixe indiquant à quelle parcelle ils appartiennent
       let totalDocuments = 0;
       
       parcelles.forEach((p, parcelleIndex) => {
-        // Images
-        if (p.imageFiles && p.imageFiles.length > 0) {
-          console.log(`📤 [FRONTEND] Ajout de ${p.imageFiles.length} images pour parcelle ${parcelleIndex}`);
-          p.imageFiles.forEach((file) => {
-            formData.append(`images_parcelle_${parcelleIndex}`, file);
-            totalImages++;
-          });
-        }
-        
         // Documents
         if (p.documentFiles && p.documentFiles.length > 0) {
           console.log(`📤 [FRONTEND] Ajout de ${p.documentFiles.length} documents pour parcelle ${parcelleIndex}`);
@@ -256,7 +201,6 @@ const CreateParcelleMultiplePage = () => {
         }
       });
 
-      console.log(`📤 [FRONTEND] Total images à uploader: ${totalImages}`);
       console.log(`📤 [FRONTEND] Total documents à uploader: ${totalDocuments}`);
 
       const res = await api.post("/agence/parcelles/parcelles/batch-individual", formData);
@@ -449,14 +393,14 @@ const CreateParcelleMultiplePage = () => {
               </Box>
             )}
 
-            {/* ÉTAPE 3 : Coordonnées & Médias par parcelle */}
+            {/* ÉTAPE 3 : Coordonnées & Documents par parcelle */}
             {currentStep === 2 && (
               <Box>
                 <Typography variant="h6" fontWeight="bold" gutterBottom mb={2}>
-                  Coordonnées & Médias pour chaque parcelle
+                  Coordonnées & Documents pour chaque parcelle
                 </Typography>
                 <Alert severity="info" sx={{ mb: 3 }}>
-                  Pour chaque parcelle, vous pouvez ajouter ses coordonnées GPS, photos, vidéos et documents (tous optionnels)
+                  Pour chaque parcelle, vous pouvez ajouter ses coordonnées GPS et documents (tous optionnels). Les photos et vidéos sont déjà intégrées dans l'îlot.
                 </Alert>
 
                 <Stack spacing={2}>
@@ -479,10 +423,8 @@ const CreateParcelleMultiplePage = () => {
                                 Parcelle {parcelle.numeroParcelle}
                               </Typography>
                               <Typography variant="caption" color="text.secondary">
-                                {parcelle.imageFiles?.length || 0} photo(s) • 
                                 {parcelle.documentFiles?.length || 0} doc(s) • 
-                                GPS: {parcelle.localisation.lat && parcelle.localisation.lng ? "✓" : "✗"} •
-                                Vidéo: {parcelle.video ? "✓" : "✗"}
+                                GPS: {parcelle.localisation.lat && parcelle.localisation.lng ? "✓" : "✗"}
                               </Typography>
                             </Box>
                           </Box>
@@ -523,82 +465,6 @@ const CreateParcelleMultiplePage = () => {
                               />
                             </Grid>
                           </Grid>
-
-                          {/* Photos Cloudinary */}
-                          <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                            <Image sx={{ verticalAlign: "middle", mr: 1 }} color="primary" />
-                            Photos de cette parcelle (optionnel)
-                          </Typography>
-                          
-                          <input
-                            accept="image/*"
-                            style={{ display: "none" }}
-                            id={`image-upload-${index}`}
-                            type="file"
-                            multiple
-                            onChange={(e) => handleImageUpload(index, e)}
-                          />
-                          <label htmlFor={`image-upload-${index}`}>
-                            <Button
-                              variant="outlined"
-                              component="span"
-                              startIcon={<CloudUpload />}
-                              fullWidth
-                              sx={{ mb: 2 }}
-                            >
-                              Ajouter des photos
-                            </Button>
-                          </label>
-
-                          {/* Aperçu des images */}
-                          {parcelle.imagePreviews && parcelle.imagePreviews.length > 0 && (
-                            <Grid container spacing={1} sx={{ mb: 3 }}>
-                              {parcelle.imagePreviews.map((preview, imgIndex) => (
-                                <Grid item xs={6} md={3} key={imgIndex}>
-                                  <Box position="relative">
-                                    <img
-                                      src={preview}
-                                      alt={`Preview ${imgIndex + 1}`}
-                                      style={{
-                                        width: "100%",
-                                        height: 100,
-                                        objectFit: "cover",
-                                        borderRadius: 8,
-                                      }}
-                                    />
-                                    <IconButton
-                                      size="small"
-                                      color="error"
-                                      sx={{
-                                        position: "absolute",
-                                        top: 2,
-                                        right: 2,
-                                        bgcolor: "white",
-                                      }}
-                                      onClick={() => removeImage(index, imgIndex)}
-                                    >
-                                      <Close fontSize="small" />
-                                    </IconButton>
-                                  </Box>
-                                </Grid>
-                              ))}
-                            </Grid>
-                          )}
-
-                          {/* Vidéo (optionnel) */}
-                          <Typography variant="subtitle1" fontWeight="bold" gutterBottom sx={{ mt: 3 }}>
-                            <VideoLibrary sx={{ verticalAlign: "middle", mr: 1 }} color="primary" />
-                            Vidéo (optionnel)
-                          </Typography>
-                          <TextField
-                            label="Lien vidéo YouTube, Vimeo..."
-                            value={parcelle.video || ""}
-                            onChange={(e) => updateParcelle(index, "video", e.target.value)}
-                            fullWidth
-                            placeholder="https://youtube.com/watch?v=... ou https://vimeo.com/..."
-                            size="small"
-                            sx={{ mb: 3 }}
-                          />
 
                           {/* Documents (optionnel) */}
                           <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
@@ -683,8 +549,6 @@ const CreateParcelleMultiplePage = () => {
                         <TableCell><strong>Superficie</strong></TableCell>
                         <TableCell><strong>Prix</strong></TableCell>
                         <TableCell><strong>GPS</strong></TableCell>
-                        <TableCell><strong>Photos</strong></TableCell>
-                        <TableCell><strong>Vidéo</strong></TableCell>
                         <TableCell><strong>Docs</strong></TableCell>
                       </TableRow>
                     </TableHead>
@@ -702,20 +566,6 @@ const CreateParcelleMultiplePage = () => {
                             ) : (
                               <Chip label="✗" size="small" />
                             )}
-                          </TableCell>
-                          <TableCell>
-                            <Chip 
-                              label={p.imageFiles?.length || 0} 
-                              color={p.imageFiles?.length > 0 ? "success" : "default"}
-                              size="small" 
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <Chip 
-                              label={p.video ? "✓" : "✗"} 
-                              color={p.video ? "success" : "default"}
-                              size="small" 
-                            />
                           </TableCell>
                           <TableCell>
                             <Chip 

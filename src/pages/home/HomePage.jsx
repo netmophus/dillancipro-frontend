@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import api from "../../services/api";
 import {
   Box,
@@ -60,11 +60,13 @@ import {
   WhatsApp,
   ContentCopy,
   VideoLibrary,
+  Description,
   ChevronLeft,
   ChevronRight,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import PageLayout from "../../components/shared/PageLayout";
+import Navbar from "../../components/shared/Navbar";
+import Footer from "../../components/shared/Footer";
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -84,6 +86,10 @@ const HomePage = () => {
   // États pour les biens immobiliers dynamiques de la page d'accueil
   const [homepageBiens, setHomepageBiens] = useState([]);
   const [loadingHomepageBiens, setLoadingHomepageBiens] = useState(false);
+  const [biensByAgence, setBiensByAgence] = useState({}); // Biens groupés par agence
+  const [agencesListBiens, setAgencesListBiens] = useState([]); // Liste des agences avec biens
+  const [selectedAgenceIdBiens, setSelectedAgenceIdBiens] = useState("all"); // ID de l'agence sélectionnée pour les biens
+  const [biensCarouselByAgence, setBiensCarouselByAgence] = useState({}); // Indices de carrousel pour chaque agence (biens)
   const [selectedBien, setSelectedBien] = useState(null);
   const [openBiensDrawer, setOpenBiensDrawer] = useState(false);
   const [homepageAgences, setHomepageAgences] = useState([]);
@@ -95,13 +101,13 @@ const HomePage = () => {
   const [loadingHomepageParcelles, setLoadingHomepageParcelles] = useState(false);
   const [selectedParcelle, setSelectedParcelle] = useState(null);
   const [openParcelleDrawer, setOpenParcelleDrawer] = useState(false);
+  const [selectedBanque, setSelectedBanque] = useState(null);
+  const [openBanqueDrawer, setOpenBanqueDrawer] = useState(false);
   const parcellesPerAgence = 6; // Nombre de parcelles à afficher par agence sur la homepage
   const [carouselIndices, setCarouselIndices] = useState({}); // Indices de carrousel pour chaque agence
+  const [parcellesCarouselByAgence, setParcellesCarouselByAgence] = useState({}); // Indices de carrousel pour chaque agence (parcelles)
   const [homepageNotaires, setHomepageNotaires] = useState([]);
   const [loadingHomepageNotaires, setLoadingHomepageNotaires] = useState(false);
-  
-  // Pagination simple pour les agences partenaires (afficher par tranches de 6)
-  const [agencesVisibleCount, setAgencesVisibleCount] = useState(6);
   
   // État pour le carrousel des biens immobiliers
   const [biensCarouselIndex, setBiensCarouselIndex] = useState(0);
@@ -111,6 +117,42 @@ const HomePage = () => {
   
   // État pour le carrousel des locations
   const [locationsCarouselIndex, setLocationsCarouselIndex] = useState(0);
+  
+  // État pour le carrousel des banques
+  const [banquesCarouselIndex, setBanquesCarouselIndex] = useState(0);
+  
+  // État pour le carrousel des agences
+  const [agencesCarouselIndex, setAgencesCarouselIndex] = useState(0);
+  
+  // État pour l'affichage progressif des features (initialement 3)
+  const [featuresDisplayed, setFeaturesDisplayed] = useState(3);
+  
+  // État pour l'affichage progressif des agences (initialement 3)
+  const [agencesDisplayed, setAgencesDisplayed] = useState(3);
+  
+  // État pour l'affichage progressif des banques (initialement 3)
+  const [banquesDisplayed, setBanquesDisplayed] = useState(3);
+  
+  // État pour l'affichage progressif des locations (initialement 3)
+  const [locationsDisplayed, setLocationsDisplayed] = useState(3);
+  
+  // État pour l'affichage progressif des parcelles par agence (initialement 3 par agence)
+  const [parcellesDisplayedByAgence, setParcellesDisplayedByAgence] = useState({});
+  
+  // État pour l'affichage progressif des biens par agence
+  const [biensDisplayedByAgence, setBiensDisplayedByAgence] = useState({});
+  
+  // Ref pour le conteneur scrollable des agences
+  const agencesScrollContainerRef = useRef(null);
+  
+  // Ref pour le conteneur scrollable des banques
+  const banquesScrollContainerRef = useRef(null);
+  
+  // Refs pour les conteneurs scrollables des parcelles par agence
+  const parcellesScrollContainerRefs = useRef({});
+  
+  // Refs pour les conteneurs scrollables des biens par agence
+  const biensScrollContainerRefs = useRef({});
   
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
@@ -151,6 +193,18 @@ const HomePage = () => {
   const handleCloseBienDetails = () => {
     setSelectedBien(null);
     setOpenBiensDrawer(false);
+  };
+
+  // Fonction pour ouvrir le drawer avec les détails d'une banque
+  const handleOpenBanqueDetails = (banque) => {
+    setSelectedBanque(banque);
+    setOpenBanqueDrawer(true);
+  };
+
+  // Fonction pour fermer le drawer des détails de banque
+  const handleCloseBanqueDetails = () => {
+    setSelectedBanque(null);
+    setOpenBanqueDrawer(false);
   };
 
   // Fonction utilitaire pour corriger les URLs d'images
@@ -367,6 +421,10 @@ const HomePage = () => {
           reference: bien.reference,
           description: bien.description || "Bien immobilier de qualité",
           statut: bien.statut || "disponible",
+          agenceId: bien.agenceId?._id || null,
+          agenceNom: bien.agenceId?.nom || "",
+          agenceVille: bien.agenceId?.ville || "",
+          agenceTelephone: bien.agenceId?.telephone || "",
           gradient: [
             ["#11998e", "#38ef7d"],
             ["#e94057", "#f27121"],
@@ -416,7 +474,36 @@ const HomePage = () => {
         return transformed;
       });
       
+      // Grouper les biens par agence
+      const groupedByAgence = {};
+      const agencesMap = new Map();
+      
+      transformedBiens.forEach((bien) => {
+        const agenceId = bien.agenceId || "sans-agence";
+        const agenceNom = bien.agenceNom || "Sans agence";
+        
+        if (!groupedByAgence[agenceId]) {
+          groupedByAgence[agenceId] = [];
+          agencesMap.set(agenceId, {
+            id: agenceId,
+            nom: agenceNom,
+            ville: bien.agenceVille || "",
+            telephone: bien.agenceTelephone || "",
+            count: 0,
+          });
+        }
+        
+        groupedByAgence[agenceId].push(bien);
+        const agence = agencesMap.get(agenceId);
+        agence.count = groupedByAgence[agenceId].length;
+      });
+      
+      // Convertir la Map en tableau et trier par nombre de biens (décroissant)
+      const agencesArray = Array.from(agencesMap.values()).sort((a, b) => b.count - a.count);
+      
       setHomepageBiens(transformedBiens);
+      setBiensByAgence(groupedByAgence);
+      setAgencesListBiens(agencesArray);
     } catch (error) {
       setHomepageBiens([]);
     } finally {
@@ -459,27 +546,46 @@ const HomePage = () => {
       const response = await api.get("/public/parcelles");
       const parcelles = response.data.parcelles || response.data || [];
       
-      const transformed = parcelles.map((p, index) => ({
-        id: p._id,
-        ref: p.numeroParcelle || `P-${p._id.slice(-6)}`,
-        ilot: p.ilot?.numeroIlot || "N/A",
-        superficie: p.superficie || 0,
-        prix: p.prix || 0,
-        description: p.description || "",
-        statut: p.statut || "avendre",
-        ville: p.ilot?.ville || p.agenceId?.ville || "Niamey",
-        agenceNom: p.agenceId?.nom || "",
-        agenceId: p.agenceId?._id || null,
-        agenceTelephone: p.agenceId?.telephone || "",
-        agenceVille: p.agenceId?.ville || "",
-        images: p.images || [],
-        videos: p.videos || [],
-        documents: p.documents || [],
-        localisation: p.localisation || {},
-        latitude: p.localisation?.lat || p.localisation?.latitude || null,
-        longitude: p.localisation?.lng || p.localisation?.longitude || null,
-        verified: p.verified || false, // Statut de vérification
-      }));
+      const transformed = parcelles.map((p, index) => {
+        // Extraire la ville depuis la localisation géographique de l'ilot
+        // Priorité : ilot.quartier.ville (référence directe) > ilot.zone.quartier.ville
+        let ville = "Niamey"; // Valeur par défaut
+        
+        // Essayer d'abord la référence directe quartier -> ville
+        if (p.ilot?.quartier?.ville) {
+          ville = typeof p.ilot.quartier.ville === 'object'
+            ? (p.ilot.quartier.ville.nom || ville)
+            : p.ilot.quartier.ville;
+        } 
+        // Sinon essayer via zone -> quartier -> ville
+        else if (p.ilot?.zone?.quartier?.ville) {
+          ville = typeof p.ilot.zone.quartier.ville === 'object' 
+            ? (p.ilot.zone.quartier.ville.nom || ville)
+            : p.ilot.zone.quartier.ville;
+        }
+        
+        return {
+          id: p._id,
+          ref: p.numeroParcelle || `P-${p._id.slice(-6)}`,
+          ilot: p.ilot?.numeroIlot || "N/A",
+          superficie: p.superficie || 0,
+          prix: p.prix || 0,
+          description: p.description || "",
+          statut: p.statut || "avendre",
+          ville: ville, // Ville géographique de l'ilot
+          agenceNom: p.agenceId?.nom || "",
+          agenceId: p.agenceId?._id || null,
+          agenceTelephone: p.agenceId?.telephone || "",
+          agenceVille: p.agenceId?.ville || "", // Ville de l'agence (peut être différente)
+          images: p.images || [],
+          videos: p.videos || [],
+          documents: p.documents || [],
+          localisation: p.localisation || {},
+          latitude: p.localisation?.lat || p.localisation?.latitude || null,
+          longitude: p.localisation?.lng || p.localisation?.longitude || null,
+          verified: p.verified || false, // Statut de vérification
+        };
+      });
       
       // Grouper les parcelles par agence
       const groupedByAgence = {};
@@ -545,6 +651,7 @@ const HomePage = () => {
     fetchHomepageAgences();
     fetchHomepageParcelles();
     fetchHomepageNotaires();
+    fetchHomepageBanques();
   }, []);
 
   // Données statiques pour la démonstration
@@ -560,12 +667,57 @@ const HomePage = () => {
 
   
 
-  const banquesPartenaires = [
-    { nom: "BOA Niger", services: "Financement immobilier" },
-    { nom: "BIA Niger", services: "Prêts fonciers" },
-    { nom: "Ecobank", services: "Crédit habitat" },
-    { nom: "SONIBANK", services: "Financement terrain" },
-  ];
+  const [banquesPartenaires, setBanquesPartenaires] = useState([]);
+  const [loadingBanques, setLoadingBanques] = useState(false);
+
+  // Fonction pour charger les banques partenaires depuis l'API
+  const fetchHomepageBanques = async () => {
+    setLoadingBanques(true);
+    try {
+      const response = await api.get("/admin/banques/actives").catch(() => ({ data: { banques: [] } }));
+      const banquesData = response.data.banques || response.data || [];
+      setBanquesPartenaires(banquesData);
+    } catch (err) {
+      console.error("Erreur chargement banques:", err);
+      // En cas d'erreur, utiliser des données par défaut
+      setBanquesPartenaires([
+        { 
+          nom: "BOA Niger", 
+          services: "Financement immobilier",
+          description: "Banque Ouest Africaine, leader du financement immobilier au Niger",
+          produits: ["Prêt immobilier jusqu'à 80% du bien", "Prêt terrain viabilisé", "Prêt construction", "Rachat de crédit"],
+          avantages: ["Taux compétitifs", "Délai de remboursement jusqu'à 20 ans", "Dossier simplifié", "Accompagnement personnalisé"],
+          contact: { telephone: "+227 20 73 20 00", email: "contact@boa-niger.com", siteWeb: "www.boa-niger.com" }
+        },
+        { 
+          nom: "BIA Niger", 
+          services: "Prêts fonciers",
+          description: "Banque Internationale pour l'Afrique, spécialisée dans le financement foncier",
+          produits: ["Prêt foncier classique", "Prêt terrain agricole", "Prêt terrain commercial", "Financement de lotissement"],
+          avantages: ["Taux préférentiels pour projets agricoles", "Financement jusqu'à 70%", "Délai de grâce possible", "Expertise foncière"],
+          contact: { telephone: "+227 20 73 25 00", email: "info@bia-niger.ne", siteWeb: "www.bia-niger.ne" }
+        },
+        { 
+          nom: "Ecobank", 
+          services: "Crédit habitat",
+          description: "Banque panafricaine offrant des solutions de crédit habitat adaptées",
+          produits: ["Crédit habitat classique", "Crédit relais", "Prêt travaux et rénovation", "Crédit auto-logement"],
+          avantages: ["Réseau panafricain", "Solutions digitales innovantes", "Taux compétitifs", "Service client 24/7"],
+          contact: { telephone: "+227 20 72 20 00", email: "contact@ecobank.com", siteWeb: "www.ecobank.com" }
+        },
+        { 
+          nom: "SONIBANK", 
+          services: "Financement terrain",
+          description: "Société Nigérienne de Banque, partenaire de confiance pour vos projets fonciers",
+          produits: ["Prêt acquisition terrain", "Prêt viabilisation", "Prêt lotissement", "Crédit-bail immobilier"],
+          avantages: ["Expertise locale", "Accompagnement de A à Z", "Conditions flexibles", "Rapidité de traitement"],
+          contact: { telephone: "+227 20 73 30 00", email: "contact@sonibank.ne", siteWeb: "www.sonibank.ne" }
+        },
+      ]);
+    } finally {
+      setLoadingBanques(false);
+    }
+  };
 
 
 
@@ -602,6 +754,16 @@ const HomePage = () => {
 
   // Fonction helper pour rendre une carte de parcelle (sans Grid pour le carrousel)
   const renderParcelleCard = (parcelle, index, inCarousel = false) => {
+    const gradients = [
+      "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+      "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+      "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+      "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",
+      "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
+      "linear-gradient(135deg, #30cfd0 0%, #330867 100%)",
+    ];
+    const currentGradient = gradients[index % gradients.length];
+    
     const cardContent = (
       <Card
         elevation={0}
@@ -610,40 +772,48 @@ const HomePage = () => {
           transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
           display: "flex",
           flexDirection: "column",
-          borderRadius: { xs: 2, md: 2.5 },
-          border: "1px solid rgba(0,0,0,0.08)",
-          boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+          borderRadius: 3,
+          border: "none",
+          boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
           overflow: "hidden",
           background: "white",
+          position: "relative",
           "&:hover": { 
-            transform: { xs: "none", md: "translateY(-8px)" }, 
-            boxShadow: "0 12px 40px rgba(0,0,0,0.12)",
-            borderColor: "primary.main",
+            transform: { xs: "none", md: "translateY(-12px) scale(1.02)" }, 
+            boxShadow: "0 20px 60px rgba(0,0,0,0.15)",
+            "& .parcelle-image": {
+              transform: "scale(1.1)",
+            },
+            "& .parcelle-button": {
+              background: currentGradient,
+              color: "white",
+              borderColor: "transparent",
+            },
           },
         }}
       >
+        {/* Image/Map Section avec overlay gradient */}
         <Box
           sx={{
-            height: { xs: 140, sm: 160, md: 180 },
+            height: { xs: 200, sm: 220, md: 240 },
             position: "relative",
             overflow: "hidden",
-            background: parcelle.images && parcelle.images.length > 0
-              ? `linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%), url(${fixImageUrl(parcelle.images[0])}) center/cover`
-              : `linear-gradient(135deg, ${["#3b82f6", "#8b5cf6", "#10b981", "#f59e0b"][index % 4]}20 0%, ${["#2563eb", "#7c3aed", "#059669", "#d97706"][index % 4]}15 100%)`,
+            background: "#e3f2fd",
           }}
         >
           {(parcelle.latitude && parcelle.longitude) ? (
             <>
               <Box
                 component="img"
-                src={getGoogleMapsStaticImage(parcelle.latitude, parcelle.longitude, 400, 140)}
+                className="parcelle-image"
+                src={getGoogleMapsStaticImage(parcelle.latitude, parcelle.longitude, 400, 200)}
                 alt=""
                 sx={{
                   width: "100%",
                   height: "100%",
                   objectFit: "cover",
                   cursor: "pointer",
-                  filter: "brightness(0.9)",
+                  transition: "transform 0.6s ease",
                   bgcolor: "#e3f2fd",
                 }}
                 onClick={() => {
@@ -651,24 +821,64 @@ const HomePage = () => {
                   window.open(googleMapsUrl, "_blank");
                 }}
               />
+              {/* Overlay gradient */}
+              <Box
+                sx={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  background: `linear-gradient(to bottom, transparent 0%, ${currentGradient}80 100%)`,
+                  pointerEvents: "none",
+                }}
+              />
+              {/* Badge Vérifié en haut à gauche */}
+              {parcelle.verified && (
+                <Box
+                  sx={{
+                    position: "absolute",
+                    top: 12,
+                    left: 12,
+                    zIndex: 3,
+                  }}
+                >
+                  <Chip
+                    icon={<VerifiedUser sx={{ fontSize: "0.875rem !important", color: "white !important" }} />}
+                    label="Vérifié"
+                    size="small"
+                    sx={{
+                      bgcolor: "rgba(76, 175, 80, 0.95)",
+                      color: "white",
+                      fontWeight: 700,
+                      fontSize: { xs: "0.65rem", sm: "0.7rem" },
+                      height: { xs: 24, sm: 28 },
+                      backdropFilter: "blur(10px)",
+                      boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+                      "& .MuiChip-icon": {
+                        color: "white !important",
+                        fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                      },
+                    }}
+                  />
+                </Box>
+              )}
+              {/* Pin de localisation central */}
               <Box
                 sx={{
                   position: "absolute",
                   top: "50%",
                   left: "50%",
                   transform: "translate(-50%, -50%)",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
+                  zIndex: 2,
                   pointerEvents: "none",
                 }}
               >
                 <Box
                   sx={{
                     position: "relative",
-                    width: { xs: 32, sm: 40 },
-                    height: { xs: 32, sm: 40 },
+                    width: { xs: 48, sm: 56 },
+                    height: { xs: 48, sm: 56 },
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -677,10 +887,10 @@ const HomePage = () => {
                   <Box
                     sx={{
                       position: "absolute",
-                      width: { xs: 32, sm: 40 },
-                      height: { xs: 32, sm: 40 },
+                      width: { xs: 48, sm: 56 },
+                      height: { xs: 48, sm: 56 },
                       borderRadius: "50%",
-                      bgcolor: "rgba(25, 118, 210, 0.3)",
+                      bgcolor: "rgba(255, 255, 255, 0.3)",
                       animation: "pulse 2s infinite",
                       "@keyframes pulse": {
                         "0%": {
@@ -688,43 +898,55 @@ const HomePage = () => {
                           opacity: 1,
                         },
                         "100%": {
-                          transform: "scale(1.5)",
+                          transform: "scale(1.8)",
                           opacity: 0,
                         },
                       },
                     }}
                   />
+                  <Box
+                    sx={{
+                      position: "absolute",
+                      width: { xs: 40, sm: 48 },
+                      height: { xs: 40, sm: 48 },
+                      borderRadius: "50%",
+                      bgcolor: "white",
+                      boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
+                    }}
+                  />
                   <LocationOn
                     sx={{
                       color: "primary.main",
-                      fontSize: { xs: 24, sm: 32 },
-                      filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))",
-                      zIndex: 2,
+                      fontSize: { xs: 28, sm: 36 },
+                      zIndex: 3,
                       position: "relative",
+                      filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.2))",
                     }}
                   />
                 </Box>
               </Box>
+              {/* Bouton Maps en haut à droite */}
               <Box
                 sx={{
                   position: "absolute",
-                  top: { xs: 6, sm: 8 },
-                  right: { xs: 6, sm: 8 },
+                  top: 12,
+                  right: 12,
                   bgcolor: "rgba(255, 255, 255, 0.95)",
                   borderRadius: "50%",
-                  width: { xs: 32, sm: 40 },
-                  height: { xs: 32, sm: 40 },
+                  width: { xs: 36, sm: 44 },
+                  height: { xs: 36, sm: 44 },
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   cursor: "pointer",
-                  boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+                  zIndex: 3,
+                  transition: "all 0.3s ease",
                   "&:hover": {
                     bgcolor: "white",
-                    transform: "scale(1.15)",
-                    boxShadow: "0 6px 16px rgba(0,0,0,0.2)",
+                    transform: "scale(1.15) rotate(5deg)",
+                    boxShadow: "0 6px 20px rgba(0,0,0,0.3)",
                   },
-                  transition: "all 0.3s ease",
                 }}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -732,7 +954,7 @@ const HomePage = () => {
                   window.open(googleMapsUrl, "_blank");
                 }}
               >
-                <LocationOn sx={{ color: "primary.main", fontSize: { xs: 18, sm: 22 } }} />
+                <LocationOn sx={{ color: "primary.main", fontSize: { xs: 20, sm: 24 } }} />
               </Box>
             </>
           ) : (
@@ -741,7 +963,7 @@ const HomePage = () => {
                 height: "100%",
                 background: parcelle.images && parcelle.images.length > 0
                   ? `url(${fixImageUrl(parcelle.images[0])}) center/cover`
-                  : `linear-gradient(135deg, ${["#3b82f6", "#8b5cf6", "#10b981", "#f59e0b"][index % 4]} 0%, ${["#2563eb", "#7c3aed", "#059669", "#d97706"][index % 4]} 100%)`,
+                  : currentGradient,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -754,125 +976,260 @@ const HomePage = () => {
                       left: 0,
                       right: 0,
                       bottom: 0,
-                      background: "rgba(0, 0, 0, 0.3)",
+                      background: `linear-gradient(to bottom, transparent 0%, ${currentGradient}80 100%)`,
                     }
                   : {},
               }}
             >
-              <Landscape sx={{ fontSize: { xs: 60, sm: 80 }, color: "white", opacity: 0.8, zIndex: 1 }} />
+              {parcelle.verified && (
+                <Box
+                  sx={{
+                    position: "absolute",
+                    top: 12,
+                    left: 12,
+                    zIndex: 2,
+                  }}
+                >
+                  <Chip
+                    icon={<VerifiedUser sx={{ fontSize: "0.875rem !important", color: "white !important" }} />}
+                    label="Vérifié"
+                    size="small"
+                    sx={{
+                      bgcolor: "rgba(76, 175, 80, 0.95)",
+                      color: "white",
+                      fontWeight: 700,
+                      fontSize: { xs: "0.65rem", sm: "0.7rem" },
+                      height: { xs: 24, sm: 28 },
+                      backdropFilter: "blur(10px)",
+                      boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+                      "& .MuiChip-icon": {
+                        color: "white !important",
+                        fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                      },
+                    }}
+                  />
+                </Box>
+              )}
+              <Landscape sx={{ fontSize: { xs: 80, sm: 100 }, color: "white", opacity: 0.9, zIndex: 1 }} />
             </Box>
           )}
         </Box>
-        <CardContent sx={{ flexGrow: 1, display: "flex", flexDirection: "column", p: { xs: 1.5, sm: 2 } }}>
-          <Box sx={{ display: "flex", gap: 1, mb: 1, flexWrap: "wrap", alignItems: "center" }}>
-            <Chip
-              label={`Îlot ${parcelle.ilot}`}
-              size="small"
-              color="primary"
-              sx={{ 
-                fontSize: { xs: "0.7rem", sm: "0.75rem" },
-                height: { xs: 20, sm: 24 },
-              }}
-            />
-            {parcelle.verified && (
-              <Chip
-                icon={<VerifiedUser sx={{ fontSize: "0.875rem !important" }} />}
-                label="Vérifié"
-                size="small"
-                color="success"
-                sx={{ 
-                  fontSize: { xs: "0.65rem", sm: "0.7rem" },
-                  height: { xs: 20, sm: 24 },
-                  fontWeight: "bold",
-                  "& .MuiChip-icon": {
-                    fontSize: { xs: "0.75rem", sm: "0.875rem" },
-                  },
-                }}
-              />
-            )}
-          </Box>
-          <Typography 
-            variant="h6" 
-            fontWeight="bold" 
-            gutterBottom
-            sx={{
-              fontSize: { xs: "1rem", sm: "1.125rem", md: "1.25rem" },
-            }}
-          >
-            {parcelle.ref}
-          </Typography>
-          {parcelle.description && (
+
+        {/* Content Section */}
+        <CardContent sx={{ flexGrow: 1, display: "flex", flexDirection: "column", p: { xs: 2, sm: 2.5 } }}>
+          {/* Titre et référence */}
+          <Box sx={{ mb: 1.5 }}>
             <Typography 
-              variant="body2" 
-              color="text.secondary" 
-              sx={{ 
-                mb: { xs: 1, sm: 1.5 },
-                fontSize: { xs: "0.75rem", sm: "0.875rem" },
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                display: "-webkit-box",
-                WebkitLineClamp: 2,
-                WebkitBoxOrient: "vertical",
+              variant="h5" 
+              fontWeight={800}
+              sx={{
+                fontSize: { xs: "1.25rem", sm: "1.5rem", md: "1.75rem" },
+                background: currentGradient,
+                backgroundClip: "text",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                mb: 0.5,
+                lineHeight: 1.2,
               }}
             >
-              {parcelle.description.length > 50 
-                ? `${parcelle.description.substring(0, 50)}...` 
-                : parcelle.description}
+              {parcelle.ref}
             </Typography>
-          )}
-          <Stack spacing={{ xs: 0.75, sm: 1 }} mb={{ xs: 1.5, sm: 2 }} sx={{ flexGrow: 1 }}>
-            <Box display="flex" alignItems="center" gap={1}>
-              <LocationOn fontSize="small" color="action" sx={{ fontSize: { xs: "1rem", sm: "1.25rem" } }} />
+            <Typography 
+              variant="body2" 
+              color="text.secondary"
+              sx={{
+                fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                fontWeight: 500,
+              }}
+            >
+              Ilot {parcelle.ilot}, Parcelle {parcelle.ref}
+            </Typography>
+          </Box>
+
+          {/* Informations principales avec icônes modernes */}
+          <Stack spacing={1.5} mb={2} sx={{ flexGrow: 1 }}>
+            <Box 
+              display="flex" 
+              alignItems="center" 
+              gap={1.5}
+              sx={{
+                p: 1,
+                borderRadius: 2,
+                bgcolor: "rgba(59, 130, 246, 0.05)",
+                transition: "all 0.3s ease",
+                "&:hover": {
+                  bgcolor: "rgba(59, 130, 246, 0.1)",
+                  transform: "translateX(4px)",
+                },
+              }}
+            >
+              <Box
+                sx={{
+                  p: 0.75,
+                  borderRadius: 1.5,
+                  bgcolor: "primary.main",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <LocationOn sx={{ color: "white", fontSize: { xs: 18, sm: 20 } }} />
+              </Box>
               <Typography 
                 variant="body2"
-                sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                fontWeight={600}
+                sx={{ fontSize: { xs: "0.875rem", sm: "0.9375rem" } }}
               >
                 {parcelle.ville}
               </Typography>
             </Box>
-            <Box display="flex" alignItems="center" gap={1}>
-              <Home fontSize="small" color="action" sx={{ fontSize: { xs: "1rem", sm: "1.25rem" } }} />
+
+            <Box 
+              display="flex" 
+              alignItems="center" 
+              gap={1.5}
+              sx={{
+                p: 1,
+                borderRadius: 2,
+                bgcolor: "rgba(16, 185, 129, 0.05)",
+                transition: "all 0.3s ease",
+                "&:hover": {
+                  bgcolor: "rgba(16, 185, 129, 0.1)",
+                  transform: "translateX(4px)",
+                },
+              }}
+            >
+              <Box
+                sx={{
+                  p: 0.75,
+                  borderRadius: 1.5,
+                  bgcolor: "#10b981",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Home sx={{ color: "white", fontSize: { xs: 18, sm: 20 } }} />
+              </Box>
               <Typography 
                 variant="body2"
-                sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                fontWeight={600}
+                sx={{ fontSize: { xs: "0.875rem", sm: "0.9375rem" } }}
               >
                 {parcelle.superficie} m²
               </Typography>
             </Box>
+
             {parcelle.agenceNom && (
-              <Box display="flex" alignItems="center" gap={1}>
-                <Business fontSize="small" color="action" sx={{ fontSize: { xs: "1rem", sm: "1.25rem" } }} />
-                <Typography 
-                  variant="body2" 
-                  color="text.secondary"
-                  sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
-                >
-                  {parcelle.agenceNom}
-                </Typography>
+              <Box 
+                sx={{
+                  p: 1,
+                  borderRadius: 2,
+                  bgcolor: "rgba(139, 92, 246, 0.05)",
+                  transition: "all 0.3s ease",
+                  "&:hover": {
+                    bgcolor: "rgba(139, 92, 246, 0.1)",
+                    transform: "translateX(4px)",
+                  },
+                }}
+              >
+                <Box display="flex" alignItems="center" gap={1.5} mb={parcelle.agenceTelephone ? 0.5 : 0}>
+                  <Box
+                    sx={{
+                      p: 0.75,
+                      borderRadius: 1.5,
+                      bgcolor: "#8b5cf6",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Business sx={{ color: "white", fontSize: { xs: 18, sm: 20 } }} />
+                  </Box>
+                  <Typography 
+                    variant="body2" 
+                    fontWeight={600}
+                    color="text.secondary"
+                    sx={{ fontSize: { xs: "0.875rem", sm: "0.9375rem" } }}
+                  >
+                    {parcelle.agenceNom}
+                  </Typography>
+                </Box>
+                {parcelle.agenceTelephone && (
+                  <Box display="flex" alignItems="center" gap={1.5} pl={5}>
+                    <Phone sx={{ color: "primary.main", fontSize: { xs: 14, sm: 16 } }} />
+                    <Typography 
+                      variant="caption" 
+                      fontWeight={600}
+                      color="primary.main"
+                      sx={{ fontSize: { xs: "0.75rem", sm: "0.8125rem" } }}
+                    >
+                      {parcelle.agenceTelephone}
+                    </Typography>
+                  </Box>
+                )}
               </Box>
             )}
           </Stack>
-          <Divider sx={{ my: { xs: 1, sm: 1.5 } }} />
-          <Typography 
-            variant="h6" 
-            color="primary" 
-            fontWeight="bold"
+
+          {/* Prix avec style moderne */}
+          <Box
             sx={{
-              fontSize: { xs: "1rem", sm: "1.125rem", md: "1.25rem" },
+              p: 2,
+              borderRadius: 2,
+              background: currentGradient,
+              mb: 2,
+              textAlign: "center",
             }}
           >
-            {parcelle.prix > 0 ? formatMoney(parcelle.prix) : "Prix sur demande"}
-          </Typography>
+            <Typography 
+              variant="caption" 
+              sx={{ 
+                color: "rgba(255,255,255,0.9)",
+                fontSize: { xs: "0.7rem", sm: "0.75rem" },
+                fontWeight: 600,
+                textTransform: "uppercase",
+                letterSpacing: 1,
+              }}
+            >
+              Prix
+            </Typography>
+            <Typography 
+              variant="h5" 
+              fontWeight={800}
+              sx={{
+                color: "white",
+                fontSize: { xs: "1.25rem", sm: "1.5rem", md: "1.75rem" },
+                mt: 0.5,
+              }}
+            >
+              {parcelle.prix > 0 ? formatMoney(parcelle.prix) : "Sur demande"}
+            </Typography>
+          </Box>
+
+          {/* Bouton moderne */}
           <Button
+            className="parcelle-button"
             fullWidth
             variant="outlined"
-            size={isMobile ? "small" : "medium"}
+            size="large"
             sx={{ 
-              mt: { xs: 1.5, sm: 2 },
-              fontSize: { xs: "0.75rem", sm: "0.875rem" },
-              py: { xs: 0.75, sm: 1 },
+              mt: "auto",
+              fontSize: { xs: "0.875rem", sm: "0.9375rem" },
+              py: { xs: 1.25, sm: 1.5 },
+              fontWeight: 700,
+              borderRadius: 2,
+              borderWidth: 2,
+              borderColor: "primary.main",
+              color: "primary.main",
+              textTransform: "uppercase",
+              letterSpacing: 1,
+              transition: "all 0.4s ease",
+              "&:hover": {
+                borderWidth: 2,
+              },
             }}
-            endIcon={<KeyboardArrowRight />}
+            endIcon={<ArrowForward />}
             onClick={() => handleOpenParcelleDetails(parcelle)}
           >
             Voir détails
@@ -891,6 +1248,24 @@ const HomePage = () => {
         {cardContent}
       </Grid>
     );
+  };
+
+  // Fonction pour extraire le nom de fichier depuis une URL
+  const getFileNameFromUrl = (url) => {
+    if (!url) return "Document";
+    try {
+      // Si c'est une URL complète, extraire le nom de fichier
+      const urlObj = new URL(url);
+      const pathname = urlObj.pathname;
+      const fileName = pathname.split('/').pop() || pathname.split('\\').pop();
+      // Décoder les caractères encodés et retirer les paramètres de requête
+      return decodeURIComponent(fileName.split('?')[0]) || "Document";
+    } catch (e) {
+      // Si ce n'est pas une URL valide, essayer d'extraire le nom depuis le chemin
+      const parts = url.split('/');
+      const fileName = parts[parts.length - 1] || parts[parts.length - 1].split('\\').pop();
+      return decodeURIComponent(fileName.split('?')[0]) || "Document";
+    }
   };
 
   const formatMoney = (amount) => {
@@ -942,6 +1317,206 @@ const HomePage = () => {
     });
   };
 
+  // Fonctions de navigation du carrousel des parcelles par agence
+  const handleParcellesAgenceCarouselPrev = (agenceId) => {
+    const containerRef = parcellesScrollContainerRefs.current[agenceId];
+    if (!containerRef || !containerRef.current) return;
+    
+    const container = containerRef.current;
+    const itemsPerView = isMobile ? 1 : isDesktop ? 3 : 2;
+    
+    // Trouver toutes les cartes dans le conteneur
+    const cards = container.querySelectorAll(`[data-parcelle-card="${agenceId}"]`);
+    if (cards.length === 0) return;
+    
+    // Trouver la carte actuellement visible (la plus proche du centre)
+    const containerRect = container.getBoundingClientRect();
+    const containerCenter = containerRect.left + containerRect.width / 2;
+    
+    let currentIndex = 0;
+    let minDistance = Infinity;
+    
+    cards.forEach((card, index) => {
+      const cardRect = card.getBoundingClientRect();
+      const cardCenter = cardRect.left + cardRect.width / 2;
+      const distance = Math.abs(cardCenter - containerCenter);
+      if (distance < minDistance) {
+        minDistance = distance;
+        currentIndex = index;
+      }
+    });
+    
+    // Calculer l'index de la carte cible
+    const targetIndex = Math.max(0, currentIndex - itemsPerView);
+    
+    // Faire défiler vers la carte cible
+    if (cards[targetIndex]) {
+      cards[targetIndex].scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+        inline: "center",
+      });
+    }
+    
+    setParcellesCarouselByAgence((prev) => {
+      const currentIndex = prev[agenceId] || 0;
+      return {
+        ...prev,
+        [agenceId]: Math.max(0, currentIndex - itemsPerView),
+      };
+    });
+  };
+
+  const handleParcellesAgenceCarouselNext = (agenceId, totalParcelles) => {
+    const containerRef = parcellesScrollContainerRefs.current[agenceId];
+    if (!containerRef || !containerRef.current) return;
+    
+    const container = containerRef.current;
+    const itemsPerView = isMobile ? 1 : isDesktop ? 3 : 2;
+    
+    // Trouver toutes les cartes dans le conteneur
+    const cards = container.querySelectorAll(`[data-parcelle-card="${agenceId}"]`);
+    if (cards.length === 0) return;
+    
+    // Trouver la carte actuellement visible (la plus proche du centre)
+    const containerRect = container.getBoundingClientRect();
+    const containerCenter = containerRect.left + containerRect.width / 2;
+    
+    let currentIndex = 0;
+    let minDistance = Infinity;
+    
+    cards.forEach((card, index) => {
+      const cardRect = card.getBoundingClientRect();
+      const cardCenter = cardRect.left + cardRect.width / 2;
+      const distance = Math.abs(cardCenter - containerCenter);
+      if (distance < minDistance) {
+        minDistance = distance;
+        currentIndex = index;
+      }
+    });
+    
+    // Calculer l'index de la carte cible
+    const targetIndex = Math.min(cards.length - 1, currentIndex + itemsPerView);
+    
+    // Faire défiler vers la carte cible
+    if (cards[targetIndex]) {
+      cards[targetIndex].scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+        inline: "center",
+      });
+    }
+    
+    setParcellesCarouselByAgence((prev) => {
+      const currentIndex = prev[agenceId] || 0;
+      const maxIndex = Math.max(0, totalParcelles - itemsPerView);
+      return {
+        ...prev,
+        [agenceId]: Math.min(maxIndex, currentIndex + itemsPerView),
+      };
+    });
+  };
+
+  // Fonctions de navigation du carrousel des biens par agence
+  const handleBiensAgenceCarouselPrev = (agenceId) => {
+    const containerRef = biensScrollContainerRefs.current[agenceId];
+    if (!containerRef || !containerRef.current) return;
+    
+    const container = containerRef.current;
+    const itemsPerView = isMobile ? 1 : isDesktop ? 3 : 2;
+    
+    // Trouver toutes les cartes dans le conteneur
+    const cards = container.querySelectorAll(`[data-bien-card="${agenceId}"]`);
+    if (cards.length === 0) return;
+    
+    // Trouver la carte actuellement visible (la plus proche du centre)
+    const containerRect = container.getBoundingClientRect();
+    const containerCenter = containerRect.left + containerRect.width / 2;
+    
+    let currentIndex = 0;
+    let minDistance = Infinity;
+    
+    cards.forEach((card, index) => {
+      const cardRect = card.getBoundingClientRect();
+      const cardCenter = cardRect.left + cardRect.width / 2;
+      const distance = Math.abs(cardCenter - containerCenter);
+      if (distance < minDistance) {
+        minDistance = distance;
+        currentIndex = index;
+      }
+    });
+    
+    // Calculer l'index de la carte cible
+    const targetIndex = Math.max(0, currentIndex - itemsPerView);
+    
+    // Faire défiler vers la carte cible
+    if (cards[targetIndex]) {
+      cards[targetIndex].scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+        inline: "center",
+      });
+    }
+    
+    setBiensCarouselByAgence((prev) => {
+      const currentIndex = prev[agenceId] || 0;
+      return {
+        ...prev,
+        [agenceId]: Math.max(0, currentIndex - itemsPerView),
+      };
+    });
+  };
+
+  const handleBiensAgenceCarouselNext = (agenceId, totalBiens) => {
+    const containerRef = biensScrollContainerRefs.current[agenceId];
+    if (!containerRef || !containerRef.current) return;
+    
+    const container = containerRef.current;
+    const itemsPerView = isMobile ? 1 : isDesktop ? 3 : 2;
+    
+    // Trouver toutes les cartes dans le conteneur
+    const cards = container.querySelectorAll(`[data-bien-card="${agenceId}"]`);
+    if (cards.length === 0) return;
+    
+    // Trouver la carte actuellement visible (la plus proche du centre)
+    const containerRect = container.getBoundingClientRect();
+    const containerCenter = containerRect.left + containerRect.width / 2;
+    
+    let currentIndex = 0;
+    let minDistance = Infinity;
+    
+    cards.forEach((card, index) => {
+      const cardRect = card.getBoundingClientRect();
+      const cardCenter = cardRect.left + cardRect.width / 2;
+      const distance = Math.abs(cardCenter - containerCenter);
+      if (distance < minDistance) {
+        minDistance = distance;
+        currentIndex = index;
+      }
+    });
+    
+    // Calculer l'index de la carte cible
+    const targetIndex = Math.min(cards.length - 1, currentIndex + itemsPerView);
+    
+    // Faire défiler vers la carte cible
+    if (cards[targetIndex]) {
+      cards[targetIndex].scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+        inline: "center",
+      });
+    }
+    
+    setBiensCarouselByAgence((prev) => {
+      const currentIndex = prev[agenceId] || 0;
+      const maxIndex = Math.max(0, totalBiens - itemsPerView);
+      return {
+        ...prev,
+        [agenceId]: Math.min(maxIndex, currentIndex + itemsPerView),
+      };
+    });
+  };
+
   // Fonctions de navigation du carrousel des locations
   const handleLocationCarouselPrev = () => {
     setLocationsCarouselIndex((prev) => Math.max(0, prev - 3));
@@ -949,6 +1524,217 @@ const HomePage = () => {
 
   const handleLocationCarouselNext = () => {
     setLocationsCarouselIndex((prev) => Math.min(homepageLocations.length - 3, prev + 3));
+  };
+
+  // Fonctions de navigation du carrousel des banques avec scroll-snap
+  const handleBanqueCarouselPrev = () => {
+    if (!banquesScrollContainerRef.current) return;
+    
+    const container = banquesScrollContainerRef.current;
+    const itemsPerView = isMobile ? 1 : isDesktop ? 3 : 2;
+    
+    // Trouver toutes les cartes dans le conteneur
+    const cards = container.querySelectorAll('[data-banque-card]');
+    if (cards.length === 0) return;
+    
+    // Trouver la carte actuellement visible (la plus proche du centre)
+    const containerRect = container.getBoundingClientRect();
+    const containerCenter = containerRect.left + containerRect.width / 2;
+    
+    let currentIndex = 0;
+    let minDistance = Infinity;
+    
+    cards.forEach((card, index) => {
+      const cardRect = card.getBoundingClientRect();
+      const cardCenter = cardRect.left + cardRect.width / 2;
+      const distance = Math.abs(cardCenter - containerCenter);
+      if (distance < minDistance) {
+        minDistance = distance;
+        currentIndex = index;
+      }
+    });
+    
+    // Calculer l'index de la carte cible
+    const targetIndex = Math.max(0, currentIndex - itemsPerView);
+    
+    // Faire défiler vers la carte cible
+    if (cards[targetIndex]) {
+      cards[targetIndex].scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+        inline: "center",
+      });
+    }
+    
+    setBanquesCarouselIndex((prev) => Math.max(0, prev - itemsPerView));
+  };
+
+  const handleBanqueCarouselNext = () => {
+    if (!banquesScrollContainerRef.current) return;
+    
+    const container = banquesScrollContainerRef.current;
+    const itemsPerView = isMobile ? 1 : isDesktop ? 3 : 2;
+    
+    // Trouver toutes les cartes dans le conteneur
+    const cards = container.querySelectorAll('[data-banque-card]');
+    if (cards.length === 0) return;
+    
+    // Trouver la carte actuellement visible (la plus proche du centre)
+    const containerRect = container.getBoundingClientRect();
+    const containerCenter = containerRect.left + containerRect.width / 2;
+    
+    let currentIndex = 0;
+    let minDistance = Infinity;
+    
+    cards.forEach((card, index) => {
+      const cardRect = card.getBoundingClientRect();
+      const cardCenter = cardRect.left + cardRect.width / 2;
+      const distance = Math.abs(cardCenter - containerCenter);
+      if (distance < minDistance) {
+        minDistance = distance;
+        currentIndex = index;
+      }
+    });
+    
+    // Calculer l'index de la carte cible
+    const targetIndex = Math.min(cards.length - 1, currentIndex + itemsPerView);
+    
+    // Faire défiler vers la carte cible
+    if (cards[targetIndex]) {
+      cards[targetIndex].scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+        inline: "center",
+      });
+    }
+    
+    setBanquesCarouselIndex((prev) => Math.min(banquesPartenaires.length - itemsPerView, prev + itemsPerView));
+  };
+
+  // Fonctions de navigation du carrousel des agences partenaires avec scroll-snap
+  const handleAgencesCarouselPrev = () => {
+    if (!agencesScrollContainerRef.current) return;
+    
+    const container = agencesScrollContainerRef.current;
+    const itemsPerView = isMobile ? 1 : isDesktop ? 3 : 2;
+    
+    // Trouver toutes les cartes dans le conteneur
+    const cards = container.querySelectorAll('[data-agence-card]');
+    if (cards.length === 0) return;
+    
+    // Trouver la carte actuellement visible (la plus proche du centre)
+    const containerRect = container.getBoundingClientRect();
+    const containerCenter = containerRect.left + containerRect.width / 2;
+    
+    let currentIndex = 0;
+    let minDistance = Infinity;
+    
+    cards.forEach((card, index) => {
+      const cardRect = card.getBoundingClientRect();
+      const cardCenter = cardRect.left + cardRect.width / 2;
+      const distance = Math.abs(cardCenter - containerCenter);
+      if (distance < minDistance) {
+        minDistance = distance;
+        currentIndex = index;
+      }
+    });
+    
+    // Calculer l'index de la carte cible
+    const targetIndex = Math.max(0, currentIndex - itemsPerView);
+    
+    // Faire défiler vers la carte cible
+    if (cards[targetIndex]) {
+      cards[targetIndex].scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+        inline: "center",
+      });
+    }
+    
+    setAgencesCarouselIndex((prev) => Math.max(0, prev - itemsPerView));
+  };
+
+  const handleAgencesCarouselNext = () => {
+    if (!agencesScrollContainerRef.current) return;
+    
+    const container = agencesScrollContainerRef.current;
+    const itemsPerView = isMobile ? 1 : isDesktop ? 3 : 2;
+    
+    // Trouver toutes les cartes dans le conteneur
+    const cards = container.querySelectorAll('[data-agence-card]');
+    if (cards.length === 0) return;
+    
+    // Trouver la carte actuellement visible (la plus proche du centre)
+    const containerRect = container.getBoundingClientRect();
+    const containerCenter = containerRect.left + containerRect.width / 2;
+    
+    let currentIndex = 0;
+    let minDistance = Infinity;
+    
+    cards.forEach((card, index) => {
+      const cardRect = card.getBoundingClientRect();
+      const cardCenter = cardRect.left + cardRect.width / 2;
+      const distance = Math.abs(cardCenter - containerCenter);
+      if (distance < minDistance) {
+        minDistance = distance;
+        currentIndex = index;
+      }
+    });
+    
+    // Calculer l'index de la carte cible
+    const targetIndex = Math.min(cards.length - 1, currentIndex + itemsPerView);
+    
+    // Faire défiler vers la carte cible
+    if (cards[targetIndex]) {
+      cards[targetIndex].scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+        inline: "center",
+      });
+    }
+    
+    setAgencesCarouselIndex((prev) => Math.min(homepageAgences.length - itemsPerView, prev + itemsPerView));
+  };
+
+  // Fonctions de navigation du carrousel des features
+  // Fonctions de navigation du carrousel des features avec scroll-snap
+  // Fonction pour afficher 3 cartes supplémentaires
+  const handleShowMoreFeatures = () => {
+    setFeaturesDisplayed((prev) => Math.min(prev + 3, features.length));
+  };
+
+  const handleShowMoreAgences = () => {
+    setAgencesDisplayed((prev) => Math.min(prev + 3, homepageAgences.length));
+  };
+
+  const handleShowMoreBanques = () => {
+    setBanquesDisplayed((prev) => Math.min(prev + 3, banquesPartenaires.length));
+  };
+
+  const handleShowMoreBiens = (agenceId) => {
+    setBiensDisplayedByAgence((prev) => {
+      const current = prev[agenceId] || 3;
+      const biensAgence = biensByAgence[agenceId] || [];
+      return {
+        ...prev,
+        [agenceId]: Math.min(current + 3, biensAgence.length),
+      };
+    });
+  };
+
+  const handleShowMoreLocations = () => {
+    setLocationsDisplayed((prev) => Math.min(prev + 3, homepageLocations.length));
+  };
+
+  const handleShowMoreParcelles = (agenceId) => {
+    setParcellesDisplayedByAgence((prev) => {
+      const current = prev[agenceId] || 4;
+      const parcellesAgence = parcellesByAgence[agenceId] || [];
+      return {
+        ...prev,
+        [agenceId]: Math.min(current + 4, parcellesAgence.length),
+      };
+    });
   };
 
   const handleOpenLocationsDrawer = () => {
@@ -972,15 +1758,18 @@ const parcellesToDisplay =
 
 
   return (
-    <PageLayout>
+    <Box sx={{ width: "100%", minHeight: "100vh", display: "flex", flexDirection: "column", bgcolor: "#e3f2fd" }}>
+      <Navbar />
       {/* Hero Section - Design Moderne */}
       <Box
         sx={{
           background: "linear-gradient(135deg, #0F2027 0%, #203A43 50%, #2C5364 100%)",
           color: "white",
-          py: { xs: 8, md: 12 },
+          pt: 0,
+          pb: { xs: 8, md: 12 },
           position: "relative",
           overflow: "hidden",
+          width: "100%",
           "&::before": {
             content: '""',
             position: "absolute",
@@ -994,10 +1783,12 @@ const parcellesToDisplay =
         }}
       >
       <Container
-  maxWidth="lg"
+  maxWidth="xl"
   sx={{
     px: { xs: 1.5, sm: 3, md: 4 },
-    py: { xs: 4, sm: 6, md: 8 },
+    pt: { xs: 2, sm: 3, md: 4 },
+    pb: { xs: 4, sm: 6, md: 8 },
+    width: "100%",
   }}
 >
   <Grid
@@ -1017,24 +1808,43 @@ const parcellesToDisplay =
         textAlign: { xs: "center", md: "left" },
       }}
     >
-      <Chip
-        label="🆕 Plateforme Officielle"
+      <Box
         sx={{
-          bgcolor: "rgba(255,255,255,0.12)",
-          backdropFilter: "blur(10px)",
-          color: "white",
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 1,
           mb: 2,
           mx: { xs: "auto", md: 0 },
-          display: "inline-flex",
-          fontSize: { xs: "0.75rem", sm: "0.85rem" },
-          px: { xs: 1.2, sm: 2 },
-          py: 0.6,
-          borderRadius: 999,
-          letterSpacing: 0.6,
-          textTransform: "uppercase",
-          border: "1px solid rgba(255,255,255,0.25)",
+          px: { xs: 1.5, sm: 2 },
+          py: { xs: 0.5, sm: 0.75 },
+          borderRadius: 2,
+          border: "1px solid rgba(59, 130, 246, 0.6)",
+          bgcolor: "rgba(59, 130, 246, 0.1)",
+          backdropFilter: "blur(10px)",
         }}
-      />
+      >
+        <Box
+          sx={{
+            fontSize: { xs: "0.65rem", sm: "0.7rem" },
+            fontWeight: 700,
+            color: "rgba(59, 130, 246, 1)",
+            letterSpacing: 0.5,
+          }}
+        >
+          NEW
+        </Box>
+        <Typography
+          sx={{
+            fontSize: { xs: "0.7rem", sm: "0.8rem" },
+            fontWeight: 600,
+            color: "white",
+            letterSpacing: 0.8,
+            textTransform: "uppercase",
+          }}
+        >
+          PLATEFORME OFFICIELLE
+        </Typography>
+      </Box>
 
       <Typography
         variant="h2"
@@ -1084,7 +1894,7 @@ const parcellesToDisplay =
           fontStyle: "italic",
         }}
       >
-        Manhajar dillancin gidaje mai sauƙi da sauri
+        Manhajar dillancin gidaje mai sauki da sauri
       </Typography>
 
       <Typography
@@ -1130,8 +1940,9 @@ const parcellesToDisplay =
       xs: "0.85rem",
       md: "0.95rem",
     },
-    borderRadius: 999,
+    borderRadius: 2,
     boxShadow: "0 8px 24px rgba(15,23,42,0.45)",
+    textTransform: "uppercase",
     "&:hover": {
       bgcolor: "#f9fafb",
       transform: { xs: "none", md: "translateY(-2px)" },
@@ -1145,9 +1956,9 @@ const parcellesToDisplay =
       py: 0.9,
     },
   }}
-  endIcon={<AppRegistration />}
+  endIcon={<Dashboard sx={{ fontSize: "1.1rem" }} />}
 >
-  S&apos;inscrire gratuitement
+  S&apos;INSCRIRE GRATUITEMENT
 </Button>
 
 <Button
@@ -1155,7 +1966,7 @@ const parcellesToDisplay =
   size="large"
   onClick={() => navigate("/login")}
   sx={{
-    borderColor: "rgba(255,255,255,0.7)",
+    borderColor: "rgba(255,255,255,0.8)",
     borderWidth: 2,
     color: "white",
     fontWeight: "bold",
@@ -1166,9 +1977,10 @@ const parcellesToDisplay =
       xs: "0.85rem",
       md: "0.95rem",
     },
-    borderRadius: 999,
+    borderRadius: 2,
     bgcolor: "rgba(15,23,42,0.35)",
     backdropFilter: "blur(10px)",
+    textTransform: "uppercase",
     "&:hover": {
       borderColor: "white",
       bgcolor: "rgba(15,23,42,0.6)",
@@ -1183,9 +1995,9 @@ const parcellesToDisplay =
       py: 0.9,
     },
   }}
-  endIcon={<Login />}
+  endIcon={<ArrowForward sx={{ fontSize: "1.1rem" }} />}
 >
-  Se connecter
+  SE CONNECTER
 </Button>
 
       </Stack>
@@ -1218,10 +2030,11 @@ const parcellesToDisplay =
             letterSpacing: 1.2,
             fontSize: "0.75rem",
             mb: 1.5,
-            color: "rgb(148,163,184)",
+            color: "white",
+            fontWeight: 600,
           }}
         >
-          En un coup d&apos;œil
+          EN UN COUP D&apos;ŒIL
         </Typography>
         <Typography
           variant="h6"
@@ -1237,17 +2050,17 @@ const parcellesToDisplay =
 
         <Grid container spacing={2}>
           {[
-            { label: "Agences", value: stats.agences, gradient: "linear-gradient(135deg,#3b82f6,#8b5cf6)" },
-            { label: "Parcelles", value: stats.parcelles, gradient: "linear-gradient(135deg,#10b981,#059669)" },
-            { label: "Biens", value: stats.biens, gradient: "linear-gradient(135deg,#f59e0b,#d97706)" },
-            { label: "Clients", value: stats.clients, gradient: "linear-gradient(135deg,#ef4444,#dc2626)" },
+            { label: "Agences", value: stats.agences, color: "#3b82f6" },
+            { label: "Parcelles", value: stats.parcelles, color: "#10b981" },
+            { label: "Biens", value: stats.biens, color: "#f59e0b" },
+            { label: "Clients", value: stats.clients, color: "#ef4444" },
           ].map((item) => (
             <Grid key={item.label} item xs={6}>
               <Box
                 sx={{
                   textAlign: "left",
                   p: { xs: 1.5, sm: 1.75 },
-                  borderRadius: 3,
+                  borderRadius: 2,
                   bgcolor: "rgba(15,23,42,0.9)",
                   border: "1px solid rgba(51,65,85,0.9)",
                 }}
@@ -1257,10 +2070,7 @@ const parcellesToDisplay =
                   fontWeight="bold"
                   sx={{
                     fontSize: { xs: "1.5rem", sm: "1.8rem", md: "2rem" },
-                    background: item.gradient,
-                    backgroundClip: "text",
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
+                    color: item.color,
                     mb: 0.5,
                   }}
                 >
@@ -1272,7 +2082,7 @@ const parcellesToDisplay =
                     fontSize: { xs: "0.75rem", sm: "0.85rem" },
                     letterSpacing: 0.4,
                     fontWeight: 500,
-                    color: "rgb(203,213,225)",
+                    color: item.color,
                   }}
                 >
                   {item.label}
@@ -1304,7 +2114,7 @@ const parcellesToDisplay =
 
 {/* Features Section */}
 <Container
-  maxWidth="lg"
+  maxWidth="xl"
   sx={{
     py: { xs: 5, sm: 6, md: 8 },
     px: { xs: 1.5, sm: 3 },
@@ -1354,127 +2164,188 @@ const parcellesToDisplay =
     foncières et immobilières.
   </Typography>
 
+  {/* Conteneur avec affichage progressif - initialement 3 cartes */}
   <Box
     sx={{
-      display: "grid",
-      gridTemplateColumns: {
-        xs: "1fr",
-        sm: "repeat(2, minmax(0, 1fr))",
-        md: "repeat(3, minmax(0, 1fr))",
-      },
-      gap: { xs: 2.5, sm: 3, md: 4 },
-      maxWidth: 1024,
       mx: "auto",
+      maxWidth: 1200,
+      width: "100%",
     }}
   >
-    {features.map((feature, index) => (
-      <Card
-        key={index}
-        elevation={0}
-        sx={{
-          minHeight: { xs: 210, sm: 230, md: 260 },
-          textAlign: "center",
-          display: "flex",
-          flexDirection: "column",
-          borderRadius: { xs: 2.5, md: 3 },
-          background: `linear-gradient(135deg, ${feature.gradient[0]}15 0%, ${feature.gradient[1]}10 100%)`,
-          border: `1px solid ${feature.color}20`,
-          boxShadow: "0 4px 18px rgba(15,23,42,0.08)",
-          position: "relative",
-          overflow: "hidden",
-          "&::before": {
-            content: '""',
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            height: "3px",
-            background: `linear-gradient(90deg, ${feature.gradient[0]}, ${feature.gradient[1]})`,
-          },
-          transition: "transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease",
-          "&:hover": {
-            transform: { xs: "none", md: "translateY(-8px)" },
-            boxShadow: `0 12px 32px ${feature.color}30`,
-            borderColor: `${feature.color}40`,
-          },
-        }}
-      >
-        <CardContent
+    <Grid 
+      container 
+      spacing={3}
+      sx={{
+        width: "100%",
+        margin: 0,
+      }}
+    >
+      {features.slice(0, featuresDisplayed).map((feature, index) => (
+        <Grid 
+          item 
+          xs={12} 
+          sm={6} 
+          md={4}
+          key={index}
           sx={{
-            p: { xs: 2.4, sm: 2.8, md: 3.2 },
-            flex: 1,
             display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            alignItems: "center",
-            gap: { xs: 1.5, md: 2 },
+            flexBasis: { xs: "100%", sm: "calc(50% - 12px)", md: "calc(33.333% - 16px)" },
+            maxWidth: { xs: "100%", sm: "calc(50% - 12px)", md: "calc(33.333% - 16px)" },
+            flexGrow: 0,
+            flexShrink: 0,
           }}
         >
-          <Box
+          <Card
+            elevation={0}
             sx={{
-              width: { xs: 56, sm: 64, md: 72 },
-              height: { xs: 56, sm: 64, md: 72 },
-              borderRadius: "50%",
-              background: `linear-gradient(135deg, ${feature.gradient[0]}, ${feature.gradient[1]})`,
+              width: "100%",
+              height: "100%",
               display: "flex",
+              flexDirection: "column",
+              textAlign: "center",
+              borderRadius: { xs: 2.5, md: 3 },
+              background: `linear-gradient(135deg, ${feature.gradient[0]}15 0%, ${feature.gradient[1]}10 100%)`,
+              border: `1px solid ${feature.color}20`,
+              boxShadow: "0 4px 18px rgba(15,23,42,0.08)",
+              position: "relative",
+              overflow: "hidden",
+              "&::before": {
+                content: '""',
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                height: "3px",
+                background: `linear-gradient(90deg, ${feature.gradient[0]}, ${feature.gradient[1]})`,
+              },
+              transition: "transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease",
+              "&:hover": {
+                transform: { xs: "none", md: "translateY(-8px)" },
+                boxShadow: `0 12px 32px ${feature.color}30`,
+                borderColor: `${feature.color}40`,
+              },
+            }}
+          >
+          <CardContent
+            sx={{
+              p: { xs: 2.4, sm: 2.8, md: 3 },
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "flex-start",
               alignItems: "center",
-              justifyContent: "center",
-              mb: 1.5,
-              boxShadow: `0 8px 24px ${feature.color}30`,
+              gap: { xs: 1.5, md: 1.8 },
+              width: "100%",
+              boxSizing: "border-box",
             }}
           >
             <Box
               sx={{
-                color: "white",
-                fontSize: { xs: "1.5rem", sm: "1.8rem", md: "2rem" },
+                width: { xs: 56, sm: 64, md: 72 },
+                height: { xs: 56, sm: 64, md: 72 },
+                borderRadius: "50%",
+                background: `linear-gradient(135deg, ${feature.gradient[0]}, ${feature.gradient[1]})`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                mb: 1.5,
+                boxShadow: `0 8px 24px ${feature.color}30`,
+              }}
+            >
+              <Box
+                sx={{
+                  color: "white",
+                  fontSize: { xs: "1.5rem", sm: "1.8rem", md: "2rem" },
+                  "@media (max-width:350px)": {
+                    fontSize: "1.4rem",
+                  },
+                }}
+              >
+                {feature.icon}
+              </Box>
+            </Box>
+
+            <Typography
+              variant="h6"
+              fontWeight="bold"
+              gutterBottom
+              sx={{
+                fontSize: {
+                  xs: "1rem",
+                  sm: "1.1rem",
+                  md: "1.15rem",
+                },
+                wordBreak: "break-word",
+                overflowWrap: "break-word",
+                hyphens: "auto",
                 "@media (max-width:350px)": {
-                  fontSize: "1.4rem",
+                  fontSize: "0.95rem",
                 },
               }}
             >
-              {feature.icon}
-            </Box>
-          </Box>
+              {feature.title}
+            </Typography>
 
-          <Typography
-            variant="h6"
-            fontWeight="bold"
-            gutterBottom
-            sx={{
-              fontSize: {
-                xs: "1rem",
-                sm: "1.1rem",
-                md: "1.2rem",
-              },
-              "@media (max-width:350px)": {
-                fontSize: "0.95rem",
-              },
-            }}
-          >
-            {feature.title}
-          </Typography>
-
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{
-              fontSize: {
-                xs: "0.85rem",
-                sm: "0.9rem",
-                md: "0.98rem",
-              },
-              lineHeight: { xs: 1.5, md: 1.65 },
-              "@media (max-width:350px)": {
-                fontSize: "0.8rem",
-              },
-            }}
-          >
-            {feature.description}
-          </Typography>
-        </CardContent>
-      </Card>
-    ))}
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{
+                fontSize: {
+                  xs: "0.85rem",
+                  sm: "0.9rem",
+                  md: "0.95rem",
+                },
+                lineHeight: { xs: 1.5, md: 1.6 },
+                wordBreak: "break-word",
+                overflowWrap: "break-word",
+                hyphens: "auto",
+                whiteSpace: "normal",
+                width: "100%",
+                "@media (max-width:350px)": {
+                  fontSize: "0.8rem",
+                },
+              }}
+            >
+              {feature.description}
+            </Typography>
+          </CardContent>
+        </Card>
+        </Grid>
+      ))}
+    </Grid>
   </Box>
+
+  {/* Bouton "Afficher la suite" - affiche seulement s'il reste des cartes */}
+  {featuresDisplayed < features.length && (
+    <Box
+      sx={{
+        display: "flex",
+        justifyContent: "center",
+        mt: 4,
+      }}
+    >
+      <Button
+        variant="outlined"
+        onClick={handleShowMoreFeatures}
+        sx={{
+          px: 4,
+          py: 1.5,
+          fontSize: { xs: "0.9rem", md: "1rem" },
+          fontWeight: 600,
+          borderRadius: 3,
+          textTransform: "none",
+          borderWidth: 2,
+          "&:hover": {
+            borderWidth: 2,
+            transform: { xs: "none", md: "translateY(-2px)" },
+          },
+          transition: "all 0.3s",
+        }}
+      >
+        Afficher la suite
+      </Button>
+    </Box>
+  )}
 </Container>
 
      
@@ -1502,7 +2373,7 @@ const parcellesToDisplay =
 
 
 <Box sx={{ bgcolor: "grey.50", py: { xs: 6, md: 8 } }}>
-  <Container maxWidth="lg" sx={{ px: { xs: 2, sm: 3 } }}>
+  <Container maxWidth="xl" sx={{ px: { xs: 2, sm: 3 }, width: "100%" }}>
     <Box
       display="flex"
       flexDirection={{ xs: "column", md: "row" }}
@@ -1579,62 +2450,59 @@ const parcellesToDisplay =
       </Button>
     </Box>
 
-    <Grid
-      container
-      spacing={{ xs: 2.5, md: 3 }}
+    {/* Conteneur Grid avec 3 cartes par ligne */}
+    <Box
       sx={{
-        alignItems: "stretch",
-        justifyContent:
-          homepageAgences.slice(0, agencesVisibleCount).length === 1
-            ? "center"
-            : "flex-start", // ✅ centre la ligne si une seule carte
+        mx: "auto",
+        maxWidth: 1200,
+        width: "100%",
       }}
     >
       {loadingHomepageAgences ? (
-        <Grid item xs={12}>
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              minHeight: 160,
-            }}
-          >
-            <CircularProgress size={48} />
-            <Typography variant="body1" sx={{ ml: 2 }}>
-              Chargement des agences…
-            </Typography>
-          </Box>
-        </Grid>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            minHeight: 160,
+          }}
+        >
+          <CircularProgress size={48} />
+          <Typography variant="body1" sx={{ ml: 2 }}>
+            Chargement des agences…
+          </Typography>
+        </Box>
       ) : homepageAgences.length === 0 ? (
-        <Grid item xs={12}>
-          <Alert severity="info">Aucune agence trouvée pour le moment.</Alert>
-        </Grid>
+        <Alert severity="info">Aucune agence trouvée pour le moment.</Alert>
       ) : (
-        homepageAgences.slice(0, agencesVisibleCount).map((agence, index) => {
-          const onlyOne =
-            homepageAgences.slice(0, agencesVisibleCount).length === 1;
-
-          return (
-            <Grid
-              item
-              xs={12}
-              sm={onlyOne ? 12 : 6}
-              md={onlyOne ? 12 : 4} // ✅ si une seule → prend toute la ligne
+        <Grid 
+          container 
+          spacing={3}
+          sx={{
+            width: "100%",
+            margin: 0,
+          }}
+        >
+          {homepageAgences.slice(0, agencesDisplayed).map((agence, index) => (
+            <Grid 
+              item 
+              xs={12} 
+              sm={6} 
+              md={4}
               key={agence.id || index}
               sx={{
                 display: "flex",
-                justifyContent: "center", // ✅ centre la carte dans sa colonne
+                flexBasis: { xs: "100%", sm: "calc(50% - 12px)", md: "calc(33.333% - 16px)" },
+                maxWidth: { xs: "100%", sm: "calc(50% - 12px)", md: "calc(33.333% - 16px)" },
+                flexGrow: 0,
+                flexShrink: 0,
               }}
             >
               <Card
                 elevation={0}
                 sx={{
-                  height: "100%",
                   width: "100%",
-                  maxWidth: { xs: "100%", md: 380 }, // ✅ largeur max identique
-                  mb: { xs: 3, sm: 0 },
-                  transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                  height: "100%",
                   display: "flex",
                   flexDirection: "column",
                   borderRadius: { xs: 2.5, md: 3 },
@@ -1643,7 +2511,7 @@ const parcellesToDisplay =
                   background: "white",
                   overflow: "hidden",
                   position: "relative",
-                  mx: "auto", // ✅ centre visuellement la carte
+                  transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
                   "&::before": {
                     content: '""',
                     position: "absolute",
@@ -1674,8 +2542,10 @@ const parcellesToDisplay =
                     flexDirection: "column",
                     p: { xs: 2.5, md: 3 },
                     gap: { xs: 2, md: 2.5 },
-                    overflow: "hidden",
+                    width: "100%",
+                    maxWidth: "100%",
                     minWidth: 0,
+                    boxSizing: "border-box",
                   }}
                 >
                   {/* En-tête avec logo et nom */}
@@ -1696,18 +2566,22 @@ const parcellesToDisplay =
                     >
                       <Business />
                     </Avatar>
-                    <Box flex={1} minWidth={0}>
+                    <Box flex={1} minWidth={0} sx={{ width: "100%", maxWidth: "100%" }}>
                       <Typography
                         variant="h6"
                         fontWeight="bold"
                         gutterBottom
-                        // ❌ on enlève noWrap pour permettre le retour à la ligne
                         sx={{
                           fontSize: {
                             xs: "1rem",
                             md: "1.1rem",
                           },
-                          wordBreak: "break-word", // ✅ si très long, casse le mot
+                          wordBreak: "break-word",
+                          overflowWrap: "break-word",
+                          hyphens: "auto",
+                          whiteSpace: "normal",
+                          width: "100%",
+                          maxWidth: "100%",
                           "@media (max-width:350px)": {
                             fontSize: "0.95rem",
                           },
@@ -1770,10 +2644,12 @@ const parcellesToDisplay =
                         sx={{
                           mb: { xs: 1.5, md: 2 },
                           lineHeight: { xs: 1.45, md: 1.55 },
-                          display: "-webkit-box",
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: "vertical",
-                          overflow: "hidden",
+                          wordBreak: "break-word",
+                          overflowWrap: "break-word",
+                          hyphens: "auto",
+                          whiteSpace: "normal",
+                          width: "100%",
+                          maxWidth: "100%",
                           "@media (max-width:350px)": {
                             fontSize: "0.8rem",
                           },
@@ -1799,29 +2675,28 @@ const parcellesToDisplay =
                           📍
                         </Typography>
                         <Box flex={1}>
-<Typography
-  variant="body2"
-  color="text.primary"
-  fontWeight="medium"
-  sx={{
-    fontSize: {
-      xs: "0.9rem",
-      md: "1.02rem",
-    },
-    maxWidth: "18ch",          // ≈ largeur "Agence Immo Diffa"
-    whiteSpace: "normal",      // permet le retour à la ligne
-    wordBreak: "break-word",   // casse les mots trop longs si besoin
-    overflowWrap: "anywhere",  // accepte de couper même s'il n'y a pas d'espace
-    "@media (max-width:350px)": {
-      fontSize: "0.85rem",
-    },
-  }}
->
-  {agence.adresse && agence.adresse !== "-"
-    ? agence.adresse
-    : ""}
-</Typography>
-
+                          <Typography
+                            variant="body2"
+                            color="text.primary"
+                            fontWeight="medium"
+                            sx={{
+                              fontSize: {
+                                xs: "0.9rem",
+                                md: "1.02rem",
+                              },
+                              maxWidth: "18ch",
+                              whiteSpace: "normal",
+                              wordBreak: "break-word",
+                              overflowWrap: "anywhere",
+                              "@media (max-width:350px)": {
+                                fontSize: "0.85rem",
+                              },
+                            }}
+                          >
+                            {agence.adresse && agence.adresse !== "-"
+                              ? agence.adresse
+                              : ""}
+                          </Typography>
 
                           <Typography
                             variant="caption"
@@ -1949,29 +2824,40 @@ const parcellesToDisplay =
                 </CardContent>
               </Card>
             </Grid>
-          );
-        })
+          ))}
+        </Grid>
       )}
-    </Grid>
 
-    {/* Bouton Voir plus */}
-    {!loadingHomepageAgences &&
-      homepageAgences.length > agencesVisibleCount && (
+      {/* Bouton "Afficher la suite" pour les agences */}
+      {!loadingHomepageAgences && agencesDisplayed < homepageAgences.length && (
         <Box
-          sx={{ display: "flex", justifyContent: "center", mt: 3 }}
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            mt: 4,
+          }}
         >
           <Button
             variant="outlined"
-            onClick={() =>
-              setAgencesVisibleCount((v) =>
-                Math.min(v + 6, homepageAgences.length)
-              )
-            }
+            onClick={handleShowMoreAgences}
+            sx={{
+              px: 4,
+              py: 1.5,
+              fontSize: { xs: "0.9rem", md: "1rem" },
+              fontWeight: 600,
+              borderRadius: 3,
+              textTransform: "none",
+              borderWidth: 2,
+              "&:hover": {
+                borderWidth: 2,
+              },
+            }}
           >
-            Voir plus
+            Afficher la suite
           </Button>
         </Box>
       )}
+    </Box>
 
    
   </Container>
@@ -2012,7 +2898,7 @@ const parcellesToDisplay =
     bgcolor: "#e6f4ff", // 🔹 fond bleu clair comme sur ton screen
   }}
 >
-  <Container maxWidth="lg">
+  <Container maxWidth="xl" sx={{ width: "100%" }}>
     {/* Titre */}
     <Typography
       variant="h4"
@@ -2053,119 +2939,177 @@ const parcellesToDisplay =
       Financez votre projet immobilier avec nos partenaires financiers
     </Typography>
 
-    {/* Grille cartes */}
+    {/* Conteneur Grid avec 3 cartes par ligne */}
     <Box
       sx={{
-        display: "grid",
-        gridTemplateColumns: {
-          xs: "1fr",
-          sm: "repeat(2, 1fr)",
-          md: "repeat(3, 1fr)",
-        },
-        gap: { xs: 3, md: 4 },
-        maxWidth: 1000,
         mx: "auto",
-        justifyItems: "center",
+        maxWidth: 1200,
+        width: "100%",
       }}
     >
-      {banquesPartenaires.map((banque, index) => (
-        <Card
-          key={index}
-          elevation={0}
-          sx={{
-            width: "100%",
-            maxWidth: 320,
-            minHeight: { xs: 220, sm: 240, md: 250 },
-            borderRadius: 3,
-            backgroundColor: "#ffffff",
-            boxShadow: "0 8px 24px rgba(15,23,42,0.08)",
-            border: "1px solid rgba(148,163,184,0.22)",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            textAlign: "center",
-            transition: "transform 0.22s ease, box-shadow 0.22s ease",
-            "&:hover": {
-              transform: { xs: "none", md: "translateY(-6px)" },
-              boxShadow: "0 14px 40px rgba(15,23,42,0.16)",
-            },
-          }}
-        >
-          <CardContent
+      <Grid 
+        container 
+        spacing={3}
+        sx={{
+          width: "100%",
+          margin: 0,
+        }}
+      >
+        {banquesPartenaires.slice(0, banquesDisplayed).map((banque, index) => (
+          <Grid 
+            item 
+            xs={12} 
+            sm={6} 
+            md={4}
+            key={index}
             sx={{
-              py: { xs: 3, md: 4 },
-              px: { xs: 3, md: 3.5 },
-              width: "100%",
               display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: 2,
+              flexBasis: { xs: "100%", sm: "calc(50% - 12px)", md: "calc(33.333% - 16px)" },
+              maxWidth: { xs: "100%", sm: "calc(50% - 12px)", md: "calc(33.333% - 16px)" },
+              flexGrow: 0,
+              flexShrink: 0,
             }}
           >
-            {/* Icône banque */}
-            <Box
+            <Card
+              elevation={0}
+              onClick={() => handleOpenBanqueDetails(banque)}
               sx={{
-                position: "relative",
-                mb: 1,
+                width: "100%",
+                height: "100%",
+                minHeight: { xs: 220, sm: 240, md: 250 },
+                borderRadius: 3,
+                backgroundColor: "#ffffff",
+                boxShadow: "0 8px 24px rgba(15,23,42,0.08)",
+                border: "1px solid rgba(148,163,184,0.22)",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                textAlign: "center",
+                transition: "transform 0.22s ease, box-shadow 0.22s ease",
+                cursor: "pointer",
+                "&:hover": {
+                  transform: { xs: "none", md: "translateY(-6px)" },
+                  boxShadow: "0 14px 40px rgba(15,23,42,0.16)",
+                },
               }}
             >
+            <CardContent
+              sx={{
+                py: { xs: 3, md: 4 },
+                px: { xs: 3, md: 3.5 },
+                width: "100%",
+                maxWidth: "100%",
+                minWidth: 0,
+                boxSizing: "border-box",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 2,
+              }}
+            >
+              {/* Icône banque */}
               <Box
                 sx={{
-                  width: { xs: 64, md: 72 },
-                  height: { xs: 64, md: 72 },
-                  borderRadius: "50%",
-                  background: "linear-gradient(135deg, #10b981, #059669)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  boxShadow: "0 10px 26px rgba(16, 185, 129, 0.40)",
+                  position: "relative",
+                  mb: 1,
                 }}
               >
-                <AccountBalance
+                <Box
                   sx={{
-                    color: "white",
-                    fontSize: { xs: 30, md: 34 },
+                    width: { xs: 64, md: 72 },
+                    height: { xs: 64, md: 72 },
+                    borderRadius: "50%",
+                    background: "linear-gradient(135deg, #10b981, #059669)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    boxShadow: "0 10px 26px rgba(16, 185, 129, 0.40)",
                   }}
-                />
+                >
+                  <AccountBalance
+                    sx={{
+                      color: "white",
+                      fontSize: { xs: 30, md: 34 },
+                    }}
+                  />
+                </Box>
               </Box>
-            </Box>
 
-            {/* Nom banque */}
-            <Typography
-              variant="h6"
-              fontWeight="bold"
-              sx={{
-                fontSize: {
-                  xs: "1.02rem",
-                  md: "1.12rem",
-                },
-                maxWidth: "18ch",
-                whiteSpace: "normal",
-                wordBreak: "break-word",
-                overflowWrap: "anywhere",
-              }}
-            >
-              {banque.nom}
-            </Typography>
+              {/* Nom banque */}
+              <Typography
+                variant="h6"
+                fontWeight="bold"
+                sx={{
+                  fontSize: {
+                    xs: "1.02rem",
+                    md: "1.12rem",
+                  },
+                  whiteSpace: "normal",
+                  wordBreak: "break-word",
+                  overflowWrap: "break-word",
+                  hyphens: "auto",
+                  width: "100%",
+                  maxWidth: "100%",
+                }}
+              >
+                {banque.nom}
+              </Typography>
 
-            {/* Type de financement */}
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              sx={{
-                fontSize: {
-                  xs: "0.9rem",
-                  md: "0.98rem",
-                },
-                lineHeight: 1.6,
-                maxWidth: "24ch",
-              }}
-            >
-              {banque.services}
-            </Typography>
-          </CardContent>
-        </Card>
-      ))}
+              {/* Type de financement */}
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{
+                  fontSize: {
+                    xs: "0.9rem",
+                    md: "0.98rem",
+                  },
+                  lineHeight: 1.6,
+                  wordBreak: "break-word",
+                  overflowWrap: "break-word",
+                  hyphens: "auto",
+                  whiteSpace: "normal",
+                  width: "100%",
+                  maxWidth: "100%",
+                }}
+              >
+                {banque.services}
+              </Typography>
+            </CardContent>
+          </Card>
+          </Grid>
+        ))}
+      </Grid>
+
+      {/* Bouton "Afficher la suite" pour les banques */}
+      {banquesDisplayed < banquesPartenaires.length && (
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            mt: 4,
+          }}
+        >
+          <Button
+            variant="outlined"
+            onClick={handleShowMoreBanques}
+            sx={{
+              px: 4,
+              py: 1.5,
+              fontSize: { xs: "0.9rem", md: "1rem" },
+              fontWeight: 600,
+              borderRadius: 3,
+              textTransform: "none",
+              borderWidth: 2,
+              "&:hover": {
+                borderWidth: 2,
+              },
+            }}
+          >
+            Afficher la suite
+          </Button>
+        </Box>
+      )}
     </Box>
   </Container>
 </Box>
@@ -2195,7 +3139,7 @@ const parcellesToDisplay =
       theme.palette.mode === "light" ? "grey.100" : "background.default",
   }}
 >
-  <Container maxWidth="md" sx={{ px: { xs: 0, sm: 2 } }}>
+  <Container maxWidth="xl" sx={{ px: { xs: 0, sm: 2 }, width: "100%" }}>
     <Box
       sx={{
         borderRadius: 4,
@@ -2483,7 +3427,7 @@ const parcellesToDisplay =
     px: { xs: 1.5, sm: 3 },
   }}
 >
-  <Container maxWidth="lg">
+  <Container maxWidth="xl" sx={{ width: "100%" }}>
     <Box
       sx={{
         bgcolor: "background.paper",
@@ -2689,26 +3633,191 @@ const parcellesToDisplay =
             </Box>
           )}
 
-          {/* GRILLE PARCELLES – full responsive */}
-          <Grid
-            container
-            spacing={{ xs: 2, sm: 3 }}
-            sx={{
-              // 1 colonne mobile, 2 tablette, 3 desktop
-            }}
-          >
-            {parcellesToDisplay.map((parcelle, index) => (
-              <Grid
-                item
-                xs={12}
-                sm={6}
-                md={4}
-                key={parcelle.id || index}
-              >
-                {renderParcelleCard(parcelle, index)}
-              </Grid>
-            ))}
-          </Grid>
+          {/* PARCELLES PAR AGENCE AVEC PAGINATION */}
+          {selectedAgenceId === "all" ? (
+            // Afficher toutes les agences avec leurs parcelles en pagination
+            <Stack spacing={4}>
+              {agencesList.map((agence) => {
+                const parcellesAgence = parcellesByAgence[agence.id] || [];
+                const parcellesDisplayed = parcellesDisplayedByAgence[agence.id] || 4;
+                
+                if (parcellesAgence.length === 0) return null;
+
+                return (
+                  <Box key={agence.id}>
+                    {/* En-tête agence */}
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 2,
+                        mb: 3,
+                      }}
+                    >
+                      <Business sx={{ fontSize: 28, color: "primary.main" }} />
+                      <Box>
+                        <Typography variant="h6" fontWeight="bold">
+                          {agence.nom}
+                        </Typography>
+                        {agence.ville && (
+                          <Typography variant="body2" color="text.secondary">
+                            {agence.ville}
+                          </Typography>
+                        )}
+                      </Box>
+                      <Chip
+                        label={`${parcellesAgence.length} parcelle${parcellesAgence.length > 1 ? "s" : ""}`}
+                        size="small"
+                        color="primary"
+                        sx={{ ml: "auto" }}
+                      />
+                    </Box>
+
+                    {/* Grid des parcelles de cette agence */}
+                    <Box
+                      sx={{
+                        mx: "auto",
+                        maxWidth: 1200,
+                        width: "100%",
+                      }}
+                    >
+                      <Grid 
+                        container 
+                        spacing={2}
+                        sx={{
+                          width: "100%",
+                          margin: 0,
+                        }}
+                      >
+                        {parcellesAgence.slice(0, parcellesDisplayed).map((parcelle, index) => (
+                          <Grid 
+                            item 
+                            xs={12} 
+                            sm={6} 
+                            md={3}
+                            key={parcelle.id || index}
+                            sx={{
+                              display: "flex",
+                              flexBasis: { xs: "100%", sm: "calc(50% - 8px)", md: "calc(25% - 12px)" },
+                              maxWidth: { xs: "100%", sm: "calc(50% - 8px)", md: "calc(25% - 12px)" },
+                              flexGrow: 0,
+                              flexShrink: 0,
+                            }}
+                          >
+                            {renderParcelleCard(parcelle, index, true)}
+                          </Grid>
+                        ))}
+                      </Grid>
+
+                      {/* Bouton "Afficher la suite" pour cette agence */}
+                      {parcellesDisplayed < parcellesAgence.length && (
+                        <Box
+                          sx={{
+                            display: "flex",
+                            justifyContent: "center",
+                            mt: 4,
+                          }}
+                        >
+                          <Button
+                            variant="outlined"
+                            onClick={() => handleShowMoreParcelles(agence.id)}
+                            sx={{
+                              px: 4,
+                              py: 1.5,
+                              fontSize: { xs: "0.9rem", md: "1rem" },
+                              fontWeight: 600,
+                              borderRadius: 3,
+                              textTransform: "none",
+                              borderWidth: 2,
+                              "&:hover": {
+                                borderWidth: 2,
+                              },
+                            }}
+                          >
+                            Afficher la suite
+                          </Button>
+                        </Box>
+                      )}
+                    </Box>
+                  </Box>
+                );
+              })}
+            </Stack>
+          ) : (
+            // Afficher les parcelles de l'agence sélectionnée avec Grid
+            (() => {
+              const parcellesAgence = parcellesByAgence[selectedAgenceId] || [];
+              const parcellesDisplayed = parcellesDisplayedByAgence[selectedAgenceId] || 4;
+
+              return (
+                <Box
+                  sx={{
+                    mx: "auto",
+                    maxWidth: 1200,
+                    width: "100%",
+                  }}
+                >
+                  <Grid 
+                    container 
+                    spacing={2}
+                    sx={{
+                      width: "100%",
+                      margin: 0,
+                    }}
+                  >
+                    {parcellesAgence.slice(0, parcellesDisplayed).map((parcelle, index) => (
+                      <Grid 
+                        item 
+                        xs={12} 
+                        sm={6} 
+                        md={3}
+                        key={parcelle.id || index}
+                        sx={{
+                          display: "flex",
+                          flexBasis: { xs: "100%", sm: "calc(50% - 8px)", md: "calc(25% - 12px)" },
+                          maxWidth: { xs: "100%", sm: "calc(50% - 8px)", md: "calc(25% - 12px)" },
+                          flexGrow: 0,
+                          flexShrink: 0,
+                        }}
+                      >
+                        {renderParcelleCard(parcelle, index, true)}
+                      </Grid>
+                    ))}
+                  </Grid>
+
+                  {/* Bouton "Afficher la suite" */}
+                  {parcellesDisplayed < parcellesAgence.length && (
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                        mt: 4,
+                      }}
+                    >
+                      <Button
+                        variant="outlined"
+                        onClick={() => handleShowMoreParcelles(selectedAgenceId)}
+                        sx={{
+                          px: 4,
+                          py: 1.5,
+                          fontSize: { xs: "0.9rem", md: "1rem" },
+                          fontWeight: 600,
+                          borderRadius: 3,
+                          textTransform: "none",
+                          borderWidth: 2,
+                          "&:hover": {
+                            borderWidth: 2,
+                          },
+                        }}
+                      >
+                        Afficher la suite
+                      </Button>
+                    </Box>
+                  )}
+                </Box>
+              );
+            })()
+          )}
         </>
       )}
     </Box>
@@ -2721,350 +3830,845 @@ const parcellesToDisplay =
 
 
       {/* Biens Immobiliers Section */}
-  {/* Biens Immobiliers – NOUVEAU DESIGN (sans carrousel) */}
-<Container
-  maxWidth="lg"
+  {/* Biens Immobiliers – PAR AGENCE AVEC PAGINATION */}
+<Box
+  component="section"
   sx={{
-    py: { xs: 6, md: 8 },
-    px: { xs: 0.5, sm: 2, md: 3 }, // 🔽 moins de marge sur petits écrans
+    bgcolor: "#e6f4ff",
+    py: { xs: 5, sm: 6, md: 8 },
+    px: { xs: 1.5, sm: 3 },
   }}
 >
-  {/* HEADER */}
-  <Box
-    sx={{
-      textAlign: "center",
-      mb: { xs: 3.5, md: 5 },
-    }}
-  >
+  <Container maxWidth="xl" sx={{ width: "100%" }}>
     <Box
       sx={{
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 1,
-        mb: 1.5,
+        bgcolor: "background.paper",
+        borderRadius: 4,
+        boxShadow: { xs: 2, md: 4 },
+        p: { xs: 3, sm: 4, md: 5 },
       }}
     >
+      {/* HEADER */}
       <Box
-        component="span"
         sx={{
-          fontSize: {
-            xs: "1.6rem",
-            sm: "1.8rem",
-            md: "2rem",
-          },
+          display: "flex",
+          flexDirection: { xs: "column", sm: "row" },
+          justifyContent: "space-between",
+          alignItems: { xs: "flex-start", sm: "center" },
+          gap: 2,
+          mb: { xs: 3, md: 4 },
         }}
       >
-        🏠
-      </Box>
-      <Typography
-        variant="h4"
-        fontWeight="bold"
-        sx={{
-          fontSize: {
-            xs: "1.5rem",
-            sm: "2rem",
-            md: "2.3rem",
-          },
-        }}
-      >
-        Biens immobiliers à vendre
-      </Typography>
-    </Box>
-
-    <Typography
-      variant="body1"
-      color="text.secondary"
-      sx={{
-        mb: { xs: 3, md: 4 },
-        fontSize: {
-          xs: "0.9rem",
-          sm: "1rem",
-        },
-        lineHeight: { xs: 1.55, md: 1.65 },
-        maxWidth: 720,
-        mx: "auto",
-      }}
-    >
-      Villas, appartements et maisons de qualité sélectionnés auprès de nos
-      partenaires.
-    </Typography>
-  </Box>
-
-  {/* CONTENU */}
-  {loadingHomepageBiens ? (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: { xs: "column", sm: "row" },
-        justifyContent: "center",
-        alignItems: "center",
-        minHeight: 200,
-        gap: { xs: 1.5, sm: 2 },
-      }}
-    >
-      <CircularProgress size={40} />
-      <Typography
-        variant="body1"
-        sx={{
-          fontSize: { xs: "0.9rem", sm: "1rem" },
-          textAlign: { xs: "center", sm: "left" },
-        }}
-      >
-        Chargement des biens immobiliers…
-      </Typography>
-    </Box>
-  ) : homepageBiens.length === 0 ? (
-    <Box
-      sx={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        minHeight: 160,
-      }}
-    >
-      <Typography variant="body1" color="text.secondary">
-        Aucun bien immobilier disponible pour le moment.
-      </Typography>
-    </Box>
-  ) : (
-    <Grid
-      container
-      spacing={{ xs: 2.5, sm: 3, md: 4 }}
-    >
-      {homepageBiens.map((bien, index) => (
-        <Grid
-          key={bien.id || index}
-          item
-          xs={12}      // 1 carte par ligne sur mobile
-          sm={6}       // 2 colonnes en tablette
-          md={4}       // 3 colonnes en desktop
-        >
-          <Card
-            elevation={3}
+        <Box>
+          <Typography
+            variant="h4"
+            fontWeight="bold"
+            gutterBottom
             sx={{
-              height: "100%",
               display: "flex",
-              flexDirection: "column",
-              borderRadius: 3,
-              overflow: "hidden",
-              boxShadow: "0 10px 25px rgba(15,23,42,0.12)",
-              transition: "transform 0.25s ease, box-shadow 0.25s ease",
-              "&:hover": {
-                transform: { xs: "none", md: "translateY(-6px)" },
-                boxShadow: "0 18px 40px rgba(15,23,42,0.18)",
+              alignItems: "center",
+              gap: 1,
+              fontSize: {
+                xs: "1.4rem",
+                sm: "2rem",
+                md: "2.2rem",
               },
+              wordBreak: "break-word",
             }}
           >
-            {/* Image */}
-            <Box
-              sx={{
-                height: { xs: 200, sm: 210, md: 220 },
-                position: "relative",
-                overflow: "hidden",
-              }}
-            >
-              <Box
-                component="img"
-                src={bien.image}
-                alt={bien.titre}
-                sx={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                  transition: "transform 0.3s ease",
-                  "&:hover": { transform: "scale(1.05)" },
-                }}
-              />
+            <span role="img" aria-label="biens">
+              🏠
+            </span>
+            <span>Biens immobiliers à vendre</span>
+          </Typography>
+          <Typography
+            variant="body1"
+            color="text.secondary"
+            sx={{
+              fontSize: { xs: "0.9rem", sm: "1rem" },
+              maxWidth: 520,
+            }}
+          >
+            Villas, appartements et maisons de qualité sélectionnés auprès de nos
+            partenaires.
+          </Typography>
+        </Box>
 
-              {/* Tags en haut à droite */}
+        <Chip
+          label={`${homepageBiens.length} bien${homepageBiens.length > 1 ? "s" : ""} disponible${homepageBiens.length > 1 ? "s" : ""}`}
+          color="primary"
+          sx={{
+            fontWeight: 600,
+            borderRadius: 999,
+            fontSize: { xs: "0.75rem", sm: "0.85rem" },
+            height: { xs: 28, sm: 32 },
+          }}
+        />
+      </Box>
+
+      {/* FILTRES AGENCES – chips cliquables */}
+      {agencesListBiens.length > 0 && (
+        <Box
+          sx={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: 1,
+            mb: { xs: 3, md: 4 },
+            overflowX: "auto",
+          }}
+        >
+          <Chip
+            label={`Toutes les agences (${homepageBiens.length})`}
+            clickable
+            onClick={() => setSelectedAgenceIdBiens("all")}
+            color={selectedAgenceIdBiens === "all" ? "primary" : "default"}
+            variant={selectedAgenceIdBiens === "all" ? "filled" : "outlined"}
+            sx={{
+              borderRadius: 999,
+              fontSize: { xs: "0.75rem", sm: "0.85rem" },
+            }}
+          />
+          {agencesListBiens.map((agence) => (
+            <Chip
+              key={agence.id}
+              label={`${agence.nom} (${agence.count})`}
+              clickable
+              onClick={() => setSelectedAgenceIdBiens(agence.id)}
+              color={selectedAgenceIdBiens === agence.id ? "primary" : "default"}
+              variant={selectedAgenceIdBiens === agence.id ? "filled" : "outlined"}
+              sx={{
+                borderRadius: 999,
+                fontSize: { xs: "0.75rem", sm: "0.85rem" },
+                maxWidth: 220,
+              }}
+            />
+          ))}
+        </Box>
+      )}
+
+      {/* CONTENU */}
+      {loadingHomepageBiens ? (
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
+            justifyContent: "center",
+            alignItems: "center",
+            minHeight: 200,
+            gap: { xs: 1.5, sm: 2 },
+          }}
+        >
+          <CircularProgress size={40} />
+          <Typography
+            variant="body1"
+            sx={{
+              fontSize: { xs: "0.9rem", sm: "1rem" },
+              textAlign: { xs: "center", sm: "left" },
+            }}
+          >
+            Chargement des biens immobiliers…
+          </Typography>
+        </Box>
+      ) : homepageBiens.length === 0 ? (
+        <Alert severity="info">
+          Aucun bien immobilier disponible pour le moment.
+        </Alert>
+      ) : (
+        <>
+          {/* BIENS PAR AGENCE AVEC PAGINATION */}
+          {selectedAgenceIdBiens === "all" ? (
+            // Afficher toutes les agences avec leurs biens en pagination
+            <Stack spacing={4}>
+              {agencesListBiens.map((agence) => {
+                const biensAgence = biensByAgence[agence.id] || [];
+                const biensDisplayed = biensDisplayedByAgence[agence.id] || 3;
+                
+                if (biensAgence.length === 0) return null;
+
+                return (
+                  <Box key={agence.id}>
+                    {/* En-tête agence */}
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 2,
+                        mb: 3,
+                      }}
+                    >
+                      <Business sx={{ fontSize: 28, color: "primary.main" }} />
+                      <Box>
+                        <Typography variant="h6" fontWeight="bold">
+                          {agence.nom}
+                        </Typography>
+                        {agence.ville && (
+                          <Typography variant="body2" color="text.secondary">
+                            {agence.ville}
+                          </Typography>
+                        )}
+                      </Box>
+                      <Chip
+                        label={`${biensAgence.length} bien${biensAgence.length > 1 ? "s" : ""}`}
+                        size="small"
+                        color="primary"
+                        sx={{ ml: "auto" }}
+                      />
+                    </Box>
+
+                    {/* Grid des biens de cette agence */}
+                    <Box
+                      sx={{
+                        mx: "auto",
+                        maxWidth: 1200,
+                        width: "100%",
+                      }}
+                    >
+                      <Grid 
+                        container 
+                        spacing={3}
+                        sx={{
+                          width: "100%",
+                          margin: 0,
+                        }}
+                      >
+                        {biensAgence.slice(0, biensDisplayed).map((bien, index) => (
+                          <Grid 
+                            item 
+                            xs={12} 
+                            sm={6} 
+                            md={4}
+                            key={bien.id || index}
+                            sx={{
+                              display: "flex",
+                              flexBasis: { xs: "100%", sm: "calc(50% - 12px)", md: "calc(33.333% - 16px)" },
+                              maxWidth: { xs: "100%", sm: "calc(50% - 12px)", md: "calc(33.333% - 16px)" },
+                              flexGrow: 0,
+                              flexShrink: 0,
+                            }}
+                          >
+                            <Card
+                              elevation={3}
+                              sx={{
+                                width: "100%",
+                                height: "100%",
+                                minHeight: "unset",
+                                transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                                display: "flex",
+                                flexDirection: "column",
+                                borderRadius: 3,
+                                overflow: "hidden",
+                                boxShadow: "0 10px 25px rgba(15,23,42,0.12)",
+                                "&:hover": {
+                                  transform: { xs: "none", md: "translateY(-6px)" },
+                                  boxShadow: "0 18px 40px rgba(15,23,42,0.18)",
+                                },
+                              }}
+                            >
+              {/* Image */}
               <Box
                 sx={{
-                  position: "absolute",
-                  top: 12,
-                  right: 12,
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 0.75,
-                  alignItems: "flex-end",
+                  height: { xs: 200, sm: 210, md: 220 },
+                  position: "relative",
+                  overflow: "hidden",
                 }}
               >
                 <Box
+                  component="img"
+                  src={bien.image}
+                  alt={bien.titre}
                   sx={{
-                    px: 1.4,
-                    py: 0.6,
-                    borderRadius: 999,
-                    bgcolor: "rgba(15,23,42,0.85)",
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    transition: "transform 0.3s ease",
+                    "&:hover": { transform: "scale(1.05)" },
+                  }}
+                />
+
+                {/* Tags en haut à droite */}
+                <Box
+                  sx={{
+                    position: "absolute",
+                    top: 12,
+                    right: 12,
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 0.75,
+                    alignItems: "flex-end",
                   }}
                 >
-                  <Typography
-                    variant="caption"
+                  <Box
                     sx={{
-                      color: "white",
-                      fontWeight: 600,
-                      fontSize: { xs: "0.68rem", sm: "0.72rem" },
-                      textTransform: "uppercase",
-                      letterSpacing: 0.4,
+                      px: 1.4,
+                      py: 0.6,
+                      borderRadius: 999,
+                      bgcolor: "rgba(15,23,42,0.85)",
                     }}
                   >
-                    {bien.type}
-                  </Typography>
-                </Box>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: "white",
+                        fontWeight: 600,
+                        fontSize: { xs: "0.68rem", sm: "0.72rem" },
+                        textTransform: "uppercase",
+                        letterSpacing: 0.4,
+                      }}
+                    >
+                      {bien.type}
+                    </Typography>
+                  </Box>
 
-                {bien.verified && (
-                  <Chip
-                    icon={
-                      <VerifiedUser
-                        sx={{ fontSize: "0.85rem !important" }}
-                      />
-                    }
-                    label="Vérifié"
-                    size="small"
-                    color="success"
-                    sx={{
-                      bgcolor: "rgba(255,255,255,0.95)",
-                      fontWeight: 600,
-                      fontSize: { xs: "0.65rem", sm: "0.7rem" },
-                      height: 22,
-                    }}
-                  />
-                )}
+                  {bien.verified && (
+                    <Chip
+                      icon={
+                        <VerifiedUser
+                          sx={{ fontSize: "0.85rem !important" }}
+                        />
+                      }
+                      label="Vérifié"
+                      size="small"
+                      color="success"
+                      sx={{
+                        bgcolor: "rgba(255,255,255,0.95)",
+                        fontWeight: 600,
+                        fontSize: { xs: "0.65rem", sm: "0.7rem" },
+                        height: 22,
+                      }}
+                    />
+                  )}
+                </Box>
               </Box>
-            </Box>
 
-            {/* Contenu carte */}
-            <CardContent
-              sx={{
-                p: { xs: 2.2, sm: 2.5, md: 3 },
-                display: "flex",
-                flexDirection: "column",
-                flex: 1,
-              }}
-            >
-              <Typography
-                variant="h6"
-                fontWeight="bold"
+              {/* Contenu carte */}
+              <CardContent
                 sx={{
-                  mb: 1.5,
-                  fontSize: {
-                    xs: "1.05rem",
-                    sm: "1.15rem",
-                    md: "1.2rem",
-                  },
-                  lineHeight: 1.3,
+                  p: { xs: 2.2, sm: 2.5, md: 3 },
+                  display: "flex",
+                  flexDirection: "column",
+                  flex: 1,
                 }}
               >
-                {bien.titre}
-              </Typography>
+                <Typography
+                  variant="h6"
+                  fontWeight="bold"
+                  sx={{
+                    mb: 1.5,
+                    fontSize: {
+                      xs: "1.05rem",
+                      sm: "1.15rem",
+                      md: "1.2rem",
+                    },
+                    lineHeight: 1.3,
+                  }}
+                >
+                  {bien.titre}
+                </Typography>
 
-              <Stack spacing={1.1} mb={2.2}>
-                <Box display="flex" alignItems="center" gap={1}>
-                  <LocationOn fontSize="small" color="primary" />
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{
-                      fontSize: {
-                        xs: "0.85rem",
-                        sm: "0.9rem",
-                      },
-                    }}
-                  >
-                    {bien.ville}
-                  </Typography>
-                </Box>
+                <Stack spacing={1.1} mb={2.2}>
+                  <Box display="flex" alignItems="center" gap={1}>
+                    <LocationOn fontSize="small" color="primary" />
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{
+                        fontSize: {
+                          xs: "0.85rem",
+                          sm: "0.9rem",
+                        },
+                      }}
+                    >
+                      {bien.ville}
+                    </Typography>
+                  </Box>
 
-                <Box display="flex" alignItems="center" gap={1}>
-                  <Home fontSize="small" color="primary" />
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{
-                      fontSize: {
-                        xs: "0.85rem",
-                        sm: "0.9rem",
-                      },
-                    }}
-                  >
-                    {bien.superficie} m²
-                  </Typography>
-                </Box>
+                  <Box display="flex" alignItems="center" gap={1}>
+                    <Home fontSize="small" color="primary" />
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{
+                        fontSize: {
+                          xs: "0.85rem",
+                          sm: "0.9rem",
+                        },
+                      }}
+                    >
+                      {bien.superficie} m²
+                    </Typography>
+                  </Box>
 
-                {bien.reference && (
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{
-                      fontSize: {
-                        xs: "0.8rem",
-                        sm: "0.9rem",
-                      },
-                    }}
-                  >
-                    Réf : {bien.reference}
-                  </Typography>
-                )}
-              </Stack>
+                  {bien.reference && (
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{
+                        fontSize: {
+                          xs: "0.8rem",
+                          sm: "0.9rem",
+                        },
+                      }}
+                    >
+                      Réf : {bien.reference}
+                    </Typography>
+                  )}
+                </Stack>
 
-              <Divider sx={{ my: 1.5 }} />
+                <Divider sx={{ my: 1.5 }} />
 
-              <Typography
-                variant="h5"
-                color="primary"
-                fontWeight="bold"
-                sx={{
-                  mb: 1.8,
-                  fontSize: {
-                    xs: "1.35rem",
-                    sm: "1.45rem",
-                    md: "1.6rem",
-                  },
-                }}
-              >
-                {formatMoney(bien.prix)}
-              </Typography>
+                <Typography
+                  variant="h5"
+                  color="primary"
+                  fontWeight="bold"
+                  sx={{
+                    mb: 1.8,
+                    fontSize: {
+                      xs: "1.35rem",
+                      sm: "1.45rem",
+                      md: "1.6rem",
+                    },
+                  }}
+                >
+                  {formatMoney(bien.prix)}
+                </Typography>
 
-              <Button
-                fullWidth
-                variant="contained"
-                endIcon={<ArrowForward />}
-                onClick={() => handleOpenBienDetails(bien)}
-                sx={{
-                  mt: "auto",
-                  py: { xs: 1.1, sm: 1.2 },
-                  borderRadius: 2,
-                  textTransform: "none",
-                  fontWeight: 700,
-                  fontSize: {
-                    xs: "0.9rem",
-                    sm: "0.95rem",
-                  },
-                  background:
-                    "linear-gradient(135deg,#3b82f6 0%,#8b5cf6 100%)",
-                  "&:hover": {
+                <Button
+                  fullWidth
+                  variant="contained"
+                  endIcon={<ArrowForward />}
+                  onClick={() => handleOpenBienDetails(bien)}
+                  sx={{
+                    mt: "auto",
+                    py: { xs: 1.1, sm: 1.2 },
+                    borderRadius: 2,
+                    textTransform: "none",
+                    fontWeight: 700,
+                    fontSize: {
+                      xs: "0.9rem",
+                      sm: "0.95rem",
+                    },
                     background:
-                      "linear-gradient(135deg,#2563eb 0%,#7c3aed 100%)",
-                    transform: { xs: "none", md: "translateY(-2px)" },
-                  },
-                }}
-              >
-                Voir le bien
-              </Button>
-            </CardContent>
-          </Card>
-        </Grid>
-      ))}
-    </Grid>
-  )}
-</Container>
+                      "linear-gradient(135deg,#3b82f6 0%,#8b5cf6 100%)",
+                    "&:hover": {
+                      background:
+                        "linear-gradient(135deg,#2563eb 0%,#7c3aed 100%)",
+                      transform: { xs: "none", md: "translateY(-2px)" },
+                    },
+                  }}
+                >
+                  Voir le bien
+                </Button>
+              </CardContent>
+            </Card>
+                          </Grid>
+                        ))}
+                      </Grid>
+
+                      {/* Bouton "Afficher la suite" pour cette agence */}
+                      {biensDisplayed < biensAgence.length && (
+                        <Box
+                          sx={{
+                            display: "flex",
+                            justifyContent: "center",
+                            mt: 4,
+                          }}
+                        >
+                          <Button
+                            variant="outlined"
+                            onClick={() => handleShowMoreBiens(agence.id)}
+                            sx={{
+                              px: 4,
+                              py: 1.5,
+                              fontSize: { xs: "0.9rem", md: "1rem" },
+                              fontWeight: 600,
+                              borderRadius: 3,
+                              textTransform: "none",
+                              borderWidth: 2,
+                              "&:hover": {
+                                borderWidth: 2,
+                              },
+                            }}
+                          >
+                            Afficher la suite
+                          </Button>
+                        </Box>
+                      )}
+                    </Box>
+                  </Box>
+                );
+              })}
+            </Stack>
+          ) : (
+            // Afficher les biens de l'agence sélectionnée avec Grid
+            (() => {
+              const biensAgence = biensByAgence[selectedAgenceIdBiens] || [];
+              const biensDisplayed = biensDisplayedByAgence[selectedAgenceIdBiens] || 3;
+
+              return (
+                <>
+                  {/* Bande info agence sélectionnée */}
+                  <Box
+                    sx={{
+                      mb: { xs: 2.5, md: 3 },
+                      display: "flex",
+                      flexDirection: { xs: "column", sm: "row" },
+                      justifyContent: "space-between",
+                      alignItems: { xs: "flex-start", sm: "center" },
+                      gap: 1.5,
+                    }}
+                  >
+                    <Box>
+                      <Typography
+                        variant="h6"
+                        fontWeight="bold"
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 1,
+                          fontSize: { xs: "1rem", sm: "1.1rem" },
+                        }}
+                      >
+                        <Business
+                          sx={{
+                            fontSize: { xs: "1.4rem", sm: "1.6rem" },
+                            color: "primary.main",
+                          }}
+                        />
+                        {agencesListBiens.find((a) => a.id === selectedAgenceIdBiens)?.nom ??
+                          "Agence"}
+                      </Typography>
+                      {agencesListBiens.find((a) => a.id === selectedAgenceIdBiens)?.ville && (
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            fontSize: { xs: "0.8rem", sm: "0.9rem" },
+                          }}
+                        >
+                          <LocationOn
+                            fontSize="small"
+                            sx={{ mr: 0.5, color: "text.secondary" }}
+                          />
+                          {agencesListBiens.find((a) => a.id === selectedAgenceIdBiens)?.ville}
+                        </Typography>
+                      )}
+                    </Box>
+
+                    <Button
+                      variant="text"
+                      size="small"
+                      startIcon={<ChevronLeft />}
+                      onClick={() => setSelectedAgenceIdBiens("all")}
+                      sx={{
+                        textTransform: "none",
+                        fontWeight: 600,
+                        fontSize: { xs: "0.8rem", sm: "0.9rem" },
+                      }}
+                    >
+                      Voir toutes les agences
+                    </Button>
+                  </Box>
+
+                  {/* Grid des biens */}
+                  <Box
+                    sx={{
+                      mx: "auto",
+                      maxWidth: 1200,
+                      width: "100%",
+                    }}
+                  >
+                    <Grid 
+                      container 
+                      spacing={3}
+                      sx={{
+                        width: "100%",
+                        margin: 0,
+                      }}
+                    >
+                      {biensAgence.slice(0, biensDisplayed).map((bien, index) => (
+                        <Grid 
+                          item 
+                          xs={12} 
+                          sm={6} 
+                          md={4}
+                          key={bien.id || index}
+                          sx={{
+                            display: "flex",
+                            flexBasis: { xs: "100%", sm: "calc(50% - 12px)", md: "calc(33.333% - 16px)" },
+                            maxWidth: { xs: "100%", sm: "calc(50% - 12px)", md: "calc(33.333% - 16px)" },
+                            flexGrow: 0,
+                            flexShrink: 0,
+                          }}
+                        >
+                          <Card
+                            elevation={3}
+                            sx={{
+                              width: "100%",
+                              height: "100%",
+                              minHeight: "unset",
+                              transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                              display: "flex",
+                              flexDirection: "column",
+                              borderRadius: 3,
+                              overflow: "hidden",
+                              boxShadow: "0 10px 25px rgba(15,23,42,0.12)",
+                              "&:hover": {
+                                transform: { xs: "none", md: "translateY(-6px)" },
+                                boxShadow: "0 18px 40px rgba(15,23,42,0.18)",
+                              },
+                            }}
+                          >
+                          {/* Image */}
+                          <Box
+                            sx={{
+                              height: { xs: 200, sm: 210, md: 220 },
+                              position: "relative",
+                              overflow: "hidden",
+                            }}
+                          >
+                            <Box
+                              component="img"
+                              src={bien.image}
+                              alt={bien.titre}
+                              sx={{
+                                width: "100%",
+                                height: "100%",
+                                objectFit: "cover",
+                                transition: "transform 0.3s ease",
+                                "&:hover": { transform: "scale(1.05)" },
+                              }}
+                            />
+
+                            {/* Tags en haut à droite */}
+                            <Box
+                              sx={{
+                                position: "absolute",
+                                top: 12,
+                                right: 12,
+                                display: "flex",
+                                flexDirection: "column",
+                                gap: 0.75,
+                                alignItems: "flex-end",
+                              }}
+                            >
+                              <Box
+                                sx={{
+                                  px: 1.4,
+                                  py: 0.6,
+                                  borderRadius: 999,
+                                  bgcolor: "rgba(15,23,42,0.85)",
+                                }}
+                              >
+                                <Typography
+                                  variant="caption"
+                                  sx={{
+                                    color: "white",
+                                    fontWeight: 600,
+                                    fontSize: { xs: "0.68rem", sm: "0.72rem" },
+                                    textTransform: "uppercase",
+                                    letterSpacing: 0.4,
+                                  }}
+                                >
+                                  {bien.type}
+                                </Typography>
+                              </Box>
+
+                              {bien.verified && (
+                                <Chip
+                                  icon={
+                                    <VerifiedUser
+                                      sx={{ fontSize: "0.85rem !important" }}
+                                    />
+                                  }
+                                  label="Vérifié"
+                                  size="small"
+                                  color="success"
+                                  sx={{
+                                    bgcolor: "rgba(255,255,255,0.95)",
+                                    fontWeight: 600,
+                                    fontSize: { xs: "0.65rem", sm: "0.7rem" },
+                                    height: 22,
+                                  }}
+                                />
+                              )}
+                            </Box>
+                          </Box>
+
+                          {/* Contenu carte */}
+                          <CardContent
+                            sx={{
+                              p: { xs: 2.2, sm: 2.5, md: 3 },
+                              display: "flex",
+                              flexDirection: "column",
+                              flex: 1,
+                            }}
+                          >
+                            <Typography
+                              variant="h6"
+                              fontWeight="bold"
+                              sx={{
+                                mb: 1.5,
+                                fontSize: {
+                                  xs: "1.05rem",
+                                  sm: "1.15rem",
+                                  md: "1.2rem",
+                                },
+                                lineHeight: 1.3,
+                              }}
+                            >
+                              {bien.titre}
+                            </Typography>
+
+                            <Stack spacing={1.1} mb={2.2}>
+                              <Box display="flex" alignItems="center" gap={1}>
+                                <LocationOn fontSize="small" color="primary" />
+                                <Typography
+                                  variant="body2"
+                                  color="text.secondary"
+                                  sx={{
+                                    fontSize: {
+                                      xs: "0.85rem",
+                                      sm: "0.9rem",
+                                    },
+                                  }}
+                                >
+                                  {bien.ville}
+                                </Typography>
+                              </Box>
+
+                              <Box display="flex" alignItems="center" gap={1}>
+                                <Home fontSize="small" color="primary" />
+                                <Typography
+                                  variant="body2"
+                                  color="text.secondary"
+                                  sx={{
+                                    fontSize: {
+                                      xs: "0.85rem",
+                                      sm: "0.9rem",
+                                    },
+                                  }}
+                                >
+                                  {bien.superficie} m²
+                                </Typography>
+                              </Box>
+
+                              {bien.reference && (
+                                <Typography
+                                  variant="body2"
+                                  color="text.secondary"
+                                  sx={{
+                                    fontSize: {
+                                      xs: "0.8rem",
+                                      sm: "0.9rem",
+                                    },
+                                  }}
+                                >
+                                  Réf : {bien.reference}
+                                </Typography>
+                              )}
+                            </Stack>
+
+                            <Divider sx={{ my: 1.5 }} />
+
+                            <Typography
+                              variant="h5"
+                              color="primary"
+                              fontWeight="bold"
+                              sx={{
+                                mb: 1.8,
+                                fontSize: {
+                                  xs: "1.35rem",
+                                  sm: "1.45rem",
+                                  md: "1.6rem",
+                                },
+                              }}
+                            >
+                              {formatMoney(bien.prix)}
+                            </Typography>
+
+                            <Button
+                              fullWidth
+                              variant="contained"
+                              endIcon={<ArrowForward />}
+                              onClick={() => handleOpenBienDetails(bien)}
+                              sx={{
+                                mt: "auto",
+                                py: { xs: 1.1, sm: 1.2 },
+                                borderRadius: 2,
+                                textTransform: "none",
+                                fontWeight: 700,
+                                fontSize: {
+                                  xs: "0.9rem",
+                                  sm: "0.95rem",
+                                },
+                                background:
+                                  "linear-gradient(135deg,#3b82f6 0%,#8b5cf6 100%)",
+                                "&:hover": {
+                                  background:
+                                    "linear-gradient(135deg,#2563eb 0%,#7c3aed 100%)",
+                                  transform: { xs: "none", md: "translateY(-2px)" },
+                                },
+                              }}
+                            >
+                              Voir le bien
+                            </Button>
+                          </CardContent>
+                        </Card>
+                        </Grid>
+                      ))}
+                    </Grid>
+
+                    {/* Bouton "Afficher la suite" */}
+                    {biensDisplayed < biensAgence.length && (
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "center",
+                          mt: 4,
+                        }}
+                      >
+                        <Button
+                          variant="outlined"
+                          onClick={() => handleShowMoreBiens(selectedAgenceIdBiens)}
+                          sx={{
+                            px: 4,
+                            py: 1.5,
+                            fontSize: { xs: "0.9rem", md: "1rem" },
+                            fontWeight: 600,
+                            borderRadius: 3,
+                            textTransform: "none",
+                            borderWidth: 2,
+                            "&:hover": {
+                              borderWidth: 2,
+                            },
+                          }}
+                        >
+                          Afficher la suite
+                        </Button>
+                      </Box>
+                    )}
+                  </Box>
+                </>
+              );
+            })()
+          )}
+        </>
+      )}
+    </Box>
+  </Container>
+</Box>
 
 
       {/* Locations Proposées Section */}
     {/* Locations Proposées – carrousel modernisé et 100% responsive */}
-<Box sx={{ bgcolor: "grey.50", py: { xs: 6, sm: 8, md: 10 } }}>
+<Box sx={{ bgcolor: "grey.50", py: { xs: 6, sm: 8, md: 10 }, width: "100%" }}>
   <Container
-    maxWidth="lg"
+    maxWidth="xl"
     sx={{
       px: { xs: 1.5, sm: 2, md: 3 }, // moins de marge sur petits écrans
+      width: "100%",
     }}
   >
     {/* HEADER */}
@@ -3131,7 +4735,7 @@ const parcellesToDisplay =
       </Typography>
     </Box>
 
-    {/* Carrousel des locations */}
+    {/* Grid des locations */}
     <Box sx={{ position: "relative", maxWidth: 1200, mx: "auto" }}>
       {loadingHomepageLocations ? (
         <Box
@@ -3160,95 +4764,84 @@ const parcellesToDisplay =
         </Box>
       ) : homepageLocations.length > 0 ? (
         <>
-          {/* Conteneur du carrousel avec overflow caché */}
+          {/* Conteneur Grid */}
           <Box
             sx={{
-              position: "relative",
-              overflow: "hidden",
               mx: "auto",
-              maxWidth: "100%",
-              px: { xs: 0.5, sm: 0 }, // on colle un peu plus sur mobile
+              maxWidth: 1200,
+              width: "100%",
             }}
           >
-            {/* Wrapper interne qui se déplace horizontalement */}
-            <Box
+            <Grid 
+              container 
+              spacing={3}
               sx={{
-                display: "flex",
-                gap: { xs: 2, sm: 2.5, md: 3 },
-                transition: "transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)",
-                transform: {
-                  xs: `translateX(-${locationsCarouselIndex * 100}%)`,
-                  sm: `translateX(-${locationsCarouselIndex * 50}%)`,
-                  md: `translateX(-${locationsCarouselIndex * 33.333}%)`,
-                },
-                willChange: "transform",
+                width: "100%",
+                margin: 0,
               }}
             >
-              {homepageLocations.map((location, index) => (
-                <Card
+              {homepageLocations.slice(0, locationsDisplayed).map((location, index) => (
+                <Grid 
+                  item 
+                  xs={12} 
+                  sm={6} 
+                  md={4}
                   key={location.id || index}
-                  elevation={0}
                   sx={{
-                    minWidth: {
-                      xs: "100%",
-                      sm: "calc(50% - 12px)",
-                      md: "calc(33.333% - 16px)",
-                    },
-                    maxWidth: {
-                      xs: "100%",
-                      sm: "calc(50% - 12px)",
-                      md: "calc(33.333% - 16px)",
-                    },
-                    width: {
-                      xs: "100%",
-                      sm: "calc(50% - 12px)",
-                      md: "calc(33.333% - 16px)",
-                    },
-                    // 🔽 plus de hauteur fixe, tout devient fluide
-                    height: "100%",
-                    minHeight: "unset",
-                    transition:
-                      "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
                     display: "flex",
-                    flexDirection: "column",
-                    background: "white",
-                    border: "1px solid rgba(148,163,184,0.35)",
-                    borderRadius: { xs: 2.5, md: 3 },
-                    overflow: "hidden",
-                    position: "relative",
+                    flexBasis: { xs: "100%", sm: "calc(50% - 12px)", md: "calc(33.333% - 16px)" },
+                    maxWidth: { xs: "100%", sm: "calc(50% - 12px)", md: "calc(33.333% - 16px)" },
+                    flexGrow: 0,
                     flexShrink: 0,
-                    boxShadow: "0 6px 24px rgba(15,23,42,0.08)",
-                    "&::before": {
-                      content: '""',
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      height: 3,
-                      background: `linear-gradient(90deg, ${location.gradient[0]}, ${location.gradient[1]})`,
-                      opacity: 0,
-                      transition: "opacity 0.3s ease",
-                      zIndex: 1,
-                    },
-                    "&:hover": {
-                      transform: {
-                        xs: "none",
-                        md: "translateY(-8px) scale(1.01)",
-                      },
-                      boxShadow: `0 16px 40px ${location.gradient[0]}20`,
-                      borderColor: location.gradient[0],
-                      "&::before": {
-                        opacity: 1,
-                      },
-                      "& .location-image": {
-                        transform: {
-                          xs: "none",
-                          md: "scale(1.05)",
-                        },
-                      },
-                    },
                   }}
                 >
+                  <Card
+                    elevation={0}
+                    sx={{
+                      width: "100%",
+                      height: "100%",
+                      minHeight: "unset",
+                      transition:
+                        "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                      display: "flex",
+                      flexDirection: "column",
+                      background: "white",
+                      border: "1px solid rgba(148,163,184,0.35)",
+                      borderRadius: { xs: 2.5, md: 3 },
+                      overflow: "hidden",
+                      position: "relative",
+                      boxShadow: "0 6px 24px rgba(15,23,42,0.08)",
+                      "&::before": {
+                        content: '""',
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: 3,
+                        background: `linear-gradient(90deg, ${location.gradient[0]}, ${location.gradient[1]})`,
+                        opacity: 0,
+                        transition: "opacity 0.3s ease",
+                        zIndex: 1,
+                      },
+                      "&:hover": {
+                        transform: {
+                          xs: "none",
+                          md: "translateY(-8px) scale(1.01)",
+                        },
+                        boxShadow: `0 16px 40px ${location.gradient[0]}20`,
+                        borderColor: location.gradient[0],
+                        "&::before": {
+                          opacity: 1,
+                        },
+                        "& .location-image": {
+                          transform: {
+                            xs: "none",
+                            md: "scale(1.05)",
+                          },
+                        },
+                      },
+                    }}
+                  >
                   {/* Image de la maison */}
                   <Box
                     sx={{
@@ -3540,82 +5133,40 @@ const parcellesToDisplay =
                     </Button>
                   </CardContent>
                 </Card>
+                </Grid>
               ))}
-            </Box>
+            </Grid>
+
+            {/* Bouton "Afficher la suite" pour les locations */}
+            {locationsDisplayed < homepageLocations.length && (
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  mt: 4,
+                }}
+              >
+                <Button
+                  variant="outlined"
+                  onClick={handleShowMoreLocations}
+                  sx={{
+                    px: 4,
+                    py: 1.5,
+                    fontSize: { xs: "0.9rem", md: "1rem" },
+                    fontWeight: 600,
+                    borderRadius: 3,
+                    textTransform: "none",
+                    borderWidth: 2,
+                    "&:hover": {
+                      borderWidth: 2,
+                    },
+                  }}
+                >
+                  Afficher la suite
+                </Button>
+              </Box>
+            )}
           </Box>
-
-          {/* Boutons de navigation du carrousel des locations */}
-          {homepageLocations.length > 3 && (
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                gap: 2,
-                mt: 4,
-              }}
-            >
-              <IconButton
-                onClick={handleLocationCarouselPrev}
-                disabled={locationsCarouselIndex === 0}
-                size={isMobile ? "medium" : "large"}
-                sx={{
-                  bgcolor: "primary.main",
-                  color: "white",
-                  "&:hover": {
-                    bgcolor: "primary.dark",
-                    transform: { xs: "none", md: "scale(1.1)" },
-                  },
-                  "&:disabled": {
-                    bgcolor: "grey.300",
-                    cursor: "not-allowed",
-                  },
-                  transition: "all 0.3s",
-                }}
-              >
-                <ChevronLeft fontSize={isMobile ? "medium" : "large"} />
-              </IconButton>
-
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                sx={{
-                  minWidth: { xs: 50, md: 60 },
-                  textAlign: "center",
-                  fontSize: {
-                    xs: "clamp(0.8rem, 2.8vw, 0.9rem)",
-                    md: "0.95rem",
-                  },
-                }}
-              >
-                {Math.floor(locationsCarouselIndex / 3) + 1} /{" "}
-                {Math.ceil(homepageLocations.length / 3)}
-              </Typography>
-
-              <IconButton
-                onClick={handleLocationCarouselNext}
-                disabled={
-                  locationsCarouselIndex >= homepageLocations.length - 3
-                }
-                size={isMobile ? "medium" : "large"}
-                sx={{
-                  bgcolor: "primary.main",
-                  color: "white",
-                  "&:hover": {
-                    bgcolor: "primary.dark",
-                    transform: { xs: "none", md: "scale(1.1)" },
-                  },
-                  "&:disabled": {
-                    bgcolor: "grey.300",
-                    cursor: "not-allowed",
-                  },
-                  transition: "all 0.3s",
-                }}
-              >
-                <ChevronRight fontSize={isMobile ? "medium" : "large"} />
-              </IconButton>
-            </Box>
-          )}
         </>
       ) : (
         <Box sx={{ textAlign: "center", py: 4 }}>
@@ -3648,7 +5199,7 @@ const parcellesToDisplay =
           }
         }}
       >
-        <Container maxWidth="lg" sx={{ position: "relative", zIndex: 1 }}>
+        <Container maxWidth="xl" sx={{ position: "relative", zIndex: 1, width: "100%" }}>
           <Box sx={{ textAlign: "center", mb: { xs: 4, md: 8 } }}>
             <Chip 
               label="Acteurs du secteur" 
@@ -4050,10 +5601,11 @@ const parcellesToDisplay =
       {/* CTA Section */}
     {/* CTA Section – modernisée & ultra responsive */}
 <Container
-  maxWidth="lg"
+  maxWidth="xl"
   sx={{
     py: { xs: 6, sm: 8, md: 10 },
     px: { xs: 1.5, sm: 2.5, md: 3 }, // 🔽 moins de padding sur les côtés en mobile
+    width: "100%",
   }}
 >
   <Paper
@@ -4942,11 +6494,15 @@ const parcellesToDisplay =
                           }
                         }}
                       >
-                        📞 Contacter le propriétaire
+                        📞 Contacter l'agence
                       </Button>
                       <Button
                         variant="outlined"
                         size="large"
+                        onClick={() => {
+                          const whatsappUrl = `https://wa.me/22780648383`;
+                          window.open(whatsappUrl, "_blank");
+                        }}
                         sx={{ 
                           px: 4,
                           borderColor: "white",
@@ -5537,6 +7093,10 @@ const parcellesToDisplay =
                       <Button
                         variant="contained"
                         size="large"
+                        onClick={() => {
+                          const whatsappUrl = `https://wa.me/22780648383`;
+                          window.open(whatsappUrl, "_blank");
+                        }}
                         sx={{
                           background: "rgba(255, 255, 255, 0.9)",
                           color: "primary.main",
@@ -5553,6 +7113,10 @@ const parcellesToDisplay =
                       <Button
                         variant="outlined"
                         size="large"
+                        onClick={() => {
+                          const whatsappUrl = `https://wa.me/22780648383`;
+                          window.open(whatsappUrl, "_blank");
+                        }}
                         sx={{ 
                           px: 4,
                           borderColor: "white",
@@ -5842,7 +7406,7 @@ const parcellesToDisplay =
                 🏘️ {selectedParcelle?.ref || "Détails de la parcelle"}
               </Typography>
               <Typography variant="body1" color="text.secondary">
-                Îlot {selectedParcelle?.ilot}
+                Îlot {selectedParcelle?.ilot}, Parcelle {selectedParcelle?.ref}
               </Typography>
             </Box>
             <IconButton onClick={handleCloseParcelleDetails}>
@@ -5939,7 +7503,7 @@ const parcellesToDisplay =
                           ÎLOT
                         </Typography>
                         <Typography variant="h6" fontWeight="bold">
-                          {selectedParcelle.ilot}
+                          {selectedParcelle.ilot}, Parcelle {selectedParcelle.ref}
                         </Typography>
                       </Paper>
                     </Grid>
@@ -6038,7 +7602,7 @@ const parcellesToDisplay =
                       {selectedParcelle.ville}
                     </Typography>
                     <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.9)" }}>
-                      Îlot {selectedParcelle.ilot}
+                      Îlot {selectedParcelle.ilot}, Parcelle {selectedParcelle.ref}
                     </Typography>
                   </Box>
 
@@ -6133,7 +7697,7 @@ const parcellesToDisplay =
                         size="medium"
                         startIcon={<LocationOn />}
                         onClick={() => {
-                          const searchUrl = `https://maps.google.com/maps/search/${encodeURIComponent(`${selectedParcelle.ville} Îlot ${selectedParcelle.ilot}`)}`;
+                          const searchUrl = `https://maps.google.com/maps/search/${encodeURIComponent(`${selectedParcelle.ville} Îlot ${selectedParcelle.ilot}, Parcelle ${selectedParcelle.ref}`)}`;
                           window.open(searchUrl, "_blank");
                         }}
                         sx={{
@@ -6160,44 +7724,100 @@ const parcellesToDisplay =
                     <Typography variant="h6" fontWeight="bold" gutterBottom>
                       📄 Documents et médias
                     </Typography>
-                    {selectedParcelle.documents && selectedParcelle.documents.length > 0 && (
-                      <Box sx={{ mb: 2 }}>
-                        <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
-                          Documents ({selectedParcelle.documents.length})
+                    
+                    {/* Section Vidéos */}
+                    {selectedParcelle.videos && selectedParcelle.videos.length > 0 && (
+                      <Box sx={{ mb: 3 }}>
+                        <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 2, fontWeight: 600 }}>
+                          🎥 Vidéos ({selectedParcelle.videos.length})
                         </Typography>
-                        <Stack spacing={1}>
-                          {selectedParcelle.documents.map((doc, idx) => (
-                            <Chip
-                              key={idx}
-                              label={`Document ${idx + 1}`}
-                              component="a"
-                              href={fixImageUrl(doc)}
-                              target="_blank"
-                              clickable
-                              sx={{ justifyContent: "flex-start" }}
-                            />
-                          ))}
+                        <Stack spacing={2}>
+                          {selectedParcelle.videos.map((videoUrl, idx) => {
+                            const embedUrl = getVideoEmbedUrl(videoUrl);
+                            return (
+                              <Box key={idx} sx={{ mb: 2 }}>
+                                {embedUrl && embedUrl.startsWith('http') ? (
+                                  <Box
+                                    sx={{
+                                      position: "relative",
+                                      width: "100%",
+                                      paddingTop: "56.25%", // 16:9 aspect ratio
+                                      borderRadius: 2,
+                                      overflow: "hidden",
+                                      bgcolor: "#000",
+                                      mb: 1,
+                                    }}
+                                  >
+                                    <iframe
+                                      src={embedUrl}
+                                      title={`Vidéo ${idx + 1}`}
+                                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                      allowFullScreen
+                                      style={{
+                                        position: "absolute",
+                                        top: 0,
+                                        left: 0,
+                                        width: "100%",
+                                        height: "100%",
+                                        border: "none",
+                                      }}
+                                    />
+                                  </Box>
+                                ) : (
+                                  <Button
+                                    variant="outlined"
+                                    component="a"
+                                    href={videoUrl}
+                                    target="_blank"
+                                    startIcon={<VideoLibrary />}
+                                    fullWidth
+                                    sx={{ py: 1.5 }}
+                                  >
+                                    Voir la vidéo {idx + 1}
+                                  </Button>
+                                )}
+                              </Box>
+                            );
+                          })}
                         </Stack>
                       </Box>
                     )}
-                    {selectedParcelle.videos && selectedParcelle.videos.length > 0 && (
+
+                    {/* Section Documents */}
+                    {selectedParcelle.documents && selectedParcelle.documents.length > 0 && (
                       <Box>
-                        <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
-                          Vidéos ({selectedParcelle.videos.length})
+                        <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 2, fontWeight: 600 }}>
+                          📎 Documents ({selectedParcelle.documents.length})
                         </Typography>
-                        <Stack spacing={1}>
-                          {selectedParcelle.videos.map((video, idx) => (
-                            <Chip
-                              key={idx}
-                              label={`Vidéo ${idx + 1}`}
-                              component="a"
-                              href={video}
-                              target="_blank"
-                              clickable
-                              color="primary"
-                              sx={{ justifyContent: "flex-start" }}
-                            />
-                          ))}
+                        <Stack spacing={1.5}>
+                          {selectedParcelle.documents.map((docUrl, idx) => {
+                            const fileName = getFileNameFromUrl(docUrl);
+                            const fullUrl = fixImageUrl(docUrl);
+                            return (
+                              <Button
+                                key={idx}
+                                variant="outlined"
+                                component="a"
+                                href={fullUrl}
+                                target="_blank"
+                                download
+                                startIcon={<Description />}
+                                fullWidth
+                                sx={{
+                                  justifyContent: "flex-start",
+                                  py: 1.5,
+                                  textTransform: "none",
+                                  textAlign: "left",
+                                }}
+                              >
+                                <Box sx={{ flex: 1, textAlign: "left" }}>
+                                  <Typography variant="body2" fontWeight="medium" noWrap>
+                                    {fileName}
+                                  </Typography>
+                                </Box>
+                              </Button>
+                            );
+                          })}
                         </Stack>
                       </Box>
                     )}
@@ -6214,9 +7834,430 @@ const parcellesToDisplay =
           )}
         </Box>
       </Drawer>
-   
 
-    </PageLayout>
+      {/* Drawer des banques partenaires */}
+      <Drawer
+        anchor="right"
+        open={openBanqueDrawer}
+        onClose={handleCloseBanqueDetails}
+        sx={{
+          "& .MuiDrawer-paper": {
+            width: { xs: "100%", sm: "80%", md: "70%", lg: "60%" },
+            maxWidth: "1200px",
+          },
+        }}
+      >
+        <Box sx={{ p: 3, height: "100%", display: "flex", flexDirection: "column", bgcolor: "#f5f5f5" }}>
+          {/* En-tête du drawer */}
+          <Box display="flex" alignItems="center" justifyContent="space-between" mb={3}>
+            <Box display="flex" alignItems="center" gap={2}>
+              <Box
+                sx={{
+                  width: 64,
+                  height: 64,
+                  borderRadius: "50%",
+                  background: "linear-gradient(135deg, #10b981, #059669)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  boxShadow: "0 10px 26px rgba(16, 185, 129, 0.40)",
+                }}
+              >
+                <AccountBalance sx={{ color: "white", fontSize: 32 }} />
+              </Box>
+              <Box>
+                <Typography variant="h4" fontWeight="bold" gutterBottom>
+                  {selectedBanque ? `🏦 ${selectedBanque.nom}` : "🏦 Détails de la Banque"}
+                </Typography>
+                <Typography variant="body1" color="text.secondary">
+                  {selectedBanque ? selectedBanque.services : "Informations complètes"}
+                </Typography>
+              </Box>
+            </Box>
+            <IconButton
+              onClick={handleCloseBanqueDetails}
+              sx={{
+                bgcolor: "grey.100",
+                "&:hover": { bgcolor: "grey.200" },
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
+          </Box>
+
+          {/* Contenu du drawer */}
+          <Box sx={{ flex: 1, overflow: "auto" }}>
+            {selectedBanque ? (
+              <Grid container spacing={3}>
+                {/* Description */}
+                <Grid item xs={12}>
+                  <Paper sx={{ p: 3, borderRadius: 2, bgcolor: "white" }}>
+                    <Typography variant="h6" fontWeight="bold" mb={2} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      📋 À propos
+                    </Typography>
+                    <Typography variant="body1" color="text.secondary" sx={{ lineHeight: 1.8 }}>
+                      {selectedBanque.description}
+                    </Typography>
+                  </Paper>
+                </Grid>
+
+                {/* Produits */}
+                <Grid item xs={12} md={6}>
+                  <Paper sx={{ p: { xs: 2, sm: 3 }, borderRadius: 2, bgcolor: "white", height: { xs: "auto", md: "100%" } }}>
+                    <Typography 
+                      variant="h6" 
+                      fontWeight="bold" 
+                      mb={2} 
+                      sx={{ 
+                        display: "flex", 
+                        alignItems: "center", 
+                        gap: 1,
+                        fontSize: { xs: "1rem", sm: "1.25rem" }
+                      }}
+                    >
+                      💼 Produits et Services
+                    </Typography>
+                    <Stack spacing={1.5}>
+                      {selectedBanque.produits && selectedBanque.produits.map((produit, index) => (
+                        <Box
+                          key={index}
+                          sx={{
+                            display: "flex",
+                            alignItems: "flex-start",
+                            gap: { xs: 1, sm: 1.5 },
+                            p: { xs: 1, sm: 1.5 },
+                            borderRadius: 2,
+                            bgcolor: "grey.50",
+                            transition: "all 0.3s ease",
+                            "&:hover": {
+                              bgcolor: "primary.50",
+                              transform: { xs: "none", md: "translateX(4px)" },
+                            },
+                          }}
+                        >
+                          <CheckCircle sx={{ color: "primary.main", mt: 0.5, fontSize: { xs: 18, sm: 20 }, flexShrink: 0 }} />
+                          <Typography 
+                            variant="body2" 
+                            sx={{ 
+                              flex: 1,
+                              fontSize: { xs: "0.875rem", sm: "0.9375rem" },
+                              wordBreak: "break-word",
+                              overflowWrap: "break-word",
+                            }}
+                          >
+                            {produit}
+                          </Typography>
+                        </Box>
+                      ))}
+                    </Stack>
+                  </Paper>
+                </Grid>
+
+                {/* Avantages */}
+                <Grid item xs={12} md={6}>
+                  <Paper sx={{ p: { xs: 2, sm: 3 }, borderRadius: 2, bgcolor: "white", height: { xs: "auto", md: "100%" } }}>
+                    <Typography 
+                      variant="h6" 
+                      fontWeight="bold" 
+                      mb={2} 
+                      sx={{ 
+                        display: "flex", 
+                        alignItems: "center", 
+                        gap: 1,
+                        fontSize: { xs: "1rem", sm: "1.25rem" }
+                      }}
+                    >
+                      ✨ Avantages
+                    </Typography>
+                    <Stack spacing={1.5}>
+                      {selectedBanque.avantages && selectedBanque.avantages.map((avantage, index) => (
+                        <Box
+                          key={index}
+                          sx={{
+                            display: "flex",
+                            alignItems: "flex-start",
+                            gap: { xs: 1, sm: 1.5 },
+                            p: { xs: 1, sm: 1.5 },
+                            borderRadius: 2,
+                            bgcolor: "success.50",
+                            transition: "all 0.3s ease",
+                            "&:hover": {
+                              bgcolor: "success.100",
+                              transform: { xs: "none", md: "translateX(4px)" },
+                            },
+                          }}
+                        >
+                          <Star sx={{ color: "success.main", mt: 0.5, fontSize: { xs: 18, sm: 20 }, flexShrink: 0 }} />
+                          <Typography 
+                            variant="body2" 
+                            sx={{ 
+                              flex: 1,
+                              fontSize: { xs: "0.875rem", sm: "0.9375rem" },
+                              wordBreak: "break-word",
+                              overflowWrap: "break-word",
+                            }}
+                          >
+                            {avantage}
+                          </Typography>
+                        </Box>
+                      ))}
+                    </Stack>
+                  </Paper>
+                </Grid>
+
+                {/* Contact */}
+                {selectedBanque.contact && (
+                  <Grid item xs={12} sx={{ mt: 7 }}>
+                    <Paper sx={{ p: 3, borderRadius: 2, bgcolor: "white" }}>
+                      <Typography variant="h6" fontWeight="bold" mb={2} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                        📞 Contact
+                      </Typography>
+                      <Grid container spacing={2}>
+                        {selectedBanque.contact.telephone && (
+                          <Grid item xs={12} sm={4}>
+                            <Box
+                              sx={{
+                                p: 2,
+                                borderRadius: 2,
+                                bgcolor: "primary.50",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 1.5,
+                                transition: "all 0.3s ease",
+                                "&:hover": {
+                                  bgcolor: "primary.100",
+                                  transform: "translateY(-2px)",
+                                },
+                              }}
+                            >
+                              <Phone sx={{ color: "primary.main" }} />
+                              <Box>
+                                <Typography variant="caption" color="text.secondary">
+                                  Téléphone
+                                </Typography>
+                                <Typography variant="body2" fontWeight="bold">
+                                  {selectedBanque.contact.telephone}
+                                </Typography>
+                              </Box>
+                            </Box>
+                          </Grid>
+                        )}
+                        {selectedBanque.contact.email && (
+                          <Grid item xs={12} sm={4}>
+                            <Box
+                              sx={{
+                                p: 2,
+                                borderRadius: 2,
+                                bgcolor: "secondary.50",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 1.5,
+                                transition: "all 0.3s ease",
+                                "&:hover": {
+                                  bgcolor: "secondary.100",
+                                  transform: "translateY(-2px)",
+                                },
+                              }}
+                            >
+                              <Email sx={{ color: "secondary.main" }} />
+                              <Box>
+                                <Typography variant="caption" color="text.secondary">
+                                  Email
+                                </Typography>
+                                <Typography variant="body2" fontWeight="bold">
+                                  {selectedBanque.contact.email}
+                                </Typography>
+                              </Box>
+                            </Box>
+                          </Grid>
+                        )}
+                        {selectedBanque.contact.siteWeb && (
+                          <Grid item xs={12} sm={4}>
+                            <Box
+                              sx={{
+                                p: 2,
+                                borderRadius: 2,
+                                bgcolor: "info.50",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 1.5,
+                                transition: "all 0.3s ease",
+                                "&:hover": {
+                                  bgcolor: "info.100",
+                                  transform: "translateY(-2px)",
+                                },
+                              }}
+                            >
+                              <Business sx={{ color: "info.main" }} />
+                              <Box>
+                                <Typography variant="caption" color="text.secondary">
+                                  Site Web
+                                </Typography>
+                                <Typography variant="body2" fontWeight="bold">
+                                  {selectedBanque.contact.siteWeb}
+                                </Typography>
+                              </Box>
+                            </Box>
+                          </Grid>
+                        )}
+                      </Grid>
+                    </Paper>
+                  </Grid>
+                )}
+
+                {/* Adresse et Géolocalisation */}
+                {(selectedBanque.adresse || (selectedBanque.localisation?.latitude && selectedBanque.localisation?.longitude)) && (
+                  <Grid item xs={12}>
+                    <Paper sx={{ p: 3, borderRadius: 2, bgcolor: "white" }}>
+                      <Typography variant="h6" fontWeight="bold" mb={2} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                        📍 Adresse et Localisation
+                      </Typography>
+                      <Stack spacing={2}>
+                        {selectedBanque.adresse && (
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "flex-start",
+                              gap: 1.5,
+                              p: 2,
+                              borderRadius: 2,
+                              bgcolor: "grey.50",
+                            }}
+                          >
+                            <LocationOn sx={{ color: "primary.main", mt: 0.5, flexShrink: 0 }} />
+                            <Box sx={{ flex: 1 }}>
+                              <Typography variant="caption" color="text.secondary" fontWeight="bold" display="block" mb={0.5}>
+                                Adresse
+                              </Typography>
+                              <Typography variant="body2">
+                                {selectedBanque.adresse}
+                              </Typography>
+                            </Box>
+                          </Box>
+                        )}
+                        {selectedBanque.localisation?.latitude && selectedBanque.localisation?.longitude && (
+                          <Box
+                            sx={{
+                              p: 2,
+                              borderRadius: 2,
+                              bgcolor: "primary.50",
+                              border: "1px solid",
+                              borderColor: "primary.200",
+                            }}
+                          >
+                            <Typography variant="caption" color="text.secondary" fontWeight="bold" display="block" mb={1}>
+                              Coordonnées GPS
+                            </Typography>
+                            <Typography variant="body2" fontWeight="medium" mb={2}>
+                              Latitude: {selectedBanque.localisation.latitude}<br />
+                              Longitude: {selectedBanque.localisation.longitude}
+                            </Typography>
+                            <Button
+                              variant="contained"
+                              startIcon={<LocationOn />}
+                              href={`https://www.google.com/maps?q=${selectedBanque.localisation.latitude},${selectedBanque.localisation.longitude}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              fullWidth
+                              sx={{
+                                bgcolor: "primary.main",
+                                "&:hover": { bgcolor: "primary.dark" },
+                                textTransform: "none",
+                                fontWeight: "bold",
+                              }}
+                            >
+                              Voir sur Google Maps
+                            </Button>
+                          </Box>
+                        )}
+                      </Stack>
+                    </Paper>
+                  </Grid>
+                )}
+
+                {/* Boutons d'action */}
+                <Grid item xs={12}>
+                  <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
+                    {selectedBanque.contact?.telephone && (
+                      <Button
+                        variant="contained"
+                        startIcon={<Phone />}
+                        href={`tel:${selectedBanque.contact.telephone.replace(/\s/g, "")}`}
+                        sx={{
+                          bgcolor: "primary.main",
+                          "&:hover": { bgcolor: "primary.dark" },
+                          px: 4,
+                          py: 1.5,
+                          borderRadius: 2,
+                          textTransform: "none",
+                          fontWeight: "bold",
+                        }}
+                      >
+                        Appeler
+                      </Button>
+                    )}
+                    {selectedBanque.contact?.email && (
+                      <Button
+                        variant="outlined"
+                        startIcon={<Email />}
+                        href={`mailto:${selectedBanque.contact.email}`}
+                        sx={{
+                          borderColor: "primary.main",
+                          color: "primary.main",
+                          px: 4,
+                          py: 1.5,
+                          borderRadius: 2,
+                          textTransform: "none",
+                          fontWeight: "bold",
+                          "&:hover": {
+                            borderColor: "primary.dark",
+                            bgcolor: "primary.50",
+                          },
+                        }}
+                      >
+                        Envoyer un email
+                      </Button>
+                    )}
+                    {selectedBanque.contact?.siteWeb && (
+                      <Button
+                        variant="outlined"
+                        startIcon={<Business />}
+                        href={`https://${selectedBanque.contact.siteWeb}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        sx={{
+                          borderColor: "secondary.main",
+                          color: "secondary.main",
+                          px: 4,
+                          py: 1.5,
+                          borderRadius: 2,
+                          textTransform: "none",
+                          fontWeight: "bold",
+                          "&:hover": {
+                            borderColor: "secondary.dark",
+                            bgcolor: "secondary.50",
+                          },
+                        }}
+                      >
+                        Visiter le site web
+                      </Button>
+                    )}
+                  </Box>
+                </Grid>
+              </Grid>
+            ) : (
+              <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+                <Typography variant="h6" color="text.secondary">
+                  Aucune banque sélectionnée
+                </Typography>
+              </Box>
+            )}
+          </Box>
+        </Box>
+      </Drawer>
+
+      <Footer />
+    </Box>
   );
 };
 

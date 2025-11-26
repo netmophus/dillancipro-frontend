@@ -17,7 +17,6 @@ import {
   ListItemText,
 } from "@mui/material";
 import {
-  AccountCircle,
   Notifications,
   Settings,
   Logout,
@@ -108,6 +107,12 @@ const Navbar = () => {
     if (!user?.role) return false;
     const userRole = typeof user.role === 'string' ? user.role : user.role?.name || '';
     return userRole.toLowerCase() === roleName.toLowerCase();
+  };
+
+  // Vérifier si l'utilisateur peut voir tous les menus (User, Client, Admin)
+  const canSeeAllMenus = () => {
+    if (!user) return true; // Non connecté = voir tous les menus
+    return hasRole("User") || hasRole("Client") || hasRole("Admin");
   };
 
   const getDashboardPath = () => {
@@ -384,7 +389,64 @@ const Navbar = () => {
               gap: 1,
             }}
           >
-            {/* Bouton Dashboard */}
+            {/* Lien Parcelles - Visible seulement pour User/Client/Admin */}
+            {canSeeAllMenus() && (
+              <Button
+                color="inherit"
+                component={Link}
+                to="/parcelles"
+                startIcon={<Landscape />}
+                sx={{
+                  display: { xs: "none", md: "flex" },
+                  bgcolor: "rgba(255,255,255,0.15)",
+                  "&:hover": { bgcolor: "rgba(255,255,255,0.25)" },
+                  borderRadius: 2,
+                  px: 2,
+                }}
+              >
+                Parcelles à vendre
+              </Button>
+            )}
+
+            {/* Lien Locations - Visible seulement pour User/Client/Admin */}
+            {canSeeAllMenus() && (
+              <Button
+                color="inherit"
+                component={Link}
+                to="/locations"
+                startIcon={<Home />}
+                sx={{
+                  display: { xs: "none", md: "flex" },
+                  bgcolor: "rgba(255,255,255,0.15)",
+                  "&:hover": { bgcolor: "rgba(255,255,255,0.25)" },
+                  borderRadius: 2,
+                  px: 2,
+                }}
+              >
+                Locations
+              </Button>
+            )}
+
+            {/* Lien Biens à vendre - Visible seulement pour User/Client/Admin */}
+            {canSeeAllMenus() && (
+              <Button
+                color="inherit"
+                component={Link}
+                to="/biens"
+                startIcon={<Business />}
+                sx={{
+                  display: { xs: "none", md: "flex" },
+                  bgcolor: "rgba(255,255,255,0.15)",
+                  "&:hover": { bgcolor: "rgba(255,255,255,0.25)" },
+                  borderRadius: 2,
+                  px: 2,
+                }}
+              >
+                Biens à vendre
+              </Button>
+            )}
+
+            {/* Bouton Dashboard - Toujours visible pour les utilisateurs connectés */}
             <Button
               color="inherit"
               component={Link}
@@ -401,7 +463,7 @@ const Navbar = () => {
               Dashboard
             </Button>
 
-            {/* Menu Agence */}
+            {/* Menu Agence - Toujours visible pour les agences */}
             {hasRole("Agence") && (
               <Box sx={{ display: { xs: "none", md: "block" } }}>
                 <AgenceMenu />
@@ -593,6 +655,51 @@ const Navbar = () => {
               gap: 1,
             }}
           >
+            {/* Lien Parcelles - Visible même sans connexion */}
+            <Button
+              color="inherit"
+              component={Link}
+              to="/parcelles"
+              startIcon={<Landscape />}
+              sx={{
+                bgcolor: "rgba(255,255,255,0.15)",
+                "&:hover": { bgcolor: "rgba(255,255,255,0.25)" },
+                borderRadius: 2,
+                px: 2,
+              }}
+            >
+              Parcelles à vendre
+            </Button>
+            {/* Lien Locations - Visible même sans connexion */}
+            <Button
+              color="inherit"
+              component={Link}
+              to="/locations"
+              startIcon={<Home />}
+              sx={{
+                bgcolor: "rgba(255,255,255,0.15)",
+                "&:hover": { bgcolor: "rgba(255,255,255,0.25)" },
+                borderRadius: 2,
+                px: 2,
+              }}
+            >
+              Locations
+            </Button>
+            {/* Lien Biens à vendre - Visible même sans connexion */}
+            <Button
+              color="inherit"
+              component={Link}
+              to="/biens"
+              startIcon={<Business />}
+              sx={{
+                bgcolor: "rgba(255,255,255,0.15)",
+                "&:hover": { bgcolor: "rgba(255,255,255,0.25)" },
+                borderRadius: 2,
+                px: 2,
+              }}
+            >
+              Biens à vendre
+            </Button>
             <Button
               color="inherit"
               component={Link}
@@ -795,6 +902,41 @@ const Navbar = () => {
             </ListItemIcon>
             <ListItemText>Accueil</ListItemText>
           </MenuItem>
+        )}
+        {/* Menus de recherche - Visibles seulement pour User/Client/Admin ou non connectés */}
+        {(canSeeAllMenus() || !user) && (
+          <>
+            <MenuItem
+              component={Link}
+              to="/parcelles"
+              onClick={handleMobileMenuClose}
+            >
+              <ListItemIcon>
+                <Landscape fontSize="small" />
+              </ListItemIcon>
+              <ListItemText>Rechercher des parcelles à vendre</ListItemText>
+            </MenuItem>
+            <MenuItem
+              component={Link}
+              to="/locations"
+              onClick={handleMobileMenuClose}
+            >
+              <ListItemIcon>
+                <Home fontSize="small" />
+              </ListItemIcon>
+              <ListItemText>Rechercher des locations</ListItemText>
+            </MenuItem>
+            <MenuItem
+              component={Link}
+              to="/biens"
+              onClick={handleMobileMenuClose}
+            >
+              <ListItemIcon>
+                <Business fontSize="small" />
+              </ListItemIcon>
+              <ListItemText>Rechercher des biens à vendre</ListItemText>
+            </MenuItem>
+          </>
         )}
       </Menu>
       

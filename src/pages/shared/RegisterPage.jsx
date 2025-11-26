@@ -5,7 +5,6 @@ import {
   Button,
   Typography,
   Box,
-  MenuItem,
   IconButton,
   InputAdornment,
   Alert,
@@ -16,12 +15,6 @@ import axios from "axios";
 import { BASE_URL } from "../../config/config";
 import PageLayout from "../../components/shared/PageLayout";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
-
-
-const roles = ["Admin", "Banque", "Agence", "Ministere", "Commercial", "User"];
-
-
-
 
 
   const formatPhone = (rawPhone) => {
@@ -38,7 +31,7 @@ const RegisterPage = () => {
     email: "",
     phone: "",
     password: "",
-    role: "",
+    role: "User", // Rôle fixé à "User" pour l'inscription publique
   });
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -68,13 +61,32 @@ const togglePasswordVisibility = () => {
     setSubmitting(true);
     setErrorMessage("");
     setSuccessMessage("");
+    
+    // Vérifier qu'au moins phone ou email est fourni
+    const phoneProvided = formData.phone && formData.phone.trim() !== "";
+    const emailProvided = formData.email && formData.email.trim() !== "";
+    
+    if (!phoneProvided && !emailProvided) {
+      setErrorMessage("Veuillez fournir au moins un numéro de téléphone ou un email");
+      setSubmitting(false);
+      return;
+    }
+
     try {
       const dataToSend = {
-        ...formData,
         fullName: formData.fullName.trim(),
-        email: formData.email.trim(),
-        phone: formatPhone(formData.phone),
+        password: formData.password,
+        role: formData.role,
       };
+      
+      // Ajouter phone ou email selon ce qui est fourni
+      if (phoneProvided) {
+        dataToSend.phone = formatPhone(formData.phone);
+      }
+      if (emailProvided) {
+        dataToSend.email = formData.email.trim();
+      }
+      
       await axios.post(`${BASE_URL}/auth/register`, dataToSend);
       setSuccessMessage("✅ Compte créé avec succès. Redirection en cours...");
       setTimeout(() => navigate("/login"), 1500);
@@ -126,6 +138,7 @@ const togglePasswordVisibility = () => {
             value={formData.email}
             onChange={handleChange}
             margin="normal"
+            helperText="Au moins un email ou un téléphone doit être fourni"
           />
         <TextField
             fullWidth
@@ -134,7 +147,7 @@ const togglePasswordVisibility = () => {
             value={formData.phone}
             onChange={handleChange}
             margin="normal"
-            required
+            helperText="Au moins un email ou un téléphone doit être fourni"
             InputProps={{
                 startAdornment: <InputAdornment position="start">+227</InputAdornment>,
             }}
@@ -160,22 +173,6 @@ const togglePasswordVisibility = () => {
   }}
 />
 
-          <TextField
-            fullWidth
-            select
-            label="Rôle"
-            name="role"
-            value={formData.role}
-            onChange={handleChange}
-            margin="normal"
-            required
-          >
-            {roles.map((role) => (
-              <MenuItem key={role} value={role}>
-                {role}
-              </MenuItem>
-            ))}
-          </TextField>
           <Button
             type="submit"
             variant="contained"

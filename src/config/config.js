@@ -13,7 +13,8 @@ const resolveDefaultBaseUrl = () => {
   }
 
   // Valeur par défaut pour le développement local (réseau interne)
-   return "http://192.168.0.100:5000/api";
+   return "http://192.168.80.198:5000/api";
+   //return "http://192.168.0.100:5000/api";
   // return "https://dillanciprobackend-e5e16032094e.herokuapp.com/api";
 
 };

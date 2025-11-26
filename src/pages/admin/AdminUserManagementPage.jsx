@@ -42,14 +42,20 @@ import {
   Visibility,
   Edit,
   Phone as PhoneIcon,
+  Email as EmailIcon,
   Lock,
   People,
   ArrowBack,
+  Settings,
+  AttachMoney,
+  Gavel,
+  Person,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import API from '../../api';
 
-const roles = ["Agence", "Banque", "Ministere"];
+// Tous les rôles disponibles pour l'admin
+const roles = ["Admin", "Banque", "Agence", "Ministere", "Commercial", "Notaire", "User", "Client"];
 
 const AdminUserManagementPage = () => {
   const navigate = useNavigate();
@@ -57,6 +63,7 @@ const AdminUserManagementPage = () => {
   const [formData, setFormData] = useState({
     fullName: "",
     phone: "",
+    email: "",
     password: "",
     role: "Agence",
   });
@@ -97,12 +104,21 @@ const AdminUserManagementPage = () => {
   const getRoleIcon = (role) => {
     const roleName = getRoleName(role);
     switch (roleName) {
+      case "Admin":
+        return <Settings />;
       case "Agence":
         return <Business />;
       case "Banque":
         return <AccountBalance />;
       case "Ministere":
         return <AccountBalanceWallet />;
+      case "Commercial":
+        return <AttachMoney />;
+      case "Notaire":
+        return <Gavel />;
+      case "User":
+      case "Client":
+        return <Person />;
       default:
         return <People />;
     }
@@ -112,12 +128,21 @@ const AdminUserManagementPage = () => {
   const getRoleColor = (role) => {
     const roleName = getRoleName(role);
     switch (roleName) {
+      case "Admin":
+        return "#9c27b0";
       case "Agence":
         return "#2196f3";
       case "Banque":
         return "#4caf50";
       case "Ministere":
         return "#ff9800";
+      case "Commercial":
+        return "#ff9800";
+      case "Notaire":
+        return "#7b1fa2";
+      case "User":
+      case "Client":
+        return "#607d8b";
       default:
         return "#607d8b";
     }
@@ -129,9 +154,14 @@ const AdminUserManagementPage = () => {
     const actifs = users.filter(u => u.isActive).length;
     const inactifs = total - actifs;
     const byRole = {
+      Admin: users.filter(u => getRoleName(u.role) === "Admin").length,
       Agence: users.filter(u => getRoleName(u.role) === "Agence").length,
       Banque: users.filter(u => getRoleName(u.role) === "Banque").length,
       Ministere: users.filter(u => getRoleName(u.role) === "Ministere").length,
+      Commercial: users.filter(u => getRoleName(u.role) === "Commercial").length,
+      Notaire: users.filter(u => getRoleName(u.role) === "Notaire").length,
+      User: users.filter(u => getRoleName(u.role) === "User").length,
+      Client: users.filter(u => getRoleName(u.role) === "Client").length,
     };
     return { total, actifs, inactifs, byRole };
   }, [users]);
@@ -140,6 +170,7 @@ const AdminUserManagementPage = () => {
   const filteredUsers = useMemo(() => {
     return users.filter(user => {
       const matchSearch = user.phone?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          user.fullName?.toLowerCase().includes(searchTerm.toLowerCase());
       const roleValue = getRoleName(user.role);
       const matchRole = roleFilter === "Tous" || roleValue === roleFilter;
@@ -149,18 +180,41 @@ const AdminUserManagementPage = () => {
 
   const handleCreate = async () => {
     // Validation
-    if (!formData.fullName || !formData.phone || !formData.password || !formData.role) {
-      setMessage("Veuillez remplir tous les champs");
+    if (!formData.fullName || !formData.password || !formData.role) {
+      setMessage("Veuillez remplir tous les champs obligatoires");
       setSnackSeverity("warning");
       setSnackOpen(true);
       return;
     }
 
-    if (formData.phone.length < 8) {
+    // Vérifier qu'au moins phone ou email est fourni
+    const phoneProvided = formData.phone && formData.phone.trim() !== "";
+    const emailProvided = formData.email && formData.email.trim() !== "";
+    
+    if (!phoneProvided && !emailProvided) {
+      setMessage("Veuillez fournir au moins un numéro de téléphone ou un email");
+      setSnackSeverity("warning");
+      setSnackOpen(true);
+      return;
+    }
+
+    // Validation du téléphone si fourni
+    if (phoneProvided && formData.phone.replace(/\D/g, "").length < 8) {
       setMessage("Le numéro de téléphone doit contenir au moins 8 chiffres");
       setSnackSeverity("warning");
       setSnackOpen(true);
       return;
+    }
+
+    // Validation de l'email si fourni
+    if (emailProvided) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.email.trim())) {
+        setMessage("Veuillez entrer une adresse email valide");
+        setSnackSeverity("warning");
+        setSnackOpen(true);
+        return;
+      }
     }
 
     if (formData.password.length < 6) {
@@ -171,11 +225,25 @@ const AdminUserManagementPage = () => {
     }
 
     try {
-      await API.post("/admin/create-admin", formData);
+      const dataToSend = {
+        fullName: formData.fullName.trim(),
+        password: formData.password,
+        role: formData.role,
+      };
+      
+      // Ajouter phone ou email selon ce qui est fourni
+      if (phoneProvided) {
+        dataToSend.phone = formData.phone.trim();
+      }
+      if (emailProvided) {
+        dataToSend.email = formData.email.trim();
+      }
+      
+      await API.post("/admin/create-admin", dataToSend);
       setMessage("✅ Utilisateur créé avec succès");
       setSnackSeverity("success");
       setSnackOpen(true);
-      setFormData({ fullName: "", phone: "", password: "", role: "Agence" });
+      setFormData({ fullName: "", phone: "", email: "", password: "", role: "Agence" });
       fetchUsers(currentPage);
       // Basculer vers l'onglet liste
       setActiveTab(1);
@@ -440,7 +508,18 @@ const AdminUserManagementPage = () => {
                     </InputAdornment>
                   ),
                 }}
-                helperText="Format international recommandé (ex: +227 90123456)"
+                helperText="Au moins un téléphone ou un email doit être fourni"
+              />
+
+              <TextField
+                label="Email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                fullWidth
+                variant="outlined"
+                placeholder="exemple@email.com"
+                helperText="Au moins un téléphone ou un email doit être fourni"
               />
 
               <TextField
@@ -504,7 +583,7 @@ const AdminUserManagementPage = () => {
             {/* Barre de recherche et filtres */}
             <Box sx={{ mb: 3, display: "flex", gap: 2, flexWrap: "wrap" }}>
               <TextField
-                placeholder="Rechercher par téléphone..."
+                placeholder="Rechercher par téléphone, email ou nom..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 sx={{ flexGrow: 1, minWidth: 250 }}
@@ -538,7 +617,7 @@ const AdminUserManagementPage = () => {
               <Table>
                 <TableHead>
                   <TableRow sx={{ bgcolor: "grey.50" }}>
-                    <TableCell><strong>Téléphone</strong></TableCell>
+                    <TableCell><strong>Contact</strong></TableCell>
                     <TableCell><strong>Nom complet</strong></TableCell>
                     <TableCell><strong>Rôle</strong></TableCell>
                     <TableCell align="center"><strong>Statut</strong></TableCell>
@@ -564,9 +643,26 @@ const AdminUserManagementPage = () => {
                         }}
                       >
                         <TableCell>
-                          <Box display="flex" alignItems="center" gap={1}>
-                            <PhoneIcon fontSize="small" color="action" />
-                            {user.phone}
+                          <Box>
+                            {user.phone && (
+                              <Box display="flex" alignItems="center" gap={1} mb={0.5}>
+                                <PhoneIcon fontSize="small" color="action" />
+                                <Typography variant="body2">{user.phone}</Typography>
+                              </Box>
+                            )}
+                            {user.email && (
+                              <Box display="flex" alignItems="center" gap={1}>
+                                <EmailIcon fontSize="small" color="action" />
+                                <Typography variant="body2" color="text.secondary">
+                                  {user.email}
+                                </Typography>
+                              </Box>
+                            )}
+                            {!user.phone && !user.email && (
+                              <Typography variant="body2" color="text.secondary">
+                                -
+                              </Typography>
+                            )}
                           </Box>
                         </TableCell>
                         <TableCell>{user.fullName || "-"}</TableCell>

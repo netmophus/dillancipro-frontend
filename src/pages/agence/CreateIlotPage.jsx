@@ -49,6 +49,10 @@ import {
   Square,
   Assignment,
   Visibility,
+  CloudUpload,
+  Image as ImageIcon,
+  VideoLibrary,
+  Close,
 } from "@mui/icons-material";
 import PageLayout from "../../components/shared/PageLayout";
 import api from "../../services/api";
@@ -61,9 +65,15 @@ const CreateIlotPage = () => {
     surfaceTotale: "",
   });
 
+  // États pour les médias (photos/vidéos) partagés par toutes les parcelles de l'îlot
+  const [imageFiles, setImageFiles] = useState([]);
+  const [imagePreviews, setImagePreviews] = useState([]);
+  const [videos, setVideos] = useState([]);
+
   const [ilots, setIlots] = useState([]);
   const [zones, setZones] = useState([]);
   const [quartiers, setQuartiers] = useState([]);
+  const [filteredQuartiers, setFilteredQuartiers] = useState([]);
   const [commerciaux, setCommerciaux] = useState([]);
   const [filteredIlots, setFilteredIlots] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -94,12 +104,36 @@ const CreateIlotPage = () => {
     quartier: "",
     surfaceTotale: "",
   });
+  const [filteredEditQuartiers, setFilteredEditQuartiers] = useState([]);
 
   useEffect(() => {
     fetchIlots();
     fetchZones();
     fetchQuartiers();
   }, []);
+
+  // Filtrer les quartiers selon la zone sélectionnée
+  useEffect(() => {
+    if (formData.zone && zones.length > 0 && quartiers.length > 0) {
+      const selectedZone = zones.find((z) => z._id === formData.zone);
+      if (selectedZone && selectedZone.quartier && selectedZone.quartier.ville) {
+        const villeId = selectedZone.quartier.ville._id || selectedZone.quartier.ville;
+        const filtered = quartiers.filter((q) => {
+          const quartierVilleId = q.ville?._id || q.ville;
+          return quartierVilleId && quartierVilleId.toString() === villeId.toString();
+        });
+        setFilteredQuartiers(filtered);
+        // Réinitialiser le quartier si celui sélectionné n'est plus dans la liste filtrée
+        if (formData.quartier && !filtered.find((q) => q._id === formData.quartier)) {
+          setFormData((prev) => ({ ...prev, quartier: "" }));
+        }
+      } else {
+        setFilteredQuartiers(quartiers);
+      }
+    } else {
+      setFilteredQuartiers(quartiers);
+    }
+  }, [formData.zone, zones, quartiers]);
 
   useEffect(() => {
     const filtered = ilots.filter(
@@ -152,15 +186,71 @@ const CreateIlotPage = () => {
     }
   };
 
+  // Gestion des images avec prévisualisation
+  const handleImageUpload = (e) => {
+    const files = Array.from(e.target.files);
+    setImageFiles((prev) => [...prev, ...files]);
+    
+    files.forEach((file) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreviews((prev) => [...prev, reader.result]);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const removeImage = (index) => {
+    setImageFiles((prev) => prev.filter((_, i) => i !== index));
+    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleVideoAdd = () => {
+    const videoUrl = prompt("Entrez l'URL de la vidéo (YouTube ou Vimeo):");
+    if (videoUrl && videoUrl.trim()) {
+      setVideos((prev) => [...prev, videoUrl.trim()]);
+    }
+  };
+
+  const removeVideo = (index) => {
+    setVideos((prev) => prev.filter((_, i) => i !== index));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setSuccess("");
 
     try {
-      await api.post("/agence/ilots", formData);
+      const formDataToSend = new FormData();
+      formDataToSend.append("numeroIlot", formData.numeroIlot);
+      formDataToSend.append("zone", formData.zone);
+      formDataToSend.append("quartier", formData.quartier);
+      if (formData.surfaceTotale) {
+        formDataToSend.append("surfaceTotale", formData.surfaceTotale);
+      }
+      
+      // Ajouter les images
+      imageFiles.forEach((file) => {
+        formDataToSend.append("images", file);
+      });
+      
+      // Ajouter les vidéos
+      if (videos.length > 0) {
+        formDataToSend.append("videos", JSON.stringify(videos));
+      }
+
+      await api.post("/agence/ilots", formDataToSend, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      
       setSuccess("✅ Îlot créé avec succès !");
       setFormData({ numeroIlot: "", zone: "", quartier: "", surfaceTotale: "" });
+      setImageFiles([]);
+      setImagePreviews([]);
+      setVideos([]);
       fetchIlots();
     } catch (err) {
       setError(err.response?.data?.message || "❌ Erreur lors de la création");
@@ -168,12 +258,49 @@ const CreateIlotPage = () => {
   };
 
   const handleChange = (e) => {
-    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+    setFormData((prev) => {
+      // Si on change la zone, réinitialiser le quartier
+      if (name === "zone") {
+        return { ...prev, zone: value, quartier: "" };
+      }
+      return { ...prev, [name]: value };
+    });
   };
 
   const handleEditChange = (e) => {
-    setEditFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+    setEditFormData((prev) => {
+      // Si on change la zone, réinitialiser le quartier
+      if (name === "zone") {
+        return { ...prev, zone: value, quartier: "" };
+      }
+      return { ...prev, [name]: value };
+    });
   };
+
+  // Filtrer les quartiers pour le dialog d'édition
+  useEffect(() => {
+    if (editDialog && editFormData.zone && zones.length > 0 && quartiers.length > 0) {
+      const selectedZone = zones.find((z) => z._id === editFormData.zone);
+      if (selectedZone && selectedZone.quartier && selectedZone.quartier.ville) {
+        const villeId = selectedZone.quartier.ville._id || selectedZone.quartier.ville;
+        const filtered = quartiers.filter((q) => {
+          const quartierVilleId = q.ville?._id || q.ville;
+          return quartierVilleId && quartierVilleId.toString() === villeId.toString();
+        });
+        setFilteredEditQuartiers(filtered);
+        // Réinitialiser le quartier si celui sélectionné n'est plus dans la liste filtrée
+        if (editFormData.quartier && !filtered.find((q) => q._id === editFormData.quartier)) {
+          setEditFormData((prev) => ({ ...prev, quartier: "" }));
+        }
+      } else {
+        setFilteredEditQuartiers(quartiers);
+      }
+    } else if (editDialog) {
+      setFilteredEditQuartiers(quartiers);
+    }
+  }, [editFormData.zone, zones, quartiers, editDialog]);
 
   const showParcelles = async (ilotId) => {
     try {
@@ -223,6 +350,7 @@ const CreateIlotPage = () => {
       quartier: ilot.quartier?._id || "",
       surfaceTotale: ilot.surfaceTotale || "",
     });
+    setFilteredEditQuartiers(quartiers);
     setEditDialog(true);
   };
 
@@ -308,6 +436,7 @@ const CreateIlotPage = () => {
                       onChange={handleChange}
                       fullWidth
                       required
+                      helperText="Le préfixe de votre agence sera ajouté automatiquement (ex: AIG-INY001)"
                       InputProps={{
                         startAdornment: (
                           <InputAdornment position="start">
@@ -336,11 +465,17 @@ const CreateIlotPage = () => {
                       {zones.length === 0 ? (
                         <MenuItem disabled>Aucune zone disponible</MenuItem>
                       ) : (
-                        zones.map((zone) => (
-                          <MenuItem key={zone._id} value={zone._id}>
-                            {zone.nom}
-                          </MenuItem>
-                        ))
+                        zones.map((zone) => {
+                          const villeNom = zone.quartier?.ville?.nom || "";
+                          const displayText = villeNom 
+                            ? `${zone.nom} (${villeNom})`
+                            : zone.nom;
+                          return (
+                            <MenuItem key={zone._id} value={zone._id}>
+                              {displayText}
+                            </MenuItem>
+                          );
+                        })
                       )}
                     </TextField>
 
@@ -352,6 +487,7 @@ const CreateIlotPage = () => {
                       onChange={handleChange}
                       fullWidth
                       required
+                      disabled={!formData.zone || filteredQuartiers.length === 0}
                       InputProps={{
                         startAdornment: (
                           <InputAdornment position="start">
@@ -360,10 +496,12 @@ const CreateIlotPage = () => {
                         ),
                       }}
                     >
-                      {quartiers.length === 0 ? (
-                        <MenuItem disabled>Aucun quartier disponible</MenuItem>
+                      {filteredQuartiers.length === 0 ? (
+                        <MenuItem disabled>
+                          {formData.zone ? "Aucun quartier disponible pour cette zone" : "Sélectionnez d'abord une zone"}
+                        </MenuItem>
                       ) : (
-                        quartiers.map((quartier) => (
+                        filteredQuartiers.map((quartier) => (
                           <MenuItem key={quartier._id} value={quartier._id}>
                             {quartier.nom}
                           </MenuItem>
@@ -388,6 +526,104 @@ const CreateIlotPage = () => {
                       }}
                     />
 
+                    <Divider sx={{ my: 2 }} />
+
+                    {/* Section Photos et Vidéos (partagées par toutes les parcelles) */}
+                    <Typography variant="subtitle2" fontWeight="bold" color="text.secondary" sx={{ mb: 1 }}>
+                      📸 Photos et Vidéos (partagées par toutes les parcelles de cet îlot)
+                    </Typography>
+
+                    {/* Upload Images */}
+                    <Box>
+                      <input
+                        accept="image/*"
+                        id="ilot-image-upload"
+                        type="file"
+                        multiple
+                        style={{ display: "none" }}
+                        onChange={handleImageUpload}
+                      />
+                      <label htmlFor="ilot-image-upload">
+                        <Button
+                          variant="outlined"
+                          component="span"
+                          startIcon={<CloudUpload />}
+                          fullWidth
+                          sx={{ mb: 2 }}
+                        >
+                          Ajouter des photos
+                        </Button>
+                      </label>
+
+                      {/* Prévisualisations des images */}
+                      {imagePreviews.length > 0 && (
+                        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mt: 2 }}>
+                          {imagePreviews.map((preview, index) => (
+                            <Box
+                              key={index}
+                              sx={{
+                                position: "relative",
+                                width: 100,
+                                height: 100,
+                                borderRadius: 1,
+                                overflow: "hidden",
+                                border: "1px solid #ddd",
+                              }}
+                            >
+                              <img
+                                src={preview}
+                                alt={`Preview ${index}`}
+                                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                              />
+                              <IconButton
+                                size="small"
+                                onClick={() => removeImage(index)}
+                                sx={{
+                                  position: "absolute",
+                                  top: 0,
+                                  right: 0,
+                                  bgcolor: "rgba(0,0,0,0.5)",
+                                  color: "white",
+                                  "&:hover": { bgcolor: "rgba(0,0,0,0.7)" },
+                                }}
+                              >
+                                <Close fontSize="small" />
+                              </IconButton>
+                            </Box>
+                          ))}
+                        </Box>
+                      )}
+                    </Box>
+
+                    {/* Vidéos */}
+                    <Box sx={{ mt: 2 }}>
+                      <Button
+                        variant="outlined"
+                        startIcon={<VideoLibrary />}
+                        onClick={handleVideoAdd}
+                        fullWidth
+                        sx={{ mb: 1 }}
+                      >
+                        Ajouter une vidéo (URL YouTube/Vimeo)
+                      </Button>
+
+                      {videos.length > 0 && (
+                        <Box sx={{ mt: 1 }}>
+                          {videos.map((video, index) => (
+                            <Chip
+                              key={index}
+                              label={video.length > 30 ? `${video.substring(0, 30)}...` : video}
+                              onDelete={() => removeVideo(index)}
+                              sx={{ m: 0.5 }}
+                              color="primary"
+                            />
+                          ))}
+                        </Box>
+                      )}
+                    </Box>
+
+                    <Divider sx={{ my: 2 }} />
+
                     <Button
                       variant="contained"
                       color="warning"
@@ -395,7 +631,7 @@ const CreateIlotPage = () => {
                       size="large"
                       startIcon={<CheckCircle />}
                       fullWidth
-                      disabled={zones.length === 0 || quartiers.length === 0}
+                      disabled={zones.length === 0 || filteredQuartiers.length === 0 || !formData.zone || !formData.quartier}
                       sx={{
                         py: 1.5,
                         fontWeight: "bold",
@@ -408,6 +644,11 @@ const CreateIlotPage = () => {
                     {(zones.length === 0 || quartiers.length === 0) && (
                       <Typography variant="caption" color="error" textAlign="center">
                         Veuillez d'abord créer une zone et un quartier
+                      </Typography>
+                    )}
+                    {formData.zone && filteredQuartiers.length === 0 && (
+                      <Typography variant="caption" color="warning.main" textAlign="center">
+                        Aucun quartier disponible pour la ville de cette zone
                       </Typography>
                     )}
                   </Stack>
@@ -719,6 +960,7 @@ const CreateIlotPage = () => {
               onChange={handleEditChange}
               fullWidth
               required
+              helperText="Le préfixe de votre agence sera ajouté automatiquement si absent"
             />
             <TextField
               select
@@ -729,11 +971,17 @@ const CreateIlotPage = () => {
               fullWidth
               required
             >
-              {zones.map((zone) => (
-                <MenuItem key={zone._id} value={zone._id}>
-                  {zone.nom}
-                </MenuItem>
-              ))}
+              {zones.map((zone) => {
+                const villeNom = zone.quartier?.ville?.nom || "";
+                const displayText = villeNom 
+                  ? `${zone.nom} (${villeNom})`
+                  : zone.nom;
+                return (
+                  <MenuItem key={zone._id} value={zone._id}>
+                    {displayText}
+                  </MenuItem>
+                );
+              })}
             </TextField>
             <TextField
               select
@@ -743,12 +991,19 @@ const CreateIlotPage = () => {
               onChange={handleEditChange}
               fullWidth
               required
+              disabled={!editFormData.zone || filteredEditQuartiers.length === 0}
             >
-              {quartiers.map((quartier) => (
-                <MenuItem key={quartier._id} value={quartier._id}>
-                  {quartier.nom}
+              {filteredEditQuartiers.length === 0 ? (
+                <MenuItem disabled>
+                  {editFormData.zone ? "Aucun quartier disponible pour cette zone" : "Sélectionnez d'abord une zone"}
                 </MenuItem>
-              ))}
+              ) : (
+                filteredEditQuartiers.map((quartier) => (
+                  <MenuItem key={quartier._id} value={quartier._id}>
+                    {quartier.nom}
+                  </MenuItem>
+                ))
+              )}
             </TextField>
             <TextField
               label="Surface totale"

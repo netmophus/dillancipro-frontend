@@ -76,13 +76,13 @@ const CreateParcellePage = () => {
     prix: "",
     statut: "avendre",
     description: "",
-    video: "",
+    // Les images et vidéos sont maintenant au niveau de l'îlot (partagées)
   });
 
   const [numeroList, setNumeroList] = useState("");
   const [localisations, setLocalisations] = useState([{ lat: "", lng: "" }]);
-  const [imageFiles, setImageFiles] = useState([]);
-  const [imagePreviews, setImagePreviews] = useState([]);
+  // Les images et vidéos sont maintenant au niveau de l'îlot (partagées)
+  // Seuls les documents sont spécifiques à chaque parcelle
   const [documentFiles, setDocumentFiles] = useState([]);
 
   // États de la liste
@@ -116,7 +116,7 @@ const CreateParcellePage = () => {
   const [editDocumentFiles, setEditDocumentFiles] = useState([]);
 
   // Étapes du stepper
-  const steps = ["Informations de base", "Localisation", "Médias & Documents"];
+  const steps = ["Informations de base", "Localisation", "Documents"];
 
   useEffect(() => {
     fetchIlots();
@@ -167,26 +167,8 @@ const CreateParcellePage = () => {
     setLocalisations(localisations.filter((_, i) => i !== index));
   };
 
-  // Gestion des images avec prévisualisation
-  const handleImageUpload = (e) => {
-    const files = Array.from(e.target.files);
-    setImageFiles((prev) => [...prev, ...files]);
-
-    // Créer des prévisualisations
-    files.forEach((file) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreviews((prev) => [...prev, reader.result]);
-      };
-      reader.readAsDataURL(file);
-    });
-  };
-
-  const removeImage = (index) => {
-    setImageFiles((prev) => prev.filter((_, i) => i !== index));
-    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
-  };
-
+  // Les images et vidéos sont maintenant au niveau de l'îlot (partagées)
+  // Seuls les documents sont spécifiques à chaque parcelle
   const handleDocumentUpload = (e) => {
     const files = Array.from(e.target.files);
     setDocumentFiles((prev) => [...prev, ...files]);
@@ -194,27 +176,6 @@ const CreateParcellePage = () => {
 
   const removeDocument = (index) => {
     setDocumentFiles((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  // Drag and Drop pour les images
-  const handleDrop = (e) => {
-    e.preventDefault();
-    const files = Array.from(e.dataTransfer.files).filter((file) =>
-      file.type.startsWith("image/")
-    );
-    
-    setImageFiles((prev) => [...prev, ...files]);
-    files.forEach((file) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreviews((prev) => [...prev, reader.result]);
-      };
-      reader.readAsDataURL(file);
-    });
-  };
-
-  const handleDragOver = (e) => {
-    e.preventDefault();
   };
 
   const handleSubmit = async (e) => {
@@ -246,10 +207,11 @@ const CreateParcellePage = () => {
       if (formData.prix) singleData.set("prix", String(formData.prix));
       singleData.set("statut", formData.statut);
       singleData.set("description", formData.description.trim());
-      singleData.set("video", formData.video.trim());
       singleData.set("localisations", JSON.stringify(localisations));
+      // Les images et vidéos sont maintenant au niveau de l'îlot (partagées)
 
-      imageFiles.forEach((file) => singleData.append("images", file));
+      // Les images et vidéos sont maintenant au niveau de l'îlot (partagées)
+      // Seuls les documents sont spécifiques à chaque parcelle
       documentFiles.forEach((file) => singleData.append("documents", file));
 
       console.log("📝 [FRONTEND] Création parcelle unique");
@@ -276,12 +238,9 @@ const CreateParcellePage = () => {
       prix: "",
       statut: "avendre",
       description: "",
-      video: "",
     });
     setNumeroList("");
     setLocalisations([{ lat: "", lng: "" }]);
-    setImageFiles([]);
-    setImagePreviews([]);
     setDocumentFiles([]);
     setCurrentStep(0);
   };
@@ -704,116 +663,22 @@ const CreateParcellePage = () => {
                   </Box>
                 )}
 
-                {/* ÉTAPE 3 : Médias & Documents */}
+                {/* ÉTAPE 3 : Documents */}
                 {currentStep === 2 && (
                   <Box>
+                    <Alert severity="info" sx={{ mb: 3 }}>
+                      <Typography variant="body2">
+                        ℹ️ <strong>Note importante :</strong> Les photos et vidéos sont gérées au niveau de l'îlot et seront automatiquement partagées par toutes les parcelles de cet îlot. 
+                        Vous pouvez ajouter des photos/vidéos lors de la création ou modification de l'îlot.
+                      </Typography>
+                    </Alert>
+
                     <Grid container spacing={4}>
-                      {/* Images */}
-                      <Grid item xs={12} md={6}>
-                        <Typography variant="h6" fontWeight="bold" gutterBottom>
-                          <Image color="primary" sx={{ verticalAlign: "middle", mr: 1 }} />
-                          Images
-                        </Typography>
-                        
-                        <Paper
-                          variant="outlined"
-                          onDrop={handleDrop}
-                          onDragOver={handleDragOver}
-                          sx={{
-                            p: 3,
-                            textAlign: "center",
-                            borderStyle: "dashed",
-                            borderWidth: 2,
-                            borderColor: "primary.main",
-                            cursor: "pointer",
-                            transition: "all 0.3s",
-                            "&:hover": { bgcolor: "action.hover" },
-                          }}
-                        >
-                          <input
-                            accept="image/*"
-                            style={{ display: "none" }}
-                            id="image-upload"
-                            type="file"
-                            multiple
-                            onChange={handleImageUpload}
-                          />
-                          <label htmlFor="image-upload">
-                            <Box sx={{ cursor: "pointer" }}>
-                              <CloudUpload fontSize="large" color="primary" />
-                              <Typography variant="body1" sx={{ mt: 1 }}>
-                                Cliquez ou glissez vos images ici
-                              </Typography>
-                              <Typography variant="caption" color="text.secondary">
-                                JPG, PNG, GIF (max 5 MB par fichier)
-                              </Typography>
-                            </Box>
-                          </label>
-                        </Paper>
-
-                        {/* Prévisualisations des images */}
-                        {imagePreviews.length > 0 && (
-                          <Grid container spacing={2} sx={{ mt: 2 }}>
-                            {imagePreviews.map((preview, index) => (
-                              <Grid item xs={6} md={4} key={index}>
-                                <Box position="relative">
-                                  <img
-                                    src={preview}
-                                    alt={`Preview ${index + 1}`}
-                                    style={{
-                                      width: "100%",
-                                      height: 120,
-                                      objectFit: "cover",
-                                      borderRadius: 8,
-                                    }}
-                                  />
-                                  <IconButton
-                                    size="small"
-                                    color="error"
-                                    sx={{
-                                      position: "absolute",
-                                      top: 4,
-                                      right: 4,
-                                      bgcolor: "white",
-                                      "&:hover": { bgcolor: "error.light" },
-                                    }}
-                                    onClick={() => removeImage(index)}
-                                  >
-                                    <Close fontSize="small" />
-                                  </IconButton>
-                                </Box>
-                              </Grid>
-                            ))}
-                          </Grid>
-                        )}
-                      </Grid>
-
-                      {/* Documents & Vidéo */}
-                      <Grid item xs={12} md={6}>
-                        {/* Vidéo */}
-                        <Typography variant="h6" fontWeight="bold" gutterBottom>
-                          <VideoLibrary color="primary" sx={{ verticalAlign: "middle", mr: 1 }} />
-                          Vidéo (URL)
-                        </Typography>
-                        <TextField
-                          label="Lien vidéo YouTube, Vimeo..."
-                          name="video"
-                          value={formData.video}
-                          onChange={handleChange}
-                          fullWidth
-                          placeholder="https://youtube.com/watch?v=..."
-                          sx={{ mb: 4 }}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              e.preventDefault();
-                            }
-                          }}
-                        />
-
-                        {/* Documents */}
+                      {/* Documents */}
+                      <Grid item xs={12}>
                         <Typography variant="h6" fontWeight="bold" gutterBottom>
                           <Description color="primary" sx={{ verticalAlign: "middle", mr: 1 }} />
-                          Documents
+                          Documents spécifiques à cette parcelle
                         </Typography>
                         
                         <input

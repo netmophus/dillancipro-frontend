@@ -25,7 +25,8 @@ import { useAuth } from "../../contexts/AuthContext";
 import ForgotPasswordModal from "../../components/shared/ForgotPasswordModal";
 
 const LoginPage = () => {
-  const [formData, setFormData] = useState({ phone: "", password: "" });
+  const [formData, setFormData] = useState({ phone: "", email: "", password: "" });
+  const [loginMethod, setLoginMethod] = useState("phone"); // "phone" ou "email"
   const navigate = useNavigate();
   const { login } = useAuth();
   const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
@@ -102,12 +103,35 @@ const handleSubmit = async (e) => {
     if (loading) return;
 
     setError("");
+    
+    // Vérifier qu'au moins phone ou email est fourni
+    const phoneProvided = formData.phone && formData.phone.trim() !== "";
+    const emailProvided = formData.email && formData.email.trim() !== "";
+    
+    if (!phoneProvided && !emailProvided) {
+      setError("Veuillez entrer un numéro de téléphone ou un email");
+      return;
+    }
+
+    if (!formData.password) {
+      setError("Veuillez entrer votre mot de passe");
+      return;
+    }
+
     setLoading(true);
     try {
-      const res = await axios.post(`${BASE_URL}/auth/login`, {
-        ...formData,
-        phone: formatPhone(formData.phone),
-      });
+      const loginData = {
+        password: formData.password,
+      };
+      
+      // Ajouter phone ou email selon ce qui est fourni
+      if (phoneProvided) {
+        loginData.phone = formatPhone(formData.phone);
+      } else {
+        loginData.email = formData.email.trim().toLowerCase();
+      }
+
+      const res = await axios.post(`${BASE_URL}/auth/login`, loginData);
   
       login(res.data.token, res.data.user);
   
@@ -218,27 +242,68 @@ const handleSubmit = async (e) => {
 
                   {error && <Alert severity="error">{error}</Alert>}
 
-                  <TextField
-                    label="Téléphone"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleChange}
-                    autoFocus
-                    required
-                    fullWidth
-                    placeholder="XXXXXXXX"
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">+227</InputAdornment>
-                      ),
-                    }}
-                    inputProps={{
-                      inputMode: "numeric",
-                      pattern: "[0-9]*",
-                      maxLength: 8,
-                    }}
-                    helperText="Numéro de téléphone Niger, 8 chiffres"
-                  />
+                  <Box sx={{ mb: 2 }}>
+                    <Button
+                      variant={loginMethod === "phone" ? "contained" : "outlined"}
+                      onClick={() => {
+                        setLoginMethod("phone");
+                        setFormData({ ...formData, email: "" });
+                        setError("");
+                      }}
+                      sx={{ mr: 1 }}
+                      size="small"
+                    >
+                      Téléphone
+                    </Button>
+                    <Button
+                      variant={loginMethod === "email" ? "contained" : "outlined"}
+                      onClick={() => {
+                        setLoginMethod("email");
+                        setFormData({ ...formData, phone: "" });
+                        setError("");
+                      }}
+                      size="small"
+                    >
+                      Email
+                    </Button>
+                  </Box>
+
+                  {loginMethod === "phone" ? (
+                    <TextField
+                      label="Téléphone"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      autoFocus
+                      required
+                      fullWidth
+                      placeholder="XXXXXXXX"
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">+227</InputAdornment>
+                        ),
+                      }}
+                      inputProps={{
+                        inputMode: "numeric",
+                        pattern: "[0-9]*",
+                        maxLength: 8,
+                      }}
+                      helperText="Numéro de téléphone Niger, 8 chiffres"
+                    />
+                  ) : (
+                    <TextField
+                      label="Email"
+                      name="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      autoFocus
+                      required
+                      fullWidth
+                      placeholder="exemple@email.com"
+                      helperText="Adresse email de connexion"
+                    />
+                  )}
 
                   <TextField
                     label="Mot de passe"

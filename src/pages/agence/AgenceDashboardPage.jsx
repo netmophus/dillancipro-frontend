@@ -14,7 +14,6 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Paper,
   LinearProgress,
   Divider,
   Stack,
@@ -960,6 +959,17 @@ const AgenceDashboardPage = () => {
               <Speed /> Actions Rapides
             </Typography>
             <Grid container spacing={2} mt={1}>
+              <Grid item xs={12} sm={6} md={2.4}>
+                <Button
+                  fullWidth
+                  variant="contained"
+                  color="inherit"
+                  onClick={() => navigate("/agence/create-ilot")}
+                  sx={{ color: 'primary.main', fontWeight: 'bold' }}
+                >
+                  🏘️ Créer Îlot
+                </Button>
+              </Grid>
               <Grid item xs={12} sm={6} md={2.4}>
                 <Button
                   fullWidth

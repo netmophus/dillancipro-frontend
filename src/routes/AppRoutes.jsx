@@ -2,6 +2,9 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 import HomePage from "../pages/home/HomePage";
+import SearchParcellesPage from "../pages/public/SearchParcellesPage";
+import SearchLocationsPage from "../pages/public/SearchLocationsPage";
+import SearchBiensPage from "../pages/public/SearchBiensPage";
 import LoginPage from "../pages/shared/LoginPage";
 import RegisterPage from "../pages/shared/RegisterPage";
 import ProfilePage from "../pages/shared/ProfilePage";
@@ -9,6 +12,16 @@ import AdminDashboardPage from "../pages/admin/AdminDashboardPage";
 import UserDashboardPage from "../pages/user/UserDashboardPage";
 import MesAchatsAgencePage from "../pages/user/MesAchatsAgencePage";
 import BanqueDashboardPage from "../pages/banque/BanqueDashboardPage";
+import CreateIHEPage from "../pages/banque/CreateIHEPage";
+import EditIHEPage from "../pages/banque/EditIHEPage";
+import IHEListPage from "../pages/banque/IHEListPage";
+import IHEDetailsPage from "../pages/banque/IHEDetailsPage";
+import IHECartePage from "../pages/banque/IHECartePage";
+import IHEPartagePage from "../pages/banque/IHEPartagePage";
+import IHEAlertesPage from "../pages/banque/IHEAlertesPage";
+import DemandesCreditHypothecairePage from "../pages/banque/DemandesCreditHypothecairePage";
+import CreateDemandeCreditHypothecairePage from "../pages/banque/CreateDemandeCreditHypothecairePage";
+import DetailsDemandeCreditHypothecairePage from "../pages/banque/DetailsDemandeCreditHypothecairePage";
 import AgenceDashboardPage from "../pages/agence/AgenceDashboardPage";
 import MinistereDashboardPage from "../pages/ministere/MinistereDashboardPage";
 import CommercialDashboardPage from "../pages/agence/commercial/CommercialDashboardPage";
@@ -56,8 +69,10 @@ import VerificationBiensPage from "../pages/admin/VerificationBiensPage";
 import AdminVerificationAgencesPage from "../pages/admin/AdminVerificationAgencesPage";
 import GestionVentesPage from "../pages/admin/GestionVentesPage";
 import AdminNotaireManagementPage from "../pages/admin/AdminNotaireManagementPage";
+import AdminBanqueManagementPage from "../pages/admin/AdminBanqueManagementPage";
 import NotaireDashboardPage from "../pages/notaire/NotaireDashboardPage";
 import MesVentesPage from "../pages/notaire/MesVentesPage";
+import DemandesCreditHypothecaireNotairePage from "../pages/notaire/DemandesCreditHypothecaireNotairePage";
 import PaiementEnregistrementPage from "../pages/user/PaiementEnregistrementPage";
 import MesVentesCommercialPage from "../pages/agence/commercial/MesVentesCommercialPage";
 import MesVentesClientPage from "../pages/user/MesVentesClientPage";
@@ -75,6 +90,9 @@ const AppRoutes = () => {
       <Routes>
         {/* 🔓 Pages publiques */}
         <Route path="/" element={<HomePage />} />
+        <Route path="/parcelles" element={<SearchParcellesPage />} />
+        <Route path="/locations" element={<SearchLocationsPage />} />
+        <Route path="/biens" element={<SearchBiensPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
 
@@ -179,6 +197,14 @@ const AppRoutes = () => {
             </ProtectRoute>
           }
         />
+        <Route
+          path="/admin/banques"
+          element={
+            <ProtectRoute allowedRoles={["Admin"]}>
+              <AdminBanqueManagementPage />
+            </ProtectRoute>
+          }
+        />
 
         {/* Routes Notaire */}
         <Route
@@ -194,6 +220,22 @@ const AppRoutes = () => {
           element={
             <ProtectRoute allowedRoles={["Notaire"]}>
               <MesVentesPage />
+            </ProtectRoute>
+          }
+        />
+        <Route
+          path="/notaire/demandes-credit-hypothecaire"
+          element={
+            <ProtectRoute allowedRoles={["Notaire"]}>
+              <DemandesCreditHypothecaireNotairePage />
+            </ProtectRoute>
+          }
+        />
+        <Route
+          path="/notaire/demandes-credit-hypothecaire/:id"
+          element={
+            <ProtectRoute allowedRoles={["Notaire"]}>
+              <DemandesCreditHypothecaireNotairePage />
             </ProtectRoute>
           }
         />
@@ -298,6 +340,106 @@ const AppRoutes = () => {
   }
 />
 
+{/* Routes IHE */}
+<Route
+  path="/banque/ihe"
+  element={
+    <ProtectRoute allowedRoles={["Banque"]}>
+      <IHEListPage />
+    </ProtectRoute>
+  }
+/>
+<Route
+  path="/banque/ihe/nouvelle"
+  element={
+    <ProtectRoute allowedRoles={["Banque"]}>
+      <CreateIHEPage />
+    </ProtectRoute>
+  }
+/>
+<Route
+  path="/banque/ihe/carte"
+  element={
+    <ProtectRoute allowedRoles={["Banque"]}>
+      <IHECartePage />
+    </ProtectRoute>
+  }
+/>
+<Route
+  path="/banque/ihe/alertes-reglementaires"
+  element={
+    <ProtectRoute allowedRoles={["Banque"]}>
+      <IHEAlertesPage />
+    </ProtectRoute>
+  }
+/>
+<Route
+  path="/banque/ihe/partagees"
+  element={
+    <ProtectRoute allowedRoles={["Banque"]}>
+      <IHEPartagePage />
+    </ProtectRoute>
+  }
+/>
+<Route
+  path="/banque/ihe/:id"
+  element={
+    <ProtectRoute allowedRoles={["Banque"]}>
+      <IHEDetailsPage />
+    </ProtectRoute>
+  }
+/>
+<Route
+  path="/banque/ihe/:id/modifier"
+  element={
+    <ProtectRoute allowedRoles={["Banque"]}>
+      <EditIHEPage />
+    </ProtectRoute>
+  }
+/>
+<Route
+  path="/banque/ihe/:id/partager"
+  element={
+    <ProtectRoute allowedRoles={["Banque"]}>
+      <IHEPartagePage />
+    </ProtectRoute>
+  }
+/>
+
+{/* Routes Demandes de Crédit Hypothécaire */}
+<Route
+  path="/banque/demandes-credit-hypothecaire"
+  element={
+    <ProtectRoute allowedRoles={["Banque"]}>
+      <DemandesCreditHypothecairePage />
+    </ProtectRoute>
+  }
+/>
+<Route
+  path="/banque/demandes-credit-hypothecaire/nouvelle"
+  element={
+    <ProtectRoute allowedRoles={["Banque"]}>
+      <CreateDemandeCreditHypothecairePage />
+    </ProtectRoute>
+  }
+/>
+<Route
+  path="/banque/demandes-credit-hypothecaire/:id"
+  element={
+    <ProtectRoute allowedRoles={["Banque"]}>
+      <DetailsDemandeCreditHypothecairePage />
+    </ProtectRoute>
+  }
+/>
+<Route
+  path="/banque/demandes-credit-hypothecaire/:id/modifier"
+  element={
+    <ProtectRoute allowedRoles={["Banque"]}>
+      <CreateDemandeCreditHypothecairePage />
+    </ProtectRoute>
+  }
+/>
+
 <Route
   path="/agence/dashboard"
   element={
@@ -315,12 +457,6 @@ const AppRoutes = () => {
     </ProtectRoute>
   }
 />
-
-
-
-
-// Routes de création géographique supprimées - gérées par l'admin
-
 
 <Route
   path="/agence/create-ilot"

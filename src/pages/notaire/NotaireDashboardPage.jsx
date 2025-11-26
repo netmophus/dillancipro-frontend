@@ -16,6 +16,7 @@ import {
   CheckCircle,
   HourglassEmpty,
   ArrowForward,
+  AccountBalance,
 } from "@mui/icons-material";
 import { useAuth } from "../../contexts/AuthContext";
 import PageLayout from "../../components/shared/PageLayout";
@@ -47,6 +48,52 @@ const NotaireDashboardPage = () => {
 
         {/* Modules */}
         <Grid container spacing={3}>
+          {/* Formalisation Notariale */}
+          <Grid item xs={12} md={4}>
+            <Card
+              elevation={3}
+              sx={{
+                height: "100%",
+                cursor: "pointer",
+                transition: "all 0.3s ease",
+                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                color: "white",
+                "&:hover": {
+                  transform: "translateY(-4px)",
+                  boxShadow: 6,
+                },
+              }}
+              onClick={() => navigate("/notaire/demandes-credit-hypothecaire")}
+            >
+              <CardContent>
+                <Box display="flex" alignItems="center" gap={2} mb={2}>
+                  <Avatar sx={{ bgcolor: "rgba(255, 255, 255, 0.2)" }}>
+                    <AccountBalance />
+                  </Avatar>
+                  <Typography variant="h6" fontWeight="bold" sx={{ color: "white" }}>
+                    Formalisation Notariale
+                  </Typography>
+                </Box>
+                <Typography variant="body2" sx={{ color: "rgba(255, 255, 255, 0.9)", mb: 2 }} gutterBottom>
+                  Formalisez les documents (titre foncier, convention d'ouverture de crédit, acte hypothécaire) 
+                  pour les dossiers soumis par les banques partenaires selon les procédures UMEMOA
+                </Typography>
+                <Button
+                  endIcon={<ArrowForward />}
+                  sx={{ mt: 2 }}
+                  variant="contained"
+                  fullWidth
+                  style={{
+                    backgroundColor: "rgba(255, 255, 255, 0.2)",
+                    color: "white",
+                  }}
+                >
+                  Accéder
+                </Button>
+              </CardContent>
+            </Card>
+          </Grid>
+
           <Grid item xs={12} md={4}>
             <Card
               elevation={3}

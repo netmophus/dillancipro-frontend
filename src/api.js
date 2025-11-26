@@ -6,7 +6,9 @@ const API = axios.create({
   // Production: "https://fahimtabackend-647bfe306335.herokuapp.com/api",
   // IP locale si nécessaire: "http://192.168.0.100:5000/api",
 
-   baseURL:"https://dillanciprobackend-e5e16032094e.herokuapp.com/api",
+     baseURL:"https://dillanciprobackend-e5e16032094e.herokuapp.com/api",
+     //baseURL:"http://192.168.0.100:5000/api",
+  //    baseURL:"http://192.168.80.198:5000/api",
   withCredentials: true,
 });
 
