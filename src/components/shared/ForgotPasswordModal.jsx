@@ -18,20 +18,22 @@ import {
   IconButton,
   Stack,
 } from "@mui/material";
-import { Visibility, VisibilityOff } from "@mui/icons-material";
+import { Visibility, VisibilityOff, Phone as PhoneIcon, Email as EmailIcon } from "@mui/icons-material";
 import axios from "axios";
 import { BASE_URL } from "../../config/config";
 
-const steps = ["Entrer le numéro", "Vérifier le code", "Nouveau mot de passe"];
+const steps = ["Entrer le contact", "Vérifier le code", "Nouveau mot de passe"];
 
 const ForgotPasswordModal = ({ open, onClose }) => {
   const [activeStep, setActiveStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [resetMethod, setResetMethod] = useState("phone"); // "phone" ou "email"
 
-  // Étape 1 : Numéro de téléphone
+  // Étape 1 : Numéro de téléphone ou email
   const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
   
   // Étape 2 : Code de vérification
   const [code, setCode] = useState("");
@@ -73,9 +75,21 @@ const ForgotPasswordModal = ({ open, onClose }) => {
 
   // Étape 1 : Demander la réinitialisation
   const handleRequestReset = async () => {
-    if (!phone || phone.trim() === "") {
-      setError("Veuillez entrer votre numéro de téléphone");
+    const phoneProvided = resetMethod === "phone" && phone && phone.trim() !== "";
+    const emailProvided = resetMethod === "email" && email && email.trim() !== "";
+
+    if (!phoneProvided && !emailProvided) {
+      setError(`Veuillez entrer votre ${resetMethod === "phone" ? "numéro de téléphone" : "adresse email"}`);
       return;
+    }
+
+    // Validation de l'email si méthode email
+    if (emailProvided) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email.trim())) {
+        setError("Veuillez entrer une adresse email valide");
+        return;
+      }
     }
 
     setLoading(true);
@@ -83,9 +97,14 @@ const ForgotPasswordModal = ({ open, onClose }) => {
     setSuccess("");
 
     try {
-      const response = await axios.post(`${BASE_URL}/auth/forgot-password`, {
-        phone: formatPhone(phone),
-      });
+      const requestData = {};
+      if (phoneProvided) {
+        requestData.phone = formatPhone(phone);
+      } else {
+        requestData.email = email.trim().toLowerCase();
+      }
+
+      const response = await axios.post(`${BASE_URL}/auth/forgot-password`, requestData);
 
       setSuccess(response.data.message || "Code envoyé avec succès");
       setActiveStep(1);
@@ -102,7 +121,7 @@ const ForgotPasswordModal = ({ open, onClose }) => {
   // Étape 2 : Vérifier le code
   const handleVerifyCode = async () => {
     if (!code || code.trim() === "") {
-      setError("Veuillez entrer le code reçu par SMS");
+      setError(`Veuillez entrer le code reçu par ${resetMethod === "phone" ? "SMS" : "email"}`);
       return;
     }
 
@@ -116,10 +135,17 @@ const ForgotPasswordModal = ({ open, onClose }) => {
     setSuccess("");
 
     try {
-      const response = await axios.post(`${BASE_URL}/auth/verify-reset-code`, {
-        phone: formatPhone(phone),
+      const requestData = {
         code: code.trim(),
-      });
+      };
+      
+      if (resetMethod === "phone") {
+        requestData.phone = formatPhone(phone);
+      } else {
+        requestData.email = email.trim().toLowerCase();
+      }
+
+      const response = await axios.post(`${BASE_URL}/auth/verify-reset-code`, requestData);
 
       if (response.data.verified) {
         setSuccess("Code vérifié avec succès");
@@ -154,11 +180,18 @@ const ForgotPasswordModal = ({ open, onClose }) => {
     setSuccess("");
 
     try {
-      const response = await axios.post(`${BASE_URL}/auth/reset-password`, {
-        phone: formatPhone(phone),
+      const requestData = {
         code: code.trim(),
         newPassword: newPassword,
-      });
+      };
+      
+      if (resetMethod === "phone") {
+        requestData.phone = formatPhone(phone);
+      } else {
+        requestData.email = email.trim().toLowerCase();
+      }
+
+      const response = await axios.post(`${BASE_URL}/auth/reset-password`, requestData);
 
       setSuccess(response.data.message || "Mot de passe réinitialisé avec succès");
       
@@ -179,11 +212,13 @@ const ForgotPasswordModal = ({ open, onClose }) => {
   const handleClose = () => {
     setActiveStep(0);
     setPhone("");
+    setEmail("");
     setCode("");
     setNewPassword("");
     setConfirmPassword("");
     setError("");
     setSuccess("");
+    setResetMethod("phone");
     setLoading(false);
     onClose();
   };
@@ -194,7 +229,12 @@ const ForgotPasswordModal = ({ open, onClose }) => {
     }
 
     if (activeStep === 0) {
-      return phone.length !== 8;
+      if (resetMethod === "phone") {
+        return phone.length !== 8;
+      } else {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return !email.trim() || !emailRegex.test(email.trim());
+      }
     }
 
     if (activeStep === 1) {
@@ -202,7 +242,7 @@ const ForgotPasswordModal = ({ open, onClose }) => {
     }
 
     return newPassword.length < 6 || newPassword !== confirmPassword;
-  }, [activeStep, phone, code, newPassword, confirmPassword, loading]);
+  }, [activeStep, phone, email, code, newPassword, confirmPassword, loading, resetMethod]);
 
   const handleNext = () => {
     if (activeStep === 0) {
@@ -248,35 +288,79 @@ const ForgotPasswordModal = ({ open, onClose }) => {
           </Alert>
         )}
 
-        {/* Étape 1 : Numéro de téléphone */}
+        {/* Étape 1 : Numéro de téléphone ou email */}
         {activeStep === 0 && (
           <Box>
+            <Box sx={{ mb: 2 }}>
+              <Button
+                variant={resetMethod === "phone" ? "contained" : "outlined"}
+                onClick={() => {
+                  setResetMethod("phone");
+                  setEmail("");
+                  setError("");
+                }}
+                sx={{ mr: 1 }}
+                size="small"
+                startIcon={<PhoneIcon />}
+              >
+                Téléphone
+              </Button>
+              <Button
+                variant={resetMethod === "email" ? "contained" : "outlined"}
+                onClick={() => {
+                  setResetMethod("email");
+                  setPhone("");
+                  setError("");
+                }}
+                size="small"
+                startIcon={<EmailIcon />}
+              >
+                Email
+              </Button>
+            </Box>
+
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              Entrez votre numéro de téléphone. Nous vous enverrons un code de
-              vérification par SMS.
+              {resetMethod === "phone" 
+                ? "Entrez votre numéro de téléphone. Nous vous enverrons un code de vérification par SMS."
+                : "Entrez votre adresse email. Nous vous enverrons un code de vérification par email."}
             </Typography>
-            <TextField
-              fullWidth
-              label="Numéro de téléphone"
-              value={phone}
-              onChange={(e) => setPhone(sanitizeLocalPhone(e.target.value))}
-              margin="normal"
-              required
-              placeholder="XXXXXXXX"
-              InputProps={{
-                startAdornment: (
-                  <Typography sx={{ mr: 1, color: "text.secondary" }}>
-                    +227
-                  </Typography>
-                ),
-              }}
-              inputProps={{
-                inputMode: "numeric",
-                pattern: "[0-9]*",
-                maxLength: 8,
-              }}
-              helperText="Numéro de téléphone Niger, 8 chiffres"
-            />
+
+            {resetMethod === "phone" ? (
+              <TextField
+                fullWidth
+                label="Numéro de téléphone"
+                value={phone}
+                onChange={(e) => setPhone(sanitizeLocalPhone(e.target.value))}
+                margin="normal"
+                required
+                placeholder="XXXXXXXX"
+                InputProps={{
+                  startAdornment: (
+                    <Typography sx={{ mr: 1, color: "text.secondary" }}>
+                      +227
+                    </Typography>
+                  ),
+                }}
+                inputProps={{
+                  inputMode: "numeric",
+                  pattern: "[0-9]*",
+                  maxLength: 8,
+                }}
+                helperText="Numéro de téléphone Niger, 8 chiffres"
+              />
+            ) : (
+              <TextField
+                fullWidth
+                label="Adresse email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                margin="normal"
+                required
+                placeholder="exemple@email.com"
+                helperText="Adresse email de votre compte"
+              />
+            )}
           </Box>
         )}
 
@@ -284,8 +368,8 @@ const ForgotPasswordModal = ({ open, onClose }) => {
         {activeStep === 1 && (
           <Box>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              Entrez le code à 6 chiffres que vous avez reçu par SMS au numéro{" "}
-              <strong>{formatPhone(phone)}</strong>
+              Entrez le code à 6 chiffres que vous avez reçu par {resetMethod === "phone" ? "SMS" : "email"} {resetMethod === "phone" ? `au numéro` : `à l'adresse`}{" "}
+              <strong>{resetMethod === "phone" ? formatPhone(phone) : email}</strong>
             </Typography>
             <TextField
               fullWidth
