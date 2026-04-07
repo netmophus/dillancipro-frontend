@@ -40,12 +40,13 @@ import { useNavigate } from "react-router-dom";
 import PageLayout from "../../components/shared/PageLayout";
 import { useAuth } from "../../contexts/AuthContext";
 import api from "../../services/api";
+import { BASE_SERVER_URL } from "../../config/config";
 
 // juste avant le composant (après les imports)
 const fixFileUrl = (path) => {
   if (!path) return undefined;
   const norm = String(path).replace(/\\/g, '/');
-  return norm.startsWith('http') ? norm : `http://localhost:5000/${norm}`;
+  return norm.startsWith('http') ? norm : `${BASE_SERVER_URL}/${norm}`;
 };
 
 const AgenceDashboardPage = () => {

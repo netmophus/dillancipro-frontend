@@ -55,6 +55,7 @@ import {
 } from "@mui/icons-material";
 
 import API from "../../api";
+import { BASE_SERVER_URL } from "../../config/config";
 import PageLayout from "../../components/shared/PageLayout";
 import { useNavigate } from "react-router-dom";
 import LinkAdminToAgenceModal from "../../components/admin/LinkAdminToAgenceModal";
@@ -266,7 +267,7 @@ const AdminAgenceManagementPage = () => {
       }
       // Sinon, construire l'URL locale
       const normalizedPath = filePath.replace(/\\/g, '/');
-      return `http://localhost:5000/${normalizedPath}`;
+      return `${BASE_SERVER_URL}/${normalizedPath}`;
     };
     setExistingFiles({
       nifFile: fichiers.nifFile ? getFileUrl(fichiers.nifFile) : null,

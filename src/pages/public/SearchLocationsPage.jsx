@@ -67,6 +67,7 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/shared/Navbar";
 import Footer from "../../components/shared/Footer";
 import api from "../../services/api";
+import { BASE_SERVER_URL } from "../../config/config";
 
 const SearchLocationsPage = () => {
   const navigate = useNavigate();
@@ -236,7 +237,7 @@ const SearchLocationsPage = () => {
     }
     
     // Sinon, construire l'URL complète
-    return `http://localhost:5000/${correctedPath}`;
+    return `${BASE_SERVER_URL}/${correctedPath}`;
   };
 
   // Fonction pour convertir une URL YouTube/Vimeo en URL embed

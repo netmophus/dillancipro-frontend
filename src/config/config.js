@@ -1,23 +1,19 @@
 // src/config/config.js
 
-const resolveDefaultBaseUrl = () => {
-  if (typeof window !== "undefined") {
-    const isHttps = window.location.protocol === "https:";
-    const host = window.location.hostname;
+const PROD_SERVER = "https://dillanciprobackend-e5e16032094e.herokuapp.com";
+const DEV_SERVER  = "http://192.168.80.29:5000";
 
-    // En production (hébergée), on force une URL sécurisée si aucune variable n'est définie
-    if (isHttps && host && host !== "localhost") {
-      
-      return "https://dillanciprobackend-e5e16032094e.herokuapp.com/api";
-    }
-  }
+const isProd = () =>
+  typeof window !== "undefined" &&
+  window.location.protocol === "https:" &&
+  window.location.hostname !== "localhost";
 
-  // Valeur par défaut pour le développement local (réseau interne)
-   //return "http://192.168.80.168:5000/api";
-   return "http://192.168.80.29:5000/api";
-  // return "https://dillanciprobackend-e5e16032094e.herokuapp.com/api";
+/** URL de base du serveur (sans /api) — pour les images et fichiers uploadés */
+export const BASE_SERVER_URL =
+  process.env.REACT_APP_SERVER_BASE_URL ||
+  (isProd() ? PROD_SERVER : DEV_SERVER);
 
-};
-
+/** URL de base de l'API (avec /api) — pour axios */
 export const BASE_URL =
-  process.env.REACT_APP_API_BASE_URL || resolveDefaultBaseUrl();
+  process.env.REACT_APP_API_BASE_URL ||
+  `${BASE_SERVER_URL}/api`;

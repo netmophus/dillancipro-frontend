@@ -22,6 +22,7 @@ import {
   VideoLibrary,
 } from "@mui/icons-material";
 import { decimalToDMS } from "../../utils/coordinateUtils";
+import { BASE_SERVER_URL } from "../../config/config";
 
 // Fonction utilitaire pour corriger les URLs d'images
 const fixImageUrl = (imageUrl) => {
@@ -36,7 +37,7 @@ const fixImageUrl = (imageUrl) => {
   }
   
   // Sinon, construire l'URL complète
-  return `http://localhost:5000/${correctedPath}`;
+  return `${BASE_SERVER_URL}/${correctedPath}`;
 };
 
 // Fonction pour formater l'argent

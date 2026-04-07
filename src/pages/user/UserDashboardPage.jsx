@@ -66,6 +66,7 @@ import PageLayout from "../../components/shared/PageLayout";
 import { useAuth } from "../../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
+import { BASE_SERVER_URL } from "../../config/config";
 import EcheancierDrawerClient from "../../components/user/EcheancierDrawerClient";
 
 // Fixer les icônes Leaflet
@@ -196,7 +197,7 @@ const UserDashboardPage = () => {
     if (url.startsWith('http://') || url.startsWith('https://')) {
       return url;
     }
-    const apiBaseUrl = api.defaults.baseURL || 'http://localhost:5000';
+    const apiBaseUrl = api.defaults.baseURL || BASE_SERVER_URL;
     return `${apiBaseUrl}${url.startsWith('/') ? url : `/${url}`}`;
   };
 

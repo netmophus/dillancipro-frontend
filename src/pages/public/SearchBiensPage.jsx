@@ -77,6 +77,7 @@ import Navbar from "../../components/shared/Navbar";
 import Footer from "../../components/shared/Footer";
 import BienDetailDrawer from "../../components/biens/BienDetailDrawer";
 import api from "../../services/api";
+import { BASE_SERVER_URL } from "../../config/config";
 import { decimalToDMS } from "../../utils/coordinateUtils";
 
 // Fix icônes Leaflet
@@ -156,7 +157,7 @@ const SearchBiensPage = () => {
     }
     
     // Sinon, construire l'URL complète
-    return `http://localhost:5000/${correctedPath}`;
+    return `${BASE_SERVER_URL}/${correctedPath}`;
   };
 
   // Fonction pour formater l'argent

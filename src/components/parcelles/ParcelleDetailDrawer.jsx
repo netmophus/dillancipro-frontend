@@ -18,6 +18,7 @@ import {
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { BASE_SERVER_URL } from "../../config/config";
 
 // Fix pour les icônes Leaflet par défaut
 if (L.Icon.Default.prototype._getIconUrl) {
@@ -42,7 +43,7 @@ const fixImageUrl = (imageUrl) => {
   }
   
   // Sinon, construire l'URL complète
-  return `http://localhost:5000/${correctedPath}`;
+  return `${BASE_SERVER_URL}/${correctedPath}`;
 };
 
 // Fonction pour formater l'argent

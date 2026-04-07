@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import api from "../../services/api";
+import { BASE_SERVER_URL } from "../../config/config";
 import { decimalToDMS } from "../../utils/coordinateUtils";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
@@ -237,7 +238,7 @@ const HomePage = () => {
     }
     
     // Sinon, construire l'URL complète
-    return `http://localhost:5000/${correctedPath}`;
+    return `${BASE_SERVER_URL}/${correctedPath}`;
   };
 
   // Fonction pour convertir les URLs YouTube/Vimeo en URLs d'embed

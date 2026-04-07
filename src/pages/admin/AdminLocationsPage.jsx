@@ -46,6 +46,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import PageLayout from "../../components/shared/PageLayout";
 import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
+import { BASE_SERVER_URL } from "../../config/config";
 
 const AdminLocationsPage = () => {
   const { user } = useAuth();
@@ -71,7 +72,7 @@ const AdminLocationsPage = () => {
     }
     
     // Sinon, construire l'URL complète
-    return `http://localhost:5000/${correctedPath}`;
+    return `${BASE_SERVER_URL}/${correctedPath}`;
   };
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
 

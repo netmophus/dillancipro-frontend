@@ -59,6 +59,7 @@ import {
 import { useNavigate, useLocation } from "react-router-dom";
 import PageLayout from "../../components/shared/PageLayout";
 import api from "../../services/api";
+import { BASE_SERVER_URL } from "../../config/config";
 
 const CreateParcellePage = () => {
   const navigate = useNavigate();
@@ -262,7 +263,7 @@ const CreateParcellePage = () => {
     // Si c'est un chemin relatif, construire l'URL locale
     // Enlever le slash de début s'il existe pour éviter les doubles slashes
     const cleanPath = correctedPath.startsWith('/') ? correctedPath.slice(1) : correctedPath;
-    return `http://localhost:5000/${cleanPath}`;
+    return `${BASE_SERVER_URL}/${cleanPath}`;
   };
 
   const openEditDialog = (parcelle) => {

@@ -50,6 +50,7 @@ import Navbar from "../../components/shared/Navbar";
 import Footer from "../../components/shared/Footer";
 import ParcelleDetailDrawer from "../../components/parcelles/ParcelleDetailDrawer";
 import api from "../../services/api";
+import { BASE_SERVER_URL } from "../../config/config";
 
 const SearchParcellesPage = () => {
   const navigate = useNavigate();
@@ -236,7 +237,7 @@ const SearchParcellesPage = () => {
     }
     
     // Sinon, construire l'URL complète
-    return `http://localhost:5000/${correctedPath}`;
+    return `${BASE_SERVER_URL}/${correctedPath}`;
   };
 
   // Fonction pour extraire le nom du fichier depuis une URL
