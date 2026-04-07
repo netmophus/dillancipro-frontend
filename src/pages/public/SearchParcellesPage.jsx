@@ -48,6 +48,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/shared/Navbar";
 import Footer from "../../components/shared/Footer";
+import ParcelleDetailDrawer from "../../components/parcelles/ParcelleDetailDrawer";
 import api from "../../services/api";
 
 const SearchParcellesPage = () => {
@@ -346,13 +347,23 @@ const SearchParcellesPage = () => {
             {/* Ligne 1: Localisation */}
             <Grid item xs={12} sm={6} md={3}>
               <FormControl fullWidth size="small">
-                <InputLabel>Ville</InputLabel>
+                <InputLabel id="ville-label" shrink>Ville</InputLabel>
                 <Select
+                  labelId="ville-label"
                   value={filters.ville || ""}
                   onChange={(e) => handleFilterChange("ville", e.target.value)}
                   label="Ville"
+                  displayEmpty
+                  renderValue={(selected) => {
+                    if (!selected || selected === "") {
+                      return <span style={{ color: "rgba(0, 0, 0, 0.6)" }}>Toutes les villes</span>;
+                    }
+                    return selected;
+                  }}
                 >
-                  <MenuItem value="">Toutes les villes</MenuItem>
+                  <MenuItem value="">
+                    <em>Toutes les villes</em>
+                  </MenuItem>
                   {filterOptions.villes.map((ville) => (
                     <MenuItem key={ville.id} value={ville.nom}>
                       {ville.nom}
@@ -364,13 +375,23 @@ const SearchParcellesPage = () => {
 
             <Grid item xs={12} sm={6} md={3}>
               <FormControl fullWidth size="small">
-                <InputLabel>Quartier</InputLabel>
+                <InputLabel id="quartier-label" shrink>Quartier</InputLabel>
                 <Select
+                  labelId="quartier-label"
                   value={filters.quartier || ""}
                   onChange={(e) => handleFilterChange("quartier", e.target.value)}
                   label="Quartier"
+                  displayEmpty
+                  renderValue={(selected) => {
+                    if (!selected || selected === "") {
+                      return <span style={{ color: "rgba(0, 0, 0, 0.6)" }}>Tous les quartiers</span>;
+                    }
+                    return selected;
+                  }}
                 >
-                  <MenuItem value="">Tous les quartiers</MenuItem>
+                  <MenuItem value="">
+                    <em>Tous les quartiers</em>
+                  </MenuItem>
                   {filterOptions.quartiers
                     .filter((q) => !filters.ville || q.ville === filters.ville)
                     .map((quartier) => (
@@ -384,13 +405,23 @@ const SearchParcellesPage = () => {
 
             <Grid item xs={12} sm={6} md={3}>
               <FormControl fullWidth size="small">
-                <InputLabel>Cité/Zone</InputLabel>
+                <InputLabel id="cite-label" shrink>Citée/Zone</InputLabel>
                 <Select
+                  labelId="cite-label"
                   value={filters.cite || ""}
                   onChange={(e) => handleFilterChange("cite", e.target.value)}
                   label="Citée/Zone"
+                  displayEmpty
+                  renderValue={(selected) => {
+                    if (!selected || selected === "") {
+                      return <span style={{ color: "rgba(0, 0, 0, 0.6)" }}>Toutes les cités</span>;
+                    }
+                    return selected;
+                  }}
                 >
-                  <MenuItem value="">Toutes les cités</MenuItem>
+                  <MenuItem value="">
+                    <em>Toutes les cités</em>
+                  </MenuItem>
                   {filterOptions.cites
                     .filter(
                       (cite) =>
@@ -408,13 +439,23 @@ const SearchParcellesPage = () => {
 
             <Grid item xs={12} sm={6} md={3}>
               <FormControl fullWidth size="small">
-                <InputLabel>Agence Immobilière</InputLabel>
+                <InputLabel id="agence-label" shrink>Agence Immobilière</InputLabel>
                 <Select
+                  labelId="agence-label"
                   value={filters.agence || ""}
                   onChange={(e) => handleFilterChange("agence", e.target.value)}
                   label="Agence Immobilière"
+                  displayEmpty
+                  renderValue={(selected) => {
+                    if (!selected || selected === "") {
+                      return <span style={{ color: "rgba(0, 0, 0, 0.6)" }}>Toutes les agences</span>;
+                    }
+                    return filterOptions.agences.find(a => a.id === selected)?.nom || selected;
+                  }}
                 >
-                  <MenuItem value="">Toutes les agences</MenuItem>
+                  <MenuItem value="">
+                    <em>Toutes les agences</em>
+                  </MenuItem>
                   {filterOptions.agences.map((agence) => (
                     <MenuItem key={agence.id} value={agence.id}>
                       {agence.nom}
@@ -699,6 +740,15 @@ const SearchParcellesPage = () => {
       <Footer />
 
       {/* Drawer pour les détails de la parcelle */}
+      <ParcelleDetailDrawer
+        open={openParcelleDrawer}
+        onClose={handleCloseParcelleDetails}
+        selectedParcelle={selectedParcelle}
+        onParcelleUpdate={setSelectedParcelle}
+      />
+
+      {/* Ancien drawer - à supprimer après vérification */}
+      {false && (
       <Drawer
         anchor="right"
         open={openParcelleDrawer}
@@ -1148,6 +1198,7 @@ const SearchParcellesPage = () => {
           )}
         </Box>
       </Drawer>
+      )}
 
     </Box>
   );

@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import {
-  Container,
   TextField,
   Button,
   Typography,
@@ -13,12 +12,15 @@ import {
   Step,
   StepLabel,
   Link,
+  Grid,
+  Paper,
+  Stack,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { BASE_URL } from "../../config/config";
 import PageLayout from "../../components/shared/PageLayout";
-import { Visibility, VisibilityOff, Phone as PhoneIcon, Email as EmailIcon } from "@mui/icons-material";
+import { Visibility, VisibilityOff, Phone as PhoneIcon, Email as EmailIcon, Home } from "@mui/icons-material";
 
 
   const formatPhone = (rawPhone) => {
@@ -199,178 +201,349 @@ const RegisterPage = () => {
 
   return (
     <PageLayout>
-      <Container maxWidth="sm" sx={{ mt: 4, mb: 4 }}>
-        <Typography variant="h5" gutterBottom>
-          {activeStep === 0 ? "Création de compte" : "Vérification du compte"}
-        </Typography>
-
-        {/* Messages d'erreur et de succès (affichés dans toutes les étapes) */}
-        {errorMessage && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {errorMessage}
-          </Alert>
-        )}
-        {successMessage && (
-          <Alert severity="success" sx={{ mb: 2 }}>
-            {successMessage}
-          </Alert>
-        )}
-
-        {/* Stepper */}
-        {activeStep === 1 && (
-          <Box sx={{ mb: 3 }}>
-            <Stepper activeStep={1} alternativeLabel>
-              <Step>
-                <StepLabel>Inscription</StepLabel>
-              </Step>
-              <Step>
-                <StepLabel>Vérification</StepLabel>
-              </Step>
-            </Stepper>
-          </Box>
-        )}
-
-        {/* Étape 1 : Inscription */}
-        {activeStep === 0 && (
-          <Box component="form" onSubmit={handleSubmit}>
-          <TextField
-            fullWidth
-            label="Nom complet"
-            name="fullName"
-            value={formData.fullName}
-            onChange={handleChange}
-            margin="normal"
-            required
-          />
-          <TextField
-            fullWidth
-            label="Email"
-            name="email"
-            type="email"
-            value={formData.email}
-            onChange={handleChange}
-            margin="normal"
-            helperText="Au moins un email ou un téléphone doit être fourni"
-          />
-        <TextField
-            fullWidth
-            label="Téléphone"
-            name="phone"
-            value={formData.phone}
-            onChange={handleChange}
-            margin="normal"
-            helperText="Au moins un email ou un téléphone doit être fourni"
-            InputProps={{
-                startAdornment: <InputAdornment position="start">+227</InputAdornment>,
-            }}
-            />
-
-<TextField
-  fullWidth
-  label="Mot de passe"
-  name="password"
-  type={showPassword ? "text" : "password"}
-  value={formData.password}
-  onChange={handleChange}
-  margin="normal"
-  required
-  InputProps={{
-    endAdornment: (
-      <InputAdornment position="end">
-        <IconButton onClick={togglePasswordVisibility} edge="end">
-          {showPassword ? <VisibilityOff /> : <Visibility />}
-        </IconButton>
-      </InputAdornment>
-    ),
-  }}
-/>
-
-            <Button
-              type="submit"
-              variant="contained"
-              fullWidth
-              sx={{ mt: 2 }}
-              disabled={submitting}
-            >
-              {submitting ? (
-                <CircularProgress size={24} color="inherit" />
-              ) : (
-                "S'inscrire"
-              )}
-            </Button>
-          </Box>
-        )}
-
-        {/* Étape 2 : Vérification OTP */}
-        {activeStep === 1 && verificationData && (
-          <Box>
-            <Alert severity="info" sx={{ mb: 3 }}>
-              Un code de vérification a été envoyé par {verificationData.method === "SMS" ? "SMS" : "email"} {verificationData.method === "SMS" ? `au numéro ${verificationData.phone}` : `à l'adresse ${verificationData.email}`}
-            </Alert>
-
-            <TextField
-              fullWidth
-              label="Code de vérification"
-              value={verificationCode}
-              onChange={(e) => {
-                const value = e.target.value.replace(/\D/g, "").slice(0, 6);
-                setVerificationCode(value);
-                setErrorMessage("");
+      <Box sx={{ py: { xs: 6, md: 10 } }}>
+        <Paper
+          elevation={10}
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            overflow: "hidden",
+            borderRadius: 4,
+          }}
+        >
+          <Grid container>
+            <Grid
+              item
+              xs={12}
+              md={5}
+              sx={{
+                background: "linear-gradient(140deg, #0f172a 0%, #2563eb 100%)",
+                color: "primary.contrastText",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                px: { xs: 4, md: 5 },
+                py: { xs: 6, md: 8 },
               }}
-              margin="normal"
-              required
-              placeholder="123456"
-              inputProps={{ maxLength: 6 }}
-              helperText="Entrez le code à 6 chiffres reçu"
-            />
+            >
+              <Stack spacing={3} sx={{ textAlign: { xs: "center", md: "left" } }}>
+                <Typography variant="h4" fontWeight={700} lineHeight={1.2}>
+                  Bienvenue sur DillanciPro
+                </Typography>
+                <Typography variant="body1" sx={{ opacity: 0.8 }}>
+                  Créez votre compte pour accéder à tous nos services fonciers et immobiliers.
+                </Typography>
+                <Typography variant="caption" sx={{ opacity: 0.6 }}>
+                  Rejoignez notre communauté et simplifiez vos transactions immobilières.
+                </Typography>
+              </Stack>
+            </Grid>
 
-            <Box sx={{ mt: 2, display: "flex", gap: 2 }}>
-              <Button
-                variant="outlined"
-                onClick={handleResendCode}
-                disabled={resending}
-                startIcon={verificationData.method === "SMS" ? <PhoneIcon /> : <EmailIcon />}
-              >
-                {resending ? (
-                  <CircularProgress size={20} />
-                ) : (
-                  "Renvoyer le code"
-                )}
-              </Button>
+            <Grid
+              item
+              xs={12}
+              md={7}
+              sx={{
+                backgroundColor: "background.paper",
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
+              <Grid container sx={{ width: "100%", height: "100%" }}>
+                <Grid
+                  item
+                  xs={12}
+                  md={6}
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    px: { xs: 2, md: 4 },
+                    py: { xs: 4, md: 6 },
+                  }}
+                >
+                  <Box
+                    component="form"
+                    onSubmit={handleSubmit}
+                    sx={{
+                      width: "100%",
+                      px: { xs: 4, md: 6 },
+                      py: { xs: 5, md: 7 },
+                      backgroundColor: "rgba(37, 99, 235, 0.05)",
+                      borderRadius: 3,
+                      boxShadow: "0 4px 20px rgba(37, 99, 235, 0.1)",
+                    }}
+                  >
+                    <Stack spacing={3}>
+                      <Box>
+                        <Typography 
+                          variant="h4" 
+                          fontWeight={700} 
+                          gutterBottom
+                          sx={{
+                            background: "linear-gradient(135deg, #2563eb 0%, #1e40af 100%)",
+                            backgroundClip: "text",
+                            WebkitBackgroundClip: "text",
+                            WebkitTextFillColor: "transparent",
+                            mb: 1,
+                          }}
+                        >
+                          {activeStep === 0 ? "Création de compte" : "Vérification du compte"}
+                        </Typography>
+                        <Typography 
+                          variant="body1" 
+                          color="text.secondary"
+                          sx={{
+                            fontSize: "0.95rem",
+                            opacity: 0.8,
+                          }}
+                        >
+                          {activeStep === 0 ? "Remplissez le formulaire pour créer votre compte" : "Entrez le code de vérification reçu"}
+                        </Typography>
+                      </Box>
 
-              <Button
-                variant="contained"
-                onClick={handleVerifyCode}
-                disabled={verifying || verificationCode.length !== 6}
-                sx={{ flexGrow: 1 }}
-              >
-                {verifying ? (
-                  <CircularProgress size={24} color="inherit" />
-                ) : (
-                  "Vérifier"
-                )}
-              </Button>
-            </Box>
+                      {/* Messages d'erreur et de succès */}
+                      {errorMessage && (
+                        <Alert severity="error">
+                          {errorMessage}
+                        </Alert>
+                      )}
+                      {successMessage && (
+                        <Alert severity="success">
+                          {successMessage}
+                        </Alert>
+                      )}
 
-            <Box sx={{ mt: 2, textAlign: "center" }}>
-              <Link
-                component="button"
-                type="button"
-                variant="body2"
-                onClick={() => {
-                  setActiveStep(0);
-                  setVerificationData(null);
-                  setVerificationCode("");
-                  setErrorMessage("");
-                  setSuccessMessage("");
-                }}
-              >
-                Retour à l'inscription
-              </Link>
-            </Box>
-          </Box>
-        )}
-      </Container>
+                      {/* Stepper */}
+                      {activeStep === 1 && (
+                        <Box sx={{ mb: 2 }}>
+                          <Stepper activeStep={1} alternativeLabel>
+                            <Step>
+                              <StepLabel>Inscription</StepLabel>
+                            </Step>
+                            <Step>
+                              <StepLabel>Vérification</StepLabel>
+                            </Step>
+                          </Stepper>
+                        </Box>
+                      )}
+
+                      {/* Étape 1 : Inscription */}
+                      {activeStep === 0 && (
+                        <>
+                          <TextField
+                            fullWidth
+                            label="Nom complet"
+                            name="fullName"
+                            value={formData.fullName}
+                            onChange={handleChange}
+                            required
+                            sx={{ mb: 2 }}
+                          />
+                          <TextField
+                            fullWidth
+                            label="Email"
+                            name="email"
+                            type="email"
+                            value={formData.email}
+                            onChange={handleChange}
+                            helperText="Au moins un email ou un téléphone doit être fourni"
+                            sx={{ mb: 2 }}
+                          />
+                          <TextField
+                            fullWidth
+                            label="Téléphone"
+                            name="phone"
+                            value={formData.phone}
+                            onChange={handleChange}
+                            helperText="Au moins un email ou un téléphone doit être fourni"
+                            InputProps={{
+                              startAdornment: <InputAdornment position="start">+227</InputAdornment>,
+                            }}
+                            sx={{ mb: 2 }}
+                          />
+                          <TextField
+                            fullWidth
+                            label="Mot de passe"
+                            name="password"
+                            type={showPassword ? "text" : "password"}
+                            value={formData.password}
+                            onChange={handleChange}
+                            required
+                            InputProps={{
+                              endAdornment: (
+                                <InputAdornment position="end">
+                                  <IconButton onClick={togglePasswordVisibility} edge="end">
+                                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                                  </IconButton>
+                                </InputAdornment>
+                              ),
+                            }}
+                            sx={{ mb: 2 }}
+                          />
+
+                          <Button
+                            type="submit"
+                            variant="contained"
+                            fullWidth
+                            disabled={submitting}
+                            sx={{ 
+                              py: 1.8, 
+                              fontWeight: 700,
+                              fontSize: "1rem",
+                              borderRadius: 2,
+                              textTransform: "none",
+                              background: "linear-gradient(135deg, #2563eb 0%, #1e40af 100%)",
+                              boxShadow: "0 4px 14px rgba(37, 99, 235, 0.4)",
+                              "&:hover": {
+                                background: "linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%)",
+                                boxShadow: "0 6px 20px rgba(37, 99, 235, 0.5)",
+                                transform: "translateY(-2px)",
+                              },
+                              "&:disabled": {
+                                background: "linear-gradient(135deg, #93c5fd 0%, #60a5fa 100%)",
+                              },
+                              transition: "all 0.3s ease",
+                            }}
+                          >
+                            {submitting ? (
+                              <CircularProgress size={24} color="inherit" />
+                            ) : (
+                              "S'inscrire"
+                            )}
+                          </Button>
+                        </>
+                      )}
+
+                      {/* Étape 2 : Vérification OTP */}
+                      {activeStep === 1 && verificationData && (
+                        <>
+                          <Alert severity="info" sx={{ mb: 2 }}>
+                            Un code de vérification a été envoyé par {verificationData.method === "SMS" ? "SMS" : "email"} {verificationData.method === "SMS" ? `au numéro ${verificationData.phone}` : `à l'adresse ${verificationData.email}`}
+                          </Alert>
+
+                          <TextField
+                            fullWidth
+                            label="Code de vérification"
+                            value={verificationCode}
+                            onChange={(e) => {
+                              const value = e.target.value.replace(/\D/g, "").slice(0, 6);
+                              setVerificationCode(value);
+                              setErrorMessage("");
+                            }}
+                            required
+                            placeholder="123456"
+                            inputProps={{ maxLength: 6 }}
+                            helperText="Entrez le code à 6 chiffres reçu"
+                            sx={{ mb: 2 }}
+                          />
+
+                          <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+                            <Button
+                              variant="outlined"
+                              onClick={handleResendCode}
+                              disabled={resending}
+                              startIcon={verificationData.method === "SMS" ? <PhoneIcon /> : <EmailIcon />}
+                              sx={{
+                                borderRadius: 2,
+                                textTransform: "none",
+                              }}
+                            >
+                              {resending ? (
+                                <CircularProgress size={20} />
+                              ) : (
+                                "Renvoyer"
+                              )}
+                            </Button>
+
+                            <Button
+                              variant="contained"
+                              onClick={handleVerifyCode}
+                              disabled={verifying || verificationCode.length !== 6}
+                              sx={{ 
+                                flexGrow: 1,
+                                py: 1.5,
+                                fontWeight: 700,
+                                borderRadius: 2,
+                                textTransform: "none",
+                                background: "linear-gradient(135deg, #2563eb 0%, #1e40af 100%)",
+                                boxShadow: "0 4px 14px rgba(37, 99, 235, 0.4)",
+                                "&:hover": {
+                                  background: "linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%)",
+                                  boxShadow: "0 6px 20px rgba(37, 99, 235, 0.5)",
+                                  transform: "translateY(-2px)",
+                                },
+                                "&:disabled": {
+                                  background: "linear-gradient(135deg, #93c5fd 0%, #60a5fa 100%)",
+                                },
+                                transition: "all 0.3s ease",
+                              }}
+                            >
+                              {verifying ? (
+                                <CircularProgress size={24} color="inherit" />
+                              ) : (
+                                "Vérifier"
+                              )}
+                            </Button>
+                          </Box>
+
+                          <Box sx={{ textAlign: "center" }}>
+                            <Link
+                              component="button"
+                              type="button"
+                              variant="body2"
+                              onClick={() => {
+                                setActiveStep(0);
+                                setVerificationData(null);
+                                setVerificationCode("");
+                                setErrorMessage("");
+                                setSuccessMessage("");
+                              }}
+                              sx={{ fontWeight: 500 }}
+                            >
+                              Retour à l'inscription
+                            </Link>
+                          </Box>
+                        </>
+                      )}
+                    </Stack>
+                  </Box>
+                </Grid>
+                <Grid
+                  item
+                  xs={0}
+                  md={6}
+                  sx={{
+                    display: { xs: "none", md: "flex" },
+                    alignItems: "center",
+                    justifyContent: "center",
+                    backgroundColor: "background.paper",
+                    px: 6,
+                    py: 8,
+                  }}
+                >
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      width: "100%",
+                      height: "100%",
+                    }}
+                  >
+                    <Home
+                      sx={{
+                        fontSize: 200,
+                        color: "primary.main",
+                        opacity: 0.2,
+                      }}
+                    />
+                  </Box>
+                </Grid>
+              </Grid>
+            </Grid>
+          </Grid>
+        </Paper>
+      </Box>
     </PageLayout>
   );
 };

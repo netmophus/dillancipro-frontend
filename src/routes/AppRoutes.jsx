@@ -494,6 +494,14 @@ const AppRoutes = () => {
     </ProtectRoute>
   }
 />
+<Route
+  path="/agence/edit-bien/:id"
+  element={
+    <ProtectRoute allowedRoles={["Agence"]}>
+      <CreateBienPage />
+    </ProtectRoute>
+  }
+/>
 
 <Route
   path="/agence/mes-biens"

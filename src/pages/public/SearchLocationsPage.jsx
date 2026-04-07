@@ -365,13 +365,23 @@ const SearchLocationsPage = () => {
             {/* Ligne 1: Localisation et Type */}
             <Grid item xs={12} sm={6} md={3}>
               <FormControl fullWidth size="small">
-                <InputLabel>Ville</InputLabel>
+                <InputLabel id="ville-label" shrink>Ville</InputLabel>
                 <Select
+                  labelId="ville-label"
                   value={filters.ville || ""}
                   onChange={(e) => handleFilterChange("ville", e.target.value)}
                   label="Ville"
+                  displayEmpty
+                  renderValue={(selected) => {
+                    if (!selected || selected === "") {
+                      return <span style={{ color: "rgba(0, 0, 0, 0.6)" }}>Toutes les villes</span>;
+                    }
+                    return selected;
+                  }}
                 >
-                  <MenuItem value="">Toutes les villes</MenuItem>
+                  <MenuItem value="">
+                    <em>Toutes les villes</em>
+                  </MenuItem>
                   {filterOptions.villes.map((ville) => (
                     <MenuItem key={ville.id} value={ville.nom}>
                       {ville.nom}
@@ -383,13 +393,23 @@ const SearchLocationsPage = () => {
 
             <Grid item xs={12} sm={6} md={3}>
               <FormControl fullWidth size="small">
-                <InputLabel>Quartier</InputLabel>
+                <InputLabel id="quartier-label" shrink>Quartier</InputLabel>
                 <Select
+                  labelId="quartier-label"
                   value={filters.quartier || ""}
                   onChange={(e) => handleFilterChange("quartier", e.target.value)}
                   label="Quartier"
+                  displayEmpty
+                  renderValue={(selected) => {
+                    if (!selected || selected === "") {
+                      return <span style={{ color: "rgba(0, 0, 0, 0.6)" }}>Tous les quartiers</span>;
+                    }
+                    return selected;
+                  }}
                 >
-                  <MenuItem value="">Tous les quartiers</MenuItem>
+                  <MenuItem value="">
+                    <em>Tous les quartiers</em>
+                  </MenuItem>
                   {filterOptions.quartiers.map((quartier) => (
                     <MenuItem key={quartier.id} value={quartier.nom}>
                       {quartier.nom}
@@ -401,13 +421,24 @@ const SearchLocationsPage = () => {
 
             <Grid item xs={12} sm={6} md={3}>
               <FormControl fullWidth size="small">
-                <InputLabel>Type de logement</InputLabel>
+                <InputLabel id="type-label" shrink>Type de logement</InputLabel>
                 <Select
+                  labelId="type-label"
                   value={filters.type || ""}
                   onChange={(e) => handleFilterChange("type", e.target.value)}
                   label="Type de logement"
+                  displayEmpty
+                  renderValue={(selected) => {
+                    if (!selected || selected === "") {
+                      return <span style={{ color: "rgba(0, 0, 0, 0.6)" }}>Tous les types</span>;
+                    }
+                    const selectedType = filterOptions.types.find((type) => type.id === selected);
+                    return selectedType ? selectedType.nom : "";
+                  }}
                 >
-                  <MenuItem value="">Tous les types</MenuItem>
+                  <MenuItem value="">
+                    <em>Tous les types</em>
+                  </MenuItem>
                   {filterOptions.types.map((type) => (
                     <MenuItem key={type.id} value={type.id}>
                       {type.nom}
@@ -419,13 +450,23 @@ const SearchLocationsPage = () => {
 
             <Grid item xs={12} sm={6} md={3}>
               <FormControl fullWidth size="small">
-                <InputLabel>Agence Immobilière</InputLabel>
+                <InputLabel id="agence-label" shrink>Agence Immobilière</InputLabel>
                 <Select
+                  labelId="agence-label"
                   value={filters.agence || ""}
                   onChange={(e) => handleFilterChange("agence", e.target.value)}
                   label="Agence Immobilière"
+                  displayEmpty
+                  renderValue={(selected) => {
+                    if (!selected || selected === "") {
+                      return <span style={{ color: "rgba(0, 0, 0, 0.6)" }}>Toutes les agences</span>;
+                    }
+                    return filterOptions.agences.find(a => a.id === selected)?.nom || selected;
+                  }}
                 >
-                  <MenuItem value="">Toutes les agences</MenuItem>
+                  <MenuItem value="">
+                    <em>Toutes les agences</em>
+                  </MenuItem>
                   {filterOptions.agences.map((agence) => (
                     <MenuItem key={agence.id} value={agence.id}>
                       {agence.nom}
@@ -510,13 +551,23 @@ const SearchLocationsPage = () => {
 
             <Grid item xs={12} sm={6} md={3}>
               <FormControl fullWidth size="small">
-                <InputLabel>Meublé</InputLabel>
+                <InputLabel id="meuble-label" shrink>Meublé</InputLabel>
                 <Select
+                  labelId="meuble-label"
                   value={filters.meuble || ""}
                   onChange={(e) => handleFilterChange("meuble", e.target.value)}
                   label="Meublé"
+                  displayEmpty
+                  renderValue={(selected) => {
+                    if (!selected || selected === "") {
+                      return <span style={{ color: "rgba(0, 0, 0, 0.6)" }}>Tous</span>;
+                    }
+                    return selected === "true" ? "Meublé" : "Non meublé";
+                  }}
                 >
-                  <MenuItem value="">Tous</MenuItem>
+                  <MenuItem value="">
+                    <em>Tous</em>
+                  </MenuItem>
                   <MenuItem value="true">Meublé</MenuItem>
                   <MenuItem value="false">Non meublé</MenuItem>
                 </Select>

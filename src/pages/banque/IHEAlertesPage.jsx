@@ -6,17 +6,13 @@ import {
   CardContent,
   Typography,
   Button,
-  TextField,
-  MenuItem,
   Chip,
   Paper,
   LinearProgress,
-  IconButton,
   Alert,
   Stack,
   Container,
   Avatar,
-  Tooltip,
   Badge,
   Divider,
   Tabs,
@@ -27,7 +23,6 @@ import {
   Error,
   Info,
   CheckCircle,
-  CalendarToday,
   LocationOn,
   AttachMoney,
   Home,
@@ -41,6 +36,7 @@ import {
   Visibility,
   TrendingUp,
   AccessTime,
+  CalendarToday,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import PageLayout from "../../components/shared/PageLayout";
@@ -54,15 +50,17 @@ const IHEAlertesPage = () => {
     depasse: 0,
     urgent: 0,
     attention: 0,
+    preavis_1_an: 0,
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [filterAlerte, setFilterAlerte] = useState(""); // "", "depasse", "urgent", "attention"
+  const [filterAlerte, setFilterAlerte] = useState(""); // "", "depasse", "urgent", "attention", "preavis_1_an"
   const [tabValue, setTabValue] = useState(0);
   const [ihesDisplayed, setIhesDisplayed] = useState(3); // Nombre d'IHE affichées initialement
 
   useEffect(() => {
     fetchIHEsARisque();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filterAlerte]);
 
   const fetchIHEsARisque = async () => {
@@ -77,7 +75,7 @@ const IHEAlertesPage = () => {
         `/banque/ihe/alertes-reglementaires?${params.toString()}`
       );
       setIhesARisque(response.data.ihes || []);
-      setStats(response.data.stats || { total: 0, depasse: 0, urgent: 0, attention: 0 });
+      setStats(response.data.stats || { total: 0, depasse: 0, urgent: 0, attention: 0, preavis_1_an: 0 });
     } catch (err) {
       console.error("Erreur chargement IHE à risque:", err);
       setError("Erreur lors du chargement des IHE à risque");
@@ -88,8 +86,8 @@ const IHEAlertesPage = () => {
 
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
-    // 0: tous, 1: dépassées, 2: urgentes, 3: attention
-    const filters = ["", "depasse", "urgent", "attention"];
+    // 0: tous, 1: dépassées, 2: urgentes, 3: attention, 4: préavis 1 an
+    const filters = ["", "depasse", "urgent", "attention", "preavis_1_an"];
     setFilterAlerte(filters[newValue]);
     // Réinitialiser l'affichage quand on change d'onglet
     setIhesDisplayed(3);
@@ -121,6 +119,8 @@ const IHEAlertesPage = () => {
         return "warning";
       case "attention":
         return "info";
+      case "preavis_1_an":
+        return "secondary";
       default:
         return "success";
     }
@@ -134,6 +134,8 @@ const IHEAlertesPage = () => {
         return <Warning />;
       case "attention":
         return <Info />;
+      case "preavis_1_an":
+        return <CalendarToday />;
       default:
         return <CheckCircle />;
     }
@@ -147,6 +149,8 @@ const IHEAlertesPage = () => {
         return "Urgente";
       case "attention":
         return "Attention";
+      case "preavis_1_an":
+        return "Préavis 1 an";
       default:
         return "OK";
     }
@@ -187,52 +191,127 @@ const IHEAlertesPage = () => {
 
   return (
     <PageLayout>
-      <Container maxWidth="xl" sx={{ py: 4 }}>
-        {/* En-tête */}
-        <Box sx={{ mb: 4 }}>
+      <Box sx={{ width: "100%", minHeight: "100vh", bgcolor: "#f5f7fa" }}>
+        {/* En-tête modernisé */}
+        <Box
+          sx={{
+            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            py: 6,
+            mb: 4,
+            width: "100%",
+            position: "relative",
+            overflow: "hidden",
+          }}
+        >
           <Box
             sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              mb: 2,
-              flexWrap: "wrap",
-              gap: 2,
+              position: "absolute",
+              top: -100,
+              right: -100,
+              width: 400,
+              height: 400,
+              borderRadius: "50%",
+              background: "rgba(255, 255, 255, 0.1)",
+              filter: "blur(80px)",
             }}
-          >
-            <Box>
-              <Typography variant="h4" fontWeight="bold" gutterBottom>
-                ⚠️ Suivi réglementaire des IHE
-              </Typography>
-              <Typography variant="body1" color="text.secondary">
-                Suivez les IHE approchant ou dépassant leur date limite de cession
-              </Typography>
-            </Box>
-            <Button
-              variant="outlined"
-              startIcon={<Refresh />}
-              onClick={fetchIHEsARisque}
-              disabled={loading}
+          />
+          <Container maxWidth="xl" sx={{ position: "relative", zIndex: 1 }}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                flexWrap: "wrap",
+                gap: 2,
+              }}
             >
-              Actualiser
-            </Button>
-          </Box>
+              <Box display="flex" alignItems="center" gap={3}>
+                <Box
+                  sx={{
+                    p: 2,
+                    borderRadius: 3,
+                    background: "rgba(255, 255, 255, 0.2)",
+                    backdropFilter: "blur(10px)",
+                    boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
+                  }}
+                >
+                  <Warning sx={{ fontSize: 48, color: "white" }} />
+                </Box>
+                <Box>
+                  <Typography 
+                    variant="h3" 
+                    fontWeight={700}
+                    sx={{
+                      color: "white",
+                      mb: 1,
+                    }}
+                  >
+                    Suivi réglementaire des IHE
+                  </Typography>
+                  <Typography 
+                    variant="h6" 
+                    sx={{
+                      color: "rgba(255, 255, 255, 0.9)",
+                      fontWeight: 400,
+                    }}
+                  >
+                    Suivez les IHE approchant ou dépassant leur date limite réglementaire (24 mois BCEAO)
+                  </Typography>
+                </Box>
+              </Box>
+              <Button
+                variant="contained"
+                startIcon={<Refresh />}
+                onClick={fetchIHEsARisque}
+                disabled={loading}
+                sx={{
+                  background: "rgba(255, 255, 255, 0.2)",
+                  backdropFilter: "blur(10px)",
+                  color: "white",
+                  border: "1px solid rgba(255, 255, 255, 0.3)",
+                  fontWeight: 600,
+                  px: 3,
+                  py: 1.5,
+                  borderRadius: 2,
+                  textTransform: "none",
+                  "&:hover": {
+                    background: "rgba(255, 255, 255, 0.3)",
+                    transform: "translateY(-2px)",
+                    boxShadow: "0 8px 24px rgba(0, 0, 0, 0.2)",
+                  },
+                  transition: "all 0.3s ease",
+                }}
+              >
+                Actualiser
+              </Button>
+            </Box>
+          </Container>
+        </Box>
+
+        <Container maxWidth="xl" sx={{ mb: 6 }}>
 
           {/* Statistiques */}
-          <Grid container spacing={2} sx={{ mb: 3 }}>
+          <Grid container spacing={3} sx={{ mb: 3 }}>
             <Grid item xs={12} sm={6} md={3}>
               <Card
+                elevation={0}
                 sx={{
                   background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                   color: "white",
                   borderRadius: 3,
+                  boxShadow: "0 8px 32px rgba(102, 126, 234, 0.3)",
+                  transition: "all 0.3s ease",
+                  "&:hover": {
+                    transform: "translateY(-4px)",
+                    boxShadow: "0 12px 40px rgba(102, 126, 234, 0.4)",
+                  },
                 }}
               >
                 <CardContent>
-                  <Typography variant="body2" sx={{ opacity: 0.9, mb: 1 }}>
+                  <Typography variant="body2" sx={{ opacity: 0.9, mb: 1, fontWeight: 600 }}>
                     Total IHE à risque
                   </Typography>
-                  <Typography variant="h4" fontWeight="bold">
+                  <Typography variant="h3" fontWeight={700}>
                     {stats.total}
                   </Typography>
                 </CardContent>
@@ -240,20 +319,27 @@ const IHEAlertesPage = () => {
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
               <Card
+                elevation={0}
                 sx={{
                   background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
                   color: "white",
                   borderRadius: 3,
+                  boxShadow: "0 8px 32px rgba(245, 87, 108, 0.3)",
+                  transition: "all 0.3s ease",
+                  "&:hover": {
+                    transform: "translateY(-4px)",
+                    boxShadow: "0 12px 40px rgba(245, 87, 108, 0.4)",
+                  },
                 }}
               >
                 <CardContent>
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
-                    <Error />
-                    <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                    <Error sx={{ fontSize: 24 }} />
+                    <Typography variant="body2" sx={{ opacity: 0.9, fontWeight: 600 }}>
                       Dépassées
                     </Typography>
                   </Box>
-                  <Typography variant="h4" fontWeight="bold">
+                  <Typography variant="h3" fontWeight={700}>
                     {stats.depasse}
                   </Typography>
                 </CardContent>
@@ -261,20 +347,27 @@ const IHEAlertesPage = () => {
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
               <Card
+                elevation={0}
                 sx={{
                   background: "linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)",
                   color: "#333",
                   borderRadius: 3,
+                  boxShadow: "0 8px 32px rgba(252, 182, 159, 0.3)",
+                  transition: "all 0.3s ease",
+                  "&:hover": {
+                    transform: "translateY(-4px)",
+                    boxShadow: "0 12px 40px rgba(252, 182, 159, 0.4)",
+                  },
                 }}
               >
                 <CardContent>
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
-                    <Warning />
-                    <Typography variant="body2" sx={{ opacity: 0.8 }}>
+                    <Warning sx={{ fontSize: 24, color: "#e65100" }} />
+                    <Typography variant="body2" sx={{ opacity: 0.8, fontWeight: 600 }}>
                       Urgentes (&lt; 3 mois)
                     </Typography>
                   </Box>
-                  <Typography variant="h4" fontWeight="bold">
+                  <Typography variant="h3" fontWeight={700}>
                     {stats.urgent}
                   </Typography>
                 </CardContent>
@@ -282,21 +375,56 @@ const IHEAlertesPage = () => {
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
               <Card
+                elevation={0}
                 sx={{
                   background: "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)",
                   color: "#333",
                   borderRadius: 3,
+                  boxShadow: "0 8px 32px rgba(168, 237, 234, 0.3)",
+                  transition: "all 0.3s ease",
+                  "&:hover": {
+                    transform: "translateY(-4px)",
+                    boxShadow: "0 12px 40px rgba(168, 237, 234, 0.4)",
+                  },
                 }}
               >
                 <CardContent>
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
-                    <Info />
-                    <Typography variant="body2" sx={{ opacity: 0.8 }}>
+                    <Info sx={{ fontSize: 24, color: "#0277bd" }} />
+                    <Typography variant="body2" sx={{ opacity: 0.8, fontWeight: 600 }}>
                       Attention (3-6 mois)
                     </Typography>
                   </Box>
-                  <Typography variant="h4" fontWeight="bold">
+                  <Typography variant="h3" fontWeight={700}>
                     {stats.attention}
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+            <Grid item xs={12} sm={6} md={3}>
+              <Card
+                elevation={0}
+                sx={{
+                  background: "linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%)",
+                  color: "#333",
+                  borderRadius: 3,
+                  boxShadow: "0 8px 32px rgba(142, 197, 252, 0.3)",
+                  transition: "all 0.3s ease",
+                  "&:hover": {
+                    transform: "translateY(-4px)",
+                    boxShadow: "0 12px 40px rgba(142, 197, 252, 0.4)",
+                  },
+                }}
+              >
+                <CardContent>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+                    <CalendarToday sx={{ fontSize: 24, color: "#7b1fa2" }} />
+                    <Typography variant="body2" sx={{ opacity: 0.8, fontWeight: 600 }}>
+                      Préavis 1 an (6-12 mois)
+                    </Typography>
+                  </Box>
+                  <Typography variant="h3" fontWeight={700}>
+                    {stats.preavis_1_an || 0}
                   </Typography>
                 </CardContent>
               </Card>
@@ -305,39 +433,69 @@ const IHEAlertesPage = () => {
 
           {/* Alertes critiques */}
           {stats.depasse > 0 && (
-            <Alert severity="error" sx={{ mb: 2 }}>
+            <Alert 
+              severity="error" 
+              sx={{ 
+                mb: 2,
+                borderRadius: 2,
+                boxShadow: "0 4px 12px rgba(211, 47, 47, 0.2)",
+              }}
+            >
               <Typography variant="body1" fontWeight="bold">
-                ⚠️ {stats.depasse} IHE ont dépassé leur date limite de cession !
+                ⚠️ {stats.depasse} IHE ont dépassé leur date limite réglementaire (24 mois BCEAO) !
               </Typography>
               <Typography variant="body2">
-                Une action immédiate est requise pour éviter les sanctions réglementaires.
+                Une action immédiate est requise pour éviter les sanctions réglementaires et l'inclusion dans le plafond IHE de 15%.
               </Typography>
             </Alert>
           )}
           {stats.urgent > 0 && stats.depasse === 0 && (
-            <Alert severity="warning" sx={{ mb: 2 }}>
+            <Alert 
+              severity="warning" 
+              sx={{ 
+                mb: 2,
+                borderRadius: 2,
+                boxShadow: "0 4px 12px rgba(255, 152, 0, 0.2)",
+              }}
+            >
               <Typography variant="body1" fontWeight="bold">
-                ⚠️ {stats.urgent} IHE approchent de leur date limite (&lt; 3 mois)
+                ⚠️ {stats.urgent} IHE approchent de leur date limite réglementaire (&lt; 3 mois)
               </Typography>
               <Typography variant="body2">
-                Préparez les plans de cession dès maintenant.
+                Préparez les plans de cession dès maintenant pour respecter le délai réglementaire de 24 mois.
               </Typography>
             </Alert>
           )}
-        </Box>
 
         {/* Tabs pour filtrer */}
-        <Paper sx={{ mb: 3, borderRadius: 2 }}>
+        <Paper 
+          elevation={0}
+          sx={{ 
+            mb: 3, 
+            borderRadius: 3,
+            background: "linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%)",
+            border: "1px solid rgba(102, 126, 234, 0.1)",
+          }}
+        >
           <Tabs
             value={tabValue}
             onChange={handleTabChange}
             variant="scrollable"
             scrollButtons="auto"
             sx={{
-              borderBottom: 1,
-              borderColor: "divider",
               "& .MuiTab-root": {
                 minHeight: 64,
+                textTransform: "none",
+                fontWeight: 600,
+                fontSize: "0.95rem",
+                "&.Mui-selected": {
+                  color: "primary.main",
+                },
+              },
+              "& .MuiTabs-indicator": {
+                height: 3,
+                borderRadius: "3px 3px 0 0",
+                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
               },
             }}
           >
@@ -373,6 +531,15 @@ const IHEAlertesPage = () => {
               }
               iconPosition="start"
             />
+            <Tab
+              icon={<CalendarToday />}
+              label={
+                <Badge badgeContent={stats.preavis_1_an || 0} color="secondary">
+                  Préavis 1 an
+                </Badge>
+              }
+              iconPosition="start"
+            />
           </Tabs>
         </Paper>
 
@@ -385,13 +552,22 @@ const IHEAlertesPage = () => {
         ) : error ? (
           <Alert severity="error">{error}</Alert>
         ) : ihesARisque.length === 0 ? (
-          <Card sx={{ p: 4, textAlign: "center" }}>
+          <Card 
+            elevation={0}
+            sx={{ 
+              p: 4, 
+              textAlign: "center",
+              borderRadius: 3,
+              background: "white",
+              border: "1px solid rgba(0, 0, 0, 0.08)",
+            }}
+          >
             <CheckCircle sx={{ fontSize: 64, color: "success.main", mb: 2 }} />
-            <Typography variant="h6" gutterBottom>
+            <Typography variant="h5" fontWeight={700} gutterBottom>
               Aucune IHE à risque
             </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Toutes vos IHE respectent les délais réglementaires.
+            <Typography variant="body1" color="text.secondary">
+              Toutes vos IHE respectent les délais réglementaires de 24 mois (BCEAO).
             </Typography>
           </Card>
         ) : (
@@ -425,6 +601,7 @@ const IHEAlertesPage = () => {
                   }}
                 >
                   <Card
+                    elevation={0}
                     sx={{
                       width: "100%",
                       height: "100%",
@@ -434,14 +611,51 @@ const IHEAlertesPage = () => {
                           ? "#f44336"
                           : ihe.statutAlerteReglementaire === "urgent"
                           ? "#ff9800"
-                          : "#2196f3"
+                          : ihe.statutAlerteReglementaire === "attention"
+                          ? "#2196f3"
+                          : ihe.statutAlerteReglementaire === "preavis_1_an"
+                          ? "#9c27b0"
+                          : "#4caf50"
                       }`,
+                      background: "white",
+                      boxShadow: "0 4px 20px rgba(0, 0, 0, 0.08)",
                       transition: "all 0.3s ease",
                       display: "flex",
                       flexDirection: "column",
+                      position: "relative",
+                      overflow: "hidden",
+                      "&::before": {
+                        content: '""',
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: "4px",
+                        background: `linear-gradient(90deg, ${
+                          ihe.statutAlerteReglementaire === "depasse"
+                            ? "#f44336"
+                            : ihe.statutAlerteReglementaire === "urgent"
+                            ? "#ff9800"
+                            : ihe.statutAlerteReglementaire === "attention"
+                            ? "#2196f3"
+                            : ihe.statutAlerteReglementaire === "preavis_1_an"
+                            ? "#9c27b0"
+                            : "#4caf50"
+                        } 0%, ${
+                          ihe.statutAlerteReglementaire === "depasse"
+                            ? "#d32f2f"
+                            : ihe.statutAlerteReglementaire === "urgent"
+                            ? "#f57c00"
+                            : ihe.statutAlerteReglementaire === "attention"
+                            ? "#1976d2"
+                            : ihe.statutAlerteReglementaire === "preavis_1_an"
+                            ? "#7b1fa2"
+                            : "#388e3c"
+                        } 100%)`,
+                      },
                       "&:hover": {
-                        transform: "translateY(-4px)",
-                        boxShadow: 6,
+                        transform: "translateY(-6px)",
+                        boxShadow: "0 12px 40px rgba(0, 0, 0, 0.15)",
                       },
                     }}
                   >
@@ -536,20 +750,22 @@ const IHEAlertesPage = () => {
 
                       {/* Informations réglementaires */}
                       <Stack spacing={1}>
-                        {ihe.dateReclassement && (
+                        {ihe.dateEntreeIHE && (
                           <Box>
-                            <Typography variant="caption" color="text.secondary">
-                              Date de reclassement
+                            <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                              Date d'entrée en IHE
                             </Typography>
                             <Typography variant="body2" fontWeight="medium">
-                              {formatDate(ihe.dateReclassement)}
+                              {formatDate(ihe.dateEntreeIHE)}
                             </Typography>
                           </Box>
                         )}
-                        {ihe.dateLimiteCession && (
+                        {(ihe.dateLimiteReglementaire || ihe.dateLimiteCession) && (
                           <Box>
-                            <Typography variant="caption" color="text.secondary">
-                              Date limite de cession
+                            <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                              {ihe.dateLimiteReglementaire 
+                                ? "Date limite réglementaire (24 mois BCEAO)"
+                                : "Date limite de cession (60 mois)"}
                             </Typography>
                             <Typography
                               variant="body2"
@@ -559,11 +775,20 @@ const IHEAlertesPage = () => {
                                   ? "error.main"
                                   : ihe.statutAlerteReglementaire === "urgent"
                                   ? "warning.main"
+                                  : ihe.statutAlerteReglementaire === "attention"
+                                  ? "info.main"
+                                  : ihe.statutAlerteReglementaire === "preavis_1_an"
+                                  ? "secondary.main"
                                   : "text.primary"
                               }
                             >
-                              {formatDate(ihe.dateLimiteCession)}
+                              {formatDate(ihe.dateLimiteReglementaire || ihe.dateLimiteCession)}
                             </Typography>
+                            {ihe.dateLimiteUtilisee && (
+                              <Typography variant="caption" color="text.secondary" sx={{ fontStyle: "italic", mt: 0.5, display: "block" }}>
+                                ({ihe.dateLimiteUtilisee})
+                              </Typography>
+                            )}
                           </Box>
                         )}
                         {ihe.joursRestants !== undefined && (
@@ -576,13 +801,21 @@ const IHEAlertesPage = () => {
                                   ? "error.50"
                                   : ihe.statutAlerteReglementaire === "urgent"
                                   ? "warning.50"
-                                  : "info.50",
+                                  : ihe.statutAlerteReglementaire === "attention"
+                                  ? "info.50"
+                                  : ihe.statutAlerteReglementaire === "preavis_1_an"
+                                  ? "secondary.50"
+                                  : "success.50",
                               border: `1px solid ${
                                 ihe.statutAlerteReglementaire === "depasse"
                                   ? "error.main"
                                   : ihe.statutAlerteReglementaire === "urgent"
                                   ? "warning.main"
-                                  : "info.main"
+                                  : ihe.statutAlerteReglementaire === "attention"
+                                  ? "info.main"
+                                  : ihe.statutAlerteReglementaire === "preavis_1_an"
+                                  ? "secondary.main"
+                                  : "success.main"
                               }`,
                             }}
                           >
@@ -604,13 +837,26 @@ const IHEAlertesPage = () => {
                       </Stack>
 
                       {/* Actions */}
-                      <Box sx={{ mt: 2, display: "flex", gap: 1 }}>
+                      <Box sx={{ mt: "auto", pt: 2, display: "flex", gap: 1 }}>
                         <Button
-                          variant="outlined"
+                          variant="contained"
                           size="small"
                           fullWidth
                           startIcon={<Visibility />}
                           onClick={() => navigate(`/banque/ihe/${ihe._id}`)}
+                          sx={{
+                            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                            boxShadow: "0 4px 14px rgba(102, 126, 234, 0.4)",
+                            borderRadius: 2,
+                            textTransform: "none",
+                            fontWeight: 700,
+                            "&:hover": {
+                              background: "linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)",
+                              boxShadow: "0 6px 20px rgba(102, 126, 234, 0.5)",
+                              transform: "translateY(-2px)",
+                            },
+                            transition: "all 0.3s ease",
+                          }}
                         >
                           Voir détails
                         </Button>
@@ -619,6 +865,15 @@ const IHEAlertesPage = () => {
                             variant="outlined"
                             size="small"
                             onClick={() => navigate(`/banque/ihe/${ihe._id}/modifier`)}
+                            sx={{
+                              borderRadius: 2,
+                              textTransform: "none",
+                              fontWeight: 600,
+                              borderWidth: 2,
+                              "&:hover": {
+                                borderWidth: 2,
+                              },
+                            }}
                           >
                             Modifier
                           </Button>
@@ -641,19 +896,23 @@ const IHEAlertesPage = () => {
                 }}
               >
                 <Button
-                  variant="outlined"
+                  variant="contained"
                   onClick={handleShowMoreIHEs}
                   sx={{
                     px: 4,
                     py: 1.5,
                     fontSize: { xs: "0.9rem", md: "1rem" },
-                    fontWeight: 600,
+                    fontWeight: 700,
                     borderRadius: 3,
                     textTransform: "none",
-                    borderWidth: 2,
+                    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                    boxShadow: "0 4px 14px rgba(102, 126, 234, 0.4)",
                     "&:hover": {
-                      borderWidth: 2,
+                      background: "linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)",
+                      boxShadow: "0 6px 20px rgba(102, 126, 234, 0.5)",
+                      transform: "translateY(-2px)",
                     },
+                    transition: "all 0.3s ease",
                   }}
                 >
                   Afficher la suite
@@ -662,7 +921,8 @@ const IHEAlertesPage = () => {
             )}
           </>
         )}
-      </Container>
+          </Container>
+        </Box>
     </PageLayout>
   );
 };

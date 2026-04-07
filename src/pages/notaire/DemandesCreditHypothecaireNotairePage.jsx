@@ -37,13 +37,9 @@ import {
   ArrowBack,
   Visibility,
   CheckCircle,
-  HourglassEmpty,
   Description,
   Upload,
-  Cancel,
-  AttachMoney,
   Person,
-  Home,
   AccountBalance,
   Download,
 } from "@mui/icons-material";
@@ -207,38 +203,124 @@ const DemandesCreditHypothecaireNotairePage = () => {
 
   return (
     <PageLayout>
-      <Container maxWidth="xl" sx={{ py: 4 }}>
-        {/* En-tête */}
-        <Box mb={4}>
-          <Box display="flex" alignItems="center" gap={2} mb={2}>
-            <IconButton onClick={() => navigate("/notaire/dashboard")}>
-              <ArrowBack />
-            </IconButton>
-            <Typography variant="h4" fontWeight="bold">
-              📋 Formalisation Notariale
-            </Typography>
-          </Box>
-          <Typography variant="body1" color="text.secondary">
-            Formalisez les documents (titre foncier, convention d'ouverture de crédit, acte hypothécaire) 
-            pour les dossiers soumis par les banques partenaires selon les procédures UMEMOA
-          </Typography>
+      <Box sx={{ width: "100%", minHeight: "100vh", bgcolor: "#f5f7fa" }}>
+        {/* En-tête modernisé */}
+        <Box
+          sx={{
+            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            py: 6,
+            mb: 4,
+            width: "100%",
+            position: "relative",
+            overflow: "hidden",
+          }}
+        >
+          <Box
+            sx={{
+              position: "absolute",
+              top: -100,
+              right: -100,
+              width: 400,
+              height: 400,
+              borderRadius: "50%",
+              background: "rgba(255, 255, 255, 0.1)",
+              filter: "blur(80px)",
+            }}
+          />
+          <Container maxWidth="xl">
+            <Box display="flex" alignItems="center" gap={3} position="relative" zIndex={1}>
+              <IconButton 
+                onClick={() => navigate("/notaire/dashboard")}
+                sx={{
+                  background: "rgba(255, 255, 255, 0.2)",
+                  backdropFilter: "blur(10px)",
+                  color: "white",
+                  border: "1px solid rgba(255, 255, 255, 0.3)",
+                  "&:hover": {
+                    background: "rgba(255, 255, 255, 0.3)",
+                    transform: "translateY(-2px)",
+                  },
+                  transition: "all 0.3s ease",
+                }}
+              >
+                <ArrowBack />
+              </IconButton>
+              <Box
+                sx={{
+                  p: 2,
+                  borderRadius: 3,
+                  background: "rgba(255, 255, 255, 0.2)",
+                  backdropFilter: "blur(10px)",
+                  boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
+                }}
+              >
+                <AccountBalance sx={{ fontSize: 48, color: "white" }} />
+              </Box>
+              <Box>
+                <Typography 
+                  variant="h3" 
+                  fontWeight={700}
+                  sx={{
+                    color: "white",
+                    mb: 1,
+                  }}
+                >
+                  Formalisation Notariale
+                </Typography>
+                <Typography 
+                  variant="h6" 
+                  sx={{
+                    color: "rgba(255, 255, 255, 0.9)",
+                    fontWeight: 400,
+                  }}
+                >
+                  Formalisez les documents (titre foncier, convention d'ouverture de crédit, acte hypothécaire) 
+                  pour les dossiers soumis par les banques partenaires selon les procédures UMEMOA
+                </Typography>
+              </Box>
+            </Box>
+          </Container>
         </Box>
+
+        <Container maxWidth="xl" sx={{ mb: 4 }}>
 
         {/* Messages */}
         {error && (
-          <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
+          <Alert 
+            severity="error" 
+            sx={{ 
+              mb: 3,
+              borderRadius: 2,
+              boxShadow: "0 4px 12px rgba(211, 47, 47, 0.15)",
+            }} 
+            onClose={() => setError(null)}
+          >
             {error}
           </Alert>
         )}
 
         {/* Filtres */}
-        <Box mb={3} display="flex" justifyContent="flex-end">
+        <Paper
+          elevation={0}
+          sx={{
+            mb: 3,
+            background: "white",
+            borderRadius: 3,
+            border: "1px solid rgba(0, 0, 0, 0.08)",
+            p: 2,
+            display: "flex",
+            justifyContent: "flex-end",
+          }}
+        >
           <FormControl size="small" sx={{ minWidth: 200 }}>
             <InputLabel>Filtrer par statut</InputLabel>
             <Select
               value={filters.statut}
               label="Filtrer par statut"
               onChange={(e) => setFilters({ ...filters, statut: e.target.value })}
+              sx={{
+                borderRadius: 2,
+              }}
             >
               <MenuItem value="">Tous</MenuItem>
               {Object.entries(STATUT_LABELS).map(([key, label]) => (
@@ -248,7 +330,7 @@ const DemandesCreditHypothecaireNotairePage = () => {
               ))}
             </Select>
           </FormControl>
-        </Box>
+        </Paper>
 
         {/* Liste des demandes */}
         {loading ? (
@@ -256,18 +338,36 @@ const DemandesCreditHypothecaireNotairePage = () => {
             <CircularProgress />
           </Box>
         ) : demandes.length === 0 ? (
-          <Card>
-            <CardContent sx={{ textAlign: "center", py: 4 }}>
+          <Card
+            sx={{
+              borderRadius: 3,
+              border: "1px solid rgba(0, 0, 0, 0.08)",
+              background: "linear-gradient(135deg, rgba(102, 126, 234, 0.02) 0%, rgba(118, 75, 162, 0.02) 100%)",
+            }}
+          >
+            <CardContent sx={{ textAlign: "center", py: 6 }}>
               <Typography variant="h6" color="text.secondary">
                 Aucun dossier trouvé
               </Typography>
             </CardContent>
           </Card>
         ) : (
-          <TableContainer component={Paper}>
+          <TableContainer 
+            component={Paper} 
+            elevation={0}
+            sx={{
+              borderRadius: 3,
+              border: "1px solid rgba(0, 0, 0, 0.08)",
+              overflow: "hidden",
+            }}
+          >
             <Table>
               <TableHead>
-                <TableRow>
+                <TableRow
+                  sx={{
+                    background: "linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%)",
+                  }}
+                >
                   <TableCell><strong>Référence</strong></TableCell>
                   <TableCell><strong>Banque</strong></TableCell>
                   <TableCell><strong>Emprunteur</strong></TableCell>
@@ -281,27 +381,67 @@ const DemandesCreditHypothecaireNotairePage = () => {
                 {demandes.map((demande) => {
                   const actions = getActionsDisponibles(demande);
                   return (
-                    <TableRow key={demande._id} hover>
+                    <TableRow 
+                      key={demande._id} 
+                      hover
+                      sx={{
+                        "&:hover": {
+                          background: "rgba(102, 126, 234, 0.04)",
+                        },
+                        transition: "background 0.2s ease",
+                      }}
+                    >
                       <TableCell>
-                        <Typography variant="body2" fontWeight="bold">
-                          {demande.reference}
-                        </Typography>
+                        <Box display="flex" alignItems="center" gap={1.5}>
+                          <Box
+                            sx={{
+                              p: 1,
+                              borderRadius: 2,
+                              background: "linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                            }}
+                          >
+                            <Description fontSize="small" sx={{ color: "primary.main" }} />
+                          </Box>
+                          <Typography variant="body2" fontWeight={600}>
+                            {demande.reference}
+                          </Typography>
+                        </Box>
                       </TableCell>
                       <TableCell>
-                        <Typography variant="body2">
-                          {demande.banqueId?.fullName || "N/A"}
-                        </Typography>
+                        <Box display="flex" alignItems="center" gap={1}>
+                          <AccountBalance fontSize="small" color="action" />
+                          <Typography variant="body2" fontWeight={500}>
+                            {demande.banqueId?.fullName || "N/A"}
+                          </Typography>
+                        </Box>
                       </TableCell>
                       <TableCell>
-                        <Typography variant="body2">
-                          {demande.emprunteur?.nom} {demande.emprunteur?.prenom}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {demande.emprunteur?.telephone}
-                        </Typography>
+                        <Box display="flex" alignItems="center" gap={1}>
+                          <Person fontSize="small" color="action" />
+                          <Box>
+                            <Typography variant="body2" fontWeight={500}>
+                              {demande.emprunteur?.nom} {demande.emprunteur?.prenom}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              {demande.emprunteur?.telephone}
+                            </Typography>
+                          </Box>
+                        </Box>
                       </TableCell>
                       <TableCell>
-                        <Typography variant="body2" fontWeight="bold" color="primary">
+                        <Typography 
+                          variant="body2" 
+                          fontWeight={700}
+                          sx={{
+                            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                            backgroundClip: "text",
+                            WebkitBackgroundClip: "text",
+                            WebkitTextFillColor: "transparent",
+                          }}
+                        >
                           {formatMoney(demande.montantCredit)}
                         </Typography>
                       </TableCell>
@@ -310,6 +450,10 @@ const DemandesCreditHypothecaireNotairePage = () => {
                           label={STATUT_LABELS[demande.statut] || demande.statut}
                           color={STATUT_COLORS[demande.statut] || "default"}
                           size="small"
+                          sx={{
+                            fontWeight: 600,
+                            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+                          }}
                         />
                       </TableCell>
                       <TableCell>
@@ -320,8 +464,15 @@ const DemandesCreditHypothecaireNotairePage = () => {
                       <TableCell align="right">
                         <IconButton
                           size="small"
-                          color="primary"
                           onClick={() => handleOpenDemande(demande._id)}
+                          sx={{
+                            color: "primary.main",
+                            "&:hover": {
+                              background: "rgba(102, 126, 234, 0.1)",
+                              transform: "scale(1.1)",
+                            },
+                            transition: "all 0.2s ease",
+                          }}
                         >
                           <Visibility />
                         </IconButton>
@@ -354,7 +505,8 @@ const DemandesCreditHypothecaireNotairePage = () => {
           STATUT_COLORS={STATUT_COLORS}
           onError={setError}
         />
-      </Container>
+        </Container>
+      </Box>
     </PageLayout>
   );
 };

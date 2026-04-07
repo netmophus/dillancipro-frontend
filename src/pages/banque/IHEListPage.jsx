@@ -9,7 +9,6 @@ import {
   TextField,
   MenuItem,
   Chip,
-  Paper,
   LinearProgress,
   IconButton,
   Dialog,
@@ -24,6 +23,9 @@ import {
   Tooltip,
   Badge,
   Divider,
+  InputLabel,
+  FormControl,
+  Select,
 } from "@mui/material";
 import {
   Add,
@@ -34,7 +36,6 @@ import {
   CheckCircle,
   Cancel,
   FilterList,
-  Map,
   Share,
   Home,
   LocationOn,
@@ -73,6 +74,7 @@ const IHEListPage = () => {
 
   useEffect(() => {
     fetchIHEs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters]);
 
   const fetchIHEs = async () => {
@@ -318,34 +320,56 @@ const IHEListPage = () => {
                 />
               </Grid>
               <Grid item xs={12} md={4}>
-                <TextField
-                  fullWidth
-                  select
-                  label="Statut"
-                  value={filters.statut}
-                  onChange={(e) => handleFilterChange("statut", e.target.value)}
-                >
-                  {STATUTS.map((statut) => (
-                    <MenuItem key={statut.value} value={statut.value}>
-                      {statut.label}
-                    </MenuItem>
-                  ))}
-                </TextField>
+                <FormControl fullWidth>
+                  <InputLabel id="statut-label" shrink>
+                    Statut
+                  </InputLabel>
+                  <Select
+                    labelId="statut-label"
+                    value={filters.statut}
+                    onChange={(e) => handleFilterChange("statut", e.target.value)}
+                    displayEmpty
+                    renderValue={(selected) => {
+                      if (selected === "") {
+                        return <em style={{ color: "#999", fontStyle: "italic" }}>Tous les statuts</em>;
+                      }
+                      return STATUTS.find((s) => s.value === selected)?.label || selected;
+                    }}
+                    label="Statut"
+                  >
+                    {STATUTS.map((statut) => (
+                      <MenuItem key={statut.value} value={statut.value}>
+                        {statut.label}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
               </Grid>
               <Grid item xs={12} md={4}>
-                <TextField
-                  fullWidth
-                  select
-                  label="Type"
-                  value={filters.type}
-                  onChange={(e) => handleFilterChange("type", e.target.value)}
-                >
-                  {TYPES.map((type) => (
-                    <MenuItem key={type.value} value={type.value}>
-                      {type.label}
-                    </MenuItem>
-                  ))}
-                </TextField>
+                <FormControl fullWidth>
+                  <InputLabel id="type-label" shrink>
+                    Type
+                  </InputLabel>
+                  <Select
+                    labelId="type-label"
+                    value={filters.type}
+                    onChange={(e) => handleFilterChange("type", e.target.value)}
+                    displayEmpty
+                    renderValue={(selected) => {
+                      if (selected === "") {
+                        return <em style={{ color: "#999", fontStyle: "italic" }}>Tous les types</em>;
+                      }
+                      return TYPES.find((t) => t.value === selected)?.label || selected;
+                    }}
+                    label="Type"
+                  >
+                    {TYPES.map((type) => (
+                      <MenuItem key={type.value} value={type.value}>
+                        {type.label}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
               </Grid>
             </Grid>
           </CardContent>
@@ -393,6 +417,7 @@ const IHEListPage = () => {
                     elevation={3}
                     sx={{
                       height: "100%",
+                      minHeight: "450px",
                       display: "flex",
                       flexDirection: "column",
                       transition: "all 0.3s ease",
@@ -403,7 +428,14 @@ const IHEListPage = () => {
                       },
                     }}
                   >
-                    <CardContent sx={{ flexGrow: 1 }}>
+                    <CardContent 
+                      sx={{ 
+                        flexGrow: 1,
+                        display: "flex",
+                        flexDirection: "column",
+                        height: "100%",
+                      }}
+                    >
                       {/* En-tête de la carte */}
                       <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
                         <Box display="flex" alignItems="center" gap={1}>
@@ -477,12 +509,26 @@ const IHEListPage = () => {
                       </Box>
 
                       {/* Titre */}
-                      <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ mb: 2 }}>
+                      <Typography 
+                        variant="h6" 
+                        fontWeight="bold" 
+                        gutterBottom 
+                        sx={{ 
+                          mb: 2,
+                          minHeight: "64px",
+                          display: "-webkit-box",
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          wordBreak: "break-word",
+                        }}
+                      >
                         {ihe.titre}
                       </Typography>
 
                       {/* Informations */}
-                      <Stack spacing={1.5} sx={{ mb: 2 }}>
+                      <Stack spacing={1.5} sx={{ mb: 2, flexGrow: 1 }}>
                         <Box display="flex" alignItems="center" gap={1}>
                           <LocationOn fontSize="small" color="action" />
                           <Typography variant="body2" color="text.secondary">
@@ -528,8 +574,8 @@ const IHEListPage = () => {
                       )}
 
                       {/* Actions */}
-                      <Divider sx={{ my: 2 }} />
-                      <Stack direction="row" spacing={1} flexWrap="wrap" gap={1}>
+                      <Divider sx={{ my: 2, mt: "auto" }} />
+                      <Stack direction="row" spacing={1} flexWrap="wrap" gap={1} sx={{ mt: "auto" }}>
                         <Tooltip title="Voir détails">
                           <IconButton
                             size="small"

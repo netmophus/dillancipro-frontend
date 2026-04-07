@@ -25,8 +25,6 @@ import {
   MenuItem,
   IconButton,
   Tooltip,
-  Divider,
-  Stack,
   Alert,
   CircularProgress,
   LinearProgress,
@@ -40,7 +38,6 @@ import {
   Gavel,
   Assignment,
   CheckCircle,
-  HourglassEmpty,
   Upload,
   Description,
   Delete,
@@ -298,53 +295,159 @@ const MesVentesPage = () => {
 
   return (
     <PageLayout>
-      <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
-        {/* En-tête */}
-        <Box sx={{ mb: 4 }}>
-          <Box display="flex" alignItems="center" justifyContent="space-between">
-            <Box display="flex" alignItems="center" gap={2}>
-              <Gavel sx={{ fontSize: 40, color: "primary.main" }} />
-              <Box>
-                <Typography variant="h4" fontWeight="bold">
-                  Mes Ventes
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Gérez les ventes qui vous sont assignées
-                </Typography>
+      <Box sx={{ width: "100%", minHeight: "100vh", bgcolor: "#f5f7fa" }}>
+        {/* En-tête modernisé */}
+        <Box
+          sx={{
+            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            py: 6,
+            mb: 4,
+            width: "100%",
+            position: "relative",
+            overflow: "hidden",
+          }}
+        >
+          <Box
+            sx={{
+              position: "absolute",
+              top: -100,
+              right: -100,
+              width: 400,
+              height: 400,
+              borderRadius: "50%",
+              background: "rgba(255, 255, 255, 0.1)",
+              filter: "blur(80px)",
+            }}
+          />
+          <Container maxWidth="xl">
+            <Box display="flex" alignItems="center" justifyContent="space-between" position="relative" zIndex={1}>
+              <Box display="flex" alignItems="center" gap={3}>
+                <Box
+                  sx={{
+                    p: 2,
+                    borderRadius: 3,
+                    background: "rgba(255, 255, 255, 0.2)",
+                    backdropFilter: "blur(10px)",
+                    boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
+                  }}
+                >
+                  <Gavel sx={{ fontSize: 48, color: "white" }} />
+                </Box>
+                <Box>
+                  <Typography 
+                    variant="h3" 
+                    fontWeight={700}
+                    sx={{
+                      color: "white",
+                      mb: 1,
+                    }}
+                  >
+                    Mes Ventes
+                  </Typography>
+                  <Typography 
+                    variant="h6" 
+                    sx={{
+                      color: "rgba(255, 255, 255, 0.9)",
+                      fontWeight: 400,
+                    }}
+                  >
+                    Gérez les ventes qui vous sont assignées
+                  </Typography>
+                </Box>
               </Box>
+              <Button
+                variant="contained"
+                startIcon={<Assignment />}
+                onClick={() => navigate("/notaire/dashboard")}
+                sx={{
+                  background: "rgba(255, 255, 255, 0.2)",
+                  backdropFilter: "blur(10px)",
+                  color: "white",
+                  border: "1px solid rgba(255, 255, 255, 0.3)",
+                  fontWeight: 600,
+                  px: 3,
+                  py: 1.5,
+                  borderRadius: 2,
+                  textTransform: "none",
+                  "&:hover": {
+                    background: "rgba(255, 255, 255, 0.3)",
+                    transform: "translateY(-2px)",
+                    boxShadow: "0 8px 24px rgba(0, 0, 0, 0.2)",
+                  },
+                  transition: "all 0.3s ease",
+                }}
+              >
+                Retour au dashboard
+              </Button>
             </Box>
-            <Button
-              variant="outlined"
-              startIcon={<Assignment />}
-              onClick={() => navigate("/notaire/dashboard")}
-            >
-              Retour au dashboard
-            </Button>
-          </Box>
+          </Container>
         </Box>
 
+        <Container maxWidth="xl" sx={{ mb: 4 }}>
+
         {error && (
-          <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError("")}>
+          <Alert 
+            severity="error" 
+            sx={{ 
+              mb: 3,
+              borderRadius: 2,
+              boxShadow: "0 4px 12px rgba(211, 47, 47, 0.15)",
+            }} 
+            onClose={() => setError("")}
+          >
             {error}
           </Alert>
         )}
 
         {/* Onglets pour Biens Immobiliers / Parcelles */}
-        <Box sx={{ mb: 3 }}>
+        <Paper
+          elevation={0}
+          sx={{
+            mb: 3,
+            background: "linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%)",
+            borderRadius: 3,
+            border: "1px solid rgba(102, 126, 234, 0.1)",
+          }}
+        >
           <Tabs
             value={activeTab}
             onChange={(_, value) => {
               setActiveTab(value);
             }}
-            sx={{ mb: 2 }}
+            sx={{
+              "& .MuiTab-root": {
+                textTransform: "none",
+                fontWeight: 600,
+                fontSize: "1rem",
+                minHeight: 64,
+                color: "text.secondary",
+                "&.Mui-selected": {
+                  color: "primary.main",
+                },
+              },
+              "& .MuiTabs-indicator": {
+                height: 3,
+                borderRadius: "3px 3px 0 0",
+                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+              },
+            }}
           >
-            <Tab label="🏠 Biens Immobiliers" icon={<Home />} />
-            <Tab label="📐 Parcelles" icon={<AttachMoney />} />
+            <Tab label="Biens Immobiliers" icon={<Home />} iconPosition="start" />
+            <Tab label="Parcelles" icon={<AttachMoney />} iconPosition="start" />
           </Tabs>
-        </Box>
+        </Paper>
 
         {/* Filtres par statut */}
-        <Box sx={{ mb: 3 }}>
+        <Paper
+          elevation={0}
+          sx={{
+            mb: 3,
+            background: "white",
+            borderRadius: 3,
+            border: "1px solid rgba(0, 0, 0, 0.08)",
+            p: 1,
+          }}
+        >
           <Tabs
             value={currentStatut}
             onChange={(_, value) => {
@@ -352,6 +455,23 @@ const MesVentesPage = () => {
             }}
             variant="scrollable"
             scrollButtons="auto"
+            sx={{
+              "& .MuiTab-root": {
+                textTransform: "none",
+                fontWeight: 500,
+                minHeight: 48,
+                borderRadius: 2,
+                mx: 0.5,
+                "&.Mui-selected": {
+                  background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                  color: "white",
+                  boxShadow: "0 4px 12px rgba(102, 126, 234, 0.3)",
+                },
+              },
+              "& .MuiTabs-indicator": {
+                display: "none",
+              },
+            }}
           >
             <Tab label="Toutes" value="all" />
             <Tab label="En attente" value="en_attente_notaire" />
@@ -359,7 +479,7 @@ const MesVentesPage = () => {
             <Tab label="Formalités complètes" value="formalites_completes" />
             <Tab label="Finalisées" value="finalisee" />
           </Tabs>
-        </Box>
+        </Paper>
 
         {/* Table des ventes */}
         {activeTab === 0 ? (
@@ -369,18 +489,36 @@ const MesVentesPage = () => {
               <CircularProgress />
             </Box>
           ) : ventes.length === 0 ? (
-            <Card>
-              <CardContent>
-                <Typography align="center" color="text.secondary">
+            <Card
+              sx={{
+                borderRadius: 3,
+                border: "1px solid rgba(0, 0, 0, 0.08)",
+                background: "linear-gradient(135deg, rgba(102, 126, 234, 0.02) 0%, rgba(118, 75, 162, 0.02) 100%)",
+              }}
+            >
+              <CardContent sx={{ py: 6 }}>
+                <Typography align="center" color="text.secondary" variant="h6">
                   Aucune vente de bien immobilier trouvée
                 </Typography>
               </CardContent>
             </Card>
           ) : (
-            <TableContainer component={Paper} elevation={2}>
+            <TableContainer 
+              component={Paper} 
+              elevation={0}
+              sx={{
+                borderRadius: 3,
+                border: "1px solid rgba(0, 0, 0, 0.08)",
+                overflow: "hidden",
+              }}
+            >
               <Table>
                 <TableHead>
-                  <TableRow>
+                  <TableRow
+                    sx={{
+                      background: "linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%)",
+                    }}
+                  >
                     <TableCell><strong>Bien</strong></TableCell>
                     <TableCell><strong>Client</strong></TableCell>
                     <TableCell><strong>Prix de vente</strong></TableCell>
@@ -392,12 +530,32 @@ const MesVentesPage = () => {
                 </TableHead>
                 <TableBody>
                   {ventes.map((vente) => (
-                  <TableRow key={vente._id} hover>
+                  <TableRow 
+                    key={vente._id} 
+                    hover
+                    sx={{
+                      "&:hover": {
+                        background: "rgba(102, 126, 234, 0.04)",
+                      },
+                      transition: "background 0.2s ease",
+                    }}
+                  >
                     <TableCell>
-                      <Box display="flex" alignItems="center" gap={1}>
-                        <Home fontSize="small" color="action" />
+                      <Box display="flex" alignItems="center" gap={1.5}>
+                        <Box
+                          sx={{
+                            p: 1,
+                            borderRadius: 2,
+                            background: "linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          <Home fontSize="small" sx={{ color: "primary.main" }} />
+                        </Box>
                         <Box>
-                          <Typography variant="body2" fontWeight="medium">
+                          <Typography variant="body2" fontWeight={600}>
                             {vente.bienId?.titre || "N/A"}
                           </Typography>
                           <Typography variant="caption" color="text.secondary">
@@ -415,7 +573,16 @@ const MesVentesPage = () => {
                       </Box>
                     </TableCell>
                     <TableCell>
-                      <Typography variant="body2" fontWeight="medium" color="primary">
+                      <Typography 
+                        variant="body2" 
+                        fontWeight={700}
+                        sx={{
+                          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                          backgroundClip: "text",
+                          WebkitBackgroundClip: "text",
+                          WebkitTextFillColor: "transparent",
+                        }}
+                      >
                         {formatMoney(vente.prixVente || vente.bienId?.prix || 0)}
                       </Typography>
                     </TableCell>
@@ -432,6 +599,10 @@ const MesVentesPage = () => {
                         label={STATUT_LABELS[vente.statut] || vente.statut}
                         color={STATUT_COLORS[vente.statut] || "default"}
                         size="small"
+                        sx={{
+                          fontWeight: 600,
+                          boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+                        }}
                       />
                     </TableCell>
                     <TableCell>
@@ -444,6 +615,14 @@ const MesVentesPage = () => {
                         <IconButton
                           size="small"
                           onClick={() => handleOpenDetails(vente._id)}
+                          sx={{
+                            color: "primary.main",
+                            "&:hover": {
+                              background: "rgba(102, 126, 234, 0.1)",
+                              transform: "scale(1.1)",
+                            },
+                            transition: "all 0.2s ease",
+                          }}
                         >
                           <Visibility />
                         </IconButton>
@@ -462,18 +641,36 @@ const MesVentesPage = () => {
               <CircularProgress />
             </Box>
           ) : ventesParcelles.length === 0 ? (
-            <Card>
-              <CardContent>
-                <Typography align="center" color="text.secondary">
+            <Card
+              sx={{
+                borderRadius: 3,
+                border: "1px solid rgba(0, 0, 0, 0.08)",
+                background: "linear-gradient(135deg, rgba(102, 126, 234, 0.02) 0%, rgba(118, 75, 162, 0.02) 100%)",
+              }}
+            >
+              <CardContent sx={{ py: 6 }}>
+                <Typography align="center" color="text.secondary" variant="h6">
                   Aucune vente de parcelle trouvée
                 </Typography>
               </CardContent>
             </Card>
           ) : (
-            <TableContainer component={Paper} elevation={2}>
+            <TableContainer 
+              component={Paper} 
+              elevation={0}
+              sx={{
+                borderRadius: 3,
+                border: "1px solid rgba(0, 0, 0, 0.08)",
+                overflow: "hidden",
+              }}
+            >
               <Table>
                 <TableHead>
-                  <TableRow>
+                  <TableRow
+                    sx={{
+                      background: "linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%)",
+                    }}
+                  >
                     <TableCell><strong>Parcelle</strong></TableCell>
                     <TableCell><strong>Client</strong></TableCell>
                     <TableCell><strong>Prix</strong></TableCell>
@@ -486,11 +683,31 @@ const MesVentesPage = () => {
                 </TableHead>
                 <TableBody>
                   {ventesParcelles.map((vente) => (
-                    <TableRow key={vente._id} hover>
+                    <TableRow 
+                      key={vente._id} 
+                      hover
+                      sx={{
+                        "&:hover": {
+                          background: "rgba(102, 126, 234, 0.04)",
+                        },
+                        transition: "background 0.2s ease",
+                      }}
+                    >
                       <TableCell>
-                        <Box display="flex" alignItems="center" gap={1}>
-                          <AttachMoney fontSize="small" color="action" />
-                          <Typography variant="body2" fontWeight="medium">
+                        <Box display="flex" alignItems="center" gap={1.5}>
+                          <Box
+                            sx={{
+                              p: 1,
+                              borderRadius: 2,
+                              background: "linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                            }}
+                          >
+                            <AttachMoney fontSize="small" sx={{ color: "primary.main" }} />
+                          </Box>
+                          <Typography variant="body2" fontWeight={600}>
                             {vente.parcelle?.numeroParcelle || "N/A"}
                           </Typography>
                         </Box>
@@ -499,7 +716,7 @@ const MesVentesPage = () => {
                         <Box display="flex" alignItems="center" gap={1}>
                           <Person fontSize="small" color="action" />
                           <Box>
-                            <Typography variant="body2">
+                            <Typography variant="body2" fontWeight={500}>
                               {vente.clientId?.fullName || vente.acquereurNom || "N/A"}
                             </Typography>
                             <Typography variant="caption" color="text.secondary">
@@ -509,19 +726,28 @@ const MesVentesPage = () => {
                         </Box>
                       </TableCell>
                       <TableCell>
-                        <Typography variant="body2" fontWeight="medium">
+                        <Typography 
+                          variant="body2" 
+                          fontWeight={700}
+                          sx={{
+                            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                            backgroundClip: "text",
+                            WebkitBackgroundClip: "text",
+                            WebkitTextFillColor: "transparent",
+                          }}
+                        >
                           {formatMoney(vente.montantTotal)}
                         </Typography>
                       </TableCell>
                       <TableCell>
-                        <Typography variant="body2">
+                        <Typography variant="body2" fontWeight={500}>
                           {vente.commercialId?.fullName || "N/A"}
                         </Typography>
                       </TableCell>
                       <TableCell>
                         <Box display="flex" alignItems="center" gap={1}>
                           <Business fontSize="small" color="action" />
-                          <Typography variant="body2">
+                          <Typography variant="body2" fontWeight={500}>
                             {vente.agenceId?.nom || "N/A"}
                           </Typography>
                         </Box>
@@ -531,6 +757,10 @@ const MesVentesPage = () => {
                           label={STATUT_LABELS[vente.statut] || vente.statut}
                           color={STATUT_COLORS[vente.statut] || "default"}
                           size="small"
+                          sx={{
+                            fontWeight: 600,
+                            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+                          }}
                         />
                       </TableCell>
                       <TableCell>
@@ -546,6 +776,14 @@ const MesVentesPage = () => {
                               console.log("🔍 [FRONTEND] Clic sur œil pour parcelle:", vente._id);
                               setIsVenteParcelle(true);
                               handleOpenDetailsParcelle(vente._id);
+                            }}
+                            sx={{
+                              color: "primary.main",
+                              "&:hover": {
+                                background: "rgba(102, 126, 234, 0.1)",
+                                transform: "scale(1.1)",
+                              },
+                              transition: "all 0.2s ease",
                             }}
                           >
                             <Visibility />
@@ -959,7 +1197,8 @@ const MesVentesPage = () => {
             <Button onClick={() => setHistoriqueOpen(false)}>Fermer</Button>
           </DialogActions>
         </Dialog>
-      </Container>
+        </Container>
+      </Box>
     </PageLayout>
   );
 };

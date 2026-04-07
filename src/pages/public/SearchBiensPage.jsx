@@ -69,9 +69,32 @@ import {
   ContentCopy,
   WhatsApp,
 } from "@mui/icons-material";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import { createRoot } from "react-dom/client";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 import Navbar from "../../components/shared/Navbar";
 import Footer from "../../components/shared/Footer";
+import BienDetailDrawer from "../../components/biens/BienDetailDrawer";
 import api from "../../services/api";
+import { decimalToDMS } from "../../utils/coordinateUtils";
+
+// Fix icônes Leaflet
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: require("leaflet/dist/images/marker-icon-2x.png"),
+  iconUrl: require("leaflet/dist/images/marker-icon.png"),
+  shadowUrl: require("leaflet/dist/images/marker-shadow.png"),
+});
+
+// Icône personnalisée pour les biens immobiliers
+const bienIcon = L.icon({
+  iconSize: [32, 32],
+  iconAnchor: [16, 32],
+  popupAnchor: [0, -32],
+  iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png",
+  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
+});
 
 const SearchBiensPage = () => {
   const [loading, setLoading] = useState(false);
@@ -110,6 +133,11 @@ const SearchBiensPage = () => {
   
   // État pour l'affichage progressif des biens (initialement 3)
   const [biensDisplayed, setBiensDisplayed] = useState(3);
+  
+  // État pour la carte
+  const [showMap, setShowMap] = useState(false);
+  const [mapCenter, setMapCenter] = useState([13.5125, 2.1098]); // Niamey par défaut
+  const [mapZoom, setMapZoom] = useState(12);
   
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
@@ -257,6 +285,10 @@ const SearchBiensPage = () => {
       prix: bien.prix || 0,
       type: bien.type || "Bien immobilier",
       description: bien.description || "",
+      caracteristiques: bien.caracteristiques || {},
+      situationGeographique: bien.situationGeographique || null,
+      descriptionPhysique: bien.descriptionPhysique || null,
+      atoutsMajeurs: Array.isArray(bien.atoutsMajeurs) ? bien.atoutsMajeurs : (bien.atoutsMajeurs ? [bien.atoutsMajeurs] : []),
     };
   };
 
@@ -414,9 +446,23 @@ const SearchBiensPage = () => {
             {/* Ligne 1: Localisation et Type */}
             <Grid item xs={12} sm={6} md={3}>
               <FormControl fullWidth size="small">
-                <InputLabel>Ville</InputLabel>
-                <Select value={filters.ville || ""} onChange={(e) => handleFilterChange("ville", e.target.value)} label="Ville">
-                  <MenuItem value="">Toutes les villes</MenuItem>
+                <InputLabel id="ville-label" shrink>Ville</InputLabel>
+                <Select
+                  labelId="ville-label"
+                  value={filters.ville || ""}
+                  onChange={(e) => handleFilterChange("ville", e.target.value)}
+                  label="Ville"
+                  displayEmpty
+                  renderValue={(selected) => {
+                    if (!selected || selected === "") {
+                      return <span style={{ color: "rgba(0, 0, 0, 0.6)" }}>Toutes les villes</span>;
+                    }
+                    return selected;
+                  }}
+                >
+                  <MenuItem value="">
+                    <em>Toutes les villes</em>
+                  </MenuItem>
                   {filterOptions.villes.map((ville) => (
                     <MenuItem key={ville.id} value={ville.nom}>
                       {ville.nom}
@@ -428,9 +474,23 @@ const SearchBiensPage = () => {
 
             <Grid item xs={12} sm={6} md={3}>
               <FormControl fullWidth size="small">
-                <InputLabel>Quartier</InputLabel>
-                <Select value={filters.quartier || ""} onChange={(e) => handleFilterChange("quartier", e.target.value)} label="Quartier">
-                  <MenuItem value="">Tous les quartiers</MenuItem>
+                <InputLabel id="quartier-label" shrink>Quartier</InputLabel>
+                <Select
+                  labelId="quartier-label"
+                  value={filters.quartier || ""}
+                  onChange={(e) => handleFilterChange("quartier", e.target.value)}
+                  label="Quartier"
+                  displayEmpty
+                  renderValue={(selected) => {
+                    if (!selected || selected === "") {
+                      return <span style={{ color: "rgba(0, 0, 0, 0.6)" }}>Tous les quartiers</span>;
+                    }
+                    return selected;
+                  }}
+                >
+                  <MenuItem value="">
+                    <em>Tous les quartiers</em>
+                  </MenuItem>
                   {filterOptions.quartiers.map((quartier) => (
                     <MenuItem key={quartier.id} value={quartier.nom}>
                       {quartier.nom}
@@ -442,9 +502,23 @@ const SearchBiensPage = () => {
 
             <Grid item xs={12} sm={6} md={3}>
               <FormControl fullWidth size="small">
-                <InputLabel>Type de bien</InputLabel>
-                <Select value={filters.type || ""} onChange={(e) => handleFilterChange("type", e.target.value)} label="Type de bien">
-                  <MenuItem value="">Tous les types</MenuItem>
+                <InputLabel id="type-label" shrink>Type de bien</InputLabel>
+                <Select
+                  labelId="type-label"
+                  value={filters.type || ""}
+                  onChange={(e) => handleFilterChange("type", e.target.value)}
+                  label="Type de bien"
+                  displayEmpty
+                  renderValue={(selected) => {
+                    if (!selected || selected === "") {
+                      return <span style={{ color: "rgba(0, 0, 0, 0.6)" }}>Tous les types</span>;
+                    }
+                    return selected;
+                  }}
+                >
+                  <MenuItem value="">
+                    <em>Tous les types</em>
+                  </MenuItem>
                   {filterOptions.types.map((type) => (
                     <MenuItem key={type.id || type.nom} value={type.nom}>
                       {type.nom}
@@ -456,9 +530,23 @@ const SearchBiensPage = () => {
 
             <Grid item xs={12} sm={6} md={3}>
               <FormControl fullWidth size="small">
-                <InputLabel>Agence Immobilière</InputLabel>
-                <Select value={filters.agence || ""} onChange={(e) => handleFilterChange("agence", e.target.value)} label="Agence Immobilière">
-                  <MenuItem value="">Toutes les agences</MenuItem>
+                <InputLabel id="agence-label" shrink>Agence Immobilière</InputLabel>
+                <Select
+                  labelId="agence-label"
+                  value={filters.agence || ""}
+                  onChange={(e) => handleFilterChange("agence", e.target.value)}
+                  label="Agence Immobilière"
+                  displayEmpty
+                  renderValue={(selected) => {
+                    if (!selected || selected === "") {
+                      return <span style={{ color: "rgba(0, 0, 0, 0.6)" }}>Toutes les agences</span>;
+                    }
+                    return filterOptions.agences.find(a => a.id === selected)?.nom || selected;
+                  }}
+                >
+                  <MenuItem value="">
+                    <em>Toutes les agences</em>
+                  </MenuItem>
                   {filterOptions.agences.map((agence) => (
                     <MenuItem key={agence.id} value={agence.id}>
                       {agence.nom}
@@ -566,11 +654,237 @@ const SearchBiensPage = () => {
             <Alert severity="info">Aucun bien trouvé avec ces critères de recherche.</Alert>
           ) : (
             <>
-              <Box mb={2}>
+              <Box mb={2} display="flex" justifyContent="space-between" alignItems="center">
                 <Typography variant="body2" color="text.secondary">
                   {pagination.total} bien{pagination.total > 1 ? "s" : ""} trouvé{pagination.total > 1 ? "s" : ""}
                 </Typography>
+                <Button
+                  variant={showMap ? "contained" : "outlined"}
+                  startIcon={<MapIcon />}
+                  onClick={() => setShowMap(!showMap)}
+                  size="small"
+                >
+                  {showMap ? "Masquer la carte" : "Afficher sur la carte"}
+                </Button>
               </Box>
+
+              {/* Carte avec marqueurs */}
+              {showMap && (
+                <Box sx={{ mb: 4, height: "500px", borderRadius: 2, overflow: "hidden", border: "1px solid", borderColor: "divider" }}>
+                  <MapContainer
+                    center={mapCenter}
+                    zoom={mapZoom}
+                    style={{ height: "100%", width: "100%" }}
+                    scrollWheelZoom={true}
+                  >
+                    <TileLayer
+                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    />
+                    {biens
+                      .filter((bien) => bien.localisation?.latitude && bien.localisation?.longitude)
+                      .map((bien) => (
+                        <Marker
+                          key={bien._id}
+                          position={[parseFloat(bien.localisation.latitude), parseFloat(bien.localisation.longitude)]}
+                          icon={bienIcon}
+                        >
+                          <Popup maxWidth={400}>
+                            <Box sx={{ minWidth: 350, p: 0 }}>
+                              {/* Photo du bien */}
+                              {bien.images && bien.images.length > 0 && (
+                                <Box
+                                  sx={{
+                                    width: "100%",
+                                    height: 180,
+                                    backgroundImage: `url(${fixImageUrl(bien.images[0])})`,
+                                    backgroundSize: "cover",
+                                    backgroundPosition: "center",
+                                    borderRadius: "4px 4px 0 0",
+                                  }}
+                                />
+                              )}
+                              
+                              {/* En-tête avec nom et type */}
+                              <Box
+                                sx={{
+                                  background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                                  color: "white",
+                                  p: 2,
+                                  borderRadius: bien.images && bien.images.length > 0 ? 0 : "4px 4px 0 0",
+                                }}
+                              >
+                                <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ fontSize: "1rem" }}>
+                                  {bien.titre}
+                                </Typography>
+                                <Chip
+                                  label={bien.type}
+                                  size="small"
+                                  sx={{
+                                    bgcolor: "rgba(255,255,255,0.2)",
+                                    color: "white",
+                                    fontWeight: 600,
+                                    textTransform: "capitalize",
+                                  }}
+                                />
+                              </Box>
+
+                              {/* Informations */}
+                              <Box sx={{ p: 2 }}>
+                                <Stack spacing={1.5}>
+                                  {/* Prix */}
+                                  <Box
+                                    sx={{
+                                      p: 1.5,
+                                      bgcolor: "primary.50",
+                                      borderRadius: 1,
+                                      borderLeft: "3px solid",
+                                      borderColor: "primary.main",
+                                    }}
+                                  >
+                                    <Typography variant="caption" color="text.secondary" fontWeight="bold" sx={{ textTransform: "uppercase", fontSize: "0.7rem" }}>
+                                      Prix
+                                    </Typography>
+                                    <Typography variant="body1" fontWeight="bold" color="primary" sx={{ mt: 0.5 }}>
+                                      {formatMoney(bien.prix)}
+                                    </Typography>
+                                  </Box>
+
+                                  {/* Superficie */}
+                                  {bien.superficie && (
+                                    <Box display="flex" alignItems="center" gap={1}>
+                                      <Square fontSize="small" color="action" />
+                                      <Typography variant="body2">
+                                        <strong>{bien.superficie}</strong> m²
+                                      </Typography>
+                                    </Box>
+                                  )}
+
+                                  {/* Localisation */}
+                                  <Box>
+                                    <Box display="flex" alignItems="center" gap={0.5} mb={0.5}>
+                                      <LocationOn fontSize="small" color="action" />
+                                      <Typography variant="caption" color="text.secondary" fontWeight="bold" sx={{ textTransform: "uppercase", fontSize: "0.7rem" }}>
+                                        Localisation
+                                      </Typography>
+                                    </Box>
+                                    <Typography variant="body2" sx={{ pl: 2.5 }}>
+                                      {bien.localisation?.adresse && `${bien.localisation.adresse}, `}
+                                      {bien.localisation?.ville}
+                                      {bien.localisation?.quartier && `, ${bien.localisation.quartier}`}
+                                    </Typography>
+                                  </Box>
+
+                                  {/* Caractéristiques */}
+                                  {bien.caracteristiques && (
+                                    <>
+                                      {(bien.caracteristiques.nbChambres || bien.caracteristiques.nbSallesBain) && (
+                                        <Box display="flex" gap={2}>
+                                          {bien.caracteristiques.nbChambres && (
+                                            <Box display="flex" alignItems="center" gap={0.5}>
+                                              <Bed fontSize="small" color="action" />
+                                              <Typography variant="body2">{bien.caracteristiques.nbChambres}</Typography>
+                                            </Box>
+                                          )}
+                                          {bien.caracteristiques.nbSallesBain && (
+                                            <Box display="flex" alignItems="center" gap={0.5}>
+                                              <Bathtub fontSize="small" color="action" />
+                                              <Typography variant="body2">{bien.caracteristiques.nbSallesBain}</Typography>
+                                            </Box>
+                                          )}
+                                        </Box>
+                                      )}
+                                    </>
+                                  )}
+
+                                  <Divider />
+
+                                  {/* Boutons d'action */}
+                                  <Stack spacing={1} sx={{ mt: 1 }}>
+                                    <Button
+                                      size="small"
+                                      variant="contained"
+                                      startIcon={<Home />}
+                                      onClick={() => {
+                                        setSelectedBien(bien);
+                                        setOpenBiensDrawer(true);
+                                      }}
+                                      fullWidth
+                                      sx={{
+                                        textTransform: "none",
+                                        fontWeight: 600,
+                                        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                                      }}
+                                    >
+                                      Voir détails
+                                    </Button>
+                                    <Box 
+                                      sx={{ 
+                                        display: "flex", 
+                                        gap: 0.5, 
+                                        width: "100%",
+                                        "& > *": {
+                                          flex: 1,
+                                        }
+                                      }}
+                                    >
+                                      <Button
+                                        size="small"
+                                        variant="outlined"
+                                        onClick={(e) => {
+                                          e.preventDefault();
+                                          e.stopPropagation();
+                                          const lat = bien.localisation?.latitude;
+                                          const lng = bien.localisation?.longitude;
+                                          if (lat && lng) {
+                                            window.open(`https://www.google.com/maps?q=${lat},${lng}`, "_blank");
+                                          }
+                                        }}
+                                        sx={{
+                                          textTransform: "none",
+                                          fontWeight: 600,
+                                          fontSize: "0.65rem",
+                                          minWidth: 0,
+                                          px: 0.5,
+                                          py: 0.5,
+                                        }}
+                                      >
+                                        Google Maps
+                                      </Button>
+                                      <Button
+                                        size="small"
+                                        variant="outlined"
+                                        onClick={(e) => {
+                                          e.preventDefault();
+                                          e.stopPropagation();
+                                          const lat = bien.localisation?.latitude;
+                                          const lng = bien.localisation?.longitude;
+                                          if (lat && lng) {
+                                            window.open(`https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}&zoom=15`, "_blank");
+                                          }
+                                        }}
+                                        sx={{
+                                          textTransform: "none",
+                                          fontWeight: 600,
+                                          fontSize: "0.65rem",
+                                          minWidth: 0,
+                                          px: 0.5,
+                                          py: 0.5,
+                                        }}
+                                      >
+                                        OpenStreetMap
+                                      </Button>
+                                    </Box>
+                                  </Stack>
+                                </Stack>
+                              </Box>
+                            </Box>
+                          </Popup>
+                        </Marker>
+                      ))}
+                  </MapContainer>
+                </Box>
+              )}
 
               {/* Conteneur Grid avec 3 cartes par ligne */}
               <Box
@@ -594,6 +908,8 @@ const SearchBiensPage = () => {
                       ? fixImageUrl(typeof bien.images[0] === "string" ? bien.images[0] : bien.images[0].url || bien.images[0])
                       : "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&h=600&fit=crop&q=90";
                     const bienVille = bien.localisation?.ville || "Ville non spécifiée";
+                    const bienQuartier = bien.localisation?.quartier;
+                    const villeEtQuartier = bienQuartier ? `${bienVille}, ${bienQuartier}` : bienVille;
                     const bienSuperficie = bien.superficie?.toString() || "0";
                     
                     return (
@@ -742,7 +1058,7 @@ const SearchBiensPage = () => {
                                   },
                                 }}
                               >
-                                {bienVille}
+                                {villeEtQuartier}
                               </Typography>
                             </Box>
 
@@ -866,6 +1182,15 @@ const SearchBiensPage = () => {
       <Footer />
 
       {/* Drawer détails bien */}
+      <BienDetailDrawer
+        open={openBiensDrawer}
+        onClose={handleCloseBienDetails}
+        selectedBien={selectedBien}
+        onBienUpdate={setSelectedBien}
+      />
+
+      {/* Ancien drawer - à supprimer après vérification */}
+      {false && (
       <Drawer
         anchor="right"
         open={openBiensDrawer}
@@ -1058,6 +1383,440 @@ const SearchBiensPage = () => {
                         })}
                       </Grid>
                     </Box>
+                  </Grid>
+                )}
+
+                {/* Situation géographique du Terrain */}
+                {selectedBien.situationGeographique && (
+                  <Grid item xs={12}>
+                    <Typography variant="h6" fontWeight="bold" mb={2}>
+                      🗺️ Situation géographique du Terrain
+                    </Typography>
+                    <Paper sx={{ 
+                      p: 3, 
+                      background: "linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%)",
+                      borderRadius: 3,
+                      boxShadow: "0 4px 20px rgba(76, 175, 80, 0.1)",
+                      border: "1px solid rgba(76, 175, 80, 0.2)"
+                    }}>
+                      <Typography variant="body1" sx={{ lineHeight: 1.8, color: "text.primary" }}>
+                        {selectedBien.situationGeographique}
+                      </Typography>
+                    </Paper>
+                  </Grid>
+                )}
+
+                {/* Description physique */}
+                {selectedBien.descriptionPhysique && (
+                  <Grid item xs={12}>
+                    <Typography variant="h6" fontWeight="bold" mb={2}>
+                      📋 Description physique
+                    </Typography>
+                    <Paper sx={{ 
+                      p: 3, 
+                      background: "linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%)",
+                      borderRadius: 3,
+                      boxShadow: "0 4px 20px rgba(255, 152, 0, 0.1)",
+                      border: "1px solid rgba(255, 152, 0, 0.2)"
+                    }}>
+                      <Typography variant="body1" sx={{ lineHeight: 1.8, color: "text.primary" }}>
+                        {selectedBien.descriptionPhysique}
+                      </Typography>
+                    </Paper>
+                  </Grid>
+                )}
+
+                {/* Atouts majeurs */}
+                {selectedBien.atoutsMajeurs && selectedBien.atoutsMajeurs.length > 0 && (
+                  <Grid item xs={12}>
+                    <Typography variant="h6" fontWeight="bold" mb={2}>
+                      ⭐ Atouts majeurs
+                    </Typography>
+                    <Paper sx={{ 
+                      p: 3, 
+                      background: "linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%)",
+                      borderRadius: 3,
+                      boxShadow: "0 4px 20px rgba(156, 39, 176, 0.1)",
+                      border: "1px solid rgba(156, 39, 176, 0.2)"
+                    }}>
+                      <Grid container spacing={2}>
+                        {selectedBien.atoutsMajeurs.map((atout, index) => (
+                          <Grid item xs={12} sm={6} md={4} key={index}>
+                            <Box sx={{ 
+                              p: 2,
+                              borderRadius: 2,
+                              background: "rgba(255, 255, 255, 0.8)",
+                              border: "1px solid rgba(156, 39, 176, 0.3)",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 1.5,
+                              transition: "all 0.3s ease",
+                              "&:hover": {
+                                transform: "translateY(-2px)",
+                                boxShadow: "0 4px 12px rgba(156, 39, 176, 0.2)"
+                              }
+                            }}>
+                              <Box sx={{ 
+                                bgcolor: "secondary.main", 
+                                color: "white", 
+                                borderRadius: "50%", 
+                                p: 0.8,
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                minWidth: 32,
+                                height: 32
+                              }}>
+                                <Typography variant="body2" fontWeight="bold">
+                                  ✓
+                                </Typography>
+                              </Box>
+                              <Typography variant="body1" fontWeight={500} sx={{ flex: 1 }}>
+                                {typeof atout === "string" ? atout : atout.nom || atout}
+                              </Typography>
+                            </Box>
+                          </Grid>
+                        ))}
+                      </Grid>
+                    </Paper>
+                  </Grid>
+                )}
+
+                {/* Caractéristiques du bien */}
+                {selectedBien.caracteristiques && Object.keys(selectedBien.caracteristiques).length > 0 && (
+                  <Grid item xs={12}>
+                    <Typography variant="h6" fontWeight="bold" mb={2}>
+                      🏠 Caractéristiques du bien
+                    </Typography>
+                    <Paper sx={{ 
+                      p: 3, 
+                      background: "linear-gradient(135deg, #f8f9ff 0%, #e8f2ff 100%)",
+                      borderRadius: 3,
+                      boxShadow: "0 8px 32px rgba(102, 126, 234, 0.1)",
+                      border: "1px solid rgba(102, 126, 234, 0.1)"
+                    }}>
+                      <Grid container spacing={2}>
+                        {/* Chambres */}
+                        {selectedBien.caracteristiques.nbChambres && (
+                          <Grid item xs={6} sm={4} md={3}>
+                            <Box sx={{ 
+                              textAlign: "center",
+                              p: 2,
+                              borderRadius: 2,
+                              background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+                              color: "white"
+                            }}>
+                              <Typography variant="h4" fontWeight="bold">
+                                {selectedBien.caracteristiques.nbChambres}
+                              </Typography>
+                              <Typography variant="body2" sx={{ opacity: 0.9, mt: 0.5 }}>
+                                🛏️ Chambres
+                              </Typography>
+                            </Box>
+                          </Grid>
+                        )}
+
+                        {/* Salles de bain */}
+                        {selectedBien.caracteristiques.nbSallesBain && (
+                          <Grid item xs={6} sm={4} md={3}>
+                            <Box sx={{ 
+                              textAlign: "center",
+                              p: 2,
+                              borderRadius: 2,
+                              background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+                              color: "white"
+                            }}>
+                              <Typography variant="h4" fontWeight="bold">
+                                {selectedBien.caracteristiques.nbSallesBain}
+                              </Typography>
+                              <Typography variant="body2" sx={{ opacity: 0.9, mt: 0.5 }}>
+                                🚿 Salles de bain
+                              </Typography>
+                            </Box>
+                          </Grid>
+                        )}
+
+                        {/* Salons */}
+                        {selectedBien.caracteristiques.nbSalons && (
+                          <Grid item xs={6} sm={4} md={3}>
+                            <Box sx={{ 
+                              textAlign: "center",
+                              p: 2,
+                              borderRadius: 2,
+                              background: "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
+                              color: "white"
+                            }}>
+                              <Typography variant="h4" fontWeight="bold">
+                                {selectedBien.caracteristiques.nbSalons}
+                              </Typography>
+                              <Typography variant="body2" sx={{ opacity: 0.9, mt: 0.5 }}>
+                                🛋️ Salons
+                              </Typography>
+                            </Box>
+                          </Grid>
+                        )}
+
+                        {/* Équipements */}
+                        <Grid item xs={12}>
+                          <Box sx={{ 
+                            p: 2,
+                            borderRadius: 2,
+                            background: "rgba(255, 255, 255, 0.8)",
+                            border: "1px solid rgba(0, 0, 0, 0.1)"
+                          }}>
+                            <Typography variant="subtitle2" color="text.secondary" sx={{ fontSize: "0.8rem", fontWeight: 600, mb: 2 }}>
+                              ÉQUIPEMENTS ET AMÉNAGEMENTS
+                            </Typography>
+                            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+                              {selectedBien.caracteristiques.garage && (
+                                <Chip 
+                                  icon={<Garage />}
+                                  label="Garage" 
+                                  size="small" 
+                                  sx={{ 
+                                    background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
+                                    color: "white",
+                                    fontWeight: "bold",
+                                  }} 
+                                />
+                              )}
+                              {selectedBien.caracteristiques.piscine && (
+                                <Chip 
+                                  icon={<Pool />}
+                                  label="Piscine" 
+                                  size="small" 
+                                  sx={{ 
+                                    background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
+                                    color: "white",
+                                    fontWeight: "bold",
+                                  }} 
+                                />
+                              )}
+                              {selectedBien.caracteristiques.jardin && (
+                                <Chip 
+                                  icon={<Nature />}
+                                  label="Jardin" 
+                                  size="small" 
+                                  sx={{ 
+                                    background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
+                                    color: "white",
+                                    fontWeight: "bold",
+                                  }} 
+                                />
+                              )}
+                              {selectedBien.caracteristiques.climatisation && (
+                                <Chip 
+                                  icon={<AcUnit />}
+                                  label="Climatisation" 
+                                  size="small" 
+                                  sx={{ 
+                                    background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
+                                    color: "white",
+                                    fontWeight: "bold",
+                                  }} 
+                                />
+                              )}
+                              {selectedBien.caracteristiques.cuisine && selectedBien.caracteristiques.cuisine !== "Non spécifiée" && (
+                                <Chip 
+                                  icon={<Kitchen />}
+                                  label={`Cuisine: ${selectedBien.caracteristiques.cuisine}`} 
+                                  size="small" 
+                                  sx={{ 
+                                    background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
+                                    color: "white",
+                                    fontWeight: "bold",
+                                  }} 
+                                />
+                              )}
+                              {selectedBien.caracteristiques.ascenseur && (
+                                <Chip 
+                                  label="Ascenseur" 
+                                  size="small" 
+                                  sx={{ 
+                                    background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
+                                    color: "white",
+                                    fontWeight: "bold",
+                                  }} 
+                                />
+                              )}
+                              {selectedBien.caracteristiques.balcon && (
+                                <Chip 
+                                  label="Balcon" 
+                                  size="small" 
+                                  sx={{ 
+                                    background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
+                                    color: "white",
+                                    fontWeight: "bold",
+                                  }} 
+                                />
+                              )}
+                              {selectedBien.caracteristiques.electricite && (
+                                <Chip 
+                                  label="Électricité" 
+                                  size="small" 
+                                  sx={{ 
+                                    background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
+                                    color: "white",
+                                    fontWeight: "bold",
+                                  }} 
+                                />
+                              )}
+                              {selectedBien.caracteristiques.eau && (
+                                <Chip 
+                                  label="Eau courante" 
+                                  size="small" 
+                                  sx={{ 
+                                    background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
+                                    color: "white",
+                                    fontWeight: "bold",
+                                  }} 
+                                />
+                              )}
+                              {selectedBien.caracteristiques.securite && (
+                                <Chip 
+                                  label="Sécurité" 
+                                  size="small" 
+                                  sx={{ 
+                                    background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
+                                    color: "white",
+                                    fontWeight: "bold",
+                                  }} 
+                                />
+                              )}
+                              {selectedBien.caracteristiques.irrigation && (
+                                <Chip 
+                                  label="Irrigation" 
+                                  size="small" 
+                                  sx={{ 
+                                    background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
+                                    color: "white",
+                                    fontWeight: "bold",
+                                  }} 
+                                />
+                              )}
+                              {selectedBien.caracteristiques.cloture && (
+                                <Chip 
+                                  label="Clôture" 
+                                  size="small" 
+                                  sx={{ 
+                                    background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
+                                    color: "white",
+                                    fontWeight: "bold",
+                                  }} 
+                                />
+                              )}
+                              {selectedBien.caracteristiques.arbore && (
+                                <Chip 
+                                  label="Arboré" 
+                                  size="small" 
+                                  sx={{ 
+                                    background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
+                                    color: "white",
+                                    fontWeight: "bold",
+                                  }} 
+                                />
+                              )}
+                              {selectedBien.caracteristiques.potager && (
+                                <Chip 
+                                  label="Potager" 
+                                  size="small" 
+                                  sx={{ 
+                                    background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
+                                    color: "white",
+                                    fontWeight: "bold",
+                                  }} 
+                                />
+                              )}
+                            </Box>
+
+                            {/* Informations supplémentaires */}
+                            {(selectedBien.caracteristiques.anneeConstruction || selectedBien.caracteristiques.etatGeneral || selectedBien.caracteristiques.acces || selectedBien.caracteristiques.etage) && (
+                              <Box sx={{ mt: 3, pt: 2, borderTop: "1px solid rgba(0, 0, 0, 0.1)" }}>
+                                <Grid container spacing={2}>
+                                  {selectedBien.caracteristiques.anneeConstruction && (
+                                    <Grid item xs={12} sm={6}>
+                                      <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.75rem", fontWeight: 600 }}>
+                                        Année de construction
+                                      </Typography>
+                                      <Typography variant="body1" fontWeight="bold">
+                                        {selectedBien.caracteristiques.anneeConstruction}
+                                      </Typography>
+                                    </Grid>
+                                  )}
+                                  {selectedBien.caracteristiques.etatGeneral && (
+                                    <Grid item xs={12} sm={6}>
+                                      <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.75rem", fontWeight: 600 }}>
+                                        État général
+                                      </Typography>
+                                      <Typography variant="body1" fontWeight="bold">
+                                        {selectedBien.caracteristiques.etatGeneral}
+                                      </Typography>
+                                    </Grid>
+                                  )}
+                                  {selectedBien.caracteristiques.acces && (
+                                    <Grid item xs={12} sm={6}>
+                                      <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.75rem", fontWeight: 600 }}>
+                                        Accès
+                                      </Typography>
+                                      <Typography variant="body1" fontWeight="bold">
+                                        {selectedBien.caracteristiques.acces}
+                                      </Typography>
+                                    </Grid>
+                                  )}
+                                  {selectedBien.caracteristiques.etage && (
+                                    <Grid item xs={12} sm={6}>
+                                      <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.75rem", fontWeight: 600 }}>
+                                        Étage
+                                      </Typography>
+                                      <Typography variant="body1" fontWeight="bold">
+                                        {selectedBien.caracteristiques.etage}
+                                      </Typography>
+                                    </Grid>
+                                  )}
+                                </Grid>
+                              </Box>
+                            )}
+
+                            {/* Types d'arbres (pour jardin) */}
+                            {selectedBien.caracteristiques.typesArbres && selectedBien.caracteristiques.typesArbres.length > 0 && (
+                              <Box sx={{ mt: 3, pt: 2, borderTop: "1px solid rgba(0, 0, 0, 0.1)" }}>
+                                <Typography variant="subtitle2" color="text.secondary" sx={{ fontSize: "0.8rem", fontWeight: 600, mb: 1 }}>
+                                  TYPES D'ARBRES
+                                </Typography>
+                                <Grid container spacing={1}>
+                                  {selectedBien.caracteristiques.typesArbres.map((arbre, index) => (
+                                    <Grid item xs={12} sm={6} key={index}>
+                                      <Chip 
+                                        label={`${arbre.type || arbre}: ${arbre.nombre || ""}`} 
+                                        size="small" 
+                                        sx={{ 
+                                          background: "rgba(76, 175, 80, 0.1)",
+                                          color: "success.main",
+                                          border: "1px solid rgba(76, 175, 80, 0.3)",
+                                          fontWeight: "bold",
+                                        }} 
+                                      />
+                                    </Grid>
+                                  ))}
+                                </Grid>
+                              </Box>
+                            )}
+
+                            {/* Éléments du jardin */}
+                            {selectedBien.caracteristiques.elementsJardin && (
+                              <Box sx={{ mt: 3, pt: 2, borderTop: "1px solid rgba(0, 0, 0, 0.1)" }}>
+                                <Typography variant="subtitle2" color="text.secondary" sx={{ fontSize: "0.8rem", fontWeight: 600, mb: 1 }}>
+                                  ÉLÉMENTS DU JARDIN
+                                </Typography>
+                                <Typography variant="body2">
+                                  {selectedBien.caracteristiques.elementsJardin}
+                                </Typography>
+                              </Box>
+                            )}
+                          </Box>
+                        </Grid>
+                      </Grid>
+                    </Paper>
                   </Grid>
                 )}
 
@@ -1283,7 +2042,7 @@ const SearchBiensPage = () => {
                           )}
 
                           {selectedBien.adresse && (
-                            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                            <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
                               <Box sx={{ 
                                 bgcolor: "success.main", 
                                 color: "white", 
@@ -1291,15 +2050,27 @@ const SearchBiensPage = () => {
                                 p: 1.5,
                                 display: "flex",
                                 alignItems: "center",
-                                justifyContent: "center"
+                                justifyContent: "center",
+                                flexShrink: 0,
+                                mt: 0.5
                               }}>
                                 <LocationOn />
                               </Box>
-                              <Box>
-                                <Typography variant="subtitle2" color="text.secondary" sx={{ fontSize: "0.8rem", fontWeight: 600 }}>
+                              <Box sx={{ flex: 1, minWidth: 0 }}>
+                                <Typography variant="subtitle2" color="text.secondary" sx={{ fontSize: "0.8rem", fontWeight: 600, mb: 1 }}>
                                   ADRESSE
                                 </Typography>
-                                <Typography variant="h6" fontWeight="bold" color="success.main">
+                                <Typography 
+                                  variant="h6" 
+                                  fontWeight="bold" 
+                                  color="success.main"
+                                  sx={{
+                                    wordBreak: "break-word",
+                                    overflowWrap: "break-word",
+                                    whiteSpace: "normal",
+                                    lineHeight: 1.5
+                                  }}
+                                >
                                   {selectedBien.adresse}
                                 </Typography>
                               </Box>
@@ -1324,17 +2095,51 @@ const SearchBiensPage = () => {
                                 <Typography variant="subtitle2" color="text.secondary" sx={{ fontSize: "0.8rem", fontWeight: 600 }}>
                                   COORDONNÉES GPS
                                 </Typography>
-                                <Typography variant="body2" fontWeight="bold" color="warning.main">
+                                <Typography variant="body2" fontWeight="bold" color="warning.main" sx={{ mb: 1 }}>
+                                  Format décimal:<br/>
                                   Lat: {selectedBien.latitude}<br/>
                                   Lng: {selectedBien.longitude}
                                 </Typography>
+                                {decimalToDMS(selectedBien.latitude, "lat") && decimalToDMS(selectedBien.longitude, "lon") && (
+                                  <Typography variant="body2" fontWeight="bold" color="warning.dark" sx={{ mt: 1, fontSize: "0.85rem" }}>
+                                    Format DMS:<br/>
+                                    {decimalToDMS(selectedBien.latitude, "lat")} / {decimalToDMS(selectedBien.longitude, "lon")}
+                                  </Typography>
+                                )}
                               </Box>
                               <Button
                                 size="small"
                                 variant="outlined"
-                                onClick={() => {
-                                  const navigationUrl = `https://www.google.com/maps?q=${selectedBien.latitude},${selectedBien.longitude}`;
-                                  window.open(navigationUrl, "_blank");
+                                onClick={async () => {
+                                  try {
+                                    if (!navigator.geolocation) {
+                                      alert("La géolocalisation n'est pas supportée par votre navigateur");
+                                      return;
+                                    }
+
+                                    navigator.geolocation.getCurrentPosition(
+                                      (position) => {
+                                        const userLat = position.coords.latitude;
+                                        const userLng = position.coords.longitude;
+                                        const googleMapsUrl = `https://www.google.com/maps/dir/${userLat},${userLng}/${selectedBien.latitude},${selectedBien.longitude}`;
+                                        window.open(googleMapsUrl, "_blank");
+                                      },
+                                      (error) => {
+                                        console.error("Erreur de géolocalisation:", error);
+                                        const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${selectedBien.latitude},${selectedBien.longitude}`;
+                                        window.open(googleMapsUrl, "_blank");
+                                      },
+                                      {
+                                        enableHighAccuracy: true,
+                                        timeout: 15000,
+                                        maximumAge: 0
+                                      }
+                                    );
+                                  } catch (error) {
+                                    console.error("Erreur:", error);
+                                    const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${selectedBien.latitude},${selectedBien.longitude}`;
+                                    window.open(googleMapsUrl, "_blank");
+                                  }
                                 }}
                                 sx={{ 
                                   minWidth: "auto",
@@ -1343,7 +2148,7 @@ const SearchBiensPage = () => {
                                   fontSize: "0.7rem"
                                 }}
                               >
-                                Naviguer
+                                Itinéraire
                               </Button>
                             </Box>
                           )}
@@ -1401,7 +2206,7 @@ const SearchBiensPage = () => {
                                   if (selectedBien.latitude && selectedBien.longitude) {
                                     const lat = selectedBien.latitude;
                                     const lng = selectedBien.longitude;
-                                    const googleMapsUrl = `https://www.google.com/maps?q=${lat},${lng}`;
+                                    const googleMapsUrl = `https://www.google.com/maps/@${lat},${lng},18z`;
                                     window.open(googleMapsUrl, "_blank");
                                   } else {
                                     const searchQuery = selectedBien.adresse || selectedBien.ville;
@@ -1425,23 +2230,58 @@ const SearchBiensPage = () => {
                                   transition: "all 0.3s ease"
                                 }}
                               >
-                                Google Maps
+                                Voir sur la carte
                               </Button>
                               
                               <Button
                                 variant="outlined"
                                 size="large"
                                 startIcon={<LocationOn />}
-                                onClick={() => {
-                                  if (selectedBien.latitude && selectedBien.longitude) {
-                                    const lat = selectedBien.latitude;
-                                    const lng = selectedBien.longitude;
-                                    const osmUrl = `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}&zoom=15`;
-                                    window.open(osmUrl, "_blank");
-                                  } else {
-                                    const searchQuery = selectedBien.adresse || selectedBien.ville;
-                                    const fallbackUrl = `https://www.openstreetmap.org/search?query=${encodeURIComponent(searchQuery)}`;
-                                    window.open(fallbackUrl, "_blank");
+                                onClick={async () => {
+                                  try {
+                                    if (!navigator.geolocation) {
+                                      alert("La géolocalisation n'est pas supportée par votre navigateur");
+                                      return;
+                                    }
+
+                                    navigator.geolocation.getCurrentPosition(
+                                      (position) => {
+                                        const userLat = position.coords.latitude;
+                                        const userLng = position.coords.longitude;
+                                        const googleMapsUrl = `https://www.google.com/maps/dir/${userLat},${userLng}/${selectedBien.latitude},${selectedBien.longitude}`;
+                                        window.open(googleMapsUrl, "_blank");
+                                      },
+                                      (error) => {
+                                        console.error("Erreur de géolocalisation:", error);
+                                        let errorMsg = "Impossible d'obtenir votre position. ";
+                                        switch(error.code) {
+                                          case error.PERMISSION_DENIED:
+                                            errorMsg += "Veuillez autoriser l'accès à votre position dans les paramètres du navigateur.";
+                                            break;
+                                          case error.POSITION_UNAVAILABLE:
+                                            errorMsg += "Votre position n'est pas disponible.";
+                                            break;
+                                          case error.TIMEOUT:
+                                            errorMsg += "La demande de position a expiré.";
+                                            break;
+                                          default:
+                                            errorMsg += "Une erreur est survenue lors de la récupération de votre position.";
+                                            break;
+                                        }
+                                        alert(errorMsg);
+                                        const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${selectedBien.latitude},${selectedBien.longitude}`;
+                                        window.open(googleMapsUrl, "_blank");
+                                      },
+                                      {
+                                        enableHighAccuracy: true,
+                                        timeout: 15000,
+                                        maximumAge: 0
+                                      }
+                                    );
+                                  } catch (error) {
+                                    console.error("Erreur:", error);
+                                    const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${selectedBien.latitude},${selectedBien.longitude}`;
+                                    window.open(googleMapsUrl, "_blank");
                                   }
                                 }}
                                 sx={{
@@ -1459,7 +2299,7 @@ const SearchBiensPage = () => {
                                   transition: "all 0.3s ease"
                                 }}
                               >
-                                OpenStreetMap
+                                Itinéraire depuis ma position
                               </Button>
                             </Box>
                           </Box>
@@ -1479,6 +2319,7 @@ const SearchBiensPage = () => {
           </Box>
         </Box>
       </Drawer>
+      )}
 
       {/* Lightbox pour les photos */}
       <Dialog

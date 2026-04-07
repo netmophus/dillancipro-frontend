@@ -14,7 +14,7 @@ import {
   Stack,
 } from "@mui/material";
 
-import { Visibility, VisibilityOff } from "@mui/icons-material";
+import { Visibility, VisibilityOff, Home } from "@mui/icons-material";
 
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -198,7 +198,7 @@ const handleSubmit = async (e) => {
             >
               <Stack spacing={3} sx={{ textAlign: { xs: "center", md: "left" } }}>
                 <Typography variant="h4" fontWeight={700} lineHeight={1.2}>
-                  Bienvenue sur GeoFoncier
+                  Bienvenue sur DillanciPro
                 </Typography>
                 <Typography variant="body1" sx={{ opacity: 0.8 }}>
                   Accédez à votre espace pour suivre vos démarches foncières,
@@ -221,28 +221,67 @@ const handleSubmit = async (e) => {
                 alignItems: "center",
               }}
             >
-              <Box
-                component="form"
-                onSubmit={handleSubmit}
-                sx={{
-                  width: "100%",
-                  px: { xs: 4, md: 6 },
-                  py: { xs: 6, md: 8 },
-                }}
-              >
-                <Stack spacing={3}>
-                  <Box>
-                    <Typography variant="h5" fontWeight={600} gutterBottom>
-                      Connexion à votre compte
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Entrez vos identifiants pour continuer.
-                    </Typography>
-                  </Box>
+              <Grid container sx={{ width: "100%", height: "100%" }}>
+                <Grid
+                  item
+                  xs={12}
+                  md={6}
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    px: { xs: 2, md: 4 },
+                    py: { xs: 4, md: 6 },
+                  }}
+                >
+                  <Box
+                    component="form"
+                    onSubmit={handleSubmit}
+                    sx={{
+                      width: "100%",
+                      px: { xs: 4, md: 6 },
+                      py: { xs: 5, md: 7 },
+                      backgroundColor: "rgba(37, 99, 235, 0.05)",
+                      borderRadius: 3,
+                      boxShadow: "0 4px 20px rgba(37, 99, 235, 0.1)",
+                    }}
+                  >
+                    <Stack spacing={4}>
+                      <Box>
+                        <Typography 
+                          variant="h4" 
+                          fontWeight={700} 
+                          gutterBottom
+                          sx={{
+                            background: "linear-gradient(135deg, #2563eb 0%, #1e40af 100%)",
+                            backgroundClip: "text",
+                            WebkitBackgroundClip: "text",
+                            WebkitTextFillColor: "transparent",
+                            mb: 1,
+                          }}
+                        >
+                          Connexion à votre compte
+                        </Typography>
+                        <Typography 
+                          variant="body1" 
+                          color="text.secondary"
+                          sx={{
+                            fontSize: "0.95rem",
+                            opacity: 0.8,
+                          }}
+                        >
+                          Entrez vos identifiants pour continuer.
+                        </Typography>
+                      </Box>
 
                   {error && <Alert severity="error">{error}</Alert>}
 
-                  <Box sx={{ mb: 2 }}>
+                  <Box 
+                    sx={{ 
+                      mb: 2,
+                      display: "flex",
+                      gap: 1,
+                    }}
+                  >
                     <Button
                       variant={loginMethod === "phone" ? "contained" : "outlined"}
                       onClick={() => {
@@ -250,8 +289,24 @@ const handleSubmit = async (e) => {
                         setFormData({ ...formData, email: "" });
                         setError("");
                       }}
-                      sx={{ mr: 1 }}
-                      size="small"
+                      size="medium"
+                      sx={{ 
+                        flex: 1,
+                        py: 1.2,
+                        fontWeight: 600,
+                        borderRadius: 2,
+                        textTransform: "none",
+                        ...(loginMethod === "phone" && {
+                          background: "linear-gradient(135deg, #2563eb 0%, #1e40af 100%)",
+                          boxShadow: "0 4px 12px rgba(37, 99, 235, 0.3)",
+                          "&:hover": {
+                            background: "linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%)",
+                            boxShadow: "0 6px 16px rgba(37, 99, 235, 0.4)",
+                            transform: "translateY(-1px)",
+                          },
+                          transition: "all 0.3s ease",
+                        }),
+                      }}
                     >
                       Téléphone
                     </Button>
@@ -262,7 +317,24 @@ const handleSubmit = async (e) => {
                         setFormData({ ...formData, phone: "" });
                         setError("");
                       }}
-                      size="small"
+                      size="medium"
+                      sx={{ 
+                        flex: 1,
+                        py: 1.2,
+                        fontWeight: 600,
+                        borderRadius: 2,
+                        textTransform: "none",
+                        ...(loginMethod === "email" && {
+                          background: "linear-gradient(135deg, #2563eb 0%, #1e40af 100%)",
+                          boxShadow: "0 4px 12px rgba(37, 99, 235, 0.3)",
+                          "&:hover": {
+                            background: "linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%)",
+                            boxShadow: "0 6px 16px rgba(37, 99, 235, 0.4)",
+                            transform: "translateY(-1px)",
+                          },
+                          transition: "all 0.3s ease",
+                        }),
+                      }}
                     >
                       Email
                     </Button>
@@ -336,18 +408,68 @@ const handleSubmit = async (e) => {
                     </Link>
                   </Box>
 
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    size="large"
-                    fullWidth
-                    disabled={loading}
-                    sx={{ py: 1.5, fontWeight: 600 }}
+                      <Button
+                        type="submit"
+                        variant="contained"
+                        size="large"
+                        fullWidth
+                        disabled={loading}
+                        sx={{ 
+                          py: 1.8, 
+                          fontWeight: 700,
+                          fontSize: "1rem",
+                          borderRadius: 2,
+                          textTransform: "none",
+                          background: "linear-gradient(135deg, #2563eb 0%, #1e40af 100%)",
+                          boxShadow: "0 4px 14px rgba(37, 99, 235, 0.4)",
+                          "&:hover": {
+                            background: "linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%)",
+                            boxShadow: "0 6px 20px rgba(37, 99, 235, 0.5)",
+                            transform: "translateY(-2px)",
+                          },
+                          "&:disabled": {
+                            background: "linear-gradient(135deg, #93c5fd 0%, #60a5fa 100%)",
+                          },
+                          transition: "all 0.3s ease",
+                        }}
+                      >
+                        {loading ? <CircularProgress size={24} color="inherit" /> : "Se connecter"}
+                      </Button>
+                    </Stack>
+                  </Box>
+                </Grid>
+                <Grid
+                  item
+                  xs={0}
+                  md={6}
+                  sx={{
+                    display: { xs: "none", md: "flex" },
+                    alignItems: "center",
+                    justifyContent: "center",
+                    backgroundColor: "background.paper",
+                    px: 6,
+                    py: 8,
+                  }}
+                >
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      width: "100%",
+                      height: "100%",
+                    }}
                   >
-                    {loading ? <CircularProgress size={24} color="inherit" /> : "Se connecter"}
-                  </Button>
-                </Stack>
-              </Box>
+                    <Home
+                      sx={{
+                        fontSize: 200,
+                        color: "primary.main",
+                        opacity: 0.2,
+                      }}
+                    />
+                  </Box>
+                </Grid>
+              </Grid>
             </Grid>
           </Grid>
         </Paper>

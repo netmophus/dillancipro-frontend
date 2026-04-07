@@ -151,10 +151,31 @@ const MesBiensPage = () => {
 
   const openDetailDialog = async (bien) => {
     try {
+      console.log("🔵 [FRONTEND] openDetailDialog appelé avec bien:", bien._id);
+      console.log("🔵 [FRONTEND] Données du bien reçues:", {
+        situationGeographique: bien.situationGeographique,
+        descriptionPhysique: bien.descriptionPhysique,
+        atoutsMajeurs: bien.atoutsMajeurs
+      });
+      
       const res = await api.get(`/agence/biens/${bien._id}`);
-      setSelectedBien(res.data);
+      console.log("📋 [FRONTEND] Données du bien chargées depuis API:", res.data);
+      console.log("📍 [FRONTEND] situationGeographique:", res.data.situationGeographique, "Type:", typeof res.data.situationGeographique, "Truthy:", !!res.data.situationGeographique);
+      console.log("🏗️ [FRONTEND] descriptionPhysique:", res.data.descriptionPhysique, "Type:", typeof res.data.descriptionPhysique, "Truthy:", !!res.data.descriptionPhysique);
+      console.log("⭐ [FRONTEND] atoutsMajeurs:", res.data.atoutsMajeurs, "Type:", typeof res.data.atoutsMajeurs, "IsArray:", Array.isArray(res.data.atoutsMajeurs), "Length:", res.data.atoutsMajeurs?.length);
+      
+      // Forcer la mise à jour avec les données complètes
+      const bienData = { ...res.data };
+      console.log("✅ [FRONTEND] Données à afficher:", {
+        situationGeographique: bienData.situationGeographique,
+        descriptionPhysique: bienData.descriptionPhysique,
+        atoutsMajeurs: bienData.atoutsMajeurs
+      });
+      
+      setSelectedBien(bienData);
       setDetailDialog(true);
     } catch (err) {
+      console.error("❌ [FRONTEND] Erreur lors du chargement:", err);
       setError("Erreur lors du chargement des détails");
     }
   };
@@ -498,7 +519,10 @@ const MesBiensPage = () => {
                       <IconButton
                         size="small"
                         color="info"
-                        onClick={() => openDetailDialog(bien)}
+                        onClick={() => {
+                          console.log("🟢 CLIC SUR VOIR DÉTAILS - Bien ID:", bien._id);
+                          openDetailDialog(bien);
+                        }}
                       >
                         <Visibility />
                       </IconButton>
@@ -638,6 +662,15 @@ const MesBiensPage = () => {
               </Box>
             </DialogTitle>
             <DialogContent dividers>
+              {/* Debug info - à retirer après */}
+              {process.env.NODE_ENV === 'development' && (
+                <Box sx={{ p: 2, bgcolor: 'info.light', mb: 2, borderRadius: 1 }}>
+                  <Typography variant="caption" fontWeight="bold">DEBUG:</Typography>
+                  <Typography variant="caption" display="block">situationGeographique: {selectedBien.situationGeographique ? '✅ Présent' : '❌ Absent'}</Typography>
+                  <Typography variant="caption" display="block">descriptionPhysique: {selectedBien.descriptionPhysique ? '✅ Présent' : '❌ Absent'}</Typography>
+                  <Typography variant="caption" display="block">atoutsMajeurs: {selectedBien.atoutsMajeurs && Array.isArray(selectedBien.atoutsMajeurs) ? `✅ Présent (${selectedBien.atoutsMajeurs.length})` : '❌ Absent'}</Typography>
+                </Box>
+              )}
               <Grid container spacing={3}>
                 {/* Images */}
                 {selectedBien.images?.length > 0 && (
@@ -757,6 +790,67 @@ const MesBiensPage = () => {
                     <Typography variant="body2">{selectedBien.description}</Typography>
                   </Grid>
                 )}
+
+                {/* Situation géographique du terrain - AFFICHAGE FORCÉ */}
+                <Grid item xs={12}>
+                  <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                    📍 Situation géographique du terrain
+                  </Typography>
+                  <Typography variant="body2" sx={{ whiteSpace: "pre-wrap", bgcolor: selectedBien.situationGeographique ? "success.light" : "error.light", p: 1 }}>
+                    {selectedBien.situationGeographique || "❌ AUCUNE DONNÉE"}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    Debug: {selectedBien.situationGeographique ? "✅ Présent" : "❌ Absent"} | Type: {typeof selectedBien.situationGeographique}
+                  </Typography>
+                </Grid>
+
+                {/* Description physique - AFFICHAGE FORCÉ */}
+                <Grid item xs={12}>
+                  <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                    🏗️ Description physique
+                  </Typography>
+                  <Typography variant="body2" sx={{ whiteSpace: "pre-wrap", bgcolor: selectedBien.descriptionPhysique ? "success.light" : "error.light", p: 1 }}>
+                    {selectedBien.descriptionPhysique || "❌ AUCUNE DONNÉE"}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    Debug: {selectedBien.descriptionPhysique ? "✅ Présent" : "❌ Absent"} | Type: {typeof selectedBien.descriptionPhysique}
+                  </Typography>
+                </Grid>
+
+                {/* Atouts majeurs - AFFICHAGE FORCÉ */}
+                <Grid item xs={12}>
+                  <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                    ⭐ Atouts majeurs
+                  </Typography>
+                  {selectedBien.atoutsMajeurs && Array.isArray(selectedBien.atoutsMajeurs) && selectedBien.atoutsMajeurs.length > 0 ? (
+                    <Stack spacing={1}>
+                      {selectedBien.atoutsMajeurs
+                        .filter(atout => atout)
+                        .map((atout, index) => (
+                          <Box
+                            key={index}
+                            display="flex"
+                            alignItems="center"
+                            gap={1}
+                            sx={{
+                              p: 1.5,
+                              bgcolor: "success.light",
+                              borderRadius: 1,
+                              borderLeft: 3,
+                              borderColor: "success.main",
+                            }}
+                          >
+                            <CheckCircle fontSize="small" color="success" />
+                            <Typography variant="body2">{String(atout)}</Typography>
+                          </Box>
+                        ))}
+                    </Stack>
+                  ) : (
+                    <Typography variant="body2" sx={{ bgcolor: "error.light", p: 1 }}>
+                      ❌ AUCUNE DONNÉE | Debug: {selectedBien.atoutsMajeurs ? `Type: ${typeof selectedBien.atoutsMajeurs}, IsArray: ${Array.isArray(selectedBien.atoutsMajeurs)}, Length: ${selectedBien.atoutsMajeurs?.length}` : "Absent"}
+                    </Typography>
+                  )}
+                </Grid>
 
                 {/* Localisation */}
                 {selectedBien.localisation && (

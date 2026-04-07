@@ -71,21 +71,40 @@ const CreateIHEPage = () => {
     titre: "",
     description: "",
     nomClient: "",
-    valeurAdjudication: "",
-    valeurDation: "",
-    valeurNetteComptable: "",
-    valeurComptable: "",
-    valeurAcquisition: "",
-    valeurCession: "",
-    dateAcquisition: "",
+    // Nouveaux champs localisation dans bloc général
+    pays: "",
+    ville: "",
+    quartier: "",
+    referenceTitreFoncier: "",
+    // Informations essentielles
     superficie: "",
     uniteSuperficie: "m²",
+    dateEntreeIHE: "", // Date d'entrée en IHE (obligatoire)
+    valeurComptableBruteEntree: "", // Renommé de valeurComptable
+    // Informations financières
+    origineIHE: "", // adjudication, dation, achat, autre
+    valeurAdjudication: "",
+    valeurDation: "",
+    valeurAcquisition: "",
+    dateAcquisition: "",
+    valeurNetteComptable: "", // Calculée, en lecture seule
+    valeurCession: "",
+    // Champs réglementaires
+    typeReglementaireIHE: "", // "reprise_garantie" ou "autre"
+    dateEntreeIHEReglementaire: "", // Date d'entrée pour calcul 24 mois
+    dateLimiteReglementaire: "", // Calculée automatiquement (24 mois)
+    prorogationCommissionBancaire: false,
+    dateDecisionProrogation: "",
+    nouvelleDateLimiteCession: "",
+    inclusDansPlafond15: true,
+    motifExclusionPlafond: "",
+    planCession: "",
+    // Informations complémentaires
+    referenceClientInterne: "",
+    referencePretOrigine: "",
+    referenceGarantie: "",
     notes: "",
     commentaires: "",
-    // Champs réglementaires
-    dateReclassement: "",
-    dureeMaximaleDetention: "60", // 5 ans par défaut (60 mois)
-    planCession: "",
   });
 
   const [localisation, setLocalisation] = useState({
@@ -248,10 +267,38 @@ const CreateIHEPage = () => {
     console.log("✅ [CreateIHE] État mis à jour pour média ID:", id);
   };
 
+  // Mettre à jour la valeur comptable brute quand l'origine change
+  useEffect(() => {
+    let valeurCalculee = "";
+    if (formData.origineIHE === "adjudication" && formData.valeurAdjudication) {
+      valeurCalculee = formData.valeurAdjudication;
+    } else if (formData.origineIHE === "dation" && formData.valeurDation) {
+      valeurCalculee = formData.valeurDation;
+    } else if (formData.origineIHE === "achat" && formData.valeurAcquisition) {
+      valeurCalculee = formData.valeurAcquisition;
+    }
+    if (valeurCalculee && formData.origineIHE) {
+      setFormData((prev) => ({ ...prev, valeurComptableBruteEntree: valeurCalculee }));
+    }
+  }, [formData.origineIHE, formData.valeurAdjudication, formData.valeurDation, formData.valeurAcquisition]);
+
+  // Mettre à jour la date limite réglementaire
+  useEffect(() => {
+    let dateLimite = "";
+    if (formData.dateEntreeIHEReglementaire && formData.typeReglementaireIHE === "reprise_garantie") {
+      const dateEntree = new Date(formData.dateEntreeIHEReglementaire);
+      dateEntree.setMonth(dateEntree.getMonth() + 24);
+      dateLimite = dateEntree.toISOString().split('T')[0];
+    }
+    if (dateLimite) {
+      setFormData((prev) => ({ ...prev, dateLimiteReglementaire: dateLimite }));
+    }
+  }, [formData.dateEntreeIHEReglementaire, formData.typeReglementaireIHE]);
+
   const handleNext = () => {
     if (currentStep === 0) {
-      if (!formData.type || !formData.titre || !formData.valeurComptable) {
-        setError("Veuillez remplir tous les champs obligatoires");
+      if (!formData.type || !formData.titre || !formData.valeurComptableBruteEntree || !formData.dateEntreeIHE) {
+        setError("Veuillez remplir tous les champs obligatoires (Type, Titre, Valeur comptable brute à l'entrée, Date d'entrée en IHE)");
         return;
       }
     }
@@ -279,20 +326,41 @@ const CreateIHEPage = () => {
       // Préparer les données
       const dataToSend = {
         ...formData,
-        nomClient: formData.nomClient || undefined,
+        // Localisation et référence
+        pays: formData.pays || undefined,
+        ville: formData.ville || undefined,
+        quartier: formData.quartier || undefined,
+        referenceTitreFoncier: formData.referenceTitreFoncier || undefined,
+        // Informations essentielles
+        superficie: formData.superficie ? parseFloat(formData.superficie) : undefined,
+        dateEntreeIHE: formData.dateEntreeIHE || undefined,
+        // Mapper valeurComptableBruteEntree vers valeurComptable pour le backend
+        valeurComptable: formData.valeurComptableBruteEntree ? parseFloat(formData.valeurComptableBruteEntree) : undefined,
+        valeurComptableBruteEntree: formData.valeurComptableBruteEntree ? parseFloat(formData.valeurComptableBruteEntree) : undefined,
+        // Informations financières
+        origineIHE: formData.origineIHE || undefined,
         valeurAdjudication: formData.valeurAdjudication ? parseFloat(formData.valeurAdjudication) : undefined,
         valeurDation: formData.valeurDation ? parseFloat(formData.valeurDation) : undefined,
-        valeurNetteComptable: formData.valeurNetteComptable ? parseFloat(formData.valeurNetteComptable) : undefined,
-        valeurComptable: parseFloat(formData.valeurComptable),
         valeurAcquisition: formData.valeurAcquisition ? parseFloat(formData.valeurAcquisition) : undefined,
-        valeurCession: formData.valeurCession ? parseFloat(formData.valeurCession) : undefined,
-        superficie: formData.superficie ? parseFloat(formData.superficie) : undefined,
         dateAcquisition: formData.dateAcquisition || undefined,
-        commentaires: formData.commentaires || undefined,
+        valeurNetteComptable: formData.valeurNetteComptable ? parseFloat(formData.valeurNetteComptable) : undefined,
+        valeurCession: formData.valeurCession ? parseFloat(formData.valeurCession) : undefined,
         // Champs réglementaires
-        dateReclassement: formData.dateReclassement || undefined,
-        dureeMaximaleDetention: formData.dureeMaximaleDetention ? parseInt(formData.dureeMaximaleDetention) : undefined,
+        typeReglementaireIHE: formData.typeReglementaireIHE || undefined,
+        dateEntreeIHEReglementaire: formData.dateEntreeIHEReglementaire || undefined,
+        dateLimiteReglementaire: formData.dateLimiteReglementaire || undefined,
+        prorogationCommissionBancaire: formData.prorogationCommissionBancaire || false,
+        dateDecisionProrogation: formData.dateDecisionProrogation || undefined,
+        nouvelleDateLimiteCession: formData.nouvelleDateLimiteCession || undefined,
+        inclusDansPlafond15: formData.inclusDansPlafond15 !== undefined ? formData.inclusDansPlafond15 : true,
+        motifExclusionPlafond: formData.motifExclusionPlafond || undefined,
         planCession: formData.planCession || undefined,
+        // Informations complémentaires
+        referenceClientInterne: formData.referenceClientInterne || undefined,
+        referencePretOrigine: formData.referencePretOrigine || undefined,
+        referenceGarantie: formData.referenceGarantie || undefined,
+        nomClient: formData.nomClient || undefined,
+        commentaires: formData.commentaires || undefined,
         localisation: {
           ...localisation,
           latitude: localisation.latitude ? parseFloat(localisation.latitude) : undefined,
@@ -546,6 +614,98 @@ const CreateIHEPage = () => {
 
                 <Divider sx={{ my: 4 }} />
 
+                {/* Section Localisation et Référence */}
+                <Card
+                  elevation={0}
+                  sx={{
+                    mb: 3,
+                    borderRadius: 3,
+                    background: "rgba(102, 126, 234, 0.05)",
+                    border: "1px solid rgba(102, 126, 234, 0.2)",
+                  }}
+                >
+                  <CardContent sx={{ p: { xs: 2, md: 3 } }}>
+                    <Box display="flex" alignItems="center" gap={1.5} mb={3}>
+                      <LocationOn sx={{ color: "#667eea", fontSize: 24 }} />
+                      <Typography variant="h6" fontWeight="bold" sx={{ fontSize: { xs: "1rem", md: "1.1rem" } }}>
+                        Localisation et Référence
+                      </Typography>
+                      <Chip label="Obligatoire" size="small" color="error" sx={{ ml: "auto", fontWeight: 600 }} />
+                    </Box>
+                    <Grid container spacing={3}>
+                      <Grid item xs={12} md={4}>
+                        <TextField
+                          fullWidth
+                          label="Pays *"
+                          name="pays"
+                          value={formData.pays}
+                          onChange={handleChange}
+                          required
+                          variant="outlined"
+                          sx={{
+                            "& .MuiOutlinedInput-root": {
+                              borderRadius: 2,
+                            },
+                          }}
+                          helperText="Pays où se trouve le bien immobilier. Cette information est essentielle pour le contrôle interne, l'audit et la conformité réglementaire. Exemple : Niger, Burkina Faso, etc."
+                        />
+                      </Grid>
+                      <Grid item xs={12} md={4}>
+                        <TextField
+                          fullWidth
+                          label="Ville *"
+                          name="ville"
+                          value={formData.ville}
+                          onChange={handleChange}
+                          required
+                          variant="outlined"
+                          sx={{
+                            "& .MuiOutlinedInput-root": {
+                              borderRadius: 2,
+                            },
+                          }}
+                          helperText="Ville où se trouve le bien immobilier. Information obligatoire pour la localisation précise et le suivi géographique des IHE."
+                        />
+                      </Grid>
+                      <Grid item xs={12} md={4}>
+                        <TextField
+                          fullWidth
+                          label="Quartier *"
+                          name="quartier"
+                          value={formData.quartier}
+                          onChange={handleChange}
+                          required
+                          variant="outlined"
+                          sx={{
+                            "& .MuiOutlinedInput-root": {
+                              borderRadius: 2,
+                            },
+                          }}
+                          helperText="Quartier, zone ou secteur où se trouve le bien. Permet une localisation précise pour les visites, évaluations et cessions."
+                        />
+                      </Grid>
+                      <Grid item xs={12}>
+                        <TextField
+                          fullWidth
+                          label="Référence titre foncier *"
+                          name="referenceTitreFoncier"
+                          value={formData.referenceTitreFoncier}
+                          onChange={handleChange}
+                          required
+                          variant="outlined"
+                          sx={{
+                            "& .MuiOutlinedInput-root": {
+                              borderRadius: 2,
+                            },
+                          }}
+                          helperText="Référence officielle du titre foncier (TF), lot ou parcelle. Cette référence est CRITIQUE pour le contrôle interne, l'audit et les vérifications réglementaires. Elle permet d'identifier de manière unique le bien et de vérifier sa légalité. Format : TF-2024-001, Lot 123, Parcelle 456, etc."
+                          placeholder="Ex: TF-2024-001, Lot 123, Parcelle 456"
+                        />
+                      </Grid>
+                    </Grid>
+                  </CardContent>
+                </Card>
+
                 {/* Section 1: Informations essentielles */}
                 <Card
                   elevation={0}
@@ -579,17 +739,18 @@ const CreateIHEPage = () => {
                               borderRadius: 2,
                             },
                           }}
-                          helperText="Donnez un titre descriptif à cette immobilisation"
+                          helperText="Titre descriptif de l'immobilisation hors exploitation (IHE). Doit être clair et précis pour faciliter l'identification dans les rapports, audits et contrôles. Exemple : 'Maison villa - Zone 1 - Niamey' ou 'Terrain viabilisé - Lotissement ABC'"
                     />
                   </Grid>
                   <Grid item xs={12} md={6}>
                     <TextField
                       fullWidth
-                      label="Superficie"
+                      label="Superficie *"
                       name="superficie"
                       type="number"
                       value={formData.superficie}
                       onChange={handleChange}
+                      required
                       InputProps={{
                         endAdornment: (
                           <InputAdornment position="end">
@@ -612,16 +773,41 @@ const CreateIHEPage = () => {
                               borderRadius: 2,
                             },
                           }}
-                          helperText="Superficie totale du bien"
+                          helperText="Superficie totale du bien immobilier. Utilisez l'unité appropriée (m² pour les maisons/appartements, ha ou are pour les terrains). Cette information est essentielle pour l'évaluation et la valorisation du bien."
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      fullWidth
+                      label="Date d'entrée en IHE *"
+                      name="dateEntreeIHE"
+                      type="date"
+                      value={formData.dateEntreeIHE}
+                      onChange={handleChange}
+                      required
+                      InputLabelProps={{ shrink: true }}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <CalendarToday fontSize="small" color="action" />
+                          </InputAdornment>
+                        ),
+                      }}
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          borderRadius: 2,
+                        },
+                      }}
+                      helperText="Date pivot pour le calcul du délai réglementaire de 2 ans (24 mois). C'est la date à laquelle le bien est entré dans les comptes de la banque en tant qu'IHE. Cette date est CRITIQUE pour le suivi réglementaire BCEAO et détermine la date limite de cession pour les immeubles repris en garantie."
                     />
                   </Grid>
                       <Grid item xs={12} md={6}>
                         <TextField
                           fullWidth
-                          label="Valeur comptable *"
-                          name="valeurComptable"
+                          label="Valeur comptable brute à l'entrée *"
+                          name="valeurComptableBruteEntree"
                           type="number"
-                          value={formData.valeurComptable}
+                          value={formData.valeurComptableBruteEntree}
                           onChange={handleChange}
                           required
                           InputProps={{
@@ -636,7 +822,7 @@ const CreateIHEPage = () => {
                               borderRadius: 2,
                             },
                           }}
-                          helperText="Valeur comptable brute de l'IHE (FCFA)"
+                          helperText="Valeur comptable brute à l'entrée dans les comptes de la banque (en FCFA). Cette valeur correspond au prix d'adjudication, de dation en paiement ou d'achat direct selon l'origine de l'IHE. C'est la valeur d'entrée à l'actif, avant amortissements et provisions. La valeur nette comptable sera calculée automatiquement par la comptabilité."
                         />
                       </Grid>
                   <Grid item xs={12}>
@@ -654,6 +840,7 @@ const CreateIHEPage = () => {
                               borderRadius: 2,
                             },
                           }}
+                          helperText="Description détaillée de l'immobilisation : caractéristiques physiques, état général, équipements, accessibilité, environnement, etc. Cette description est importante pour les évaluations, les visites et les documents de cession."
                     />
                   </Grid>
                     </Grid>
@@ -695,61 +882,200 @@ const CreateIHEPage = () => {
                   </AccordionSummary>
                   <AccordionDetails sx={{ px: { xs: 2, md: 3 }, pb: 3 }}>
                     <Grid container spacing={3}>
-                      <Grid item xs={12} md={6}>
+                      <Grid item xs={12}>
                         <TextField
                           fullWidth
-                          label="Valeur d'acquisition"
-                          name="valeurAcquisition"
-                          type="number"
-                          value={formData.valeurAcquisition}
+                          select
+                          label="Origine de l'IHE *"
+                          name="origineIHE"
+                          value={formData.origineIHE}
                           onChange={handleChange}
-                          InputProps={{
-                            startAdornment: (
-                              <InputAdornment position="start">
-                                <AttachMoney sx={{ color: "#667eea" }} />
-                              </InputAdornment>
-                            ),
-                          }}
+                          required
                           sx={{
                             "& .MuiOutlinedInput-root": {
                               borderRadius: 2,
                             },
                           }}
-                          helperText="Valeur d'achat initiale (FCFA)"
-                        />
+                          helperText="Origine de l'immobilisation hors exploitation. Cette information détermine les champs financiers à renseigner et impacte le traitement réglementaire. Les immeubles repris en garantie (adjudication ou dation) bénéficient d'une tolérance de 2 ans avant inclusion dans le plafond IHE."
+                        >
+                          <MenuItem value="">-- Sélectionner --</MenuItem>
+                          <MenuItem value="adjudication">Reprise de garantie – Adjudication</MenuItem>
+                          <MenuItem value="dation">Reprise de garantie – Dation en paiement</MenuItem>
+                          <MenuItem value="achat">Achat direct</MenuItem>
+                          <MenuItem value="autre">Autre</MenuItem>
+                        </TextField>
                       </Grid>
-                      <Grid item xs={12} md={6}>
-                        <TextField
-                          fullWidth
-                          label="Date d'acquisition"
-                          name="dateAcquisition"
-                          type="date"
-                          value={formData.dateAcquisition}
-                          onChange={handleChange}
-                          InputLabelProps={{ shrink: true }}
-                          InputProps={{
-                            startAdornment: (
-                              <InputAdornment position="start">
-                                <CalendarToday fontSize="small" color="action" />
-                              </InputAdornment>
-                            ),
-                          }}
-                          sx={{
-                            "& .MuiOutlinedInput-root": {
-                              borderRadius: 2,
-                            },
-                          }}
-                          helperText="Date d'achat initiale"
-                        />
-                      </Grid>
+
+                      {/* Champs selon l'origine */}
+                      {formData.origineIHE === "adjudication" && (
+                        <>
+                          <Grid item xs={12} md={6}>
+                            <TextField
+                              fullWidth
+                              label="Valeur d'adjudication *"
+                              name="valeurAdjudication"
+                              type="number"
+                              value={formData.valeurAdjudication}
+                              onChange={handleChange}
+                              required
+                              InputProps={{
+                                startAdornment: (
+                                  <InputAdornment position="start">
+                                    <AttachMoney sx={{ color: "#667eea" }} />
+                                  </InputAdornment>
+                                ),
+                              }}
+                              sx={{
+                                "& .MuiOutlinedInput-root": {
+                                  borderRadius: 2,
+                                },
+                              }}
+                              helperText="Valeur lors de l'adjudication publique (en FCFA). C'est le montant pour lequel le bien a été adjugé lors de la vente aux enchères. Cette valeur sera automatiquement utilisée comme valeur comptable brute à l'entrée."
+                            />
+                          </Grid>
+                          <Grid item xs={12} md={6}>
+                            <TextField
+                              fullWidth
+                              label="Date d'acquisition / d'entrée"
+                              name="dateAcquisition"
+                              type="date"
+                              value={formData.dateAcquisition}
+                              onChange={handleChange}
+                              InputLabelProps={{ shrink: true }}
+                              InputProps={{
+                                startAdornment: (
+                                  <InputAdornment position="start">
+                                    <CalendarToday fontSize="small" color="action" />
+                                  </InputAdornment>
+                                ),
+                              }}
+                              sx={{
+                                "& .MuiOutlinedInput-root": {
+                                  borderRadius: 2,
+                                },
+                              }}
+                              helperText="Date de l'adjudication publique. Cette date peut être utilisée pour le calcul réglementaire si différente de la date d'entrée en IHE."
+                            />
+                          </Grid>
+                        </>
+                      )}
+
+                      {formData.origineIHE === "dation" && (
+                        <>
+                          <Grid item xs={12} md={6}>
+                            <TextField
+                              fullWidth
+                              label="Valeur de dation *"
+                              name="valeurDation"
+                              type="number"
+                              value={formData.valeurDation}
+                              onChange={handleChange}
+                              required
+                              InputProps={{
+                                startAdornment: (
+                                  <InputAdornment position="start">
+                                    <AttachMoney sx={{ color: "#667eea" }} />
+                                  </InputAdornment>
+                                ),
+                              }}
+                              sx={{
+                                "& .MuiOutlinedInput-root": {
+                                  borderRadius: 2,
+                                },
+                              }}
+                              helperText="Valeur lors de la dation en paiement (en FCFA). C'est le montant pour lequel le bien a été accepté en paiement d'une créance. Cette valeur sera automatiquement utilisée comme valeur comptable brute à l'entrée."
+                            />
+                          </Grid>
+                          <Grid item xs={12} md={6}>
+                            <TextField
+                              fullWidth
+                              label="Date d'acquisition / d'entrée"
+                              name="dateAcquisition"
+                              type="date"
+                              value={formData.dateAcquisition}
+                              onChange={handleChange}
+                              InputLabelProps={{ shrink: true }}
+                              InputProps={{
+                                startAdornment: (
+                                  <InputAdornment position="start">
+                                    <CalendarToday fontSize="small" color="action" />
+                                  </InputAdornment>
+                                ),
+                              }}
+                              sx={{
+                                "& .MuiOutlinedInput-root": {
+                                  borderRadius: 2,
+                                },
+                              }}
+                              helperText="Date de la dation en paiement. Cette date peut être utilisée pour le calcul réglementaire si différente de la date d'entrée en IHE."
+                            />
+                          </Grid>
+                        </>
+                      )}
+
+                      {formData.origineIHE === "achat" && (
+                        <>
+                          <Grid item xs={12} md={6}>
+                            <TextField
+                              fullWidth
+                              label="Valeur d'acquisition *"
+                              name="valeurAcquisition"
+                              type="number"
+                              value={formData.valeurAcquisition}
+                              onChange={handleChange}
+                              required
+                              InputProps={{
+                                startAdornment: (
+                                  <InputAdornment position="start">
+                                    <AttachMoney sx={{ color: "#667eea" }} />
+                                  </InputAdornment>
+                                ),
+                              }}
+                              sx={{
+                                "& .MuiOutlinedInput-root": {
+                                  borderRadius: 2,
+                                },
+                              }}
+                              helperText="Valeur d'achat direct (en FCFA). C'est le montant payé par la banque pour acquérir directement le bien. Cette valeur sera automatiquement utilisée comme valeur comptable brute à l'entrée."
+                            />
+                          </Grid>
+                          <Grid item xs={12} md={6}>
+                            <TextField
+                              fullWidth
+                              label="Date d'acquisition *"
+                              name="dateAcquisition"
+                              type="date"
+                              value={formData.dateAcquisition}
+                              onChange={handleChange}
+                              required
+                              InputLabelProps={{ shrink: true }}
+                              InputProps={{
+                                startAdornment: (
+                                  <InputAdornment position="start">
+                                    <CalendarToday fontSize="small" color="action" />
+                                  </InputAdornment>
+                                ),
+                              }}
+                              sx={{
+                                "& .MuiOutlinedInput-root": {
+                                  borderRadius: 2,
+                                },
+                              }}
+                              helperText="Date d'achat direct du bien. Cette date peut être utilisée pour le calcul réglementaire si différente de la date d'entrée en IHE."
+                            />
+                          </Grid>
+                        </>
+                      )}
+
+                      {/* Valeur nette comptable (calculée, en lecture seule) */}
                       <Grid item xs={12} md={6}>
                         <TextField
                           fullWidth
                           label="Valeur nette comptable"
                           name="valeurNetteComptable"
                           type="number"
-                          value={formData.valeurNetteComptable}
-                          onChange={handleChange}
+                          value={formData.valeurNetteComptable || ""}
+                          disabled
                           InputProps={{
                             startAdornment: (
                               <InputAdornment position="start">
@@ -762,9 +1088,11 @@ const CreateIHEPage = () => {
                               borderRadius: 2,
                             },
                           }}
-                          helperText="Valeur comptable nette après amortissements (FCFA)"
+                          helperText="Valeur nette comptable calculée automatiquement par la comptabilité (valeur brute – amortissements – provisions). Ce champ est en lecture seule et ne doit PAS être saisi manuellement. La valeur nette est utilisée pour le calcul du plafond IHE et les états financiers."
                         />
                       </Grid>
+
+                      {/* Valeur de cession (pour la sortie) */}
                       <Grid item xs={12} md={6}>
                         <TextField
                           fullWidth
@@ -785,53 +1113,7 @@ const CreateIHEPage = () => {
                               borderRadius: 2,
                             },
                           }}
-                          helperText="Prix de vente ou valeur estimée de cession (FCFA)"
-                        />
-                      </Grid>
-                      <Grid item xs={12} md={6}>
-                        <TextField
-                          fullWidth
-                          label="Valeur d'adjudication"
-                          name="valeurAdjudication"
-                          type="number"
-                          value={formData.valeurAdjudication}
-                          onChange={handleChange}
-                          InputProps={{
-                            startAdornment: (
-                              <InputAdornment position="start">
-                                <AttachMoney sx={{ color: "#667eea" }} />
-                              </InputAdornment>
-                            ),
-                          }}
-                          sx={{
-                            "& .MuiOutlinedInput-root": {
-                              borderRadius: 2,
-                            },
-                          }}
-                          helperText="Valeur lors de l'adjudication (FCFA)"
-                        />
-                      </Grid>
-                      <Grid item xs={12} md={6}>
-                        <TextField
-                          fullWidth
-                          label="Valeur de dation"
-                          name="valeurDation"
-                          type="number"
-                          value={formData.valeurDation}
-                          onChange={handleChange}
-                          InputProps={{
-                            startAdornment: (
-                              <InputAdornment position="start">
-                                <AttachMoney sx={{ color: "#667eea" }} />
-                              </InputAdornment>
-                            ),
-                          }}
-                          sx={{
-                            "& .MuiOutlinedInput-root": {
-                              borderRadius: 2,
-                            },
-                          }}
-                          helperText="Valeur lors d'une dation en paiement (FCFA)"
+                          helperText="Prix de vente ou valeur estimée de cession (en FCFA). Ce champ doit être rempli uniquement au moment de la vente ou lors de la mise à jour du plan de cession. Permet de suivre les plus-values/moins-values réalisées."
                         />
                       </Grid>
                     </Grid>
@@ -870,16 +1152,38 @@ const CreateIHEPage = () => {
                   </AccordionSummary>
                   <AccordionDetails sx={{ px: 2, pb: 3 }}>
                     <Alert severity="info" sx={{ mb: 3 }}>
-                      Ces informations permettent de suivre la durée réglementaire de détention et de préparer les plans de cession.
+                      Suivi réglementaire selon les règles BCEAO : tolérance de 2 ans (24 mois) pour les immeubles repris en garantie avant inclusion dans le plafond IHE.
                     </Alert>
-                    <Grid container spacing={2}>
+                    <Grid container spacing={3}>
+                      <Grid item xs={12}>
+                        <TextField
+                          fullWidth
+                          select
+                          label="Type réglementaire d'IHE *"
+                          name="typeReglementaireIHE"
+                          value={formData.typeReglementaireIHE}
+                          onChange={handleChange}
+                          required
+                          sx={{
+                            "& .MuiOutlinedInput-root": {
+                              borderRadius: 2,
+                            },
+                          }}
+                          helperText="Classification réglementaire selon les règles BCEAO. 'Immeuble repris en réalisation de garantie' bénéficie d'une tolérance de 2 ans (24 mois) avant inclusion dans le plafond IHE de 15%. 'Autre IHE' inclut les investissements, terrains, etc. et peut être soumis à d'autres règles."
+                        >
+                          <MenuItem value="">-- Sélectionner --</MenuItem>
+                          <MenuItem value="reprise_garantie">Immeuble repris en réalisation de garantie</MenuItem>
+                          <MenuItem value="autre">Autre IHE (investissement, terrain, etc.)</MenuItem>
+                        </TextField>
+                      </Grid>
+
                       <Grid item xs={12} md={6}>
                         <TextField
                           fullWidth
-                          label="Date de reclassement en IHE"
-                          name="dateReclassement"
+                          label="Date d'entrée en IHE (réglementaire)"
+                          name="dateEntreeIHEReglementaire"
                           type="date"
-                          value={formData.dateReclassement}
+                          value={formData.dateEntreeIHEReglementaire}
                           onChange={handleChange}
                           InputLabelProps={{ shrink: true }}
                           InputProps={{
@@ -894,23 +1198,23 @@ const CreateIHEPage = () => {
                               borderRadius: 2,
                             },
                           }}
-                          helperText="Date à laquelle le bien a été reclassé en IHE"
+                          helperText="Date d'entrée spécifique pour le calcul réglementaire BCEAO. Si différente de la date d'entrée principale, cette date sera utilisée pour calculer la date limite réglementaire de cession (24 mois pour les reprises de garantie)."
                         />
                       </Grid>
+
                       <Grid item xs={12} md={6}>
                         <TextField
                           fullWidth
-                          label="Durée maximale de détention"
-                          name="dureeMaximaleDetention"
-                          type="number"
-                          value={formData.dureeMaximaleDetention}
-                          onChange={handleChange}
+                          label="Date limite réglementaire de cession"
+                          name="dateLimiteReglementaire"
+                          type="date"
+                          value={formData.dateLimiteReglementaire}
+                          disabled
+                          InputLabelProps={{ shrink: true }}
                           InputProps={{
-                            endAdornment: (
-                              <InputAdornment position="end">
-                                <Typography variant="body2" color="text.secondary">
-                                  mois
-                                </Typography>
+                            startAdornment: (
+                              <InputAdornment position="start">
+                                <CalendarToday fontSize="small" color="action" />
                               </InputAdornment>
                             ),
                           }}
@@ -919,10 +1223,121 @@ const CreateIHEPage = () => {
                               borderRadius: 2,
                             },
                           }}
-                          helperText="Durée maximale autorisée de détention (par défaut: 60 mois = 5 ans)"
-                          inputProps={{ min: 1, max: 120 }}
+                          helperText={formData.typeReglementaireIHE === "reprise_garantie" 
+                            ? "Date limite réglementaire de cession calculée automatiquement : Date d'entrée + 24 mois (non modifiable). Selon les règles BCEAO, les immeubles repris en garantie ont une tolérance de 2 ans avant inclusion dans le plafond IHE. Cette date déclenche les alertes réglementaires."
+                            : "Non applicable pour ce type d'IHE. La date limite réglementaire de 24 mois ne s'applique qu'aux immeubles repris en réalisation de garantie."}
                         />
                       </Grid>
+
+                      <Grid item xs={12}>
+                        <Divider sx={{ my: 2 }} />
+                        <Typography variant="subtitle2" fontWeight={700} gutterBottom>
+                          Prorogation Commission bancaire
+                        </Typography>
+                      </Grid>
+
+                      <Grid item xs={12} md={6}>
+                        <FormControlLabel
+                          control={
+                            <Checkbox
+                              checked={formData.prorogationCommissionBancaire}
+                              onChange={(e) => setFormData((prev) => ({ ...prev, prorogationCommissionBancaire: e.target.checked }))}
+                            />
+                          }
+                          label="Prorogation accordée"
+                        />
+                        <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 1 }}>
+                          La Commission bancaire peut accorder une prorogation au-delà du délai réglementaire de 24 mois pour les immeubles repris en garantie. Cochez cette case si une prorogation a été accordée et renseignez les dates ci-dessous.
+                        </Typography>
+                      </Grid>
+
+                      {formData.prorogationCommissionBancaire && (
+                        <>
+                          <Grid item xs={12} md={6}>
+                            <TextField
+                              fullWidth
+                              label="Date de décision"
+                              name="dateDecisionProrogation"
+                              type="date"
+                              value={formData.dateDecisionProrogation}
+                              onChange={handleChange}
+                              InputLabelProps={{ shrink: true }}
+                              sx={{
+                                "& .MuiOutlinedInput-root": {
+                                  borderRadius: 2,
+                                },
+                              }}
+                              helperText="Date à laquelle la Commission bancaire a pris la décision d'accorder la prorogation. Cette date doit être documentée et conservée pour justifier l'extension du délai réglementaire lors des contrôles."
+                            />
+                          </Grid>
+                          <Grid item xs={12} md={6}>
+                            <TextField
+                              fullWidth
+                              label="Nouvelle date limite de cession"
+                              name="nouvelleDateLimiteCession"
+                              type="date"
+                              value={formData.nouvelleDateLimiteCession}
+                              onChange={handleChange}
+                              InputLabelProps={{ shrink: true }}
+                              sx={{
+                                "& .MuiOutlinedInput-root": {
+                                  borderRadius: 2,
+                                },
+                              }}
+                              helperText="Nouvelle date limite de cession accordée par la Commission bancaire suite à la prorogation. Cette date remplace la date limite réglementaire initiale (24 mois) et devient la référence pour le suivi et les alertes."
+                            />
+                          </Grid>
+                        </>
+                      )}
+
+                      <Grid item xs={12}>
+                        <Divider sx={{ my: 2 }} />
+                        <Typography variant="subtitle2" fontWeight={700} gutterBottom>
+                          Inclusion dans le plafond 15%
+                        </Typography>
+                      </Grid>
+
+                      <Grid item xs={12} md={6}>
+                        <FormControlLabel
+                          control={
+                            <Checkbox
+                              checked={formData.inclusDansPlafond15}
+                              onChange={(e) => setFormData((prev) => ({ ...prev, inclusDansPlafond15: e.target.checked }))}
+                            />
+                          }
+                          label="Inclus dans le calcul IHE (plafond 15%)"
+                        />
+                        <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 1 }}>
+                          Selon les règles BCEAO, les IHE sont soumises à un plafond de 15% des fonds propres. Les immeubles repris en garantie sont exclus du calcul pendant 2 ans. Décochez cette case si l'IHE est exclue du plafond et précisez le motif.
+                        </Typography>
+                      </Grid>
+
+                      {!formData.inclusDansPlafond15 && (
+                        <Grid item xs={12} md={6}>
+                          <TextField
+                            fullWidth
+                            label="Motif d'exclusion"
+                            name="motifExclusionPlafond"
+                            value={formData.motifExclusionPlafond}
+                            onChange={handleChange}
+                            select
+                            sx={{
+                              "& .MuiOutlinedInput-root": {
+                                borderRadius: 2,
+                              },
+                            }}
+                          >
+                            <MenuItem value="">-- Sélectionner --</MenuItem>
+                            <MenuItem value="reprise_2_ans">Reprise de garantie &lt; 2 ans</MenuItem>
+                            <MenuItem value="logement_personnel">Logement personnel</MenuItem>
+                            <MenuItem value="autre">Autre</MenuItem>
+                          </TextField>
+                          <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 1 }}>
+                            Motif justifiant l'exclusion du calcul du plafond IHE de 15%. 'Reprise de garantie &lt; 2 ans' : exclusion automatique pendant la période de tolérance réglementaire. 'Logement personnel' : exclusion selon les règles spécifiques BCEAO. 'Autre' : préciser dans les commentaires.
+                          </Typography>
+                        </Grid>
+                      )}
+
                       <Grid item xs={12}>
                         <TextField
                           fullWidth
@@ -937,32 +1352,10 @@ const CreateIHEPage = () => {
                               borderRadius: 2,
                             },
                           }}
-                          helperText="Stratégie de cession, notes, documents de référence..."
+                          helperText="Plan de cession détaillé : stratégie de vente, marché cible, prix estimé, calendrier prévisionnel, obstacles potentiels, documents de référence (expertises, avis de valeur, etc.). Ce plan est essentiel pour le suivi et la réalisation de la cession dans les délais réglementaires."
                           placeholder="Décrivez le plan de cession prévu pour ce bien..."
                         />
                       </Grid>
-                      {formData.dateReclassement && formData.dureeMaximaleDetention && (
-                        <Grid item xs={12}>
-                          <Alert severity="info" sx={{ mt: 1 }}>
-                            <Typography variant="body2" fontWeight="bold">
-                              Date limite de cession calculée :
-                            </Typography>
-                            <Typography variant="body1">
-                              {(() => {
-                                const dateReclassement = new Date(formData.dateReclassement);
-                                const dureeMois = parseInt(formData.dureeMaximaleDetention) || 60;
-                                const dateLimite = new Date(dateReclassement);
-                                dateLimite.setMonth(dateLimite.getMonth() + dureeMois);
-                                return dateLimite.toLocaleDateString("fr-FR", {
-                                  year: "numeric",
-                                  month: "long",
-                                  day: "numeric",
-                                });
-                              })()}
-                            </Typography>
-                          </Alert>
-                        </Grid>
-                      )}
                     </Grid>
                   </AccordionDetails>
                 </Accordion>
@@ -1002,6 +1395,67 @@ const CreateIHEPage = () => {
                   </AccordionSummary>
                   <AccordionDetails sx={{ px: { xs: 2, md: 3 }, pb: 3 }}>
                     <Grid container spacing={3}>
+                      <Grid item xs={12}>
+                        <Typography variant="subtitle2" fontWeight={700} gutterBottom>
+                          Références obligatoires
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={12} md={4}>
+                        <TextField
+                          fullWidth
+                          label="Référence client interne *"
+                          name="referenceClientInterne"
+                          value={formData.referenceClientInterne}
+                          onChange={handleChange}
+                          required
+                          variant="outlined"
+                          sx={{
+                            "& .MuiOutlinedInput-root": {
+                              borderRadius: 2,
+                            },
+                          }}
+                          helperText="Référence client interne (ID client ou numéro de dossier). Cette référence est OBLIGATOIRE pour établir le lien avec le module crédit et permettre la traçabilité complète de l'IHE depuis son origine. Facilite les contrôles internes et les audits."
+                        />
+                      </Grid>
+                      <Grid item xs={12} md={4}>
+                        <TextField
+                          fullWidth
+                          label="Référence du prêt d'origine"
+                          name="referencePretOrigine"
+                          value={formData.referencePretOrigine}
+                          onChange={handleChange}
+                          variant="outlined"
+                          sx={{
+                            "& .MuiOutlinedInput-root": {
+                              borderRadius: 2,
+                            },
+                          }}
+                          helperText="Référence du prêt à l'origine de l'IHE (si l'IHE provient d'une garantie non honorée). Permet de faire le lien avec le module crédit et de comprendre le contexte de l'acquisition."
+                        />
+                      </Grid>
+                      <Grid item xs={12} md={4}>
+                        <TextField
+                          fullWidth
+                          label="Référence de la garantie"
+                          name="referenceGarantie"
+                          value={formData.referenceGarantie}
+                          onChange={handleChange}
+                          variant="outlined"
+                          sx={{
+                            "& .MuiOutlinedInput-root": {
+                              borderRadius: 2,
+                            },
+                          }}
+                          helperText="Référence de la garantie dans le module garanties (si applicable). Permet de tracer l'IHE depuis la garantie initiale jusqu'à sa reprise et sa cession. Essentiel pour la traçabilité complète."
+                        />
+                      </Grid>
+
+                      <Grid item xs={12}>
+                        <Divider sx={{ my: 2 }} />
+                        <Typography variant="subtitle2" fontWeight={700} gutterBottom>
+                          Informations complémentaires
+                        </Typography>
+                      </Grid>
                   <Grid item xs={12} md={6}>
                     <TextField
                       fullWidth
@@ -1015,7 +1469,7 @@ const CreateIHEPage = () => {
                               borderRadius: 2,
                             },
                           }}
-                          helperText="Nom du client/propriétaire d'origine"
+                          helperText="Nom du client ou propriétaire d'origine du bien. Cette information permet de tracer l'origine de l'IHE et de comprendre le contexte de son acquisition (défaillance de paiement, dation en paiement, etc.). Utile pour les audits et la traçabilité."
                     />
                   </Grid>
                   <Grid item xs={12} md={6}>
@@ -1033,6 +1487,7 @@ const CreateIHEPage = () => {
                               borderRadius: 2,
                             },
                           }}
+                      helperText="Notes internes réservées à l'usage de la banque : informations confidentielles, stratégies de cession, contacts, négociations en cours, obstacles identifiés, etc. Ces notes ne sont pas destinées à être partagées avec des tiers."
                     />
                   </Grid>
                       <Grid item xs={12}>
@@ -1050,6 +1505,7 @@ const CreateIHEPage = () => {
                               borderRadius: 2,
                             },
                           }}
+                      helperText="Commentaires généraux sur l'IHE : observations, contexte particulier, historique, informations complémentaires utiles pour le suivi et la gestion. Ces commentaires peuvent être partagés dans les rapports internes."
                     />
                   </Grid>
                 </Grid>

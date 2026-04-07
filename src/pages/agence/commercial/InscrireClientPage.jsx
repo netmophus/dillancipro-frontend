@@ -18,7 +18,6 @@ import {
   LinearProgress,
   Avatar,
   Stack,
-  Divider,
   Chip,
   Paper,
   CircularProgress,
@@ -40,7 +39,6 @@ import {
   DialogActions,
 } from "@mui/material";
 import {
-  PersonAdd,
   ArrowBack,
   ArrowForward,
   CheckCircle,
@@ -280,60 +278,154 @@ const InscrireClientPage = () => {
 
   return (
     <PageLayout>
-      <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
-        {/* En-tête */}
-        <Box sx={{ mb: 4 }}>
-          <Button
-            startIcon={<ArrowBack />}
-            onClick={() => navigate("/agence/commercial/dashboard")}
-            sx={{ mb: 2 }}
-          >
-            Retour au dashboard
-          </Button>
-          
-          <Box display="flex" alignItems="center" gap={2}>
-            <Avatar sx={{ bgcolor: "primary.main", width: 64, height: 64 }}>
-              <People fontSize="large" />
-            </Avatar>
-            <Box>
-              <Typography variant="h4" fontWeight="bold">
-                Gestion des Clients
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Inscrivez et gérez vos clients
-              </Typography>
+      <Box sx={{ width: "100%", minHeight: "100vh", bgcolor: "#f5f7fa" }}>
+        {/* En-tête modernisé */}
+        <Box
+          sx={{
+            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            py: 6,
+            mb: 4,
+            width: "100%",
+            position: "relative",
+            overflow: "hidden",
+          }}
+        >
+          <Box
+            sx={{
+              position: "absolute",
+              top: -100,
+              right: -100,
+              width: 400,
+              height: 400,
+              borderRadius: "50%",
+              background: "rgba(255, 255, 255, 0.1)",
+              filter: "blur(80px)",
+            }}
+          />
+          <Container maxWidth="xl">
+            <Box display="flex" alignItems="center" gap={3} position="relative" zIndex={1}>
+              <Button
+                startIcon={<ArrowBack />}
+                onClick={() => navigate("/agence/commercial/dashboard")}
+                sx={{
+                  background: "rgba(255, 255, 255, 0.2)",
+                  backdropFilter: "blur(10px)",
+                  color: "white",
+                  border: "1px solid rgba(255, 255, 255, 0.3)",
+                  fontWeight: 600,
+                  px: 3,
+                  py: 1.5,
+                  borderRadius: 2,
+                  textTransform: "none",
+                  "&:hover": {
+                    background: "rgba(255, 255, 255, 0.3)",
+                    transform: "translateY(-2px)",
+                    boxShadow: "0 8px 24px rgba(0, 0, 0, 0.2)",
+                  },
+                  transition: "all 0.3s ease",
+                }}
+              >
+                Retour au dashboard
+              </Button>
+              <Box
+                sx={{
+                  p: 2,
+                  borderRadius: 3,
+                  background: "rgba(255, 255, 255, 0.2)",
+                  backdropFilter: "blur(10px)",
+                  boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
+                }}
+              >
+                <People sx={{ fontSize: 48, color: "white" }} />
+              </Box>
+              <Box>
+                <Typography 
+                  variant="h3" 
+                  fontWeight={700}
+                  sx={{
+                    color: "white",
+                    mb: 1,
+                  }}
+                >
+                  Gestion des Clients
+                </Typography>
+                <Typography 
+                  variant="h6" 
+                  sx={{
+                    color: "rgba(255, 255, 255, 0.9)",
+                    fontWeight: 400,
+                  }}
+                >
+                  Inscrivez et gérez vos clients
+                </Typography>
+              </Box>
             </Box>
-          </Box>
+          </Container>
         </Box>
+
+        <Container maxWidth="xl" sx={{ mb: 4 }}>
 
         {/* Alertes */}
         {success && (
           <Fade in={!!success}>
-            <Alert severity="success" sx={{ mb: 3 }} onClose={() => setSuccess("")}>
+            <Alert 
+              severity="success" 
+              sx={{ 
+                mb: 3,
+                borderRadius: 2,
+                boxShadow: "0 4px 12px rgba(76, 175, 80, 0.15)",
+              }} 
+              onClose={() => setSuccess("")}
+            >
               {success}
             </Alert>
           </Fade>
         )}
         {error && (
           <Fade in={!!error}>
-            <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError("")}>
+            <Alert 
+              severity="error" 
+              sx={{ 
+                mb: 3,
+                borderRadius: 2,
+                boxShadow: "0 4px 12px rgba(211, 47, 47, 0.15)",
+              }} 
+              onClose={() => setError("")}
+            >
               {error}
             </Alert>
           </Fade>
         )}
 
         {/* Onglets */}
-        <Paper sx={{ mb: 3 }}>
+        <Paper
+          elevation={0}
+          sx={{
+            mb: 3,
+            background: "linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%)",
+            borderRadius: 3,
+            border: "1px solid rgba(102, 126, 234, 0.1)",
+          }}
+        >
           <Tabs
             value={activeTab}
             onChange={(_, newValue) => setActiveTab(newValue)}
             variant="fullWidth"
             sx={{
-              borderBottom: 1,
-              borderColor: "divider",
               "& .MuiTab-root": {
-                fontWeight: "bold",
+                textTransform: "none",
+                fontWeight: 600,
                 fontSize: "1rem",
+                minHeight: 64,
+                color: "text.secondary",
+                "&.Mui-selected": {
+                  color: "primary.main",
+                },
+              },
+              "& .MuiTabs-indicator": {
+                height: 3,
+                borderRadius: "3px 3px 0 0",
+                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
               },
             }}
           >
@@ -344,23 +436,81 @@ const InscrireClientPage = () => {
 
         {/* ONGLET 1 : Inscription */}
         {activeTab === 0 && (
-          <Card elevation={3}>
-            <CardContent sx={{ p: 4 }}>
-              {/* Stepper */}
-              <Stepper activeStep={currentStep} sx={{ mb: 4 }}>
-                {steps.map((label) => (
-                  <Step key={label}>
-                    <StepLabel>{label}</StepLabel>
-                  </Step>
-                ))}
-              </Stepper>
+          <Box
+            sx={{
+              background: "linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%)",
+              borderRadius: 3,
+              p: 3,
+            }}
+          >
+            <Card 
+              elevation={0}
+              sx={{
+                borderRadius: 3,
+                border: "1px solid rgba(102, 126, 234, 0.2)",
+                background: "white",
+                overflow: "hidden",
+                boxShadow: "0 8px 32px rgba(102, 126, 234, 0.15)",
+              }}
+            >
+              <CardContent sx={{ p: 4 }}>
+                {/* Stepper */}
+                <Paper
+                  elevation={0}
+                  sx={{
+                    p: 3,
+                    mb: 4,
+                    background: "linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)",
+                    borderRadius: 2,
+                    border: "1px solid rgba(102, 126, 234, 0.15)",
+                  }}
+                >
+                  <Stepper 
+                    activeStep={currentStep} 
+                    sx={{
+                      "& .MuiStepLabel-root .Mui-completed": {
+                        color: "success.main",
+                      },
+                      "& .MuiStepLabel-root .Mui-active": {
+                        color: "primary.main",
+                      },
+                    }}
+                  >
+                    {steps.map((label) => (
+                      <Step key={label}>
+                        <StepLabel>{label}</StepLabel>
+                      </Step>
+                    ))}
+                  </Stepper>
+                </Paper>
 
-              <Box component="form" onSubmit={handleSubmit}>
+                <Box component="form" onSubmit={handleSubmit}>
                 {/* ÉTAPE 1 : Identité */}
                 {currentStep === 0 && (
-                  <Box>
-                    <Typography variant="h6" fontWeight="bold" gutterBottom mb={3}>
-                      <AccountCircle sx={{ verticalAlign: "middle", mr: 1 }} />
+                  <Box
+                    sx={{
+                      p: 4,
+                      borderRadius: 2,
+                      background: "linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%)",
+                      border: "1px solid rgba(102, 126, 234, 0.1)",
+                    }}
+                  >
+                    <Typography 
+                      variant="h5" 
+                      fontWeight={700} 
+                      gutterBottom 
+                      mb={3}
+                      sx={{
+                        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                        backgroundClip: "text",
+                        WebkitBackgroundClip: "text",
+                        WebkitTextFillColor: "transparent",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1,
+                      }}
+                    >
+                      <AccountCircle sx={{ fontSize: 32 }} />
                       Informations d'identification
                     </Typography>
                     
@@ -374,6 +524,12 @@ const InscrireClientPage = () => {
                           fullWidth
                           required
                           placeholder="Ex: Jean Dupont"
+                          sx={{
+                            "& .MuiOutlinedInput-root": {
+                              borderRadius: 2,
+                              backgroundColor: "white",
+                            },
+                          }}
                           InputProps={{
                             startAdornment: (
                               <InputAdornment position="start">
@@ -394,6 +550,12 @@ const InscrireClientPage = () => {
                           required
                           placeholder="+22790210027"
                           helperText="Format: +XXX ou numéro local"
+                          sx={{
+                            "& .MuiOutlinedInput-root": {
+                              borderRadius: 2,
+                              backgroundColor: "white",
+                            },
+                          }}
                           InputProps={{
                             startAdornment: (
                               <InputAdornment position="start">
@@ -413,6 +575,12 @@ const InscrireClientPage = () => {
                           onChange={handleChange}
                           fullWidth
                           placeholder="client@exemple.com"
+                          sx={{
+                            "& .MuiOutlinedInput-root": {
+                              borderRadius: 2,
+                              backgroundColor: "white",
+                            },
+                          }}
                           InputProps={{
                             startAdornment: (
                               <InputAdornment position="start">
@@ -433,6 +601,12 @@ const InscrireClientPage = () => {
                           fullWidth
                           required
                           helperText="Minimum 6 caractères"
+                          sx={{
+                            "& .MuiOutlinedInput-root": {
+                              borderRadius: 2,
+                              backgroundColor: "white",
+                            },
+                          }}
                           InputProps={{
                             startAdornment: (
                               <InputAdornment position="start">
@@ -471,9 +645,30 @@ const InscrireClientPage = () => {
 
                 {/* ÉTAPE 2 : Informations complémentaires */}
                 {currentStep === 1 && (
-                  <Box>
-                    <Typography variant="h6" fontWeight="bold" gutterBottom mb={3}>
-                      <BadgeIcon sx={{ verticalAlign: "middle", mr: 1 }} />
+                  <Box
+                    sx={{
+                      p: 4,
+                      borderRadius: 2,
+                      background: "linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%)",
+                      border: "1px solid rgba(102, 126, 234, 0.1)",
+                    }}
+                  >
+                    <Typography 
+                      variant="h5" 
+                      fontWeight={700} 
+                      gutterBottom 
+                      mb={3}
+                      sx={{
+                        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                        backgroundClip: "text",
+                        WebkitBackgroundClip: "text",
+                        WebkitTextFillColor: "transparent",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1,
+                      }}
+                    >
+                      <BadgeIcon sx={{ fontSize: 32 }} />
                       Informations complémentaires (optionnel)
                     </Typography>
                     
@@ -487,6 +682,12 @@ const InscrireClientPage = () => {
                           onChange={handleChange}
                           fullWidth
                           InputLabelProps={{ shrink: true }}
+                          sx={{
+                            "& .MuiOutlinedInput-root": {
+                              borderRadius: 2,
+                              backgroundColor: "white",
+                            },
+                          }}
                         />
                       </Grid>
 
@@ -498,6 +699,12 @@ const InscrireClientPage = () => {
                           onChange={handleChange}
                           fullWidth
                           placeholder="Ex: Enseignant, Commerçant..."
+                          sx={{
+                            "& .MuiOutlinedInput-root": {
+                              borderRadius: 2,
+                              backgroundColor: "white",
+                            },
+                          }}
                         />
                       </Grid>
 
@@ -509,6 +716,12 @@ const InscrireClientPage = () => {
                           value={formData.typeIdentite}
                           onChange={handleChange}
                           fullWidth
+                          sx={{
+                            "& .MuiOutlinedInput-root": {
+                              borderRadius: 2,
+                              backgroundColor: "white",
+                            },
+                          }}
                         >
                           <MenuItem value="">Non spécifié</MenuItem>
                           <MenuItem value="CNI">Carte Nationale d'Identité</MenuItem>
@@ -526,6 +739,12 @@ const InscrireClientPage = () => {
                           onChange={handleChange}
                           fullWidth
                           placeholder="Ex: CI123456789"
+                          sx={{
+                            "& .MuiOutlinedInput-root": {
+                              borderRadius: 2,
+                              backgroundColor: "white",
+                            },
+                          }}
                         />
                       </Grid>
                     </Grid>
@@ -534,9 +753,30 @@ const InscrireClientPage = () => {
 
                 {/* ÉTAPE 3 : Adresse */}
                 {currentStep === 2 && (
-                  <Box>
-                    <Typography variant="h6" fontWeight="bold" gutterBottom mb={3}>
-                      <LocationCity sx={{ verticalAlign: "middle", mr: 1 }} />
+                  <Box
+                    sx={{
+                      p: 4,
+                      borderRadius: 2,
+                      background: "linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%)",
+                      border: "1px solid rgba(102, 126, 234, 0.1)",
+                    }}
+                  >
+                    <Typography 
+                      variant="h5" 
+                      fontWeight={700} 
+                      gutterBottom 
+                      mb={3}
+                      sx={{
+                        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                        backgroundClip: "text",
+                        WebkitBackgroundClip: "text",
+                        WebkitTextFillColor: "transparent",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1,
+                      }}
+                    >
+                      <LocationCity sx={{ fontSize: 32 }} />
                       Adresse (optionnel)
                     </Typography>
                     
@@ -551,6 +791,12 @@ const InscrireClientPage = () => {
                           multiline
                           rows={2}
                           placeholder="Rue, numéro, bâtiment..."
+                          sx={{
+                            "& .MuiOutlinedInput-root": {
+                              borderRadius: 2,
+                              backgroundColor: "white",
+                            },
+                          }}
                           InputProps={{
                             startAdornment: (
                               <InputAdornment position="start">
@@ -569,6 +815,12 @@ const InscrireClientPage = () => {
                           onChange={handleChange}
                           fullWidth
                           placeholder="Ex: Niamey"
+                          sx={{
+                            "& .MuiOutlinedInput-root": {
+                              borderRadius: 2,
+                              backgroundColor: "white",
+                            },
+                          }}
                           InputProps={{
                             startAdornment: (
                               <InputAdornment position="start">
@@ -587,6 +839,12 @@ const InscrireClientPage = () => {
                           onChange={handleChange}
                           fullWidth
                           placeholder="Ex: Zone 1"
+                          sx={{
+                            "& .MuiOutlinedInput-root": {
+                              borderRadius: 2,
+                              backgroundColor: "white",
+                            },
+                          }}
                         />
                       </Grid>
 
@@ -598,6 +856,12 @@ const InscrireClientPage = () => {
                           onChange={handleChange}
                           fullWidth
                           placeholder="Ex: 01 BP 1234"
+                          sx={{
+                            "& .MuiOutlinedInput-root": {
+                              borderRadius: 2,
+                              backgroundColor: "white",
+                            },
+                          }}
                         />
                       </Grid>
                     </Grid>
@@ -606,13 +870,43 @@ const InscrireClientPage = () => {
 
                 {/* ÉTAPE 4 : Confirmation */}
                 {currentStep === 3 && (
-                  <Box>
-                    <Typography variant="h6" fontWeight="bold" gutterBottom mb={3}>
-                      <CheckCircle sx={{ verticalAlign: "middle", mr: 1, color: "success.main" }} />
+                  <Box
+                    sx={{
+                      p: 4,
+                      borderRadius: 2,
+                      background: "linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%)",
+                      border: "1px solid rgba(102, 126, 234, 0.1)",
+                    }}
+                  >
+                    <Typography 
+                      variant="h5" 
+                      fontWeight={700} 
+                      gutterBottom 
+                      mb={3}
+                      sx={{
+                        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                        backgroundClip: "text",
+                        WebkitBackgroundClip: "text",
+                        WebkitTextFillColor: "transparent",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1,
+                      }}
+                    >
+                      <CheckCircle sx={{ fontSize: 32, color: "success.main" }} />
                       Vérification des informations
                     </Typography>
 
-                    <Paper variant="outlined" sx={{ p: 3, bgcolor: "grey.50" }}>
+                    <Paper 
+                      variant="outlined" 
+                      sx={{ 
+                        p: 3, 
+                        background: "white",
+                        borderRadius: 2,
+                        border: "1px solid rgba(102, 126, 234, 0.15)",
+                        boxShadow: "0 2px 8px rgba(102, 126, 234, 0.1)",
+                      }}
+                    >
                       <Grid container spacing={2}>
                         <Grid item xs={12} md={6}>
                           <Typography variant="caption" color="text.secondary">Nom complet</Typography>
@@ -636,12 +930,18 @@ const InscrireClientPage = () => {
                 )}
 
                 {/* Navigation */}
-                <Box sx={{ display: "flex", justifyContent: "space-between", mt: 4, pt: 3, borderTop: 1, borderColor: "divider" }}>
+                <Box sx={{ display: "flex", justifyContent: "space-between", mt: 4, pt: 3, borderTop: 1, borderColor: "rgba(102, 126, 234, 0.1)" }}>
                   <Button
                     variant="outlined"
                     startIcon={<ArrowBack />}
                     onClick={prevStep}
                     disabled={currentStep === 0 || submitting}
+                    sx={{
+                      borderRadius: 2,
+                      textTransform: "none",
+                      fontWeight: 600,
+                      px: 3,
+                    }}
                   >
                     Précédent
                   </Button>
@@ -653,6 +953,23 @@ const InscrireClientPage = () => {
                         endIcon={<ArrowForward />}
                         onClick={nextStep}
                         disabled={!stepValid}
+                        sx={{
+                          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                          boxShadow: "0 4px 14px rgba(102, 126, 234, 0.4)",
+                          borderRadius: 2,
+                          textTransform: "none",
+                          fontWeight: 700,
+                          px: 4,
+                          "&:hover": {
+                            background: "linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)",
+                            boxShadow: "0 6px 20px rgba(102, 126, 234, 0.5)",
+                            transform: "translateY(-2px)",
+                          },
+                          "&:disabled": {
+                            background: "linear-gradient(135deg, #93c5fd 0%, #60a5fa 100%)",
+                          },
+                          transition: "all 0.3s ease",
+                        }}
                       >
                         Suivant
                       </Button>
@@ -664,7 +981,25 @@ const InscrireClientPage = () => {
                         startIcon={
                           submitting ? <CircularProgress size={20} color="inherit" /> : <CheckCircle />
                         }
-                        sx={{ minWidth: 180, py: 1.5, fontSize: "1rem", fontWeight: "bold" }}
+                        sx={{ 
+                          minWidth: 180, 
+                          py: 1.5, 
+                          fontSize: "1rem", 
+                          fontWeight: 700,
+                          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                          boxShadow: "0 4px 14px rgba(102, 126, 234, 0.4)",
+                          borderRadius: 2,
+                          textTransform: "none",
+                          "&:hover": {
+                            background: "linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)",
+                            boxShadow: "0 6px 20px rgba(102, 126, 234, 0.5)",
+                            transform: "translateY(-2px)",
+                          },
+                          "&:disabled": {
+                            background: "linear-gradient(135deg, #93c5fd 0%, #60a5fa 100%)",
+                          },
+                          transition: "all 0.3s ease",
+                        }}
                       >
                         {submitting ? "Inscription..." : "Confirmer l'inscription"}
                       </Button>
@@ -674,20 +1009,51 @@ const InscrireClientPage = () => {
               </Box>
             </CardContent>
           </Card>
+          </Box>
         )}
 
         {/* ONGLET 2 : Liste des clients */}
         {activeTab === 1 && (
-          <Card elevation={3}>
+          <Card 
+            elevation={0}
+            sx={{
+              borderRadius: 3,
+              border: "1px solid rgba(0, 0, 0, 0.08)",
+              background: "white",
+            }}
+          >
             <CardContent>
               <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-                <Typography variant="h6" fontWeight="bold">
+                <Typography 
+                  variant="h5" 
+                  fontWeight={700}
+                  sx={{
+                    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                    backgroundClip: "text",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                  }}
+                >
                   👥 Mes Clients ({clients.length})
                 </Typography>
                 <Button
                   variant="contained"
                   startIcon={<Add />}
                   onClick={() => setActiveTab(0)}
+                  sx={{
+                    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                    boxShadow: "0 4px 14px rgba(102, 126, 234, 0.4)",
+                    borderRadius: 2,
+                    textTransform: "none",
+                    fontWeight: 700,
+                    px: 3,
+                    "&:hover": {
+                      background: "linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)",
+                      boxShadow: "0 6px 20px rgba(102, 126, 234, 0.5)",
+                      transform: "translateY(-2px)",
+                    },
+                    transition: "all 0.3s ease",
+                  }}
                 >
                   Nouveau client
                 </Button>
@@ -699,10 +1065,22 @@ const InscrireClientPage = () => {
                 </Box>
               ) : (
                 <>
-                  <TableContainer component={Paper} variant="outlined">
+                  <TableContainer 
+                    component={Paper} 
+                    elevation={0}
+                    sx={{
+                      borderRadius: 3,
+                      border: "1px solid rgba(0, 0, 0, 0.08)",
+                      overflow: "hidden",
+                    }}
+                  >
                     <Table>
-                      <TableHead sx={{ bgcolor: "grey.100" }}>
-                        <TableRow>
+                      <TableHead>
+                        <TableRow
+                          sx={{
+                            background: "linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%)",
+                          }}
+                        >
                           <TableCell><strong>Client</strong></TableCell>
                           <TableCell><strong>Téléphone</strong></TableCell>
                           <TableCell><strong>Email</strong></TableCell>
@@ -723,41 +1101,97 @@ const InscrireClientPage = () => {
                           clients
                             .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                             .map((client) => (
-                              <TableRow key={client._id} hover>
+                              <TableRow 
+                                key={client._id} 
+                                hover
+                                sx={{
+                                  "&:hover": {
+                                    background: "rgba(102, 126, 234, 0.04)",
+                                  },
+                                  transition: "background 0.2s ease",
+                                }}
+                              >
                                 <TableCell>
-                                  <Box display="flex" alignItems="center" gap={1}>
-                                    <Avatar sx={{ width: 32, height: 32, bgcolor: "primary.main" }}>
+                                  <Box display="flex" alignItems="center" gap={1.5}>
+                                    <Avatar 
+                                      sx={{ 
+                                        width: 40, 
+                                        height: 40, 
+                                        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                                        fontWeight: 700,
+                                      }}
+                                    >
                                       {(client.fullName || "?").charAt(0).toUpperCase()}
                                     </Avatar>
-                                    <Typography variant="body2" fontWeight="bold">
+                                    <Typography variant="body2" fontWeight={600}>
                                       {client.fullName || "Sans nom"}
                                     </Typography>
                                   </Box>
                                 </TableCell>
                                 <TableCell>
-                                  <Chip label={client.phone} size="small" variant="outlined" icon={<Phone />} />
+                                  <Chip 
+                                    label={client.phone} 
+                                    size="small" 
+                                    variant="outlined" 
+                                    icon={<Phone />}
+                                    sx={{
+                                      fontWeight: 500,
+                                    }}
+                                  />
                                 </TableCell>
-                                <TableCell>{client.email || "-"}</TableCell>
                                 <TableCell>
-                                  <Switch
-                                    checked={client.isActive}
-                                    onChange={() => handleToggleActive(client._id, client.isActive)}
-                                    color="success"
-                                  />
-                                  <Chip
-                                    label={client.isActive ? "Actif" : "Inactif"}
-                                    size="small"
-                                    color={client.isActive ? "success" : "default"}
-                                  />
+                                  <Typography variant="body2" fontWeight={500}>
+                                    {client.email || "-"}
+                                  </Typography>
+                                </TableCell>
+                                <TableCell>
+                                  <Box display="flex" alignItems="center" gap={1}>
+                                    <Switch
+                                      checked={client.isActive}
+                                      onChange={() => handleToggleActive(client._id, client.isActive)}
+                                      color="success"
+                                    />
+                                    <Chip
+                                      label={client.isActive ? "Actif" : "Inactif"}
+                                      size="small"
+                                      color={client.isActive ? "success" : "default"}
+                                      sx={{
+                                        fontWeight: 600,
+                                        boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+                                      }}
+                                    />
+                                  </Box>
                                 </TableCell>
                                 <TableCell align="right">
                                   <Tooltip title="Modifier">
-                                    <IconButton size="small" color="primary" onClick={() => openEditDialog(client)}>
+                                    <IconButton 
+                                      size="small" 
+                                      onClick={() => openEditDialog(client)}
+                                      sx={{
+                                        color: "primary.main",
+                                        "&:hover": {
+                                          background: "rgba(102, 126, 234, 0.1)",
+                                          transform: "scale(1.1)",
+                                        },
+                                        transition: "all 0.2s ease",
+                                      }}
+                                    >
                                       <Edit fontSize="small" />
                                     </IconButton>
                                   </Tooltip>
                                   <Tooltip title="Supprimer">
-                                    <IconButton size="small" color="error" onClick={() => handleDelete(client._id)}>
+                                    <IconButton 
+                                      size="small" 
+                                      onClick={() => handleDelete(client._id)}
+                                      sx={{
+                                        color: "error.main",
+                                        "&:hover": {
+                                          background: "rgba(211, 47, 47, 0.1)",
+                                          transform: "scale(1.1)",
+                                        },
+                                        transition: "all 0.2s ease",
+                                      }}
+                                    >
                                       <Delete fontSize="small" />
                                     </IconButton>
                                   </Tooltip>
@@ -783,14 +1217,40 @@ const InscrireClientPage = () => {
             </CardContent>
           </Card>
         )}
-      </Container>
 
-      {/* DIALOG D'ÉDITION */}
-      <Dialog open={editDialog} onClose={() => setEditDialog(false)} maxWidth="sm" fullWidth>
+        {/* DIALOG D'ÉDITION */}
+        <Dialog 
+        open={editDialog} 
+        onClose={() => setEditDialog(false)} 
+        maxWidth="sm" 
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+          },
+        }}
+      >
         <DialogTitle>
-          <Box display="flex" alignItems="center" gap={1}>
-            <Edit color="primary" />
-            <Typography variant="h6" fontWeight="bold">
+          <Box display="flex" alignItems="center" gap={1.5}>
+            <Box
+              sx={{
+                p: 1,
+                borderRadius: 2,
+                background: "linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)",
+              }}
+            >
+              <Edit sx={{ color: "primary.main" }} />
+            </Box>
+            <Typography 
+              variant="h6" 
+              fontWeight={700}
+              sx={{
+                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                backgroundClip: "text",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+              }}
+            >
               Modifier le client
             </Typography>
           </Box>
@@ -804,6 +1264,11 @@ const InscrireClientPage = () => {
               onChange={handleEditChange}
               fullWidth
               required
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: 2,
+                },
+              }}
             />
             <TextField
               label="Téléphone"
@@ -812,6 +1277,11 @@ const InscrireClientPage = () => {
               onChange={handleEditChange}
               fullWidth
               required
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: 2,
+                },
+              }}
             />
             <TextField
               label="Email"
@@ -819,18 +1289,51 @@ const InscrireClientPage = () => {
               value={editFormData.email}
               onChange={handleEditChange}
               fullWidth
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: 2,
+                },
+              }}
             />
           </Stack>
         </DialogContent>
         <DialogActions sx={{ p: 2.5 }}>
-          <Button onClick={() => setEditDialog(false)} variant="outlined">
+          <Button 
+            onClick={() => setEditDialog(false)} 
+            variant="outlined"
+            sx={{
+              borderRadius: 2,
+              textTransform: "none",
+              fontWeight: 600,
+            }}
+          >
             Annuler
           </Button>
-          <Button onClick={handleUpdate} variant="contained" startIcon={<CheckCircle />}>
+          <Button 
+            onClick={handleUpdate} 
+            variant="contained" 
+            startIcon={<CheckCircle />}
+            sx={{
+              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+              boxShadow: "0 4px 14px rgba(102, 126, 234, 0.4)",
+              borderRadius: 2,
+              textTransform: "none",
+              fontWeight: 700,
+              px: 3,
+              "&:hover": {
+                background: "linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)",
+                boxShadow: "0 6px 20px rgba(102, 126, 234, 0.5)",
+                transform: "translateY(-2px)",
+              },
+              transition: "all 0.3s ease",
+            }}
+          >
             Enregistrer
           </Button>
         </DialogActions>
-      </Dialog>
+        </Dialog>
+        </Container>
+      </Box>
     </PageLayout>
   );
 };

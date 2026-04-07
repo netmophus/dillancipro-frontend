@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import LogoCSS from "./LogoCSS";
 import {
   AppBar,
   Toolbar,
@@ -183,150 +184,99 @@ const Navbar = () => {
       {/* Top Bar - Contact & Social */}
       <Box
         sx={{
-          bgcolor: "#000000",
-          py: 1.5,
+          bgcolor: "#0D2B4E",
+          py: 1,
           px: 3,
           display: { xs: "none", md: "flex" },
           justifyContent: "space-between",
           alignItems: "center",
-          borderBottom: "1px solid rgba(255,255,255,0.1)",
+          borderBottom: "2px solid #27AE60",
         }}
       >
         <Box display="flex" alignItems="center" gap={4}>
           <Box display="flex" alignItems="center" gap={1.5}>
             <Box
               sx={{
-                bgcolor: "#f44336",
+                bgcolor: "#1B5285",
                 borderRadius: "50%",
-                width: 36,
-                height: 36,
+                width: 32,
+                height: 32,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                boxShadow: "0 2px 8px rgba(244, 67, 54, 0.3)",
+                boxShadow: "0 2px 8px rgba(27,82,133,0.4)",
                 transition: "all 0.3s ease",
                 "&:hover": {
-                  bgcolor: "#d32f2f",
+                  bgcolor: "#27AE60",
                   transform: "scale(1.1)"
                 }
               }}
             >
               <Phone fontSize="small" sx={{ color: "white" }} />
             </Box>
-            <Typography variant="body2" sx={{ fontWeight: "600", color: "white" }}>
+            <Typography variant="body2" sx={{ fontWeight: "600", color: "white", fontSize: "0.82rem" }}>
               +22780648383
             </Typography>
           </Box>
           <Box display="flex" alignItems="center" gap={1.5}>
             <Box
               sx={{
-                bgcolor: "#f44336",
+                bgcolor: "#1B5285",
                 borderRadius: "50%",
-                width: 36,
-                height: 36,
+                width: 32,
+                height: 32,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                boxShadow: "0 2px 8px rgba(244, 67, 54, 0.3)",
+                boxShadow: "0 2px 8px rgba(27,82,133,0.4)",
                 transition: "all 0.3s ease",
                 "&:hover": {
-                  bgcolor: "#d32f2f",
+                  bgcolor: "#27AE60",
                   transform: "scale(1.1)"
                 }
               }}
             >
               <Email fontSize="small" sx={{ color: "white" }} />
             </Box>
-            <Typography variant="body2" sx={{ color: "white", opacity: 0.9 }}>
-              contact@dillancipro.ne
+            <Typography variant="body2" sx={{ color: "white", opacity: 0.9, fontSize: "0.82rem" }}>
+              contact@miznas-patrimoine.ne
             </Typography>
           </Box>
         </Box>
-        
+
         <Box display="flex" alignItems="center" gap={1}>
-          <Typography variant="body2" sx={{ color: "white", opacity: 0.8, mr: 2 }}>
+          <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.7)", mr: 1, fontSize: "0.78rem" }}>
             Suivez-nous :
           </Typography>
-          <IconButton 
-            size="small" 
-            sx={{ 
-              color: "white",
-              bgcolor: "#f44336",
-              borderRadius: "50%",
-              width: 36,
-              height: 36,
-              "&:hover": { 
-                bgcolor: "#d32f2f",
-                transform: "scale(1.1)"
-              },
-              transition: "all 0.3s ease",
-              boxShadow: "0 2px 8px rgba(244, 67, 54, 0.3)"
-            }}
-          >
-            <Facebook fontSize="small" />
-          </IconButton>
-          <IconButton 
-            size="small" 
-            sx={{ 
-              color: "white",
-              bgcolor: "#f44336",
-              borderRadius: "50%",
-              width: 36,
-              height: 36,
-              "&:hover": { 
-                bgcolor: "#d32f2f",
-                transform: "scale(1.1)"
-              },
-              transition: "all 0.3s ease",
-              boxShadow: "0 2px 8px rgba(244, 67, 54, 0.3)"
-            }}
-          >
-            <Twitter fontSize="small" />
-          </IconButton>
-          <IconButton 
-            size="small" 
-            sx={{ 
-              color: "white",
-              bgcolor: "#f44336",
-              borderRadius: "50%",
-              width: 36,
-              height: 36,
-              "&:hover": { 
-                bgcolor: "#d32f2f",
-                transform: "scale(1.1)"
-              },
-              transition: "all 0.3s ease",
-              boxShadow: "0 2px 8px rgba(244, 67, 54, 0.3)"
-            }}
-          >
-            <LinkedIn fontSize="small" />
-          </IconButton>
-          <IconButton 
-            size="small" 
-            sx={{ 
-              color: "white",
-              bgcolor: "#f44336",
-              borderRadius: "50%",
-              width: 36,
-              height: 36,
-              "&:hover": { 
-                bgcolor: "#d32f2f",
-                transform: "scale(1.1)"
-              },
-              transition: "all 0.3s ease",
-              boxShadow: "0 2px 8px rgba(244, 67, 54, 0.3)"
-            }}
-          >
-            <Instagram fontSize="small" />
-          </IconButton>
+          {[Facebook, Twitter, LinkedIn, Instagram].map((Icon, idx) => (
+            <IconButton
+              key={idx}
+              size="small"
+              sx={{
+                color: "white",
+                bgcolor: "#1B5285",
+                borderRadius: "50%",
+                width: 32,
+                height: 32,
+                "&:hover": {
+                  bgcolor: "#27AE60",
+                  transform: "scale(1.1)"
+                },
+                transition: "all 0.3s ease",
+                boxShadow: "0 2px 6px rgba(27,82,133,0.3)"
+              }}
+            >
+              <Icon sx={{ fontSize: 16 }} />
+            </IconButton>
+          ))}
         </Box>
       </Box>
 
       <AppBar
         position="sticky"
         sx={{
-          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-          boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+          background: "linear-gradient(135deg, #0D2B4E 0%, #1B5285 100%)",
+          boxShadow: "0 4px 20px rgba(13,43,78,0.35)",
         }}
       >
         <Toolbar
@@ -335,50 +285,9 @@ const Navbar = () => {
             px: { xs: 1.5, sm: 3 },
           }}
         >
-        {/* Logo */}
-        <Box
-          display="flex"
-          alignItems="center"
-          gap={1.5}
-          sx={{ flexGrow: 1, cursor: "pointer" }}
-          component={Link}
-          to="/"
-          style={{ textDecoration: "none", color: "inherit" }}
-        >
-          <Avatar
-            sx={{
-              bgcolor: "white",
-              color: "primary.main",
-              width: { xs: 40, md: 46 },
-              height: { xs: 40, md: 46 },
-              boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
-            }}
-          >
-            <Landscape />
-          </Avatar>
-          <Box>
-            <Typography
-              variant="h6"
-              fontWeight="bold"
-              sx={{
-                display: { xs: "none", sm: "block" },
-                letterSpacing: 0.4,
-                fontSize: { sm: "1.05rem", md: "1.2rem" },
-              }}
-            >
-              DillanciPro
-            </Typography>
-            <Typography
-              variant="caption"
-              sx={{
-                display: { xs: "none", md: "block" },
-                opacity: 0.9,
-                fontSize: "0.7rem",
-              }}
-            >
-              Manhajar dillancin gidaje
-        </Typography>
-          </Box>
+        {/* Logo CSS */}
+        <Box sx={{ flexGrow: 1 }}>
+          <LogoCSS size="md" />
         </Box>
 
         {user ? (
