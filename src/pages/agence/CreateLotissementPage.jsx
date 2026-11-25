@@ -35,7 +35,8 @@ import {
   Square,
   MyLocation,
   LocationCity,
-  Place,
+  LocationOn,
+  Map as MapIcon,
   PhotoLibrary,
   Clear,
   ViewList,
@@ -110,10 +111,34 @@ const StatTile = ({ icon: Icon, label, value, color }) => (
   </Box>
 );
 
+// Petit badge carré superposé sur l'image (indicateur d'information)
+const IndicatorBadge = ({ active, color, label, icon: Icon }) => (
+  <Tooltip title={label}>
+    <Box
+      role="img"
+      aria-label={label}
+      sx={{
+        width: 30,
+        height: 30,
+        borderRadius: "8px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        bgcolor: active ? color : "#9aa5b4",
+        color: "#fff",
+        boxShadow: "0 1px 4px rgba(15,23,42,0.25)",
+      }}
+    >
+      <Icon sx={{ fontSize: 18 }} />
+    </Box>
+  </Tooltip>
+);
+
 // Carte d'un lotissement dans la liste
 const LotissementCard = ({ lot, onEdit, onDelete }) => {
   const cover = lot.images?.[0];
   const hasGps = lot.localisation?.lat !== undefined && lot.localisation?.lng !== undefined;
+  const nbVideos = lot.videos?.length || 0;
   return (
     <Card
       elevation={0}
@@ -121,90 +146,113 @@ const LotissementCard = ({ lot, onEdit, onDelete }) => {
         height: "100%",
         display: "flex",
         flexDirection: "column",
-        borderRadius: 4,
+        borderRadius: "16px",
         overflow: "hidden",
         bgcolor: "#fff",
-        border: "1px solid rgba(15,23,42,0.08)",
-        boxShadow: "0 2px 8px rgba(15,23,42,0.05)",
+        border: "1px solid #e5e7eb",
+        boxShadow: "0 2px 12px rgba(15,23,42,0.08)",
         transition: "transform .2s ease, box-shadow .2s ease",
-        "&:hover": { transform: "translateY(-3px)", boxShadow: "0 8px 20px rgba(15,23,42,0.10)" },
+        "&:hover": { transform: "translateY(-3px)", boxShadow: "0 8px 20px rgba(15,23,42,0.12)" },
       }}
     >
-      <Box sx={{ position: "relative", height: 150, bgcolor: "rgba(48,48,249,0.07)" }}>
+      {/* 1. Image en bandeau : visible en entier (contain) sur fond neutre */}
+      <Box
+        sx={{
+          position: "relative",
+          height: 160,
+          bgcolor: "#d9e2ec",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
         {cover ? (
-          <Box component="img" src={cover} alt={lot.nom} sx={{ width: "100%", height: "100%", objectFit: "cover" }} />
-        ) : (
-          <Box sx={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: BLUE }}>
-            <Landscape sx={{ fontSize: 56, opacity: 0.55 }} />
-          </Box>
-        )}
-        {lot.images?.length > 1 && (
-          <Chip
-            size="small"
-            icon={<PhotoLibrary sx={{ color: "#fff !important" }} />}
-            label={lot.images.length}
-            sx={{ position: "absolute", bottom: 8, right: 8, bgcolor: "rgba(14,17,51,0.75)", color: "#fff", fontWeight: 600 }}
+          <Box
+            component="img"
+            src={cover}
+            alt={lot.nom}
+            sx={{ width: "100%", height: "100%", objectFit: "contain", objectPosition: "center" }}
           />
+        ) : (
+          <MapIcon sx={{ fontSize: 56, color: "#9aa5b4" }} />
         )}
+
+        {/* Indicateurs en haut à droite de l'image */}
+        <Stack direction="row" spacing={0.75} sx={{ position: "absolute", top: 10, right: 10 }}>
+          <IndicatorBadge
+            active={hasGps}
+            color={GREEN}
+            icon={LocationOn}
+            label={hasGps ? "Position renseignée" : "Position non renseignée"}
+          />
+          <IndicatorBadge
+            active={nbVideos > 0}
+            color={BLUE}
+            icon={VideoLibrary}
+            label={nbVideos > 0 ? `${nbVideos} vidéo(s)` : "Aucune vidéo"}
+          />
+        </Stack>
       </Box>
 
-      <Box sx={{ p: 2.5, display: "flex", flexDirection: "column", gap: 1.25, flex: 1 }}>
-        <Typography variant="h6" fontWeight="bold" sx={{ color: NIGHT, lineHeight: 1.25 }}>
-          {lot.nom}
-        </Typography>
+      {/* 2. Corps */}
+      <Box sx={{ p: "18px", display: "flex", flexDirection: "column", gap: 1.5, flex: 1 }}>
+        <Typography sx={{ fontSize: 18, fontWeight: 700, color: NIGHT, lineHeight: 1.25 }}>{lot.nom}</Typography>
 
         <Stack direction="row" flexWrap="wrap" gap={0.75}>
           {lot.zone?.nom && (
-            <Chip size="small" icon={<Apartment sx={{ color: `${BLUE} !important` }} />} label={lot.zone.nom} sx={{ bgcolor: "rgba(48,48,249,0.08)", color: BLUE, fontWeight: 600 }} />
+            <Chip
+              size="small"
+              icon={<Apartment sx={{ color: "#2020C8 !important" }} />}
+              label={lot.zone.nom}
+              sx={{ bgcolor: "#EAF0FF", color: "#2020C8", fontWeight: 600 }}
+            />
           )}
           {lot.quartier?.nom && (
-            <Chip size="small" icon={<Place sx={{ color: `${NIGHT} !important` }} />} label={lot.quartier.nom} sx={{ bgcolor: "rgba(14,17,51,0.06)", color: NIGHT, fontWeight: 600 }} />
-          )}
-          {lot.surfaceTotale > 0 && (
-            <Chip size="small" icon={<Square sx={{ color: `${GREEN} !important` }} />} label={`${fmt(lot.surfaceTotale)} m²`} sx={{ bgcolor: "rgba(10,124,79,0.08)", color: GREEN, fontWeight: 600 }} />
+            <Chip
+              size="small"
+              icon={<LocationOn sx={{ color: "#5b6573 !important" }} />}
+              label={lot.quartier.nom}
+              sx={{ bgcolor: "#f1f3f7", color: "#5b6573", fontWeight: 600 }}
+            />
           )}
         </Stack>
 
-        {lot.description ? (
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}
-          >
-            {lot.description}
-          </Typography>
-        ) : null}
+        <Stack direction="row" spacing={1} sx={{ alignItems: "stretch" }}>
+          <Box sx={{ flex: 1, minWidth: 0, bgcolor: "#E3F5EC", borderRadius: "10px", p: 1.25 }}>
+            <Typography sx={{ fontSize: 12, color: "#065F3D", fontWeight: 600 }}>Surface totale</Typography>
+            <Typography sx={{ fontSize: 18, fontWeight: 700, color: GREEN, lineHeight: 1.3 }}>
+              {lot.surfaceTotale > 0 ? `${fmt(lot.surfaceTotale)} m²` : "Non renseignée"}
+            </Typography>
+          </Box>
+          <Box sx={{ flex: 1, minWidth: 0, bgcolor: "#f1f3f7", borderRadius: "10px", p: 1.25 }}>
+            <Typography sx={{ fontSize: 12, color: "#5b6573", fontWeight: 600 }}>Composition</Typography>
+            <Typography
+              sx={{
+                fontSize: 14,
+                fontWeight: 600,
+                color: NIGHT,
+                lineHeight: 1.35,
+                display: "-webkit-box",
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: "vertical",
+                overflow: "hidden",
+              }}
+            >
+              {lot.description || "Non renseignée"}
+            </Typography>
+          </Box>
+        </Stack>
 
         <Box sx={{ flexGrow: 1 }} />
 
-        {/* Indicateurs (information seulement) */}
-        <Stack direction="row" spacing={1.5} alignItems="center">
-          <Tooltip title={hasGps ? "Position renseignée" : "Position non renseignée"}>
-            <MyLocation
-              role="img"
-              aria-label={hasGps ? "Position renseignée" : "Position non renseignée"}
-              fontSize="small"
-              sx={{ color: hasGps ? GREEN : "rgba(15,23,42,0.25)" }}
-            />
-          </Tooltip>
-          <Tooltip title={`${lot.videos?.length || 0} vidéo(s)`}>
-            <VideoLibrary
-              role="img"
-              aria-label={`${lot.videos?.length || 0} vidéo(s)`}
-              fontSize="small"
-              sx={{ color: lot.videos?.length ? BLUE : "rgba(15,23,42,0.25)" }}
-            />
-          </Tooltip>
-        </Stack>
-
-        {/* Barre d'actions en bas de carte */}
+        {/* 3. Barre d'actions */}
         <Box
           sx={{
             display: "flex",
             flexDirection: { xs: "column", sm: "row" },
             gap: 1,
             pt: 1.5,
-            borderTop: "1px solid #e5e7eb",
+            borderTop: "1px solid #eef1f5",
           }}
         >
           <Button
