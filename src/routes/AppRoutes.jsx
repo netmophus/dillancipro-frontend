@@ -33,6 +33,7 @@ import ProtectRoute from "./ProtectRoute";
 
 // Pages de création géographique supprimées - gérées par l'admin
 import CreateIlotPage from "../pages/agence/CreateIlotPage";
+import CreateLotissementPage from "../pages/agence/CreateLotissementPage";
 import CreateParcellePage from "../pages/agence/CreateParcellePage";
 import CreateParcelleMultiplePage from "../pages/agence/CreateParcelleMultiplePage";
 import EnrollerCommercialPage from "../pages/agence/EnrollerCommercialPage"; // ✅ Import du composant
@@ -454,6 +455,15 @@ const AppRoutes = () => {
   element={
     <ProtectRoute>
       <MinistereDashboardPage />
+    </ProtectRoute>
+  }
+/>
+
+<Route
+  path="/agence/create-lotissement"
+  element={
+    <ProtectRoute allowedRoles={["Agence"]}>
+      <CreateLotissementPage />
     </ProtectRoute>
   }
 />

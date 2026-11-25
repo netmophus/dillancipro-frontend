@@ -11,6 +11,7 @@ import {
   AddLocationAlt,
   Apartment,
   Home,
+  Landscape,
   PersonAdd,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
@@ -31,6 +32,7 @@ const AgenceMenu = () => {
   };
 
   const items = [
+    { label: "Lotissement", path: "/agence/create-lotissement", icon: Landscape },
     { label: "Îlot", path: "/agence/create-ilot", icon: Add },
     { label: "Parcelle", path: "/agence/create-parcelle", icon: AddLocationAlt },
     { label: "Bien immobilier", path: "/agence/create-bien", icon: Apartment },

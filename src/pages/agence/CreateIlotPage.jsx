@@ -56,6 +56,7 @@ import {
   PhotoCamera,
   Assessment,
   FormatListBulleted,
+  Landscape,
 } from "@mui/icons-material";
 import AgenceLayout from "../../components/agence/AgenceLayout";
 import AgencePageHeader from "../../components/agence/AgencePageHeader";
@@ -66,6 +67,7 @@ const CreateIlotPage = () => {
     numeroIlot: "",
     zone: "",
     quartier: "",
+    lotissement: "",
     surfaceTotale: "",
   });
 
@@ -77,6 +79,7 @@ const CreateIlotPage = () => {
   const [ilots, setIlots] = useState([]);
   const [zones, setZones] = useState([]);
   const [quartiers, setQuartiers] = useState([]);
+  const [lotissements, setLotissements] = useState([]);
   const [filteredQuartiers, setFilteredQuartiers] = useState([]);
   const [commerciaux, setCommerciaux] = useState([]);
   const [filteredIlots, setFilteredIlots] = useState([]);
@@ -106,6 +109,7 @@ const CreateIlotPage = () => {
     numeroIlot: "",
     zone: "",
     quartier: "",
+    lotissement: "",
     surfaceTotale: "",
   });
   const [filteredEditQuartiers, setFilteredEditQuartiers] = useState([]);
@@ -114,6 +118,7 @@ const CreateIlotPage = () => {
     fetchIlots();
     fetchZones();
     fetchQuartiers();
+    fetchLotissements();
   }, []);
 
   // Filtrer les quartiers selon la zone sélectionnée
@@ -181,6 +186,25 @@ const CreateIlotPage = () => {
     }
   };
 
+  const fetchLotissements = async () => {
+    try {
+      const res = await api.get("/agence/lotissements");
+      setLotissements(res.data || []);
+    } catch (err) {
+      console.error("Erreur chargement lotissements :", err);
+    }
+  };
+
+  // Lotissements de la zone choisie (sélecteur en cascade zone -> lotissement)
+  const lotissementsDeLaZone = lotissements.filter(
+    (l) => (l.zone?._id || l.zone) === formData.zone
+  );
+
+  // Lotissements de la zone de l'îlot en cours de modification
+  const lotissementsDeLaZoneEdit = lotissements.filter(
+    (l) => (l.zone?._id || l.zone) === editFormData.zone
+  );
+
   const fetchCommerciaux = async () => {
     try {
       const res = await api.get("/agence/commerciaux");
@@ -230,6 +254,9 @@ const CreateIlotPage = () => {
       formDataToSend.append("numeroIlot", formData.numeroIlot);
       formDataToSend.append("zone", formData.zone);
       formDataToSend.append("quartier", formData.quartier);
+      if (formData.lotissement) {
+        formDataToSend.append("lotissement", formData.lotissement);
+      }
       if (formData.surfaceTotale) {
         formDataToSend.append("surfaceTotale", formData.surfaceTotale);
       }
@@ -251,7 +278,7 @@ const CreateIlotPage = () => {
       });
       
       setSuccess("Îlot créé avec succès !");
-      setFormData({ numeroIlot: "", zone: "", quartier: "", surfaceTotale: "" });
+      setFormData({ numeroIlot: "", zone: "", quartier: "", lotissement: "", surfaceTotale: "" });
       setImageFiles([]);
       setImagePreviews([]);
       setVideos([]);
@@ -264,9 +291,9 @@ const CreateIlotPage = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => {
-      // Si on change la zone, réinitialiser le quartier
+      // Si on change la zone, réinitialiser le quartier et le lotissement
       if (name === "zone") {
-        return { ...prev, zone: value, quartier: "" };
+        return { ...prev, zone: value, quartier: "", lotissement: "" };
       }
       return { ...prev, [name]: value };
     });
@@ -275,9 +302,9 @@ const CreateIlotPage = () => {
   const handleEditChange = (e) => {
     const { name, value } = e.target;
     setEditFormData((prev) => {
-      // Si on change la zone, réinitialiser le quartier
+      // Si on change la zone, réinitialiser le quartier et le lotissement
       if (name === "zone") {
-        return { ...prev, zone: value, quartier: "" };
+        return { ...prev, zone: value, quartier: "", lotissement: "" };
       }
       return { ...prev, [name]: value };
     });
@@ -352,6 +379,7 @@ const CreateIlotPage = () => {
       numeroIlot: ilot.numeroIlot || "",
       zone: ilot.zone?._id || "",
       quartier: ilot.quartier?._id || "",
+      lotissement: ilot.lotissement?._id || "",
       surfaceTotale: ilot.surfaceTotale || "",
     });
     setFilteredEditQuartiers(quartiers);
@@ -471,6 +499,39 @@ const CreateIlotPage = () => {
                           );
                         })
                       )}
+                    </TextField>
+
+                    <TextField
+                      select
+                      label="Lotissement (facultatif)"
+                      name="lotissement"
+                      value={formData.lotissement}
+                      onChange={handleChange}
+                      fullWidth
+                      disabled={!formData.zone}
+                      helperText={
+                        !formData.zone
+                          ? "Sélectionnez d'abord une zone"
+                          : lotissementsDeLaZone.length === 0
+                          ? "Aucun lotissement dans cette zone"
+                          : ""
+                      }
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <Landscape color="action" />
+                          </InputAdornment>
+                        ),
+                      }}
+                    >
+                      <MenuItem value="">
+                        <em>Aucun lotissement</em>
+                      </MenuItem>
+                      {lotissementsDeLaZone.map((lot) => (
+                        <MenuItem key={lot._id} value={lot._id}>
+                          {lot.nom}
+                        </MenuItem>
+                      ))}
                     </TextField>
 
                     <TextField
@@ -985,6 +1046,31 @@ const CreateIlotPage = () => {
                   </MenuItem>
                 );
               })}
+            </TextField>
+            <TextField
+              select
+              label="Lotissement (facultatif)"
+              name="lotissement"
+              value={editFormData.lotissement}
+              onChange={handleEditChange}
+              fullWidth
+              disabled={!editFormData.zone}
+              helperText={
+                !editFormData.zone
+                  ? "Sélectionnez d'abord une zone"
+                  : lotissementsDeLaZoneEdit.length === 0
+                  ? "Aucun lotissement dans cette zone"
+                  : "Videz le champ pour détacher l'îlot de son lotissement"
+              }
+            >
+              <MenuItem value="">
+                <em>Aucun lotissement</em>
+              </MenuItem>
+              {lotissementsDeLaZoneEdit.map((lot) => (
+                <MenuItem key={lot._id} value={lot._id}>
+                  {lot.nom}
+                </MenuItem>
+              ))}
             </TextField>
             <TextField
               select
