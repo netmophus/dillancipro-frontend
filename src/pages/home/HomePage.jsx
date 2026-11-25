@@ -2320,7 +2320,7 @@ const parcellesToDisplay =
                 flexDirection: "column",
                 textAlign: "center",
                 borderRadius: { xs: 3, md: 4 },
-                background: "#ffffff",
+                background: `${feature.color}0F`,
                 backdropFilter: "blur(20px)",
                 border: `2px solid ${feature.color}25`,
                 boxShadow: `0 8px 32px ${feature.color}15, 0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.5)`,
@@ -2357,7 +2357,7 @@ const parcellesToDisplay =
                   transform: { xs: "none", md: "translateY(-12px) scale(1.02)" },
                   boxShadow: `0 20px 60px ${feature.color}30, 0 8px 24px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.6)`,
                   borderColor: `${feature.color}40`,
-                  background: "#ffffff",
+                  background: `${feature.color}0F`,
                   "&::before": {
                     transform: "scaleX(1)",
                   },
@@ -2400,18 +2400,16 @@ const parcellesToDisplay =
                     "&::before": {
                       content: '""',
                       position: "absolute",
-                      inset: -4,
+                      inset: 0,
                       borderRadius: "50%",
-                      background: `${feature.gradient[0]}`,
-                      opacity: 0.3,
-                      filter: "blur(12px)",
-                      transition: "opacity 0.4s ease",
+                      boxShadow: `0 0 0 8px ${feature.color}14`,
+                      transition: "box-shadow 0.4s ease",
                     },
                     "&:hover": {
                       transform: "scale(1.1) rotate(5deg)",
                       boxShadow: `0 16px 50px ${feature.color}40, 0 6px 16px ${feature.color}30`,
                       "&::before": {
-                        opacity: 0.5,
+                        boxShadow: `0 0 0 10px ${feature.color}1F`,
                       },
                     },
                   }}
