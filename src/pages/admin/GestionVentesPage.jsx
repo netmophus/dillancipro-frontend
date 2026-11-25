@@ -20,7 +20,6 @@ import {
   IconButton,
   Tooltip,
   Dialog,
-  DialogTitle,
   DialogContent,
   DialogActions,
   TextField,
@@ -44,10 +43,58 @@ import {
   AttachMoney,
   ShoppingCart,
   TrendingUp,
+  Person,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import PageLayout from "../../components/shared/PageLayout";
+import PageLayout from "../../components/admin/AdminLayout";
 import api from "../../services/api";
+
+// En-tête de dialogue moderne, coloré, réutilisable
+const DialogHeader = ({ icon: Icon, title, subtitle, color, onClose }) => (
+  <Box
+    sx={{
+      p: 3,
+      background: `linear-gradient(135deg, ${color} 0%, ${color}cc 100%)`,
+      color: "white",
+      position: "relative",
+    }}
+  >
+    <IconButton
+      onClick={onClose}
+      sx={{ position: "absolute", top: 12, right: 12, color: "white", "&:hover": { bgcolor: "rgba(255,255,255,0.15)" } }}
+    >
+      <Close />
+    </IconButton>
+    <Stack direction="row" spacing={2} alignItems="center">
+      <Avatar sx={{ bgcolor: "rgba(255,255,255,0.22)", width: 52, height: 52 }}>
+        <Icon fontSize="large" />
+      </Avatar>
+      <Box>
+        <Typography variant="h6" fontWeight="bold">{title}</Typography>
+        {subtitle && <Typography variant="body2" sx={{ opacity: 0.9 }}>{subtitle}</Typography>}
+      </Box>
+    </Stack>
+  </Box>
+);
+
+// Bloc récapitulatif de la vente sélectionnée
+const VenteInfoBox = ({ vente, formatMoney }) => (
+  <Box sx={{ p: 2, borderRadius: 2, bgcolor: "#f7f9fc", border: "1px solid #eef2f7", mb: 2.5 }}>
+    <Typography variant="subtitle1" fontWeight="bold">{vente?.patrimoineId?.titre || "N/A"}</Typography>
+    <Stack direction="row" alignItems="center" spacing={0.75} mt={0.5}>
+      <Person sx={{ fontSize: 16, color: "text.secondary" }} />
+      <Typography variant="body2" color="text.secondary">
+        {vente?.vendeurId?.fullName || "N/A"}
+        {vente?.vendeurId?.phone ? ` · ${vente.vendeurId.phone}` : ""}
+      </Typography>
+    </Stack>
+    <Typography variant="body2" sx={{ mt: 0.5 }}>
+      Prix demandé : <strong>{formatMoney(vente?.prixVente)}</strong>
+    </Typography>
+  </Box>
+);
+
+const FIELD_SX = { "& .MuiOutlinedInput-root": { borderRadius: 2.5 } };
 
 const GestionVentesPage = () => {
   const navigate = useNavigate();
@@ -220,14 +267,23 @@ const GestionVentesPage = () => {
   );
 
   const KPICard = ({ title, value, subtitle, icon: Icon, color }) => (
-    <Card elevation={3} sx={{ height: "100%", borderLeft: `4px solid ${color}` }}>
+    <Card
+      elevation={0}
+      sx={{
+        height: "100%",
+        borderRadius: 3,
+        border: "1px solid #e3e8ef",
+        transition: "all 0.25s ease",
+        "&:hover": { transform: "translateY(-3px)", boxShadow: `0 8px 24px ${color}22` },
+      }}
+    >
       <CardContent>
         <Box display="flex" justifyContent="space-between" alignItems="flex-start">
           <Box flex={1}>
             <Typography color="text.secondary" variant="body2" gutterBottom>
               {title}
             </Typography>
-            <Typography variant="h4" fontWeight="bold" color={color} sx={{ mb: 1 }}>
+            <Typography variant="h4" fontWeight="bold" sx={{ color, mb: 0.5 }}>
               {value}
             </Typography>
             {subtitle && (
@@ -236,8 +292,8 @@ const GestionVentesPage = () => {
               </Typography>
             )}
           </Box>
-          <Avatar sx={{ bgcolor: color, width: 56, height: 56, ml: 2 }}>
-            <Icon fontSize="large" />
+          <Avatar sx={{ bgcolor: `${color}15`, color, width: 48, height: 48, ml: 2 }}>
+            <Icon />
           </Avatar>
         </Box>
       </CardContent>
@@ -365,7 +421,7 @@ const GestionVentesPage = () => {
         />
 
         {/* Tableau */}
-        <Card elevation={3}>
+        <Card elevation={0} sx={{ borderRadius: 3, border: "1px solid #e3e8ef" }}>
           <CardContent>
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
               <Typography variant="h6" fontWeight="bold">
@@ -519,16 +575,21 @@ const GestionVentesPage = () => {
       </Container>
 
       {/* DIALOG : Détails */}
-      <Dialog open={detailsDialog} onClose={() => setDetailsDialog(false)} maxWidth="lg" fullWidth>
-        <DialogTitle>
-          <Box display="flex" justifyContent="space-between" alignItems="center">
-            <Typography variant="h6">Détails complet du bien et de la vente</Typography>
-            <IconButton onClick={() => setDetailsDialog(false)}>
-              <Close />
-            </IconButton>
-          </Box>
-        </DialogTitle>
-        <DialogContent dividers>
+      <Dialog
+        open={detailsDialog}
+        onClose={() => setDetailsDialog(false)}
+        maxWidth="lg"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: 4, overflow: "hidden" } }}
+      >
+        <DialogHeader
+          icon={Gavel}
+          title="Détails de la vente"
+          subtitle={selectedVente?.patrimoineId?.titre}
+          color="#7b1fa2"
+          onClose={() => setDetailsDialog(false)}
+        />
+        <DialogContent dividers sx={{ p: 3 }}>
           {selectedVente && (
             <Grid container spacing={2}>
               {/* Informations générales */}
@@ -792,45 +853,77 @@ const GestionVentesPage = () => {
             </Grid>
           )}
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDetailsDialog(false)}>Fermer</Button>
+        <DialogActions sx={{ px: 3, pb: 3, pt: 2 }}>
+          <Button onClick={() => setDetailsDialog(false)} variant="outlined" sx={{ borderRadius: 2 }}>
+            Fermer
+          </Button>
         </DialogActions>
       </Dialog>
 
       {/* DIALOG : Valider */}
-      <Dialog open={validerDialog} onClose={() => setValiderDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>✅ Valider la vente</DialogTitle>
-        <DialogContent>
-          <Typography variant="body2" color="text.secondary" mb={2}>
-            Bien : <strong>{selectedVente?.patrimoineId?.titre}</strong>
-          </Typography>
-          <Typography variant="body2" mb={2}>
-            Prix : {formatMoney(selectedVente?.prixVente)}
-          </Typography>
-          <Typography variant="body2" color="success.main" mb={2}>
-            Commission : {selectedVente?.commissionPourcentage}% ={" "}
-            {formatMoney(selectedVente?.commissionMontant)}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Le bien sera mis en vente via Softlink.
-          </Typography>
+      <Dialog
+        open={validerDialog}
+        onClose={() => setValiderDialog(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: 4, overflow: "hidden" } }}
+      >
+        <DialogHeader
+          icon={CheckCircle}
+          title="Valider la vente"
+          subtitle="Le bien sera mis en vente via Softlink"
+          color="#2e7d32"
+          onClose={() => setValiderDialog(false)}
+        />
+        <DialogContent sx={{ p: 3 }}>
+          <VenteInfoBox vente={selectedVente} formatMoney={formatMoney} />
+          <Box sx={{ p: 2, borderRadius: 2, bgcolor: "#e8f5e9", border: "1px solid #c8e6c9" }}>
+            <Stack direction="row" justifyContent="space-between" mb={0.5}>
+              <Typography variant="body2" color="text.secondary">Prix de vente</Typography>
+              <Typography variant="body2" fontWeight={700}>{formatMoney(selectedVente?.prixVente)}</Typography>
+            </Stack>
+            <Stack direction="row" justifyContent="space-between">
+              <Typography variant="body2" color="text.secondary">
+                Commission ({selectedVente?.commissionPourcentage}%)
+              </Typography>
+              <Typography variant="body2" fontWeight={700} sx={{ color: "#2e7d32" }}>
+                {formatMoney(selectedVente?.commissionMontant)}
+              </Typography>
+            </Stack>
+          </Box>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setValiderDialog(false)}>Annuler</Button>
-          <Button onClick={handleValider} variant="contained" color="success" startIcon={<CheckCircle />}>
+        <DialogActions sx={{ px: 3, pb: 3, pt: 0 }}>
+          <Button onClick={() => setValiderDialog(false)} color="inherit" sx={{ borderRadius: 2 }}>
+            Annuler
+          </Button>
+          <Button
+            onClick={handleValider}
+            variant="contained"
+            startIcon={<CheckCircle />}
+            sx={{ borderRadius: 2, px: 3, bgcolor: "#2e7d32", boxShadow: "none", "&:hover": { bgcolor: "#1b5e20", boxShadow: "none" } }}
+          >
             Valider
           </Button>
         </DialogActions>
       </Dialog>
 
       {/* DIALOG : Rejeter */}
-      <Dialog open={rejeterDialog} onClose={() => setRejeterDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>❌ Rejeter la vente</DialogTitle>
-        <DialogContent>
-          <Typography variant="body2" color="text.secondary" mb={2}>
-            Bien : <strong>{selectedVente?.patrimoineId?.titre}</strong>
-          </Typography>
-
+      <Dialog
+        open={rejeterDialog}
+        onClose={() => setRejeterDialog(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: 4, overflow: "hidden" } }}
+      >
+        <DialogHeader
+          icon={Cancel}
+          title="Rejeter la vente"
+          subtitle="La vente ne sera pas mise en ligne"
+          color="#e53935"
+          onClose={() => setRejeterDialog(false)}
+        />
+        <DialogContent sx={{ p: 3 }}>
+          <VenteInfoBox vente={selectedVente} formatMoney={formatMoney} />
           <TextField
             label="Motif du rejet"
             value={motifRejet}
@@ -840,28 +933,44 @@ const GestionVentesPage = () => {
             multiline
             rows={4}
             placeholder="Expliquez pourquoi cette vente est rejetée..."
+            helperText="Communiqué au propriétaire"
+            sx={FIELD_SX}
           />
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setRejeterDialog(false)}>Annuler</Button>
-          <Button onClick={handleRejeter} variant="contained" color="error" startIcon={<Cancel />}>
+        <DialogActions sx={{ px: 3, pb: 3, pt: 0 }}>
+          <Button onClick={() => setRejeterDialog(false)} color="inherit" sx={{ borderRadius: 2 }}>
+            Annuler
+          </Button>
+          <Button
+            onClick={handleRejeter}
+            variant="contained"
+            startIcon={<Cancel />}
+            sx={{ borderRadius: 2, px: 3, bgcolor: "#e53935", boxShadow: "none", "&:hover": { bgcolor: "#c62828", boxShadow: "none" } }}
+          >
             Rejeter
           </Button>
         </DialogActions>
       </Dialog>
 
       {/* DIALOG : Marquer comme vendue */}
-      <Dialog open={vendueDialog} onClose={() => setVendueDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>💰 Marquer comme vendue</DialogTitle>
-        <DialogContent>
-          <Typography variant="body2" color="text.secondary" mb={2}>
-            Bien : <strong>{selectedVente?.patrimoineId?.titre}</strong>
-          </Typography>
-          <Typography variant="body2" color="success.main" mb={3}>
-            Commission à prélever : {formatMoney(selectedVente?.commissionMontant)}
-          </Typography>
+      <Dialog
+        open={vendueDialog}
+        onClose={() => setVendueDialog(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: 4, overflow: "hidden" } }}
+      >
+        <DialogHeader
+          icon={AttachMoney}
+          title="Marquer comme vendue"
+          subtitle={`Commission : ${formatMoney(selectedVente?.commissionMontant)}`}
+          color="#2e7d32"
+          onClose={() => setVendueDialog(false)}
+        />
+        <DialogContent sx={{ p: 3 }}>
+          <VenteInfoBox vente={selectedVente} formatMoney={formatMoney} />
 
-          <Typography variant="subtitle2" fontWeight="bold" mb={2}>
+          <Typography variant="overline" color="text.secondary">
             Informations de l'acheteur
           </Typography>
 
@@ -871,7 +980,14 @@ const GestionVentesPage = () => {
             onChange={(e) => setAcheteurData({ ...acheteurData, nom: e.target.value })}
             fullWidth
             required
-            sx={{ mb: 2 }}
+            sx={{ ...FIELD_SX, mt: 1, mb: 2.5 }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Person sx={{ color: "#2e7d32" }} />
+                </InputAdornment>
+              ),
+            }}
           />
 
           <TextField
@@ -879,7 +995,7 @@ const GestionVentesPage = () => {
             value={acheteurData.phone}
             onChange={(e) => setAcheteurData({ ...acheteurData, phone: e.target.value })}
             fullWidth
-            sx={{ mb: 2 }}
+            sx={{ ...FIELD_SX, mb: 2.5 }}
           />
 
           <TextField
@@ -888,26 +1004,41 @@ const GestionVentesPage = () => {
             value={acheteurData.email}
             onChange={(e) => setAcheteurData({ ...acheteurData, email: e.target.value })}
             fullWidth
+            sx={FIELD_SX}
           />
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setVendueDialog(false)}>Annuler</Button>
-          <Button onClick={handleMarquerVendue} variant="contained" color="success" startIcon={<AttachMoney />}>
-            Marquer comme vendue
+        <DialogActions sx={{ px: 3, pb: 3, pt: 0 }}>
+          <Button onClick={() => setVendueDialog(false)} color="inherit" sx={{ borderRadius: 2 }}>
+            Annuler
+          </Button>
+          <Button
+            onClick={handleMarquerVendue}
+            variant="contained"
+            startIcon={<AttachMoney />}
+            sx={{ borderRadius: 2, px: 3, bgcolor: "#2e7d32", boxShadow: "none", "&:hover": { bgcolor: "#1b5e20", boxShadow: "none" } }}
+          >
+            Confirmer la vente
           </Button>
         </DialogActions>
       </Dialog>
 
       {/* DIALOG : Contre-proposer */}
-      <Dialog open={contreProposerDialog} onClose={() => setContreProposerDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>💰 Contre-proposition de prix</DialogTitle>
-        <DialogContent>
-          <Typography variant="body2" color="text.secondary" mb={2}>
-            Bien : <strong>{selectedVente?.patrimoineId?.titre}</strong>
-          </Typography>
-          <Typography variant="body2" mb={2}>
-            Prix actuel demandé par le client : <strong>{formatMoney(selectedVente?.prixVente)}</strong>
-          </Typography>
+      <Dialog
+        open={contreProposerDialog}
+        onClose={() => setContreProposerDialog(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: 4, overflow: "hidden" } }}
+      >
+        <DialogHeader
+          icon={TrendingUp}
+          title="Contre-proposition de prix"
+          subtitle="Proposez un nouveau prix au client"
+          color="#f57c00"
+          onClose={() => setContreProposerDialog(false)}
+        />
+        <DialogContent sx={{ p: 3 }}>
+          <VenteInfoBox vente={selectedVente} formatMoney={formatMoney} />
 
           <TextField
             label="Nouveau prix proposé"
@@ -916,22 +1047,32 @@ const GestionVentesPage = () => {
             onChange={(e) => setPrixPropose(e.target.value)}
             fullWidth
             required
-            sx={{ mt: 2 }}
+            sx={{ ...FIELD_SX, mb: 2.5 }}
             InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <AttachMoney sx={{ color: "#f57c00" }} />
+                </InputAdornment>
+              ),
               endAdornment: <InputAdornment position="end">FCFA</InputAdornment>,
             }}
           />
 
-          <Alert severity="info" sx={{ mt: 2 }}>
-            <Typography variant="body2">
-              Le client sera notifié de votre contre-proposition. Il pourra l'accepter ou la refuser.
-            </Typography>
+          <Alert severity="info" sx={{ borderRadius: 2 }}>
+            Le client sera notifié de votre contre-proposition. Il pourra l'accepter ou la refuser.
           </Alert>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setContreProposerDialog(false)}>Annuler</Button>
-          <Button onClick={handleContreProposer} variant="contained" color="warning" startIcon={<AttachMoney />}>
-            Envoyer la contre-proposition
+        <DialogActions sx={{ px: 3, pb: 3, pt: 0 }}>
+          <Button onClick={() => setContreProposerDialog(false)} color="inherit" sx={{ borderRadius: 2 }}>
+            Annuler
+          </Button>
+          <Button
+            onClick={handleContreProposer}
+            variant="contained"
+            startIcon={<AttachMoney />}
+            sx={{ borderRadius: 2, px: 3, bgcolor: "#f57c00", boxShadow: "none", "&:hover": { bgcolor: "#ef6c00", boxShadow: "none" } }}
+          >
+            Envoyer
           </Button>
         </DialogActions>
       </Dialog>

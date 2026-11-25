@@ -33,7 +33,8 @@ import "leaflet/dist/leaflet.css";
 import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
 import "leaflet-routing-machine";
 import { useNavigate } from "react-router-dom";
-import PageLayout from "../../components/shared/PageLayout";
+import ClientLayout from "../../components/client/ClientLayout";
+import AgencePageHeader from "../../components/agence/AgencePageHeader";
 import api from "../../services/api";
 
 // Fix icônes Leaflet
@@ -157,10 +158,10 @@ const CartePatrimoinePage = () => {
 
   const centerLat = allBiens.length > 0
     ? allBiens.reduce((sum, b) => sum + b.lat, 0) / allBiens.length
-    : 12.3714;
+    : 13.5116;
   const centerLng = allBiens.length > 0
     ? allBiens.reduce((sum, b) => sum + b.lng, 0) / allBiens.length
-    : -1.5197;
+    : 2.1254;
 
   const formatMoney = (amount) => {
     return new Intl.NumberFormat("fr-FR").format(amount || 0) + " FCFA";
@@ -168,41 +169,31 @@ const CartePatrimoinePage = () => {
 
   if (loading) {
     return (
-      <PageLayout>
+      <ClientLayout>
         <Box display="flex" justifyContent="center" alignItems="center" minHeight="80vh">
           <CircularProgress size={60} />
         </Box>
-      </PageLayout>
+      </ClientLayout>
     );
   }
 
   return (
-    <PageLayout>
+    <ClientLayout>
       <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
         {/* En-tête */}
-        <Box sx={{ mb: 3 }}>
-          <Button
-            startIcon={<ArrowBack />}
-            onClick={() => navigate("/user/dashboard")}
-            sx={{ mb: 2 }}
-          >
-            Retour au dashboard
-          </Button>
-
-          <Box display="flex" alignItems="center" gap={2}>
-            <Avatar sx={{ bgcolor: "primary.main", width: 64, height: 64 }}>
-              <MapIcon fontSize="large" />
-            </Avatar>
-            <Box>
-              <Typography variant="h4" fontWeight="bold">
-                Carte Globale de Mon Patrimoine
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Visualisez tous vos biens sur une seule carte
-              </Typography>
-            </Box>
-          </Box>
-        </Box>
+        <AgencePageHeader
+          icon={MapIcon}
+          title="Carte Globale de Mon Patrimoine"
+          subtitle="Visualisez tous vos biens sur une seule carte"
+          action={
+            <Button startIcon={<ArrowBack />}
+              onClick={() => navigate("/user/dashboard")}
+              variant="outlined"
+              sx={{ borderColor: "rgba(255,255,255,0.6)", color: "white" }}>
+              Retour au dashboard
+            </Button>
+          }
+        />
 
         {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
 
@@ -278,9 +269,9 @@ const CartePatrimoinePage = () => {
 
             {/* Légende */}
             <Box display="flex" gap={2} mb={2}>
-              <Chip label="🔵 Acheté via agence" size="small" variant="outlined" />
-              <Chip label="🟢 Patrimoine personnel" size="small" variant="outlined" />
-              {userPosition && <Chip label="🔴 Votre position" size="small" color="error" />}
+              <Chip label="Acheté via agence" size="small" variant="outlined" />
+              <Chip label="Patrimoine personnel" size="small" variant="outlined" />
+              {userPosition && <Chip label="Votre position" size="small" color="error" />}
             </Box>
 
             {/* Carte */}
@@ -382,7 +373,7 @@ const CartePatrimoinePage = () => {
                   <Marker position={[userPosition.lat, userPosition.lng]}>
                     <Popup>
                       <Typography variant="body2" fontWeight="bold">
-                        📍 Votre position actuelle
+                        Votre position actuelle
                       </Typography>
                     </Popup>
                   </Marker>
@@ -400,7 +391,7 @@ const CartePatrimoinePage = () => {
           </CardContent>
         </Card>
       </Container>
-    </PageLayout>
+    </ClientLayout>
   );
 };
 

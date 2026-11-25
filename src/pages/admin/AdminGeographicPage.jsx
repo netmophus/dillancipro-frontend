@@ -6,7 +6,8 @@ import {
   Card,
   CardContent,
   Button,
-  Grid,
+  GridLegacy as Grid,
+  InputAdornment,
   Table,
   TableBody,
   TableCell,
@@ -16,17 +17,17 @@ import {
   Paper,
   IconButton,
   Dialog,
-  DialogTitle,
   DialogContent,
   DialogActions,
   TextField,
   FormControl,
-  InputLabel,
   Select,
   MenuItem,
   Chip,
   Alert,
   Snackbar,
+  Avatar,
+  Stack,
 } from "@mui/material";
 import {
   Add,
@@ -37,10 +38,52 @@ import {
   Business,
   Save,
   Cancel,
+  Close,
+  Map as FIMap,
+  MarkunreadMailbox as FIMailbox,
+  Notes as FINotes,
 } from "@mui/icons-material";
 import { useAuth } from "../../contexts/AuthContext";
-import PageLayout from "../../components/shared/PageLayout";
+import PageLayout from "../../components/admin/AdminLayout";
+import SectionCard from "../../components/admin/SectionCard";
 import api from "../../api";
+
+// En-tête de dialogue moderne, coloré, réutilisable
+const DialogHeader = ({ icon: Icon, title, subtitle, color, onClose }) => (
+  <Box
+    sx={{
+      p: 3,
+      bgcolor: color,
+      color: "white",
+      position: "relative",
+    }}
+  >
+    <IconButton
+      onClick={onClose}
+      sx={{ position: "absolute", top: 12, right: 12, color: "white", "&:hover": { bgcolor: "rgba(255,255,255,0.15)" } }}
+    >
+      <Close />
+    </IconButton>
+    <Stack direction="row" spacing={2} alignItems="center">
+      <Avatar sx={{ bgcolor: "rgba(255,255,255,0.22)", width: 52, height: 52 }}>
+        <Icon fontSize="large" />
+      </Avatar>
+      <Box>
+        <Typography variant="h6" fontWeight="bold">{title}</Typography>
+        {subtitle && <Typography variant="body2" sx={{ opacity: 0.9 }}>{subtitle}</Typography>}
+      </Box>
+    </Stack>
+  </Box>
+);
+
+// Métadonnées d'affichage par niveau géographique
+const TAB_META = {
+  villes: { color: "#0A7C4F", icon: LocationCity, singular: "ville" },
+  quartiers: { color: "#3030F9", icon: Home, singular: "quartier" },
+  zones: { color: "#0e1133", icon: Business, singular: "zone / cité" },
+};
+
+const FIELD_SX = { "& .MuiOutlinedInput-root": { borderRadius: 2.5 }, "& legend": { display: "none" } };
 
 const AdminGeographicPage = () => {
   const { user } = useAuth();
@@ -195,51 +238,76 @@ const AdminGeographicPage = () => {
   return (
     <PageLayout>
       <Container maxWidth="xl">
-        <Box sx={{ mb: 4 }}>
-          <Typography variant="h4" gutterBottom>
-            🏛️ Gestion Géographique
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Gérez les villes, quartiers et zones/cités du système
-          </Typography>
-        </Box>
+        <Paper elevation={0} sx={{ bgcolor: "#3030F9", p: 4, mb: 4, borderRadius: 3, color: "white" }}>
+          <Box display="flex" alignItems="center" gap={2}>
+            <Avatar sx={{ bgcolor: "rgba(255,255,255,0.2)", color: "white", width: 60, height: 60 }}>
+              <LocationCity fontSize="large" />
+            </Avatar>
+            <Box>
+              <Typography variant="h4" fontWeight="bold" sx={{ lineHeight: 1.3 }}>
+                Découpage géographique
+              </Typography>
+              <Typography variant="body1" sx={{ opacity: 0.9 }}>
+                Gérez les villes, quartiers et zones / cités du système
+              </Typography>
+            </Box>
+          </Box>
+        </Paper>
 
         {/* Tabs */}
         <Box sx={{ mb: 3 }}>
           <Grid container spacing={2}>
-            {["villes", "quartiers", "zones"].map((tab) => (
-              <Grid item key={tab}>
-                <Button
-                  variant={activeTab === tab ? "contained" : "outlined"}
-                  startIcon={getTabIcon(tab)}
-                  onClick={() => setActiveTab(tab)}
-                  sx={{ minWidth: 150 }}
-                >
-                  {getTabTitle(tab)}
-                </Button>
-              </Grid>
-            ))}
+            {["villes", "quartiers", "zones"].map((tab) => {
+              const meta = TAB_META[tab];
+              const isActive = activeTab === tab;
+              return (
+                <Grid item key={tab}>
+                  <Button
+                    variant={isActive ? "contained" : "outlined"}
+                    startIcon={getTabIcon(tab)}
+                    onClick={() => setActiveTab(tab)}
+                    sx={{
+                      minWidth: 150,
+                      borderRadius: 2,
+                      textTransform: "none",
+                      fontWeight: 600,
+                      ...(isActive
+                        ? { bgcolor: meta.color, boxShadow: "none", "&:hover": { bgcolor: meta.color, filter: "brightness(0.92)", boxShadow: "none" } }
+                        : { color: meta.color, borderColor: `${meta.color}55`, "&:hover": { borderColor: meta.color, bgcolor: `${meta.color}0d` } }),
+                    }}
+                  >
+                    {getTabTitle(tab)}
+                  </Button>
+                </Grid>
+              );
+            })}
           </Grid>
         </Box>
 
         {/* Data Table */}
-        <Card>
+        <Card elevation={0} sx={{ borderRadius: 4, border: "1px solid rgba(15,23,42,0.08)", boxShadow: "0 2px 8px rgba(15,23,42,0.05)" }}>
           <CardContent>
             <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-              <Typography variant="h6">
+              <Typography variant="h6" fontWeight="bold" sx={{ color: TAB_META[activeTab].color }}>
                 {getTabTitle(activeTab)} ({getCurrentData().length})
               </Typography>
               <Button
                 variant="contained"
                 startIcon={<Add />}
                 onClick={handleAdd}
-                sx={{ bgcolor: "#1976d2" }}
+                sx={{
+                  bgcolor: TAB_META[activeTab].color,
+                  borderRadius: 2,
+                  textTransform: "none",
+                  boxShadow: "none",
+                  "&:hover": { bgcolor: TAB_META[activeTab].color, filter: "brightness(0.92)", boxShadow: "none" },
+                }}
               >
                 Ajouter {activeTab === "zones" ? "Zone/Cité" : getTabTitle(activeTab).slice(0, -1)}
               </Button>
             </Box>
 
-            <TableContainer component={Paper}>
+            <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 2, border: "1px solid rgba(15,23,42,0.08)", "& .MuiTableHead-root .MuiTableCell-root": { bgcolor: "#f5f7fa", fontWeight: 700, color: "#0e1133" } }}>
               <Table>
                 <TableHead>
                   <TableRow>
@@ -264,7 +332,7 @@ const AdminGeographicPage = () => {
                       </TableCell>
                       {activeTab === "villes" && (
                         <TableCell>
-                          {item.region && <Chip label={item.region} size="small" />}
+                          {item.region && <Chip label={item.region} size="small" sx={{ bgcolor: "rgba(10,124,79,0.12)", color: "#0A7C4F", fontWeight: 600 }} />}
                         </TableCell>
                       )}
                       {activeTab === "quartiers" && (
@@ -307,21 +375,46 @@ const AdminGeographicPage = () => {
         </Card>
 
         {/* Dialog */}
-        <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="md" fullWidth>
-          <DialogTitle>
-            {editingItem ? "Modifier" : "Ajouter"} {getTabTitle(activeTab).slice(0, -1)}
-          </DialogTitle>
-          <DialogContent>
-            <Box sx={{ pt: 2 }}>
+        <Dialog
+          open={openDialog}
+          onClose={() => setOpenDialog(false)}
+          maxWidth="sm"
+          fullWidth
+          PaperProps={{ sx: { borderRadius: 4, overflow: "hidden" } }}
+        >
+          <DialogHeader
+            icon={TAB_META[activeTab].icon}
+            title={`${editingItem ? "Modifier" : "Ajouter"} ${TAB_META[activeTab].singular}`}
+            subtitle={editingItem ? editingItem.nom : "Nouvel élément géographique"}
+            color={TAB_META[activeTab].color}
+            onClose={() => setOpenDialog(false)}
+          />
+          <DialogContent sx={{ p: 3 }}>
+            <SectionCard
+              title={TAB_META[activeTab].singular.charAt(0).toUpperCase() + TAB_META[activeTab].singular.slice(1)}
+              color={TAB_META[activeTab].color}
+              icon="info"
+              sx={{ mb: 0 }}
+            >
               {getFormFields().map((field) => (
-                <Box key={field.name} sx={{ mb: 2 }}>
+                <Box key={field.name} sx={{ mb: 2.5 }}>
                   {field.select ? (
-                    <FormControl fullWidth>
-                      <InputLabel>{field.label}</InputLabel>
+                    <FormControl fullWidth required={field.required} sx={FIELD_SX}>
                       <Select
                         value={formData[field.name] || ""}
+                        displayEmpty
+                        inputProps={{ "aria-label": field.label, title: field.label }}
+                        startAdornment={
+                          <InputAdornment position="start">
+                            {field.name === "ville" ? <LocationCity color="action" /> : <Home color="action" />}
+                          </InputAdornment>
+                        }
+                        renderValue={(v) =>
+                          v
+                            ? field.options?.find((o) => o._id === v)?.nom
+                            : <Typography component="span" color="text.secondary">{field.label}{field.required ? " *" : ""}</Typography>
+                        }
                         onChange={(e) => setFormData({ ...formData, [field.name]: e.target.value })}
-                        label={field.label}
                       >
                         {field.options?.map((option) => (
                           <MenuItem key={option._id} value={option._id}>
@@ -333,24 +426,41 @@ const AdminGeographicPage = () => {
                   ) : (
                     <TextField
                       fullWidth
-                      label={field.label}
+                      placeholder={field.label + (field.required ? " *" : "")}
+                      inputProps={{ "aria-label": field.label, title: field.label }}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start" sx={field.multiline ? { alignSelf: "flex-start", mt: 1.5 } : undefined}>
+                            {field.name === "region" ? <FIMap color="action" />
+                              : field.name === "codePostal" ? <FIMailbox color="action" />
+                              : field.name === "description" ? <FINotes color="action" />
+                              : (() => { const I = TAB_META[activeTab].icon; return <I color="action" />; })()}
+                          </InputAdornment>
+                        ),
+                      }}
                       value={formData[field.name] || ""}
                       onChange={(e) => setFormData({ ...formData, [field.name]: e.target.value })}
                       multiline={field.multiline}
                       rows={field.multiline ? 3 : 1}
                       required={field.required}
+                      sx={FIELD_SX}
                     />
                   )}
                 </Box>
               ))}
-            </Box>
+            </SectionCard>
           </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setOpenDialog(false)} startIcon={<Cancel />}>
+          <DialogActions sx={{ px: 3, pb: 3, pt: 0 }}>
+            <Button onClick={() => setOpenDialog(false)} color="inherit" startIcon={<Cancel />} sx={{ borderRadius: 2 }}>
               Annuler
             </Button>
-            <Button onClick={handleSubmit} startIcon={<Save />} variant="contained">
-              {editingItem ? "Modifier" : "Créer"}
+            <Button
+              onClick={handleSubmit}
+              startIcon={<Save />}
+              variant="contained"
+              sx={{ borderRadius: 2, px: 3, bgcolor: TAB_META[activeTab].color, boxShadow: "none", "&:hover": { bgcolor: TAB_META[activeTab].color, filter: "brightness(0.92)", boxShadow: "none" } }}
+            >
+              {editingItem ? "Enregistrer" : "Créer"}
             </Button>
           </DialogActions>
         </Dialog>

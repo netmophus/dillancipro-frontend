@@ -20,7 +20,7 @@ import {
   Tabs,
   Card,
   CardContent,
-  Grid,
+  GridLegacy as Grid,
   Avatar,
   Chip,
   IconButton,
@@ -51,11 +51,14 @@ import {
   Gavel,
   Person,
 } from "@mui/icons-material";
+import { AdminPanelSettings as FIAdminPanelSettings, Email as FIEmail } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import API from '../../api';
+import AdminLayout from "../../components/admin/AdminLayout";
+import FormSection from "../../components/admin/SectionCard";
 
 // Tous les rôles disponibles pour l'admin
-const roles = ["Admin", "Banque", "Agence", "Ministere", "Commercial", "Notaire", "User", "Client"];
+const roles = ["Admin", "Banque", "Agence", "Ministere", "Commercial", "Notaire", "User"];
 
 const AdminUserManagementPage = () => {
   const navigate = useNavigate();
@@ -129,17 +132,17 @@ const AdminUserManagementPage = () => {
     const roleName = getRoleName(role);
     switch (roleName) {
       case "Admin":
-        return "#9c27b0";
+        return "#0e1133";
       case "Agence":
-        return "#2196f3";
+        return "#3030F9";
       case "Banque":
-        return "#4caf50";
+        return "#0A7C4F";
       case "Ministere":
-        return "#ff9800";
+        return "#0e1133";
       case "Commercial":
-        return "#ff9800";
+        return "#3030F9";
       case "Notaire":
-        return "#7b1fa2";
+        return "#0A7C4F";
       case "User":
       case "Client":
         return "#607d8b";
@@ -240,7 +243,7 @@ const AdminUserManagementPage = () => {
       }
       
       await API.post("/admin/create-admin", dataToSend);
-      setMessage("✅ Utilisateur créé avec succès");
+      setMessage("Utilisateur créé avec succès");
       setSnackSeverity("success");
       setSnackOpen(true);
       setFormData({ fullName: "", phone: "", email: "", password: "", role: "Agence" });
@@ -249,7 +252,7 @@ const AdminUserManagementPage = () => {
       setActiveTab(1);
     } catch (err) {
       console.error(err);
-      setMessage(err.response?.data?.message || "❌ Erreur lors de la création");
+      setMessage(err.response?.data?.message || "Erreur lors de la création");
       setSnackSeverity("error");
       setSnackOpen(true);
     }
@@ -273,6 +276,7 @@ const AdminUserManagementPage = () => {
   };
 
   return (
+    <AdminLayout>
     <Container maxWidth="xl" sx={{ py: 4 }}>
       {/* Bouton retour */}
       <Button
@@ -293,7 +297,7 @@ const AdminUserManagementPage = () => {
       <Paper
         elevation={0}
         sx={{
-          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          background: "#3030F9",
           p: 4,
           mb: 4,
           borderRadius: 3,
@@ -324,133 +328,68 @@ const AdminUserManagementPage = () => {
 
       {/* KPIs */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card
-            sx={{
-              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-              color: "white",
-              borderRadius: 3,
-              transition: "transform 0.2s",
-              "&:hover": { transform: "translateY(-4px)" },
-            }}
-          >
-            <CardContent>
-              <Box display="flex" justifyContent="space-between" alignItems="center">
-                <Box>
-                  <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                    Total Utilisateurs
-                  </Typography>
-                  <Typography variant="h3" fontWeight="bold" mt={1}>
-                    {stats.total}
-                  </Typography>
-                </Box>
-                <Avatar sx={{ bgcolor: "rgba(255,255,255,0.2)", width: 56, height: 56 }}>
-                  <People sx={{ fontSize: 30 }} />
-                </Avatar>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} sm={6} md={3}>
-          <Card
-            sx={{
-              background: "linear-gradient(135deg, #11998e 0%, #38ef7d 100%)",
-              color: "white",
-              borderRadius: 3,
-              transition: "transform 0.2s",
-              "&:hover": { transform: "translateY(-4px)" },
-            }}
-          >
-            <CardContent>
-              <Box display="flex" justifyContent="space-between" alignItems="center">
-                <Box>
-                  <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                    Actifs
-                  </Typography>
-                  <Typography variant="h3" fontWeight="bold" mt={1}>
-                    {stats.actifs}
-                  </Typography>
-                </Box>
-                <Avatar sx={{ bgcolor: "rgba(255,255,255,0.2)", width: 56, height: 56 }}>
-                  <CheckCircle sx={{ fontSize: 30 }} />
-                </Avatar>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} sm={6} md={3}>
-          <Card
-            sx={{
-              background: "linear-gradient(135deg, #ee0979 0%, #ff6a00 100%)",
-              color: "white",
-              borderRadius: 3,
-              transition: "transform 0.2s",
-              "&:hover": { transform: "translateY(-4px)" },
-            }}
-          >
-            <CardContent>
-              <Box display="flex" justifyContent="space-between" alignItems="center">
-                <Box>
-                  <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                    Inactifs
-                  </Typography>
-                  <Typography variant="h3" fontWeight="bold" mt={1}>
-                    {stats.inactifs}
-                  </Typography>
-                </Box>
-                <Avatar sx={{ bgcolor: "rgba(255,255,255,0.2)", width: 56, height: 56 }}>
-                  <Cancel sx={{ fontSize: 30 }} />
-                </Avatar>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} sm={6} md={3}>
-          <Card
-            sx={{
-              background: "linear-gradient(135deg, #FA8BFF 0%, #2BD2FF 90%, #2BFF88 100%)",
-              color: "white",
-              borderRadius: 3,
-              transition: "transform 0.2s",
-              "&:hover": { transform: "translateY(-4px)" },
-            }}
-          >
-            <CardContent>
-              <Box>
-                <Typography variant="body2" sx={{ opacity: 0.9, mb: 1 }}>
-                  Par Rôle
-                </Typography>
-                <Stack spacing={0.5}>
-                  <Box display="flex" justifyContent="space-between">
-                    <Typography variant="caption">Agences</Typography>
-                    <Typography variant="caption" fontWeight="bold">
-                      {stats.byRole.Agence}
+        {[
+          { label: "Total Utilisateurs", value: stats.total, color: "#3030F9", icon: People },
+          { label: "Actifs", value: stats.actifs, color: "#0A7C4F", icon: CheckCircle },
+          { label: "Inactifs", value: stats.inactifs, color: "#e53935", icon: Cancel },
+        ].map((kpi) => (
+          <Grid item xs={12} sm={6} md={3} key={kpi.label}>
+            <Card
+              elevation={0}
+              sx={{
+                borderRadius: 3,
+                border: "1px solid #e3e8ef",
+                transition: "all 0.25s ease",
+                "&:hover": { transform: "translateY(-3px)", boxShadow: `0 8px 24px ${kpi.color}22` },
+              }}
+            >
+              <CardContent>
+                <Box display="flex" justifyContent="space-between" alignItems="center">
+                  <Box>
+                    <Typography variant="body2" color="text.secondary">
+                      {kpi.label}
+                    </Typography>
+                    <Typography variant="h3" fontWeight="bold" sx={{ color: kpi.color, mt: 1 }}>
+                      {kpi.value}
                     </Typography>
                   </Box>
-                  <Box display="flex" justifyContent="space-between">
-                    <Typography variant="caption">Banques</Typography>
-                    <Typography variant="caption" fontWeight="bold">
-                      {stats.byRole.Banque}
-                    </Typography>
+                  <Avatar sx={{ bgcolor: `${kpi.color}15`, color: kpi.color, width: 52, height: 52 }}>
+                    <kpi.icon sx={{ fontSize: 28 }} />
+                  </Avatar>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+        ))}
+
+        <Grid item xs={12} sm={6} md={3}>
+          <Card elevation={0} sx={{ borderRadius: 3, border: "1px solid #e3e8ef", height: "100%" }}>
+            <CardContent>
+              <Typography variant="body2" color="text.secondary" mb={1.5}>
+                Par rôle
+              </Typography>
+              <Stack spacing={1}>
+                {[
+                  { label: "Agences", value: stats.byRole.Agence, color: "#3030F9" },
+                  { label: "Banques", value: stats.byRole.Banque, color: "#0A7C4F" },
+                  { label: "Ministères", value: stats.byRole.Ministere, color: "#0e1133" },
+                ].map((r) => (
+                  <Box key={r.label} display="flex" justifyContent="space-between" alignItems="center">
+                    <Stack direction="row" alignItems="center" spacing={1}>
+                      <Box sx={{ width: 8, height: 8, borderRadius: "50%", bgcolor: r.color }} />
+                      <Typography variant="body2">{r.label}</Typography>
+                    </Stack>
+                    <Typography variant="body2" fontWeight="bold">{r.value}</Typography>
                   </Box>
-                  <Box display="flex" justifyContent="space-between">
-                    <Typography variant="caption">Ministères</Typography>
-                    <Typography variant="caption" fontWeight="bold">
-                      {stats.byRole.Ministere}
-                    </Typography>
-                  </Box>
-                </Stack>
-              </Box>
+                ))}
+              </Stack>
             </CardContent>
           </Card>
         </Grid>
       </Grid>
 
       {/* Contenu principal avec onglets */}
-      <Paper sx={{ borderRadius: 3, overflow: "hidden" }}>
+      <Paper elevation={0} sx={{ borderRadius: 3, overflow: "hidden", border: "1px solid #e3e8ef" }}>
         <Box sx={{ borderBottom: 1, borderColor: "divider", bgcolor: "grey.50" }}>
           <Tabs
             value={activeTab}
@@ -470,110 +409,139 @@ const AdminUserManagementPage = () => {
 
         {/* Onglet 1: Créer un utilisateur */}
         {activeTab === 0 && (
-          <Box sx={{ p: 4 }}>
-            <Stack spacing={3} maxWidth={600}>
-              <Typography variant="h6" color="primary" gutterBottom>
-                📝 Nouveau compte utilisateur
-              </Typography>
+          <Box sx={{ p: { xs: 2.5, md: 4 } }}>
+            <Box sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2.5 }, "& legend": { display: "none" }, display: "flex", flexDirection: "column", gap: 3 }}>
+              <FormSection icon="person" sx={{ mb: 0 }} title="Identité" color="#3030F9">
+                <Grid container spacing={3}>
+                  <Grid item xs={12} md={12}>
+                    <TextField
+                      inputProps={{ "aria-label": "Nom complet", title: "Nom complet" }}
+                      placeholder="Nom complet *"
+                      value={formData.fullName}
+                      onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                      fullWidth
+                      variant="outlined"
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <People color="action" />
+                          </InputAdornment>
+                        ),
+                      }}
+                      helperText="Le nom complet de l'utilisateur"
+                      required
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      inputProps={{ "aria-label": "Numéro de téléphone", title: "Numéro de téléphone" }}
+                      placeholder="Téléphone (+227 XX XX XX XX)"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      fullWidth
+                      variant="outlined"
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <PhoneIcon color="action" />
+                          </InputAdornment>
+                        ),
+                      }}
+                      helperText="Au moins un téléphone ou un email doit être fourni"
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      inputProps={{ "aria-label": "Email", title: "Email" }}
+                      placeholder="Email (exemple@email.com)"
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <FIEmail color="action" />
+                          </InputAdornment>
+                        ),
+                      }}
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      fullWidth
+                      variant="outlined"
+                      helperText="Au moins un téléphone ou un email doit être fourni"
+                    />
+                  </Grid>
+                </Grid>
+              </FormSection>
 
-              <TextField
-                label="Nom complet"
-                value={formData.fullName}
-                onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                fullWidth
-                variant="outlined"
-                placeholder="Ex: Jean Dupont"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <People color="action" />
-                    </InputAdornment>
-                  ),
-                }}
-                helperText="Le nom complet de l'utilisateur"
-                required
-              />
+              <FormSection icon="lock" sx={{ mb: 0 }} title="Accès et rôle" color="#0A7C4F">
+                <Grid container spacing={3}>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      inputProps={{ "aria-label": "Mot de passe", title: "Mot de passe" }}
+                      placeholder="Mot de passe"
+                      type="password"
+                      value={formData.password}
+                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                      fullWidth
+                      variant="outlined"
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <Lock color="action" />
+                          </InputAdornment>
+                        ),
+                      }}
+                      helperText="Minimum 6 caractères"
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      select
+                      inputProps={{ "aria-label": "Rôle", title: "Rôle" }}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <FIAdminPanelSettings color="action" />
+                            <Typography variant="body2" color="text.secondary" sx={{ ml: 1 }}>Rôle</Typography>
+                          </InputAdornment>
+                        ),
+                      }}
+                      value={formData.role}
+                      onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                      fullWidth
+                      variant="outlined"
+                      helperText="Sélectionnez le type de compte"
+                    >
+                      {roles.map((role) => (
+                        <MenuItem key={role} value={role}>
+                          <Box display="flex" alignItems="center" gap={1}>
+                            {getRoleIcon(role)}
+                            {role}
+                          </Box>
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  </Grid>
+                </Grid>
+              </FormSection>
 
-              <TextField
-                label="Numéro de téléphone"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                fullWidth
-                variant="outlined"
-                placeholder="+227 XX XX XX XX"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <PhoneIcon color="action" />
-                    </InputAdornment>
-                  ),
-                }}
-                helperText="Au moins un téléphone ou un email doit être fourni"
-              />
-
-              <TextField
-                label="Email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                fullWidth
-                variant="outlined"
-                placeholder="exemple@email.com"
-                helperText="Au moins un téléphone ou un email doit être fourni"
-              />
-
-              <TextField
-                label="Mot de passe"
-                type="password"
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                fullWidth
-                variant="outlined"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Lock color="action" />
-                    </InputAdornment>
-                  ),
-                }}
-                helperText="Minimum 6 caractères"
-              />
-
-              <TextField
-                select
-                label="Rôle"
-                value={formData.role}
-                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                fullWidth
-                variant="outlined"
-                helperText="Sélectionnez le type de compte"
-              >
-                {roles.map((role) => (
-                  <MenuItem key={role} value={role}>
-                    <Box display="flex" alignItems="center" gap={1}>
-                      {getRoleIcon(role)}
-                      {role}
-                    </Box>
-                  </MenuItem>
-                ))}
-              </TextField>
-
-              <Button
-                variant="contained"
-                size="large"
-                onClick={handleCreate}
-                startIcon={<PersonAdd />}
-                sx={{
-                  py: 1.5,
-                  background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                  "&:hover": {
-                    background: "linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%)",
-                  },
-                }}
-              >
-                Créer l'utilisateur
-              </Button>
-            </Stack>
+              <Box display="flex" justifyContent="flex-end">
+                <Button
+                  variant="contained"
+                  size="large"
+                  onClick={handleCreate}
+                  startIcon={<PersonAdd />}
+                  sx={{
+                    py: 1.5,
+                    borderRadius: 2,
+                    bgcolor: "#3030F9",
+                    boxShadow: "none",
+                    "&:hover": { bgcolor: "#2020C8", boxShadow: "none" },
+                  }}
+                >
+                  Créer l'utilisateur
+                </Button>
+              </Box>
+            </Box>
           </Box>
         )}
 
@@ -581,9 +549,9 @@ const AdminUserManagementPage = () => {
         {activeTab === 1 && (
           <Box sx={{ p: 3 }}>
             {/* Barre de recherche et filtres */}
-            <Box sx={{ mb: 3, display: "flex", gap: 2, flexWrap: "wrap" }}>
+            <Box sx={{ mb: 3, display: "flex", gap: 2, flexWrap: "wrap", "& .MuiOutlinedInput-root": { borderRadius: 2.5 } }}>
               <TextField
-                placeholder="Rechercher par téléphone, email ou nom..."
+                placeholder="Rechercher un utilisateur..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 sx={{ flexGrow: 1, minWidth: 250 }}
@@ -613,7 +581,7 @@ const AdminUserManagementPage = () => {
             </Box>
 
             {/* Tableau */}
-            <TableContainer>
+            <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 2, border: "1px solid #eef2f7" }}>
               <Table>
                 <TableHead>
                   <TableRow sx={{ bgcolor: "grey.50" }}>
@@ -723,22 +691,21 @@ const AdminUserManagementPage = () => {
                 variant="outlined"
                 onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
                 disabled={currentPage === 1}
-                sx={{ mx: 1 }}
+                sx={{ mx: 1, borderRadius: 2 }}
               >
                 ← Précédent
               </Button>
 
               <Chip
                 label={`Page ${currentPage} / ${totalPages}`}
-                color="primary"
-                sx={{ mx: 2, fontWeight: "bold" }}
+                sx={{ mx: 2, fontWeight: "bold", bgcolor: "#3030F915", color: "#3030F9" }}
               />
 
               <Button
                 variant="outlined"
                 onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
                 disabled={currentPage === totalPages}
-                sx={{ mx: 1 }}
+                sx={{ mx: 1, borderRadius: 2 }}
               >
                 Suivant →
               </Button>
@@ -764,6 +731,7 @@ const AdminUserManagementPage = () => {
         </Alert>
       </Snackbar>
     </Container>
+    </AdminLayout>
   );
 };
 

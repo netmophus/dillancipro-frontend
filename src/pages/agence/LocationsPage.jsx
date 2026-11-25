@@ -6,7 +6,8 @@ import {
   Card,
   CardContent,
   CardMedia,
-  Grid,
+  GridLegacy as Grid,
+  InputAdornment,
   Button,
   Chip,
   IconButton,
@@ -17,9 +18,6 @@ import {
   DialogContent,
   DialogActions,
   TextField,
-  FormControl,
-  InputLabel,
-  Select,
   Stack,
   Avatar,
   Divider,
@@ -51,8 +49,12 @@ import {
   FilterList,
   Refresh,
 } from "@mui/icons-material";
+import { Search as FISearch, Flag as FIFlag, Home as FIHome, LocationCity as FILocationCity } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import PageLayout from "../../components/shared/PageLayout";
+import AgenceLayout from "../../components/agence/AgenceLayout";
+import AgencePageHeader from "../../components/agence/AgencePageHeader";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import MeetingRoomIcon from "@mui/icons-material/MeetingRoom";
 import api from "../../services/api";
 
 const LocationsPage = () => {
@@ -203,189 +205,166 @@ const LocationsPage = () => {
 
   if (loading && locations.length === 0) {
     return (
-      <PageLayout>
+      <AgenceLayout>
         <Container maxWidth="lg">
           <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
             <CircularProgress />
           </Box>
         </Container>
-      </PageLayout>
+      </AgenceLayout>
     );
   }
 
   return (
-    <PageLayout>
+    <AgenceLayout>
       <Container maxWidth="lg">
         <Box sx={{ py: 4 }}>
           {/* En-tête */}
-          <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
-            <Box>
-              <Typography variant="h4" fontWeight="bold" gutterBottom>
-                🏠 Gestion des locations
-              </Typography>
-              <Typography variant="body1" color="text.secondary">
-                Gérez vos offres de location immobilière
-              </Typography>
-            </Box>
-            <Button
-              variant="contained"
-              startIcon={<Add />}
-              onClick={() => navigate("/agence/locations/create")}
-            >
-              Nouvelle location
-            </Button>
-          </Box>
+          <AgencePageHeader
+            icon={Home}
+            title="Gestion des locations"
+            subtitle="Gérez vos offres de location immobilière"
+            action={
+              <Button
+                variant="contained"
+                startIcon={<Add />}
+                onClick={() => navigate("/agence/locations/create")}
+                sx={{ bgcolor: "white", color: "#0D2B4E", fontWeight: "bold", "&:hover": { bgcolor: "#e3e8ef" } }}
+              >
+                Nouvelle location
+              </Button>
+            }
+          />
 
           {/* Statistiques */}
           {stats && (
-            <Grid container spacing={3} mb={4}>
-              <Grid item xs={12} sm={6} md={3}>
-                <Card>
-                  <CardContent>
-                    <Box display="flex" alignItems="center" gap={2}>
-                      <Avatar sx={{ bgcolor: "primary.main" }}>
-                        <Home />
-                      </Avatar>
-                      <Box>
-                        <Typography variant="h4" fontWeight="bold">
-                          {stats.totalLocations}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          Total locations
-                        </Typography>
+            <Grid container spacing={2.5} mb={4}>
+              {[
+                { label: "Total locations", value: stats.totalLocations, icon: Home, color: "#3030F9" },
+                { label: "Disponibles", value: stats.locationsDisponibles, icon: CheckCircleIcon, color: "#0A7C4F" },
+                { label: "Louées", value: stats.locationsLouees, icon: MeetingRoomIcon, color: "#0e1133" },
+                { label: "Prix moyen", value: formatMoney(stats.prixMoyen || 0), icon: AttachMoney, color: "#3030F9" },
+              ].map((kpi) => (
+                <Grid item xs={6} md={3} key={kpi.label}>
+                  <Card elevation={0} sx={{ borderRadius: 4, border: "1px solid rgba(15,23,42,0.08)", boxShadow: "0 2px 8px rgba(15,23,42,0.05)" }}>
+                    <CardContent>
+                      <Box display="flex" justifyContent="space-between" alignItems="center">
+                        <Box sx={{ minWidth: 0 }}>
+                          <Typography variant="body2" color="text.secondary">{kpi.label}</Typography>
+                          <Typography variant="h5" fontWeight="bold" sx={{ color: kpi.color }} noWrap>{kpi.value}</Typography>
+                        </Box>
+                        <Box sx={{ width: 44, height: 44, borderRadius: 2, bgcolor: `${kpi.color}15`, color: kpi.color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                          <kpi.icon />
+                        </Box>
                       </Box>
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Grid>
-              <Grid item xs={12} sm={6} md={3}>
-                <Card>
-                  <CardContent>
-                    <Box display="flex" alignItems="center" gap={2}>
-                      <Avatar sx={{ bgcolor: "success.main" }}>
-                        <Home />
-                      </Avatar>
-                      <Box>
-                        <Typography variant="h4" fontWeight="bold">
-                          {stats.locationsDisponibles}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          Disponibles
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Grid>
-              <Grid item xs={12} sm={6} md={3}>
-                <Card>
-                  <CardContent>
-                    <Box display="flex" alignItems="center" gap={2}>
-                      <Avatar sx={{ bgcolor: "info.main" }}>
-                        <Home />
-                      </Avatar>
-                      <Box>
-                        <Typography variant="h4" fontWeight="bold">
-                          {stats.locationsLouees}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          Louées
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Grid>
-              <Grid item xs={12} sm={6} md={3}>
-                <Card>
-                  <CardContent>
-                    <Box display="flex" alignItems="center" gap={2}>
-                      <Avatar sx={{ bgcolor: "warning.main" }}>
-                        <AttachMoney />
-                      </Avatar>
-                      <Box>
-                        <Typography variant="h4" fontWeight="bold">
-                          {formatMoney(stats.prixMoyen || 0)}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          Prix moyen
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Grid>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
             </Grid>
           )}
 
           {/* Filtres et recherche */}
-          <Card sx={{ mb: 4 }}>
-            <CardContent>
-              <Grid container spacing={2} alignItems="center">
+          <Card elevation={0} sx={{ mb: 4, borderRadius: 4, border: "1px solid rgba(15,23,42,0.08)", boxShadow: "0 2px 8px rgba(15,23,42,0.05)" }}>
+            <CardContent sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2, bgcolor: "#ffffff" }, "& legend": { display: "none" } }}>
+              <Grid container spacing={2}>
                 <Grid item xs={12} md={4}>
                   <TextField
                     fullWidth
-                    placeholder="Rechercher par titre, ville..."
+                    inputProps={{ "aria-label": "Recherche", title: "Recherche" }}
+                    placeholder="Rechercher (titre, ville...)"
                     value={filters.search}
                     onChange={(e) => handleSearch(e.target.value)}
                     InputProps={{
-                      startAdornment: <Search sx={{ mr: 1, color: "text.secondary" }} />
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <FISearch color="action" />
+                        </InputAdornment>
+                      ),
                     }}
                   />
                 </Grid>
-                <Grid item xs={12} md={2}>
-                  <FormControl fullWidth>
-                    <InputLabel>Statut</InputLabel>
-                    <Select
-                      value={filters.statut}
-                      onChange={(e) => handleFilterChange("statut", e.target.value)}
-                    >
-                      <MenuItem value="">Tous</MenuItem>
-                      <MenuItem value="disponible">Disponible</MenuItem>
-                      <MenuItem value="loue">Loué</MenuItem>
-                      <MenuItem value="indisponible">Indisponible</MenuItem>
-                      <MenuItem value="en_attente">En attente</MenuItem>
-                    </Select>
-                  </FormControl>
+                <Grid item xs={6} md={4}>
+                  <TextField
+                    select
+                    fullWidth
+                    inputProps={{ "aria-label": "Statut", title: "Statut" }}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <FIFlag color="action" />
+                          <Typography variant="body2" color="text.secondary" sx={{ ml: 1 }}>Statut</Typography>
+                        </InputAdornment>
+                      ),
+                    }}
+                    value={filters.statut}
+                    onChange={(e) => handleFilterChange("statut", e.target.value)}
+                    SelectProps={{ displayEmpty: true }}
+                  >
+                    <MenuItem value="">Tous les statuts</MenuItem>
+                    <MenuItem value="disponible">Disponible</MenuItem>
+                    <MenuItem value="loue">Loué</MenuItem>
+                    <MenuItem value="indisponible">Indisponible</MenuItem>
+                    <MenuItem value="en_attente">En attente</MenuItem>
+                  </TextField>
                 </Grid>
-                <Grid item xs={12} md={2}>
-                  <FormControl fullWidth>
-                    <InputLabel>Type</InputLabel>
-                    <Select
-                      value={filters.type}
-                      onChange={(e) => handleFilterChange("type", e.target.value)}
-                    >
-                      <MenuItem value="">Tous</MenuItem>
-                      <MenuItem value="Villa">Villa</MenuItem>
-                      <MenuItem value="Appartement">Appartement</MenuItem>
-                      <MenuItem value="Studio">Studio</MenuItem>
-                      <MenuItem value="Maison">Maison</MenuItem>
-                      <MenuItem value="Duplex">Duplex</MenuItem>
-                    </Select>
-                  </FormControl>
+                <Grid item xs={6} md={4}>
+                  <TextField
+                    select
+                    fullWidth
+                    inputProps={{ "aria-label": "Type", title: "Type" }}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <FIHome color="action" />
+                          <Typography variant="body2" color="text.secondary" sx={{ ml: 1 }}>Type</Typography>
+                        </InputAdornment>
+                      ),
+                    }}
+                    value={filters.type}
+                    onChange={(e) => handleFilterChange("type", e.target.value)}
+                    SelectProps={{ displayEmpty: true }}
+                  >
+                    <MenuItem value="">Tous les types</MenuItem>
+                    <MenuItem value="Villa">Villa</MenuItem>
+                    <MenuItem value="Appartement">Appartement</MenuItem>
+                    <MenuItem value="Studio">Studio</MenuItem>
+                    <MenuItem value="Maison">Maison</MenuItem>
+                    <MenuItem value="Duplex">Duplex</MenuItem>
+                  </TextField>
                 </Grid>
-                <Grid item xs={12} md={2}>
-                  <FormControl fullWidth>
-                    <InputLabel>Ville</InputLabel>
-                    <Select
-                      value={filters.ville}
-                      onChange={(e) => handleFilterChange("ville", e.target.value)}
-                    >
-                      <MenuItem value="">Toutes</MenuItem>
-                      <MenuItem value="Niamey">Niamey</MenuItem>
-                      <MenuItem value="Maradi">Maradi</MenuItem>
-                      <MenuItem value="Zinder">Zinder</MenuItem>
-                      <MenuItem value="Tahoua">Tahoua</MenuItem>
-                      <MenuItem value="Agadez">Agadez</MenuItem>
-                    </Select>
-                  </FormControl>
+                <Grid item xs={6} md={4}>
+                  <TextField
+                    select
+                    fullWidth
+                    inputProps={{ "aria-label": "Ville", title: "Ville" }}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <FILocationCity color="action" />
+                          <Typography variant="body2" color="text.secondary" sx={{ ml: 1 }}>Ville</Typography>
+                        </InputAdornment>
+                      ),
+                    }}
+                    value={filters.ville}
+                    onChange={(e) => handleFilterChange("ville", e.target.value)}
+                    SelectProps={{ displayEmpty: true }}
+                  >
+                    <MenuItem value="">Toutes les villes</MenuItem>
+                    <MenuItem value="Niamey">Niamey</MenuItem>
+                    <MenuItem value="Maradi">Maradi</MenuItem>
+                    <MenuItem value="Zinder">Zinder</MenuItem>
+                    <MenuItem value="Tahoua">Tahoua</MenuItem>
+                    <MenuItem value="Agadez">Agadez</MenuItem>
+                  </TextField>
                 </Grid>
-                <Grid item xs={12} md={2}>
+                <Grid item xs={6} md={4}>
                   <Button
                     variant="outlined"
                     startIcon={<Refresh />}
                     onClick={fetchLocations}
                     fullWidth
+                    sx={{ height: "100%", minHeight: 56, borderRadius: 2 }}
                   >
                     Actualiser
                   </Button>
@@ -402,7 +381,7 @@ const LocationsPage = () => {
           )}
 
           {locations.length === 0 ? (
-            <Card>
+            <Card elevation={0} sx={{ borderRadius: 4, border: "1px solid rgba(15,23,42,0.08)", boxShadow: "0 2px 8px rgba(15,23,42,0.05)" }}>
               <CardContent sx={{ textAlign: "center", py: 8 }}>
                 <Typography variant="h6" color="text.secondary" gutterBottom>
                   Aucune location trouvée
@@ -424,8 +403,13 @@ const LocationsPage = () => {
               {locations.map((location) => (
                 <Grid item xs={12} sm={6} md={4} key={location._id}>
                   <Card
+                    elevation={0}
                     sx={{
                       height: "100%",
+                      borderRadius: 4,
+                      overflow: "hidden",
+                      border: "1px solid rgba(15,23,42,0.08)",
+                      boxShadow: "0 2px 8px rgba(15,23,42,0.05)",
                       transition: "all 0.3s",
                       "&:hover": {
                         transform: "translateY(-4px)",
@@ -482,6 +466,7 @@ const LocationsPage = () => {
                           label={getStatutLabel(location.statut)}
                           color={getStatutColor(location.statut)}
                           size="small"
+                          sx={location.statut === "disponible" ? { bgcolor: "#0A7C4F", color: "white" } : undefined}
                         />
                       </Box>
 
@@ -555,7 +540,7 @@ const LocationsPage = () => {
           </DialogActions>
         </Dialog>
       </Container>
-    </PageLayout>
+    </AgenceLayout>
   );
 };
 

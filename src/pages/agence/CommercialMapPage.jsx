@@ -14,7 +14,7 @@
 // import { useParams, useNavigate } from "react-router-dom";
 // import api from "../../services/api";
 // import L from "leaflet";
-// import "leaflet/dist/leaflet.css"; // ✅ important
+// import "leaflet/dist/leaflet.css"; // important
 
 // // Corriger l'affichage des icônes par défaut de Leaflet
 // delete L.Icon.Default.prototype._getIconUrl;
@@ -61,7 +61,7 @@
 //   return (
 //     <Container sx={{ mt: 4 }}>
 //       <Typography variant="h5" gutterBottom>
-//         🗺️ Carte des parcelles du commercial
+// Carte des parcelles du commercial
 //       </Typography>
 
 //       <Button
@@ -70,7 +70,7 @@
 //         variant="outlined"
 //         color="secondary"
 //       >
-//         ⬅️ Retour
+// Retour
 //       </Button>
 
 //       {loading ? (
@@ -196,7 +196,7 @@
 //   return (
 //     <Container sx={{ mt: 4 }}>
 //       <Typography variant="h5" gutterBottom>
-//         🗺️ Carte des parcelles du commercial
+// Carte des parcelles du commercial
 //       </Typography>
 
 //       <Button
@@ -205,7 +205,7 @@
 //         variant="outlined"
 //         color="secondary"
 //       >
-//         ⬅️ Retour
+// Retour
 //       </Button>
 
 //       {loading || !userLocation ? (
@@ -231,12 +231,12 @@
 //               attribution="© OpenStreetMap contributors"
 //             />
 
-//             {/* 📍 Position actuelle */}
+// {/* Position actuelle */}
 //             <Marker position={[userLocation.lat, userLocation.lng]}>
-//               <Popup>📌 Vous êtes ici</Popup>
+// <Popup> Vous êtes ici</Popup>
 //             </Marker>
 
-//             {/* 📍 Parcelles */}
+// {/* Parcelles */}
 //             {parcelles.map((p) => (
 //               <Marker
 //                 key={p._id}
@@ -281,6 +281,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import api from "../../services/api";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { ArrowBack, Map } from "@mui/icons-material";
+import AgencePageHeader from "../../components/agence/AgencePageHeader";
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -345,19 +347,22 @@ const CommercialMapPage = () => {
   };
 
   return (
-    <Container sx={{ mt: 4 }}>
-      <Typography variant="h5" gutterBottom>
-        🗺️ Carte des parcelles du commercial
-      </Typography>
-
-      <Button
-        onClick={() => navigate(-1)}
-        sx={{ mb: 2 }}
-        variant="outlined"
-        color="secondary"
-      >
-        ⬅️ Retour
-      </Button>
+    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      <AgencePageHeader
+        icon={Map}
+        title="Carte des parcelles du commercial"
+        subtitle="Localisation des parcelles affectées sur la carte"
+        action={
+          <Button
+            onClick={() => navigate(-1)}
+            startIcon={<ArrowBack />}
+            variant="outlined"
+            sx={{ borderColor: "rgba(255,255,255,0.6)", color: "white" }}
+          >
+            Retour
+          </Button>
+        }
+      />
 
       {parcelles.length > 0 && (
         <TextField
@@ -366,8 +371,13 @@ const CommercialMapPage = () => {
           value={selectedParcelleId}
           onChange={(e) => handleSelectParcelle(e.target.value)}
           fullWidth
-          sx={{ mb: 2 }}
+          SelectProps={{ displayEmpty: true }}
+          InputLabelProps={{ shrink: true }}
+          sx={{ mb: 2, "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
         >
+          <MenuItem value="" disabled>
+            Sélectionnez une parcelle
+          </MenuItem>
           {parcelles.map((p) => (
             <MenuItem key={p._id} value={p._id}>
               {p.numeroParcelle} (Îlot: {p.ilot?.numeroIlot || "-"})
@@ -387,9 +397,9 @@ const CommercialMapPage = () => {
           sx={{
             height: "600px",
             width: "100%",
-            borderRadius: 2,
+            borderRadius: 3,
             overflow: "hidden",
-            boxShadow: 2,
+            border: "1px solid #e3e8ef",
           }}
         >
           <MapContainer center={mapCenter} zoom={13} style={{ height: "100%" }}>
@@ -421,7 +431,7 @@ const CommercialMapPage = () => {
                       )
                     }
                   >
-                    📍 Itinéraire
+                    Itinéraire
                   </Button>
                 </Popup>
               </Marker>

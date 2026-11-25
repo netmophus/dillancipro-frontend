@@ -1,7 +1,12 @@
 // src/config/config.js
 
 const PROD_SERVER = "https://dillanciprobackend-e5e16032094e.herokuapp.com";
-const DEV_SERVER  = "http://192.168.80.29:5000";
+//  const DEV_SERVER  = "http://192.168.0.100:5000";
+// Suit automatiquement l'adresse utilisée pour ouvrir le site (localhost ou IP du LAN)
+const DEV_SERVER =
+  typeof window !== "undefined"
+    ? `http://${window.location.hostname}:5000`
+    : "http://localhost:5000";
 
 const isProd = () =>
   typeof window !== "undefined" &&

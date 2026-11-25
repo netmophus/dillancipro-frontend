@@ -20,7 +20,6 @@ import {
   IconButton,
   Tooltip,
   Dialog,
-  DialogTitle,
   DialogContent,
   DialogActions,
   TextField,
@@ -45,10 +44,57 @@ import {
   Timer,
   ArrowBack,
   Assignment,
+  Close,
+  Person,
+  Payments,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import PageLayout from "../../components/shared/PageLayout";
+import PageLayout from "../../components/admin/AdminLayout";
 import api from "../../services/api";
+
+// En-tête de dialogue moderne, coloré, réutilisable
+const DialogHeader = ({ icon: Icon, title, subtitle, color, onClose }) => (
+  <Box
+    sx={{
+      p: 3,
+      background: `linear-gradient(135deg, ${color} 0%, ${color}cc 100%)`,
+      color: "white",
+      position: "relative",
+    }}
+  >
+    <IconButton
+      onClick={onClose}
+      sx={{ position: "absolute", top: 12, right: 12, color: "white", "&:hover": { bgcolor: "rgba(255,255,255,0.15)" } }}
+    >
+      <Close />
+    </IconButton>
+    <Stack direction="row" spacing={2} alignItems="center">
+      <Avatar sx={{ bgcolor: "rgba(255,255,255,0.22)", width: 52, height: 52 }}>
+        <Icon fontSize="large" />
+      </Avatar>
+      <Box>
+        <Typography variant="h6" fontWeight="bold">{title}</Typography>
+        {subtitle && <Typography variant="body2" sx={{ opacity: 0.9 }}>{subtitle}</Typography>}
+      </Box>
+    </Stack>
+  </Box>
+);
+
+// Bloc récapitulatif du bien sélectionné
+const BienInfoBox = ({ bien }) => (
+  <Box sx={{ p: 2, borderRadius: 2, bgcolor: "#f7f9fc", border: "1px solid #eef2f7", mb: 2.5 }}>
+    <Typography variant="subtitle1" fontWeight="bold">{bien?.titre}</Typography>
+    <Stack direction="row" alignItems="center" spacing={0.75} mt={0.5} color="text.secondary">
+      <Person sx={{ fontSize: 16 }} />
+      <Typography variant="body2" color="text.secondary">
+        {bien?.clientId?.fullName || "N/A"}
+        {bien?.clientId?.phone ? ` · ${bien.clientId.phone}` : ""}
+      </Typography>
+    </Stack>
+  </Box>
+);
+
+const FIELD_SX = { "& .MuiOutlinedInput-root": { borderRadius: 2.5 } };
 
 const GestionAbonnementsPage = () => {
   const navigate = useNavigate();
@@ -230,13 +276,18 @@ const GestionAbonnementsPage = () => {
 
   const KPICard = ({ title, value, subtitle, icon: Icon, color, onClick }) => (
     <Card
-      elevation={3}
+      elevation={0}
       sx={{
         height: "100%",
-        borderLeft: `4px solid ${color}`,
-        transition: "all 0.3s",
-        "&:hover": { transform: "translateY(-4px)", boxShadow: 6 },
+        borderRadius: 3,
+        border: "1px solid #e3e8ef",
+        transition: "all 0.25s ease",
         cursor: onClick ? "pointer" : "default",
+        "&:hover": {
+          transform: "translateY(-3px)",
+          boxShadow: `0 8px 24px ${color}22`,
+          borderColor: onClick ? color : "#e3e8ef",
+        },
       }}
       onClick={onClick}
     >
@@ -246,7 +297,7 @@ const GestionAbonnementsPage = () => {
             <Typography color="text.secondary" variant="body2" gutterBottom>
               {title}
             </Typography>
-            <Typography variant="h4" fontWeight="bold" color={color} sx={{ mb: 1 }}>
+            <Typography variant="h4" fontWeight="bold" sx={{ color, mb: 0.5 }}>
               {value}
             </Typography>
             {subtitle && (
@@ -255,8 +306,8 @@ const GestionAbonnementsPage = () => {
               </Typography>
             )}
           </Box>
-          <Avatar sx={{ bgcolor: color, width: 56, height: 56, ml: 2 }}>
-            <Icon fontSize="large" />
+          <Avatar sx={{ bgcolor: `${color}15`, color, width: 48, height: 48, ml: 2 }}>
+            <Icon />
           </Avatar>
         </Box>
       </CardContent>
@@ -389,7 +440,7 @@ const GestionAbonnementsPage = () => {
 
         {/* ONGLET 1 : Biens expirés */}
         {activeTab === 0 && (
-          <Card elevation={3}>
+          <Card elevation={0} sx={{ borderRadius: 3, border: "1px solid #e3e8ef" }}>
             <CardContent>
               <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
                 <Typography variant="h6" fontWeight="bold">
@@ -514,7 +565,7 @@ const GestionAbonnementsPage = () => {
 
         {/* ONGLET 2 : Expire bientôt */}
         {activeTab === 1 && (
-          <Card elevation={3}>
+          <Card elevation={0} sx={{ borderRadius: 3, border: "1px solid #e3e8ef" }}>
             <CardContent>
               <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
                 <Typography variant="h6" fontWeight="bold">
@@ -602,19 +653,22 @@ const GestionAbonnementsPage = () => {
       </Container>
 
       {/* DIALOG : Désactiver */}
-      <Dialog open={desactiverDialog} onClose={() => setDesactiverDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>⚠️ Désactiver le bien</DialogTitle>
-        <DialogContent>
-          <Typography variant="body2" color="text.secondary" mb={2}>
-            Vous êtes sur le point de désactiver :
-          </Typography>
-          <Typography variant="h6" gutterBottom>
-            {selectedBien?.titre}
-          </Typography>
-          <Typography variant="body2" color="text.secondary" mb={3}>
-            Propriétaire : {selectedBien?.clientId?.fullName} ({selectedBien?.clientId?.phone})
-          </Typography>
-
+      <Dialog
+        open={desactiverDialog}
+        onClose={() => setDesactiverDialog(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: 4, overflow: "hidden" } }}
+      >
+        <DialogHeader
+          icon={Block}
+          title="Désactiver le bien"
+          subtitle="Le bien ne sera plus visible publiquement"
+          color="#e53935"
+          onClose={() => setDesactiverDialog(false)}
+        />
+        <DialogContent sx={{ p: 3 }}>
+          <BienInfoBox bien={selectedBien} />
           <TextField
             label="Motif de désactivation"
             value={motifDesactivation}
@@ -622,16 +676,19 @@ const GestionAbonnementsPage = () => {
             fullWidth
             multiline
             rows={3}
-            sx={{ mt: 2 }}
+            helperText="Visible dans l'historique du bien"
+            sx={FIELD_SX}
           />
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDesactiverDialog(false)}>Annuler</Button>
+        <DialogActions sx={{ px: 3, pb: 3, pt: 0 }}>
+          <Button onClick={() => setDesactiverDialog(false)} color="inherit" sx={{ borderRadius: 2 }}>
+            Annuler
+          </Button>
           <Button
             onClick={handleDesactiver}
             variant="contained"
-            color="error"
             startIcon={<Block />}
+            sx={{ borderRadius: 2, px: 3, bgcolor: "#e53935", boxShadow: "none", "&:hover": { bgcolor: "#c62828", boxShadow: "none" } }}
           >
             Désactiver
           </Button>
@@ -639,24 +696,35 @@ const GestionAbonnementsPage = () => {
       </Dialog>
 
       {/* DIALOG : Réactiver */}
-      <Dialog open={reactiverDialog} onClose={() => setReactiverDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>✅ Réactiver le bien</DialogTitle>
-        <DialogContent>
-          <Typography variant="body2" color="text.secondary" mb={2}>
-            Réactiver le bien suivant :
-          </Typography>
-          <Typography variant="h6">{selectedBien?.titre}</Typography>
-          <Typography variant="body2" color="text.secondary" mt={2}>
-            Le bien redeviendra visible après réactivation.
-          </Typography>
+      <Dialog
+        open={reactiverDialog}
+        onClose={() => setReactiverDialog(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: 4, overflow: "hidden" } }}
+      >
+        <DialogHeader
+          icon={RestartAlt}
+          title="Réactiver le bien"
+          subtitle="Le bien redeviendra visible publiquement"
+          color="#27AE60"
+          onClose={() => setReactiverDialog(false)}
+        />
+        <DialogContent sx={{ p: 3 }}>
+          <BienInfoBox bien={selectedBien} />
+          <Alert severity="success" sx={{ borderRadius: 2 }}>
+            Après réactivation, le bien sera de nouveau affiché dans les recherches publiques.
+          </Alert>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setReactiverDialog(false)}>Annuler</Button>
+        <DialogActions sx={{ px: 3, pb: 3, pt: 0 }}>
+          <Button onClick={() => setReactiverDialog(false)} color="inherit" sx={{ borderRadius: 2 }}>
+            Annuler
+          </Button>
           <Button
             onClick={handleReactiver}
             variant="contained"
-            color="success"
             startIcon={<RestartAlt />}
+            sx={{ borderRadius: 2, px: 3, bgcolor: "#27AE60", boxShadow: "none", "&:hover": { bgcolor: "#1e8e4e", boxShadow: "none" } }}
           >
             Réactiver
           </Button>
@@ -664,15 +732,22 @@ const GestionAbonnementsPage = () => {
       </Dialog>
 
       {/* DIALOG : Paiement abonnement */}
-      <Dialog open={paiementDialog} onClose={() => setPaiementDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>💰 Enregistrer paiement d'abonnement</DialogTitle>
-        <DialogContent>
-          <Typography variant="body2" color="text.secondary" mb={2}>
-            Bien : <strong>{selectedBien?.titre}</strong>
-          </Typography>
-          <Typography variant="body2" color="text.secondary" mb={3}>
-            Propriétaire : {selectedBien?.clientId?.fullName}
-          </Typography>
+      <Dialog
+        open={paiementDialog}
+        onClose={() => setPaiementDialog(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: 4, overflow: "hidden" } }}
+      >
+        <DialogHeader
+          icon={Payments}
+          title="Enregistrer un paiement"
+          subtitle="Abonnement annuel — paiement en ligne"
+          color="#1976d2"
+          onClose={() => setPaiementDialog(false)}
+        />
+        <DialogContent sx={{ p: 3 }}>
+          <BienInfoBox bien={selectedBien} />
 
           <TextField
             label="Montant"
@@ -681,8 +756,13 @@ const GestionAbonnementsPage = () => {
             onChange={(e) => setPaiementData({ ...paiementData, montant: e.target.value })}
             fullWidth
             required
-            sx={{ mb: 2 }}
+            sx={{ ...FIELD_SX, mb: 2.5 }}
             InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <AttachMoney sx={{ color: "#1976d2" }} />
+                </InputAdornment>
+              ),
               endAdornment: <InputAdornment position="end">FCFA</InputAdornment>,
             }}
           />
@@ -693,7 +773,7 @@ const GestionAbonnementsPage = () => {
             value={paiementData.methodePaiement}
             onChange={(e) => setPaiementData({ ...paiementData, methodePaiement: e.target.value })}
             fullWidth
-            sx={{ mb: 2 }}
+            sx={{ ...FIELD_SX, mb: 2.5 }}
           >
             <MenuItem value="orange_money">Orange Money</MenuItem>
             <MenuItem value="moov_money">Moov Money</MenuItem>
@@ -708,45 +788,57 @@ const GestionAbonnementsPage = () => {
             value={paiementData.transactionId}
             onChange={(e) => setPaiementData({ ...paiementData, transactionId: e.target.value })}
             fullWidth
+            sx={FIELD_SX}
           />
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setPaiementDialog(false)}>Annuler</Button>
+        <DialogActions sx={{ px: 3, pb: 3, pt: 0 }}>
+          <Button onClick={() => setPaiementDialog(false)} color="inherit" sx={{ borderRadius: 2 }}>
+            Annuler
+          </Button>
           <Button
             onClick={handlePaiementAbonnement}
             variant="contained"
-            color="success"
             startIcon={<AttachMoney />}
+            sx={{ borderRadius: 2, px: 3, bgcolor: "#1976d2", boxShadow: "none", "&:hover": { bgcolor: "#1565c0", boxShadow: "none" } }}
           >
-            Enregistrer paiement
+            Enregistrer
           </Button>
         </DialogActions>
       </Dialog>
 
       {/* DIALOG : Valider abonnement en espèces */}
-      <Dialog open={validerAbonnementDialog} onClose={() => setValiderAbonnementDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>💰 Valider le paiement d'abonnement en espèces</DialogTitle>
-        <DialogContent>
-          <Typography variant="body2" color="text.secondary" mb={2}>
-            Bien : <strong>{selectedBien?.titre}</strong>
-          </Typography>
-          <Typography variant="body2" mb={2}>
-            Propriétaire : <strong>{selectedBien?.clientId?.fullName}</strong>
-          </Typography>
-          <Typography variant="body2" color="success.main" mb={2}>
-            L'abonnement sera activé pour 1 an à partir de maintenant.
-          </Typography>
-          <Alert severity="info" sx={{ mt: 2 }}>
-            <Typography variant="body2">
-              Cette action valide que le propriétaire a payé l'abonnement annuel en espèces.
-              L'abonnement sera actif pendant 1 an.
-            </Typography>
+      <Dialog
+        open={validerAbonnementDialog}
+        onClose={() => setValiderAbonnementDialog(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: 4, overflow: "hidden" } }}
+      >
+        <DialogHeader
+          icon={CheckCircle}
+          title="Valider un paiement en espèces"
+          subtitle="Active l'abonnement pour 1 an"
+          color="#2e7d32"
+          onClose={() => setValiderAbonnementDialog(false)}
+        />
+        <DialogContent sx={{ p: 3 }}>
+          <BienInfoBox bien={selectedBien} />
+          <Alert severity="info" sx={{ borderRadius: 2 }}>
+            Cette action confirme que le propriétaire a réglé l'abonnement annuel en espèces.
+            L'abonnement sera <strong>actif pendant 1 an</strong> à partir d'aujourd'hui.
           </Alert>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setValiderAbonnementDialog(false)}>Annuler</Button>
-          <Button onClick={handleValiderAbonnement} variant="contained" color="success" startIcon={<CheckCircle />}>
-            Valider le paiement
+        <DialogActions sx={{ px: 3, pb: 3, pt: 0 }}>
+          <Button onClick={() => setValiderAbonnementDialog(false)} color="inherit" sx={{ borderRadius: 2 }}>
+            Annuler
+          </Button>
+          <Button
+            onClick={handleValiderAbonnement}
+            variant="contained"
+            startIcon={<CheckCircle />}
+            sx={{ borderRadius: 2, px: 3, bgcolor: "#2e7d32", boxShadow: "none", "&:hover": { bgcolor: "#1b5e20", boxShadow: "none" } }}
+          >
+            Valider
           </Button>
         </DialogActions>
       </Dialog>

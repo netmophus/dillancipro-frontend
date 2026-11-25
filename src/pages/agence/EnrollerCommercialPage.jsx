@@ -45,7 +45,8 @@ import {
   Badge as BadgeIcon,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import PageLayout from "../../components/shared/PageLayout";
+import AgenceLayout from "../../components/agence/AgenceLayout";
+import AgencePageHeader from "../../components/agence/AgencePageHeader";
 import api from "../../services/api";
 
 const EnrollerCommercialPage = () => {
@@ -111,7 +112,7 @@ const EnrollerCommercialPage = () => {
     try {
       const res = await api.post("/agence/commerciaux", formData);
       console.log("✅ [FRONTEND] Commercial créé:", res.data);
-      setSuccess("✅ Commercial enrôlé avec succès !");
+      setSuccess("Commercial enrôlé avec succès !");
       setFormData({ fullName: "", phone: "" });
       
       console.log("📝 [FRONTEND] Rechargement de la liste...");
@@ -119,7 +120,7 @@ const EnrollerCommercialPage = () => {
     } catch (err) {
       console.error("❌ [FRONTEND] Erreur enrôlement:", err);
       console.error("❌ [FRONTEND] Détails:", err.response?.data);
-      setError(err.response?.data?.message || "❌ Erreur lors de l'enrôlement");
+      setError(err.response?.data?.message || " Erreur lors de l'enrôlement");
     }
   };
 
@@ -131,34 +132,24 @@ const EnrollerCommercialPage = () => {
   const handleDelete = async () => {
     try {
       await api.delete(`/agence/commerciaux/${commercialToDelete._id}`);
-      setSuccess("✅ Commercial supprimé avec succès");
+      setSuccess("Commercial supprimé avec succès");
       setDeleteDialog(false);
       fetchCommerciaux();
     } catch (err) {
-      setError("❌ Erreur lors de la suppression");
+      setError("Erreur lors de la suppression");
       setDeleteDialog(false);
     }
   };
 
   return (
-    <PageLayout>
+    <AgenceLayout>
       <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
         {/* En-tête */}
-        <Box sx={{ mb: 4 }}>
-          <Box display="flex" alignItems="center" gap={2} mb={1}>
-            <Avatar sx={{ bgcolor: "primary.main", width: 56, height: 56 }}>
-              <PersonAdd fontSize="large" />
-            </Avatar>
-            <Box>
-              <Typography variant="h4" fontWeight="bold">
-                Gestion des Commerciaux
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Enrôlez et gérez votre équipe de vente
-              </Typography>
-            </Box>
-          </Box>
-        </Box>
+        <AgencePageHeader
+          icon={PersonAdd}
+          title="Gestion des Commerciaux"
+          subtitle="Enrôlez et gérez votre équipe de vente"
+        />
 
         {/* Alertes */}
         {success && (
@@ -179,7 +170,7 @@ const EnrollerCommercialPage = () => {
         <Grid container spacing={3}>
           {/* FORMULAIRE D'ENRÔLEMENT */}
           <Grid item xs={12} lg={4}>
-            <Card elevation={3} sx={{ position: "sticky", top: 20 }}>
+            <Card elevation={0} sx={{ position: "sticky", top: 20, borderRadius: 3, border: "1px solid #e3e8ef" }}>
               <CardContent sx={{ p: 3 }}>
                 <Box display="flex" alignItems="center" gap={1} mb={3}>
                   <PersonAdd color="primary" />
@@ -199,7 +190,7 @@ const EnrollerCommercialPage = () => {
                       onChange={handleChange}
                       fullWidth
                       required
-                      placeholder="Ex: Jean Dupont"
+                      placeholder="Ex: KANE ML"
                       InputProps={{
                         startAdornment: (
                           <InputAdornment position="start">
@@ -253,10 +244,10 @@ const EnrollerCommercialPage = () => {
             </Card>
 
             {/* Statistiques */}
-            <Card elevation={2} sx={{ mt: 3 }}>
+            <Card elevation={0} sx={{ mt: 3, borderRadius: 3, border: "1px solid #e3e8ef" }}>
               <CardContent>
                 <Typography variant="h6" fontWeight="bold" gutterBottom>
-                  📊 Statistiques
+                  Statistiques
                 </Typography>
                 <Divider sx={{ mb: 2 }} />
                 <Stack spacing={1.5}>
@@ -279,11 +270,11 @@ const EnrollerCommercialPage = () => {
 
           {/* LISTE DES COMMERCIAUX */}
           <Grid item xs={12} lg={8}>
-            <Card elevation={3}>
+            <Card elevation={0} sx={{ borderRadius: 3, border: "1px solid #e3e8ef" }}>
               <CardContent sx={{ p: 3 }}>
                 <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
                   <Typography variant="h6" fontWeight="bold">
-                    👥 Liste des Commerciaux ({filteredCommerciaux.length})
+                    Liste des Commerciaux ({filteredCommerciaux.length})
                   </Typography>
 
                   {/* Barre de recherche */}
@@ -452,7 +443,7 @@ const EnrollerCommercialPage = () => {
           </Button>
         </DialogActions>
       </Dialog>
-    </PageLayout>
+    </AgenceLayout>
   );
 };
 

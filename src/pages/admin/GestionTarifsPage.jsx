@@ -19,13 +19,14 @@ import {
   IconButton,
   Tooltip,
   Dialog,
-  DialogTitle,
   DialogContent,
   DialogActions,
   TextField,
   Avatar,
   InputAdornment,
   Chip,
+  Stack,
+  Divider,
 } from "@mui/material";
 import {
   AttachMoney,
@@ -39,9 +40,13 @@ import {
   Park,
   Square,
   Landscape,
+  Close,
+  Percent,
+  Autorenew,
+  Notes,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import PageLayout from "../../components/shared/PageLayout";
+import PageLayout from "../../components/admin/AdminLayout";
 import api from "../../services/api";
 
 const GestionTarifsPage = () => {
@@ -208,18 +213,25 @@ const GestionTarifsPage = () => {
             return (
               <Grid item xs={12} md={6} lg={4} key={tarif._id}>
                 <Card
-                  elevation={3}
+                  elevation={0}
                   sx={{
                     height: "100%",
-                    borderTop: `4px solid ${color}`,
-                    transition: "all 0.3s",
-                    "&:hover": { transform: "translateY(-4px)", boxShadow: 6 },
+                    borderRadius: 3,
+                    border: "1px solid #e3e8ef",
+                    overflow: "hidden",
+                    transition: "all 0.25s ease",
+                    "&:hover": {
+                      borderColor: color,
+                      boxShadow: `0 12px 30px ${color}22`,
+                      transform: "translateY(-4px)",
+                    },
                   }}
                 >
-                  <CardContent>
-                    <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+                  <Box sx={{ height: 5, bgcolor: color }} />
+                  <CardContent sx={{ p: 2.5 }}>
+                    <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
                       <Box display="flex" alignItems="center" gap={1.5}>
-                        <Avatar sx={{ bgcolor: color, width: 48, height: 48 }}>
+                        <Avatar sx={{ bgcolor: `${color}15`, color, width: 48, height: 48 }}>
                           <Icon />
                         </Avatar>
                         <Box>
@@ -231,41 +243,48 @@ const GestionTarifsPage = () => {
                           </Typography>
                         </Box>
                       </Box>
-                      <IconButton color="primary" onClick={() => openEditDialog(tarif)}>
-                        <Edit />
-                      </IconButton>
+                      <Tooltip title="Modifier">
+                        <IconButton
+                          size="small"
+                          onClick={() => openEditDialog(tarif)}
+                          sx={{ bgcolor: `${color}12`, color, "&:hover": { bgcolor: `${color}22` } }}
+                        >
+                          <Edit fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
                     </Box>
 
-                    <Box sx={{ bgcolor: "grey.100", p: 2, borderRadius: 2, mb: 1 }}>
-                      <Typography variant="caption" color="text.secondary">
-                        Enregistrement (1 fois)
-                      </Typography>
-                      <Typography variant="h6" fontWeight="bold" color="primary">
-                        {formatMoney(tarif.montantEnregistrement)}
-                      </Typography>
-                    </Box>
-
-                    <Box sx={{ bgcolor: "grey.100", p: 2, borderRadius: 2, mb: 1 }}>
-                      <Typography variant="caption" color="text.secondary">
-                        Abonnement annuel
-                      </Typography>
-                      <Typography variant="h6" fontWeight="bold" color="success.main">
-                        {formatMoney(tarif.montantAbonnementAnnuel)}
-                        <Typography variant="caption" color="text.secondary">
-                          {" "}
-                          / an
+                    <Stack spacing={1.25}>
+                      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", p: 1.5, borderRadius: 2, bgcolor: "#f7f9fc", border: "1px solid #eef2f7" }}>
+                        <Stack direction="row" alignItems="center" spacing={1}>
+                          <AttachMoney sx={{ fontSize: 18, color: "#1976d2" }} />
+                          <Typography variant="body2" color="text.secondary">Enregistrement</Typography>
+                        </Stack>
+                        <Typography variant="subtitle1" fontWeight={800} sx={{ color: "#1976d2" }}>
+                          {formatMoney(tarif.montantEnregistrement)}
                         </Typography>
-                      </Typography>
-                    </Box>
+                      </Box>
 
-                    <Box sx={{ bgcolor: "grey.100", p: 2, borderRadius: 2 }}>
-                      <Typography variant="caption" color="text.secondary">
-                        Commission vente
-                      </Typography>
-                      <Typography variant="h6" fontWeight="bold" color="warning.main">
-                        {tarif.commissionVente}%
-                      </Typography>
-                    </Box>
+                      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", p: 1.5, borderRadius: 2, bgcolor: "#f7f9fc", border: "1px solid #eef2f7" }}>
+                        <Stack direction="row" alignItems="center" spacing={1}>
+                          <Autorenew sx={{ fontSize: 18, color: "#2e7d32" }} />
+                          <Typography variant="body2" color="text.secondary">Abonnement / an</Typography>
+                        </Stack>
+                        <Typography variant="subtitle1" fontWeight={800} sx={{ color: "#2e7d32" }}>
+                          {formatMoney(tarif.montantAbonnementAnnuel)}
+                        </Typography>
+                      </Box>
+
+                      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", p: 1.5, borderRadius: 2, bgcolor: "#f7f9fc", border: "1px solid #eef2f7" }}>
+                        <Stack direction="row" alignItems="center" spacing={1}>
+                          <Percent sx={{ fontSize: 18, color: "#ff9800" }} />
+                          <Typography variant="body2" color="text.secondary">Commission vente</Typography>
+                        </Stack>
+                        <Typography variant="subtitle1" fontWeight={800} sx={{ color: "#ff9800" }}>
+                          {tarif.commissionVente}%
+                        </Typography>
+                      </Box>
+                    </Stack>
                   </CardContent>
                 </Card>
               </Grid>
@@ -331,66 +350,144 @@ const GestionTarifsPage = () => {
       </Container>
 
       {/* DIALOG : Modifier tarif */}
-      <Dialog open={editDialog} onClose={() => setEditDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>
-          ✏️ Modifier le tarif : <strong style={{ textTransform: "capitalize" }}>{selectedTarif?.typeBien}</strong>
-        </DialogTitle>
-        <DialogContent>
-          <TextField
-            label="Montant d'enregistrement (paiement unique)"
-            type="number"
-            value={formData.montantEnregistrement}
-            onChange={(e) => setFormData({ ...formData, montantEnregistrement: e.target.value })}
-            fullWidth
-            required
-            sx={{ mt: 2, mb: 2 }}
-            InputProps={{
-              endAdornment: <InputAdornment position="end">FCFA</InputAdornment>,
-            }}
-          />
+      <Dialog
+        open={editDialog}
+        onClose={() => setEditDialog(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: 4, overflow: "hidden" } }}
+      >
+        {(() => {
+          const color = selectedTarif ? getColorByType(selectedTarif.typeBien) : "#27AE60";
+          const DialogIcon = selectedTarif ? getIconByType(selectedTarif.typeBien) : AttachMoney;
+          const fieldSx = { "& .MuiOutlinedInput-root": { borderRadius: 2.5 } };
+          return (
+            <>
+              {/* En-tête coloré */}
+              <Box
+                sx={{
+                  p: 3,
+                  background: `linear-gradient(135deg, ${color} 0%, ${color}cc 100%)`,
+                  color: "white",
+                  position: "relative",
+                }}
+              >
+                <IconButton
+                  onClick={() => setEditDialog(false)}
+                  sx={{ position: "absolute", top: 12, right: 12, color: "white", "&:hover": { bgcolor: "rgba(255,255,255,0.15)" } }}
+                >
+                  <Close />
+                </IconButton>
+                <Stack direction="row" spacing={2} alignItems="center">
+                  <Avatar sx={{ bgcolor: "rgba(255,255,255,0.22)", width: 54, height: 54 }}>
+                    <DialogIcon fontSize="large" />
+                  </Avatar>
+                  <Box>
+                    <Typography variant="h6" fontWeight="bold">Modifier le tarif</Typography>
+                    <Chip
+                      label={selectedTarif?.typeBien}
+                      size="small"
+                      sx={{ mt: 0.5, bgcolor: "rgba(255,255,255,0.22)", color: "white", textTransform: "capitalize", fontWeight: 600 }}
+                    />
+                  </Box>
+                </Stack>
+              </Box>
 
-          <TextField
-            label="Montant abonnement annuel (chaque année)"
-            type="number"
-            value={formData.montantAbonnementAnnuel}
-            onChange={(e) => setFormData({ ...formData, montantAbonnementAnnuel: e.target.value })}
-            fullWidth
-            required
-            sx={{ mb: 2 }}
-            InputProps={{
-              endAdornment: <InputAdornment position="end">FCFA/an</InputAdornment>,
-            }}
-          />
+              <DialogContent sx={{ p: 3 }}>
+                <TextField
+                  label="Montant d'enregistrement"
+                  type="number"
+                  value={formData.montantEnregistrement}
+                  onChange={(e) => setFormData({ ...formData, montantEnregistrement: e.target.value })}
+                  fullWidth
+                  required
+                  helperText="Paiement unique, à l'ajout du bien"
+                  sx={{ ...fieldSx, mt: 1, mb: 2.5 }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <AttachMoney sx={{ color: "#1976d2" }} />
+                      </InputAdornment>
+                    ),
+                    endAdornment: <InputAdornment position="end">FCFA</InputAdornment>,
+                  }}
+                />
 
-          <TextField
-            label="Commission de vente (si vente via Softlink)"
-            type="number"
-            value={formData.commissionVente}
-            onChange={(e) => setFormData({ ...formData, commissionVente: e.target.value })}
-            fullWidth
-            required
-            sx={{ mb: 2 }}
-            InputProps={{
-              endAdornment: <InputAdornment position="end">%</InputAdornment>,
-            }}
-            inputProps={{ min: 0, max: 100, step: 0.1 }}
-          />
+                <TextField
+                  label="Abonnement annuel"
+                  type="number"
+                  value={formData.montantAbonnementAnnuel}
+                  onChange={(e) => setFormData({ ...formData, montantAbonnementAnnuel: e.target.value })}
+                  fullWidth
+                  required
+                  helperText="Facturé chaque année"
+                  sx={{ ...fieldSx, mb: 2.5 }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Autorenew sx={{ color: "#2e7d32" }} />
+                      </InputAdornment>
+                    ),
+                    endAdornment: <InputAdornment position="end">FCFA/an</InputAdornment>,
+                  }}
+                />
 
-          <TextField
-            label="Description"
-            value={formData.description}
-            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            fullWidth
-            multiline
-            rows={2}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setEditDialog(false)}>Annuler</Button>
-          <Button onClick={handleUpdate} variant="contained" startIcon={<Save />} color="success">
-            Enregistrer
-          </Button>
-        </DialogActions>
+                <TextField
+                  label="Commission de vente"
+                  type="number"
+                  value={formData.commissionVente}
+                  onChange={(e) => setFormData({ ...formData, commissionVente: e.target.value })}
+                  fullWidth
+                  required
+                  helperText="% prélevé lors d'une vente via Softlink"
+                  sx={{ ...fieldSx, mb: 2.5 }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Percent sx={{ color: "#ff9800" }} />
+                      </InputAdornment>
+                    ),
+                    endAdornment: <InputAdornment position="end">%</InputAdornment>,
+                  }}
+                  inputProps={{ min: 0, max: 100, step: 0.1 }}
+                />
+
+                <Divider sx={{ mb: 2.5 }} />
+
+                <TextField
+                  label="Description"
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  fullWidth
+                  multiline
+                  rows={2}
+                  sx={fieldSx}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start" sx={{ alignSelf: "flex-start", mt: 1.5 }}>
+                        <Notes sx={{ color: "#607d8b" }} />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </DialogContent>
+
+              <DialogActions sx={{ px: 3, pb: 3, pt: 0 }}>
+                <Button onClick={() => setEditDialog(false)} color="inherit" sx={{ borderRadius: 2 }}>
+                  Annuler
+                </Button>
+                <Button
+                  onClick={handleUpdate}
+                  variant="contained"
+                  startIcon={<Save />}
+                  sx={{ borderRadius: 2, px: 3, bgcolor: color, boxShadow: "none", "&:hover": { bgcolor: color, filter: "brightness(0.92)", boxShadow: "none" } }}
+                >
+                  Enregistrer
+                </Button>
+              </DialogActions>
+            </>
+          );
+        })()}
       </Dialog>
     </PageLayout>
   );

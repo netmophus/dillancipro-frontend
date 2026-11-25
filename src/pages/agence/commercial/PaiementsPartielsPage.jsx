@@ -33,8 +33,10 @@ import {
   Receipt,
   TrendingUp,
 } from "@mui/icons-material";
+import AssessmentIcon from "@mui/icons-material/Assessment";
 import { useNavigate } from "react-router-dom";
-import PageLayout from "../../../components/shared/PageLayout";
+import CommercialLayout from "../../../components/commercial/CommercialLayout";
+import AgencePageHeader from "../../../components/agence/AgencePageHeader";
 import api from "../../../services/api";
 
 const PaiementsPartielsPage = () => {
@@ -71,31 +73,20 @@ const PaiementsPartielsPage = () => {
   };
 
   return (
-    <PageLayout>
+    <CommercialLayout>
       <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
-        <Box sx={{ mb: 4 }}>
-          <Button
-            startIcon={<ArrowBack />}
-            onClick={() => navigate("/agence/commercial/dashboard")}
-            sx={{ mb: 2 }}
-          >
-            Retour au dashboard
-          </Button>
-
-          <Box display="flex" alignItems="center" gap={2}>
-            <Avatar sx={{ bgcolor: "warning.main", width: 64, height: 64 }}>
-              <Payment fontSize="large" />
-            </Avatar>
-            <Box>
-              <Typography variant="h4" fontWeight="bold">
-                Paiements Partiels
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Suivi des échéanciers de vos clients
-              </Typography>
-            </Box>
-          </Box>
-        </Box>
+        <AgencePageHeader
+          icon={Payment}
+          title="Paiements Partiels"
+          subtitle="Suivi des échéanciers de vos clients"
+          action={
+            <Button startIcon={<ArrowBack />} variant="outlined"
+              onClick={() => navigate("/agence/commercial/dashboard")}
+              sx={{ borderColor: "rgba(255,255,255,0.6)", color: "white" }}>
+              Retour au dashboard
+            </Button>
+          }
+        />
 
         {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
 
@@ -117,11 +108,14 @@ const PaiementsPartielsPage = () => {
             <CircularProgress />
           </Box>
         ) : (
-          <Card elevation={3}>
+          <Card elevation={0} sx={{ borderRadius: 3, border: "1px solid #e3e8ef" }}>
             <CardContent>
-              <Typography variant="h6" fontWeight="bold" gutterBottom>
-                📊 Vue d'ensemble des paiements partiels
-              </Typography>
+              <Box display="flex" alignItems="center" gap={1} mb={1}>
+                <AssessmentIcon color="primary" />
+                <Typography variant="h6" fontWeight="bold">
+                  Vue d'ensemble des paiements partiels
+                </Typography>
+              </Box>
               <Divider sx={{ mb: 3 }} />
 
               <Typography variant="body2" color="text.secondary" textAlign="center" py={6}>
@@ -133,7 +127,7 @@ const PaiementsPartielsPage = () => {
           </Card>
         )}
       </Container>
-    </PageLayout>
+    </CommercialLayout>
   );
 };
 

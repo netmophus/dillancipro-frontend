@@ -44,7 +44,12 @@ import {
   InsertDriveFile,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import PageLayout from "../../components/shared/PageLayout";
+import ClientLayout from "../../components/client/ClientLayout";
+import AgencePageHeader from "../../components/agence/AgencePageHeader";
+import GavelIcon from "@mui/icons-material/Gavel";
+import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import { useAuth } from "../../contexts/AuthContext";
 import API from "../../services/api";
 
@@ -153,29 +158,20 @@ const MesVentesClientPage = () => {
   };
 
   return (
-    <PageLayout>
+    <ClientLayout>
       <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
-        <Box sx={{ mb: 4 }}>
-          <Box display="flex" alignItems="center" justifyContent="space-between">
-            <Box display="flex" alignItems="center" gap={2}>
-              <Home sx={{ fontSize: 40, color: "primary.main" }} />
-              <Box>
-                <Typography variant="h4" fontWeight="bold">
-                  Mes Achats
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Suivez l'avancement de vos achats avec le notaire
-                </Typography>
-              </Box>
-            </Box>
-            <Button
-              variant="outlined"
+        <AgencePageHeader
+          icon={Home}
+          title="Mes Achats"
+          subtitle="Suivez l'avancement de vos achats avec le notaire"
+          action={
+            <Button variant="outlined"
               onClick={() => navigate("/user/dashboard")}
-            >
+              sx={{ borderColor: "rgba(255,255,255,0.6)", color: "white" }}>
               Retour au dashboard
             </Button>
-          </Box>
-        </Box>
+          }
+        />
 
         {error && (
           <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError("")}>
@@ -183,12 +179,39 @@ const MesVentesClientPage = () => {
           </Alert>
         )}
 
+        {!loading && ventes.length > 0 && (
+          <Grid container spacing={2.5} sx={{ mb: 3 }}>
+            {[
+              { label: "Total", value: ventes.length, icon: GavelIcon, color: "#7b1fa2" },
+              { label: "En cours", value: ventes.filter((v) => v.statut !== "finalisee" && v.statut !== "annulee").length, icon: HourglassEmptyIcon, color: "#ff9800" },
+              { label: "Finalisées", value: ventes.filter((v) => v.statut === "finalisee").length, icon: CheckCircleIcon, color: "#2e7d32" },
+              { label: "Montant total", value: formatMoney(ventes.reduce((s, v) => s + (v.prixVente || 0), 0)), icon: AttachMoneyIcon, color: "#00897b" },
+            ].map((kpi) => (
+              <Grid item xs={6} md={3} key={kpi.label}>
+                <Card elevation={0} sx={{ borderRadius: 3, border: "1px solid #e3e8ef" }}>
+                  <CardContent>
+                    <Box display="flex" justifyContent="space-between" alignItems="center">
+                      <Box sx={{ minWidth: 0 }}>
+                        <Typography variant="body2" color="text.secondary">{kpi.label}</Typography>
+                        <Typography variant="h5" fontWeight="bold" sx={{ color: kpi.color }} noWrap>{kpi.value}</Typography>
+                      </Box>
+                      <Box sx={{ width: 44, height: 44, borderRadius: 2, bgcolor: `${kpi.color}15`, color: kpi.color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        <kpi.icon />
+                      </Box>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        )}
+
         {loading ? (
           <Box display="flex" justifyContent="center" py={4}>
             <CircularProgress />
           </Box>
         ) : ventes.length === 0 ? (
-          <Card>
+          <Card elevation={0} sx={{ borderRadius: 3, border: "1px solid #e3e8ef" }}>
             <CardContent>
               <Typography align="center" color="text.secondary">
                 Aucun achat trouvé
@@ -196,7 +219,7 @@ const MesVentesClientPage = () => {
             </CardContent>
           </Card>
         ) : (
-          <TableContainer component={Paper} elevation={2}>
+          <TableContainer component={Paper} elevation={0} sx={{ border: "1px solid #e3e8ef", borderRadius: 2 }}>
             <Table>
               <TableHead>
                 <TableRow>
@@ -366,17 +389,17 @@ const MesVentesClientPage = () => {
                         </Typography>
                         <Box display="flex" gap={2} flexWrap="wrap">
                           <Chip
-                            label={`Commercial: ${selectedVente.signatures.commercial ? "✓ Signé" : "En attente"}`}
+                            label={`Commercial: ${selectedVente.signatures.commercial ? "Signé" : "En attente"}`}
                             color={selectedVente.signatures.commercial ? "success" : "warning"}
                             size="small"
                           />
                           <Chip
-                            label={`Vous: ${selectedVente.signatures.client ? "✓ Signé" : "En attente"}`}
+                            label={`Vous: ${selectedVente.signatures.client ? "Signé" : "En attente"}`}
                             color={selectedVente.signatures.client ? "success" : "warning"}
                             size="small"
                           />
                           <Chip
-                            label={`Agence: ${selectedVente.signatures.agence ? "✓ Signé" : "En attente"}`}
+                            label={`Agence: ${selectedVente.signatures.agence ? "Signé" : "En attente"}`}
                             color={selectedVente.signatures.agence ? "success" : "warning"}
                             size="small"
                           />
@@ -410,7 +433,7 @@ const MesVentesClientPage = () => {
                 <Grid item xs={12}>
                   <Card variant="outlined" sx={{ p: 2 }}>
                     <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                      📄 DOCUMENTS NOTARIAUX
+                      DOCUMENTS NOTARIAUX
                     </Typography>
                     {selectedVente.documentsNotariaux && selectedVente.documentsNotariaux.length > 0 ? (
                       <Grid container spacing={2} sx={{ mt: 1 }}>
@@ -535,7 +558,7 @@ const MesVentesClientPage = () => {
           </DialogActions>
         </Dialog>
       </Container>
-    </PageLayout>
+    </ClientLayout>
   );
 };
 

@@ -6,7 +6,7 @@ import {
   Button,
   TextField,
   MenuItem,
-  Grid,
+  GridLegacy as Grid,
   Card,
   CardContent,
   Alert,
@@ -46,8 +46,11 @@ import {
   Close,
   Description,
 } from "@mui/icons-material";
+import { Flag as FIFlag, Notes as FINotes, AttachMoney as FIAttachMoney, MyLocation as FIMyLocation, Explore as FIExplore } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import PageLayout from "../../components/shared/PageLayout";
+import AgenceLayout from "../../components/agence/AgenceLayout";
+import SectionCard from "../../components/admin/SectionCard";
+import AgencePageHeader from "../../components/agence/AgencePageHeader";
 import api from "../../services/api";
 
 const CreateParcelleMultiplePage = () => {
@@ -206,7 +209,7 @@ const CreateParcelleMultiplePage = () => {
       const res = await api.post("/agence/parcelles/parcelles/batch-individual", formData);
       console.log("✅ [FRONTEND] Succès:", res.data);
       
-      setSuccess(`✅ ${parcelles.length} parcelles créées avec succès ! Redirection...`);
+      setSuccess(`${parcelles.length} parcelles créées avec succès ! Redirection...`);
       
       // Rediriger vers l'onglet liste de la page de création après 1.5 secondes
       setTimeout(() => {
@@ -227,33 +230,32 @@ const CreateParcelleMultiplePage = () => {
   const prevStep = () => setCurrentStep((prev) => Math.max(prev - 1, 0));
 
   return (
-    <PageLayout>
+    <AgenceLayout>
       <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
         {/* En-tête */}
-        <Box sx={{ mb: 4 }}>
-          <Box display="flex" alignItems="center" gap={2} mb={1}>
-            <Avatar sx={{ bgcolor: "primary.main", width: 56, height: 56 }}>
-              <Square fontSize="large" />
-            </Avatar>
-            <Box>
-              <Typography variant="h4" fontWeight="bold">
-                Créer Parcelles Multiples
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Créez plusieurs parcelles avec coordonnées et médias individuels
-              </Typography>
-            </Box>
-          </Box>
-        </Box>
+        <AgencePageHeader
+          icon={Square}
+          title="Créer Parcelles Multiples"
+          subtitle="Créez plusieurs parcelles avec coordonnées et médias individuels"
+        />
 
         {/* Alertes */}
         {success && <Alert severity="success" sx={{ mb: 3 }}>{success}</Alert>}
         {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
 
-        <Card elevation={3}>
-          <CardContent sx={{ p: 4 }}>
+        <Card elevation={0} sx={{ bgcolor: "transparent", border: "none", boxShadow: "none" }}>
+          <CardContent sx={{ p: 0, "&:last-child": { pb: 0 }, "& .MuiOutlinedInput-root": { borderRadius: 2 }, "& legend": { display: "none" } }}>
             {/* Stepper */}
-            <Stepper activeStep={currentStep} sx={{ mb: 4 }}>
+            <Stepper
+              activeStep={currentStep}
+              sx={{
+                mb: 4,
+                "& .MuiStepLabel-label": { fontWeight: 600 },
+                "& .MuiStepLabel-label.Mui-active": { color: "#3030F9" },
+                "& .MuiStepIcon-root.Mui-active": { color: "#3030F9" },
+                "& .MuiStepIcon-root.Mui-completed": { color: "#0A7C4F" },
+              }}
+            >
               {steps.map((label) => (
                 <Step key={label}>
                   <StepLabel>{label}</StepLabel>
@@ -263,19 +265,17 @@ const CreateParcelleMultiplePage = () => {
 
             {/* ÉTAPE 1 : Informations communes */}
             {currentStep === 0 && (
-              <Box>
-                <Typography variant="h6" fontWeight="bold" gutterBottom mb={3}>
-                  Informations communes à toutes les parcelles
-                </Typography>
+              <SectionCard title="Informations communes à toutes les parcelles" color="#3030F9" icon="info" sx={{ mb: 0 }}>
                 <Grid container spacing={3}>
                   <Grid item xs={12} md={6}>
                     <TextField
                       select
-                      label="Îlot"
+                      inputProps={{ "aria-label": "Îlot", title: "Îlot" }}
                       value={commonData.ilot}
                       onChange={(e) => setCommonData({ ...commonData, ilot: e.target.value })}
                       fullWidth
                       required
+                      SelectProps={{ displayEmpty: true }}
                       InputProps={{
                         startAdornment: (
                           <InputAdornment position="start">
@@ -284,6 +284,9 @@ const CreateParcelleMultiplePage = () => {
                         ),
                       }}
                     >
+                      <MenuItem value="" disabled>
+                        Sélectionnez un îlot *
+                      </MenuItem>
                       {ilots.map((ilot) => (
                         <MenuItem key={ilot._id} value={ilot._id}>
                           {ilot.numeroIlot}
@@ -294,12 +297,18 @@ const CreateParcelleMultiplePage = () => {
 
                   <Grid item xs={12} md={6}>
                     <TextField
-                      label="Superficie (commune)"
+                      inputProps={{ "aria-label": "Superficie commune", title: "Superficie commune" }}
+                      placeholder="Superficie commune"
                       type="number"
                       value={commonData.superficie}
                       onChange={(e) => setCommonData({ ...commonData, superficie: e.target.value })}
                       fullWidth
                       InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <Square color="action" />
+                          </InputAdornment>
+                        ),
                         endAdornment: <InputAdornment position="end">m²</InputAdornment>,
                       }}
                       helperText="Laissez vide si différente pour chaque parcelle"
@@ -308,11 +317,19 @@ const CreateParcelleMultiplePage = () => {
 
                   <Grid item xs={12} md={6}>
                     <TextField
-                      label="Prix (commun)"
+                      inputProps={{ "aria-label": "Prix commun", title: "Prix commun" }}
+                      placeholder="Prix commun"
                       type="number"
                       value={commonData.prix}
                       onChange={(e) => setCommonData({ ...commonData, prix: e.target.value })}
                       fullWidth
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <FIAttachMoney color="action" />
+                          </InputAdornment>
+                        ),
+                      }}
                       InputProps={{
                         startAdornment: (
                           <InputAdornment position="start">
@@ -327,7 +344,15 @@ const CreateParcelleMultiplePage = () => {
                   <Grid item xs={12} md={6}>
                     <TextField
                       select
-                      label="Statut"
+                      inputProps={{ "aria-label": "Statut", title: "Statut" }}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <FIFlag color="action" />
+                            <Typography variant="body2" color="text.secondary" sx={{ ml: 1 }}>Statut</Typography>
+                          </InputAdornment>
+                        ),
+                      }}
                       value={commonData.statut}
                       onChange={(e) => setCommonData({ ...commonData, statut: e.target.value })}
                       fullWidth
@@ -340,27 +365,31 @@ const CreateParcelleMultiplePage = () => {
 
                   <Grid item xs={12}>
                     <TextField
-                      label="Description (commune)"
+                      inputProps={{ "aria-label": "Description commune", title: "Description commune" }}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start" sx={{ alignSelf: "flex-start", mt: 1.5 }}>
+                            <FINotes color="action" />
+                          </InputAdornment>
+                        ),
+                      }}
                       value={commonData.description}
                       onChange={(e) => setCommonData({ ...commonData, description: e.target.value })}
                       fullWidth
                       multiline
                       rows={3}
-                      placeholder="Description qui s'appliquera à toutes les parcelles..."
+                      placeholder="Description commune à toutes les parcelles"
                     />
                   </Grid>
                 </Grid>
-              </Box>
+              </SectionCard>
             )}
 
             {/* ÉTAPE 2 : Liste des numéros */}
             {currentStep === 1 && (
-              <Box>
-                <Typography variant="h6" fontWeight="bold" gutterBottom mb={3}>
-                  Numéros des parcelles à créer
-                </Typography>
+              <SectionCard title="Numéros des parcelles à créer" color="#0A7C4F" icon="checklist" sx={{ mb: 0 }}>
                 <TextField
-                  label="Liste des numéros (séparés par des virgules)"
+                  inputProps={{ "aria-label": "Liste des numéros", title: "Liste des numéros" }}
                   value={numeroList}
                   onChange={(e) => setNumeroList(e.target.value)}
                   fullWidth
@@ -390,15 +419,12 @@ const CreateParcelleMultiplePage = () => {
                     </Stack>
                   </Box>
                 )}
-              </Box>
+              </SectionCard>
             )}
 
             {/* ÉTAPE 3 : Coordonnées & Documents par parcelle */}
             {currentStep === 2 && (
-              <Box>
-                <Typography variant="h6" fontWeight="bold" gutterBottom mb={2}>
-                  Coordonnées & Documents pour chaque parcelle
-                </Typography>
+              <SectionCard title="Coordonnées & Documents pour chaque parcelle" color="#0e1133" icon="location" sx={{ mb: 0 }}>
                 <Alert severity="info" sx={{ mb: 3 }}>
                   Pour chaque parcelle, vous pouvez ajouter ses coordonnées GPS et documents (tous optionnels). Les photos et vidéos sont déjà intégrées dans l'îlot.
                 </Alert>
@@ -424,7 +450,7 @@ const CreateParcelleMultiplePage = () => {
                               </Typography>
                               <Typography variant="caption" color="text.secondary">
                                 {parcelle.documentFiles?.length || 0} doc(s) • 
-                                GPS: {parcelle.localisation.lat && parcelle.localisation.lng ? "✓" : "✗"}
+                                GPS: {parcelle.localisation.lat && parcelle.localisation.lng ? "Oui" : "Non"}
                               </Typography>
                             </Box>
                           </Box>
@@ -444,24 +470,36 @@ const CreateParcelleMultiplePage = () => {
                           <Grid container spacing={2} sx={{ mb: 3 }}>
                             <Grid item xs={12} md={6}>
                               <TextField
-                                label="Latitude"
                                 type="number"
                                 value={parcelle.localisation.lat}
                                 onChange={(e) => updateLocalisation(index, "lat", e.target.value)}
                                 fullWidth
-                                placeholder="Ex: 13.5127"
-                                inputProps={{ step: "any" }}
+                                placeholder="Latitude (ex. 13.5127)"
+                                inputProps={{ step: "any", "aria-label": "Latitude", title: "Latitude" }}
+                                InputProps={{
+                                  startAdornment: (
+                                    <InputAdornment position="start">
+                                      <FIMyLocation color="action" />
+                                    </InputAdornment>
+                                  ),
+                                }}
                               />
                             </Grid>
                             <Grid item xs={12} md={6}>
                               <TextField
-                                label="Longitude"
                                 type="number"
                                 value={parcelle.localisation.lng}
                                 onChange={(e) => updateLocalisation(index, "lng", e.target.value)}
                                 fullWidth
-                                placeholder="Ex: 2.1128"
-                                inputProps={{ step: "any" }}
+                                placeholder="Longitude (ex. 2.1128)"
+                                inputProps={{ step: "any", "aria-label": "Longitude", title: "Longitude" }}
+                                InputProps={{
+                                  startAdornment: (
+                                    <InputAdornment position="start">
+                                      <FIExplore color="action" />
+                                    </InputAdornment>
+                                  ),
+                                }}
                               />
                             </Grid>
                           </Grid>
@@ -527,15 +565,12 @@ const CreateParcelleMultiplePage = () => {
                     </Card>
                   ))}
                 </Stack>
-              </Box>
+              </SectionCard>
             )}
 
             {/* ÉTAPE 4 : Confirmation */}
             {currentStep === 3 && (
-              <Box>
-                <Typography variant="h6" fontWeight="bold" gutterBottom mb={3}>
-                  Récapitulatif
-                </Typography>
+              <SectionCard title="Récapitulatif" color="#3030F9" icon="description" sx={{ mb: 0 }}>
                 
                 <Alert severity="info" sx={{ mb: 3 }}>
                   Vous allez créer <strong>{parcelles.length} parcelles</strong>
@@ -543,13 +578,25 @@ const CreateParcelleMultiplePage = () => {
 
                 <TableContainer component={Paper} variant="outlined">
                   <Table size="small">
-                    <TableHead sx={{ bgcolor: "grey.100" }}>
+                    <TableHead
+                      sx={{
+                        "& th": {
+                          bgcolor: "#f6f8fb",
+                          color: "text.secondary",
+                          fontWeight: 700,
+                          fontSize: "0.75rem",
+                          textTransform: "uppercase",
+                          letterSpacing: 0.5,
+                          borderBottom: "2px solid #e3e8ef",
+                        },
+                      }}
+                    >
                       <TableRow>
-                        <TableCell><strong>Parcelle</strong></TableCell>
-                        <TableCell><strong>Superficie</strong></TableCell>
-                        <TableCell><strong>Prix</strong></TableCell>
-                        <TableCell><strong>GPS</strong></TableCell>
-                        <TableCell><strong>Docs</strong></TableCell>
+                        <TableCell>Parcelle</TableCell>
+                        <TableCell>Superficie</TableCell>
+                        <TableCell>Prix</TableCell>
+                        <TableCell>GPS</TableCell>
+                        <TableCell>Docs</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -562,9 +609,9 @@ const CreateParcelleMultiplePage = () => {
                           <TableCell>{p.prix || commonData.prix || "-"} FCFA</TableCell>
                           <TableCell>
                             {p.localisation.lat && p.localisation.lng ? (
-                              <Chip icon={<CheckCircle />} label="✓" color="success" size="small" />
+                              <Chip icon={<CheckCircle />} label="Oui" color="success" size="small" />
                             ) : (
-                              <Chip label="✗" size="small" />
+                              <Chip icon={<Close />} label="Non" size="small" />
                             )}
                           </TableCell>
                           <TableCell>
@@ -579,7 +626,7 @@ const CreateParcelleMultiplePage = () => {
                     </TableBody>
                   </Table>
                 </TableContainer>
-              </Box>
+              </SectionCard>
             )}
 
             {/* Boutons de navigation */}
@@ -639,7 +686,7 @@ const CreateParcelleMultiplePage = () => {
           </CardContent>
         </Card>
       </Container>
-    </PageLayout>
+    </AgenceLayout>
   );
 };
 

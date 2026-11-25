@@ -7,6 +7,7 @@ import SearchLocationsPage from "../pages/public/SearchLocationsPage";
 import SearchBiensPage from "../pages/public/SearchBiensPage";
 import LoginPage from "../pages/shared/LoginPage";
 import RegisterPage from "../pages/shared/RegisterPage";
+import WelcomePage from "../pages/mobile/WelcomePage";
 import ProfilePage from "../pages/shared/ProfilePage";
 import AdminDashboardPage from "../pages/admin/AdminDashboardPage";
 import UserDashboardPage from "../pages/user/UserDashboardPage";
@@ -82,14 +83,13 @@ import RenouvelerAbonnementPage from "../pages/user/RenouvelerAbonnementPage";
 import SoumettreVentePage from "../pages/user/SoumettreVentePage";
 
 
-
-
 const AppRoutes = () => {
   return (
     <Router>
       <Routes>
-        {/* 🔓 Pages publiques */}
+        {/* Pages publiques */}
         <Route path="/" element={<HomePage />} />
+        <Route path="/welcome" element={<WelcomePage />} />
         <Route path="/parcelles" element={<SearchParcellesPage />} />
         <Route path="/locations" element={<SearchLocationsPage />} />
         <Route path="/biens" element={<SearchBiensPage />} />

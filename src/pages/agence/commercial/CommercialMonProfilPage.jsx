@@ -22,7 +22,7 @@ import {
   Description,
   Assignment,
 } from "@mui/icons-material";
-import PageLayout from "../../../components/shared/PageLayout";
+import CommercialLayout from "../../../components/commercial/CommercialLayout";
 import { useAuth } from "../../../contexts/AuthContext";
 import api from "../../../services/api";
 
@@ -48,7 +48,7 @@ useEffect(() => {
   const fetchProfil = async () => {
     setLoading(true);
     try {
-      const res = await api.get("/agence/commerciaux/me/profil"); // ✅ bonne route
+      const res = await api.get("/agence/commerciaux/me/profil"); // bonne route
       setProfil(res.data || null);
     } catch {
       setProfil(null);
@@ -62,13 +62,13 @@ useEffect(() => {
 const photoSrc = useMemo(() => {
   const p = profil?.photoUrl;
   if (!p) return undefined;
-  return p.startsWith("http") ? p : `/${p}`; // ✅ ok pour Cloudinary + local
+  return p.startsWith("http") ? p : `/${p}`; // ok pour Cloudinary + local
 }, [profil]);
 
 const pieceHref = useMemo(() => {
   const f = profil?.pieceIdentite?.fichierUrl;
   if (!f) return undefined;
-  return f.startsWith("http") ? f : `/${f}`; // ✅ évite "/https://..."
+  return f.startsWith("http") ? f : `/${f}`; // évite "/https://..."
 }, [profil]);
 
 
@@ -89,12 +89,12 @@ const pieceHref = useMemo(() => {
   }, [profil]);
 
   return (
-    <PageLayout>
+    <CommercialLayout>
       <Box sx={{ width: "100%", minHeight: "100vh", bgcolor: "#f5f7fa" }}>
         {/* En-tête modernisé */}
         <Box
           sx={{
-            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            background: "linear-gradient(135deg, #0D2B4E 0%, #1B5285 55%, #27AE60 165%)",
             py: 6,
             mb: 4,
             width: "100%",
@@ -211,7 +211,7 @@ const pieceHref = useMemo(() => {
                         width: 100, 
                         height: 100, 
                         fontSize: 36,
-                        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                        background: "linear-gradient(135deg, #0D2B4E 0%, #1B5285 55%, #27AE60 165%)",
                         border: "4px solid white",
                         boxShadow: "0 4px 16px rgba(102, 126, 234, 0.3)",
                       }}
@@ -349,7 +349,7 @@ const pieceHref = useMemo(() => {
                           fontWeight={700} 
                           mt={0.5}
                           sx={{
-                            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                            background: "linear-gradient(135deg, #0D2B4E 0%, #1B5285 55%, #27AE60 165%)",
                             backgroundClip: "text",
                             WebkitBackgroundClip: "text",
                             WebkitTextFillColor: "transparent",
@@ -514,7 +514,7 @@ const pieceHref = useMemo(() => {
                           rel="noopener"
                           startIcon={<Description />}
                           sx={{
-                            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                            background: "linear-gradient(135deg, #0D2B4E 0%, #1B5285 55%, #27AE60 165%)",
                             boxShadow: "0 4px 14px rgba(102, 126, 234, 0.4)",
                             borderRadius: 2,
                             textTransform: "none",
@@ -601,7 +601,7 @@ const pieceHref = useMemo(() => {
                           variant="h4" 
                           fontWeight={700}
                           sx={{
-                            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                            background: "linear-gradient(135deg, #0D2B4E 0%, #1B5285 55%, #27AE60 165%)",
                             backgroundClip: "text",
                             WebkitBackgroundClip: "text",
                             WebkitTextFillColor: "transparent",
@@ -635,7 +635,7 @@ const pieceHref = useMemo(() => {
                           variant="h4" 
                           fontWeight={700}
                           sx={{
-                            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                            background: "linear-gradient(135deg, #0D2B4E 0%, #1B5285 55%, #27AE60 165%)",
                             backgroundClip: "text",
                             WebkitBackgroundClip: "text",
                             WebkitTextFillColor: "transparent",
@@ -654,7 +654,7 @@ const pieceHref = useMemo(() => {
         )}
         </Container>
       </Box>
-    </PageLayout>
+    </CommercialLayout>
   );
 };
 

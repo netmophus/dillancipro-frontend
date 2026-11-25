@@ -25,7 +25,7 @@ import {
   Phone,
 } from "@mui/icons-material";
 import { useNavigate, useParams } from "react-router-dom";
-import PageLayout from "../../components/shared/PageLayout";
+import ClientLayout from "../../components/client/ClientLayout";
 import api from "../../services/api";
 
 const PaiementEnregistrementPage = () => {
@@ -70,7 +70,7 @@ const PaiementEnregistrementPage = () => {
         methodePaiement,
       });
 
-      setSuccess(`✅ Paiement initié ! Référence : ${res.data.paiement.reference}`);
+      setSuccess(`Paiement initié ! Référence : ${res.data.paiement.reference}`);
 
       // TODO: Intégrer API paiement mobile (CinetPay, etc.)
       // Rediriger vers page de paiement
@@ -91,29 +91,29 @@ const PaiementEnregistrementPage = () => {
 
   if (loading) {
     return (
-      <PageLayout>
+      <ClientLayout>
         <Box display="flex" justifyContent="center" alignItems="center" minHeight="80vh">
           <CircularProgress size={60} />
         </Box>
-      </PageLayout>
+      </ClientLayout>
     );
   }
 
   if (!bien || !tarif) {
     return (
-      <PageLayout>
+      <ClientLayout>
         <Container maxWidth="sm" sx={{ mt: 4 }}>
           <Alert severity="error">Bien ou tarif non trouvé</Alert>
           <Button startIcon={<ArrowBack />} onClick={() => navigate("/user/mon-patrimoine")} sx={{ mt: 2 }}>
             Retour
           </Button>
         </Container>
-      </PageLayout>
+      </ClientLayout>
     );
   }
 
   return (
-    <PageLayout>
+    <ClientLayout>
       <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
         {/* En-tête */}
         <Button startIcon={<ArrowBack />} onClick={() => navigate("/user/mon-patrimoine")} sx={{ mb: 3 }}>
@@ -136,7 +136,7 @@ const PaiementEnregistrementPage = () => {
         <Card
           elevation={3}
           sx={{
-            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            background: "linear-gradient(135deg, #0D2B4E 0%, #1B5285 55%, #27AE60 165%)",
             color: "white",
             mb: 3,
           }}
@@ -244,11 +244,11 @@ const PaiementEnregistrementPage = () => {
               onChange={(e) => setMethodePaiement(e.target.value)}
               fullWidth
             >
-              <MenuItem value="orange_money">🟠 Orange Money</MenuItem>
-              <MenuItem value="moov_money">🔵 Moov Money</MenuItem>
-              <MenuItem value="airtel_money">🔴 Airtel Money</MenuItem>
-              <MenuItem value="zamani">🟢 Zamani</MenuItem>
-              <MenuItem value="especes">💵 Espèces</MenuItem>
+              <MenuItem value="orange_money">Orange Money</MenuItem>
+              <MenuItem value="moov_money">Moov Money</MenuItem>
+              <MenuItem value="airtel_money">Airtel Money</MenuItem>
+              <MenuItem value="zamani">Zamani</MenuItem>
+              <MenuItem value="especes">Espèces</MenuItem>
             </TextField>
 
             <Alert severity="info" sx={{ mt: 3 }}>
@@ -279,13 +279,13 @@ const PaiementEnregistrementPage = () => {
           sx={{
             py: 2,
             fontSize: "1.1rem",
-            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            background: "linear-gradient(135deg, #0D2B4E 0%, #1B5285 55%, #27AE60 165%)",
           }}
         >
           {processing ? "Traitement en cours..." : `Payer ${formatMoney(tarif.montantEnregistrement)}`}
         </Button>
       </Container>
-    </PageLayout>
+    </ClientLayout>
   );
 };
 

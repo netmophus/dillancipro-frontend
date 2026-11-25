@@ -10,8 +10,10 @@ import {
   CircularProgress,
   Box,
 } from "@mui/material";
+import DashboardIcon from "@mui/icons-material/Dashboard";
 import { useAuth } from "../../../contexts/AuthContext";
-import PageLayout from "../../../components/shared/PageLayout";
+import ClientLayout from "../../../components/client/ClientLayout";
+import AgencePageHeader from "../../../components/agence/AgencePageHeader";
 import api from "../../../services/api";
 
 const ClientDashboardPage = () => {
@@ -36,11 +38,13 @@ const ClientDashboardPage = () => {
   }, [user._id]);
 
   return (
-    <PageLayout>
+    <ClientLayout>
       <Container sx={{ mt: 4 }}>
-        <Typography variant="h4" gutterBottom>
-          🏠 Tableau de bord - Client
-        </Typography>
+        <AgencePageHeader
+          icon={DashboardIcon}
+          title="Tableau de bord - Client"
+          subtitle="Vue d'ensemble de vos parcelles achetées"
+        />
 
         <Typography variant="body1" sx={{ mb: 3 }}>
           Bienvenue <strong>{user?.fullName || "Client"}</strong>. Voici vos parcelles achetées.
@@ -81,7 +85,7 @@ const ClientDashboardPage = () => {
           </Grid>
         )}
       </Container>
-    </PageLayout>
+    </ClientLayout>
   );
 };
 

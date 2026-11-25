@@ -55,7 +55,12 @@ import { useNavigate } from "react-router-dom";
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import PageLayout from "../../components/shared/PageLayout";
+import ClientLayout from "../../components/client/ClientLayout";
+import AgencePageHeader from "../../components/agence/AgencePageHeader";
+import LandscapeIcon from "@mui/icons-material/Landscape";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import AssignmentTurnedInIcon from "@mui/icons-material/AssignmentTurnedIn";
+import SellIcon from "@mui/icons-material/Sell";
 import api from "../../services/api";
 
 // Fix icônes Leaflet
@@ -124,7 +129,7 @@ const MonPatrimoinePage = () => {
   const [biens, setBiens] = useState([]);
   const [contrePropositions, setContrePropositions] = useState([]);
   const [mapDialog, setMapDialog] = useState(false);
-  const [mapPosition, setMapPosition] = useState({ lat: 12.3714, lng: -1.5197 });
+  const [mapPosition, setMapPosition] = useState({ lat: 13.5116, lng: 2.1254 }); // Niamey par défaut
 
   // Charger les biens au montage du composant et quand on change d'onglet
   useEffect(() => {
@@ -165,7 +170,7 @@ const MonPatrimoinePage = () => {
   const handleAccepterContreProposition = async (venteId) => {
     try {
       await api.put(`/patrimoine/ventes/${venteId}/accepter-contre-proposition`);
-      setSuccess("✅ Contre-proposition acceptée !");
+      setSuccess("Contre-proposition acceptée !");
       fetchContrePropositions();
       fetchBiens();
     } catch (err) {
@@ -179,7 +184,7 @@ const MonPatrimoinePage = () => {
     }
     try {
       await api.put(`/patrimoine/ventes/${venteId}/refuser-contre-proposition`);
-      setSuccess("❌ Contre-proposition refusée. La vente a été annulée.");
+      setSuccess("Contre-proposition refusée. La vente a été annulée.");
       fetchContrePropositions();
       fetchBiens();
     } catch (err) {
@@ -211,7 +216,7 @@ const MonPatrimoinePage = () => {
     
     // Validation : maximum 5 photos
     if (photoFiles.length + files.length > 5) {
-      setError("❌ Vous ne pouvez ajouter que 5 photos maximum");
+      setError("Vous ne pouvez ajouter que 5 photos maximum");
       return;
     }
     
@@ -270,13 +275,13 @@ const MonPatrimoinePage = () => {
     try {
       // Validation des photos : minimum 2, maximum 5
       if (photoFiles.length < 2) {
-        setError("❌ Vous devez ajouter au moins 2 photos");
+        setError("Vous devez ajouter au moins 2 photos");
         setLoading(false);
         return;
       }
       
       if (photoFiles.length > 5) {
-        setError("❌ Vous ne pouvez ajouter que 5 photos maximum");
+        setError("Vous ne pouvez ajouter que 5 photos maximum");
         setLoading(false);
         return;
       }
@@ -307,7 +312,7 @@ const MonPatrimoinePage = () => {
 
       const res = await api.post("/client/patrimoine", data);
 
-      setSuccess("✅ Bien ajouté ! Redirection vers le paiement...");
+      setSuccess("Bien ajouté ! Redirection vers le paiement...");
       
       // Actualiser immédiatement le compteur
       fetchBiens();
@@ -370,7 +375,7 @@ const MonPatrimoinePage = () => {
 
     try {
       await api.delete(`/client/patrimoine/${id}`);
-      setSuccess("✅ Bien supprimé avec succès");
+      setSuccess("Bien supprimé avec succès");
       fetchBiens();
     } catch (err) {
       setError("Erreur lors de la suppression");
@@ -388,32 +393,22 @@ const MonPatrimoinePage = () => {
   };
 
   return (
-    <PageLayout>
+    <ClientLayout>
       <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
         {/* En-tête */}
-        <Box sx={{ mb: 4 }}>
-          <Button
-            startIcon={<ArrowBack />}
-            onClick={() => navigate("/user/dashboard")}
-            sx={{ mb: 2 }}
-          >
-            Retour au dashboard
-          </Button>
-
-          <Box display="flex" alignItems="center" gap={2}>
-            <Avatar sx={{ bgcolor: "success.main", width: 64, height: 64 }}>
-              <Home fontSize="large" />
-            </Avatar>
-            <Box>
-              <Typography variant="h4" fontWeight="bold">
-                Mon Patrimoine Foncier
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Gérez l'ensemble de vos biens immobiliers
-              </Typography>
-            </Box>
-          </Box>
-        </Box>
+        <AgencePageHeader
+          icon={Home}
+          title="Mon Patrimoine Foncier"
+          subtitle="Gérez l'ensemble de vos biens immobiliers"
+          action={
+            <Button startIcon={<ArrowBack />}
+              onClick={() => navigate("/user/dashboard")}
+              variant="outlined"
+              sx={{ borderColor: "rgba(255,255,255,0.6)", color: "white" }}>
+              Retour au dashboard
+            </Button>
+          }
+        />
 
         {/* Alertes */}
         {success && (
@@ -436,7 +431,7 @@ const MonPatrimoinePage = () => {
           <Card sx={{ mb: 3, bgcolor: 'info.light', color: 'info.contrastText' }}>
             <CardContent>
               <Typography variant="h6" gutterBottom>
-                ℹ️ Vérification en cours
+                Vérification en cours
               </Typography>
               <Typography variant="body2" paragraph>
                 Certains de vos biens sont en cours de vérification. Les documents de vérification sont disponibles ci-dessous.
@@ -451,7 +446,7 @@ const MonPatrimoinePage = () => {
                       </Typography>
                       {bien.notesVerification && (
                         <Typography variant="body2" sx={{ mb: 1, fontStyle: 'italic' }}>
-                          📝 {bien.notesVerification}
+                          {bien.notesVerification}
                         </Typography>
                       )}
                       <Box display="flex" flexWrap="wrap" gap={1} mt={1}>
@@ -465,7 +460,7 @@ const MonPatrimoinePage = () => {
                             rel="noopener noreferrer"
                             sx={{ bgcolor: 'white', color: 'primary.main' }}
                           >
-                            📄 {doc.description || `Document ${index + 1}`}
+                            {doc.description || `Document ${index + 1}`}
                           </Button>
                         ))}
                       </Box>
@@ -481,7 +476,7 @@ const MonPatrimoinePage = () => {
           <Card sx={{ mb: 3, bgcolor: 'warning.light' }}>
             <CardContent>
               <Typography variant="h6" gutterBottom>
-                💰 Contre-proposition reçue
+                Contre-proposition reçue
               </Typography>
               <Typography variant="body2" paragraph>
                 L'administration a proposé un prix différent pour votre bien. Veuillez accepter ou refuser cette proposition.
@@ -944,7 +939,7 @@ const MonPatrimoinePage = () => {
                       {/* Indicateur de validation */}
                       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
                         <Typography variant="subtitle1" fontWeight="bold">
-                          📸 Photos du bien
+                          Photos du bien
                         </Typography>
                         <Chip
                           label={`${photoFiles.length}/5 photos`}
@@ -955,8 +950,8 @@ const MonPatrimoinePage = () => {
                       
                       <Alert severity={photoFiles.length < 2 ? "error" : "info"} sx={{ mb: 2 }}>
                         {photoFiles.length < 2 
-                          ? `❌ Minimum 2 photos requises (${2 - photoFiles.length} restante(s))`
-                          : `✅ Vous pouvez ajouter jusqu'à ${5 - photoFiles.length} photo(s) supplémentaire(s)`
+                          ? `Minimum 2 photos requises (${2 - photoFiles.length} restante(s))`
+                          : `Vous pouvez ajouter jusqu'à ${5 - photoFiles.length} photo(s) supplémentaire(s)`
                         }
                       </Alert>
 
@@ -1022,13 +1017,13 @@ const MonPatrimoinePage = () => {
                   <Grid item xs={12}>
                     <TextField
                       fullWidth
-                      label="🎥 Lien vidéo (Vimeo, YouTube) - Optionnel"
+                      label="Lien vidéo (Vimeo, YouTube) - Optionnel"
                       placeholder="https://www.youtube.com/watch?v=..."
                       value={videoUrl}
                       onChange={(e) => setVideoUrl(e.target.value)}
                       helperText="Ajoutez un lien vers une vidéo de présentation du bien (facultatif)"
                       InputProps={{
-                        startAdornment: <InputAdornment position="start">🔗</InputAdornment>,
+                        startAdornment: <InputAdornment position="start"></InputAdornment>,
                       }}
                     />
                   </Grid>
@@ -1097,16 +1092,43 @@ const MonPatrimoinePage = () => {
 
         {/* ONGLET 2 : Liste des biens */}
         {activeTab === 1 && (
-          <Card elevation={3}>
+          <Card elevation={0} sx={{ borderRadius: 3, border: "1px solid #e3e8ef" }}>
             <CardContent>
               <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
                 <Typography variant="h6" fontWeight="bold">
-                  🏡 Mes biens ({biens.length})
+                  Mes biens ({biens.length})
                 </Typography>
                 <Button variant="contained" startIcon={<Add />} onClick={() => setActiveTab(0)}>
                   Ajouter un bien
                 </Button>
               </Box>
+
+              {biens.length > 0 && (
+                <Grid container spacing={2.5} sx={{ mb: 3 }}>
+                  {[
+                    { label: "Total biens", value: biens.length, icon: LandscapeIcon, color: "#2e7d32" },
+                    { label: "Vérifiés", value: biens.filter((b) => b.statutVerification === "verifie").length, icon: CheckCircleIcon, color: "#1976d2" },
+                    { label: "Enregistrés", value: biens.filter((b) => b.enregistrementStatut === "paye").length, icon: AssignmentTurnedInIcon, color: "#00897b" },
+                    { label: "En vente", value: biens.filter((b) => b.soumiseVente).length, icon: SellIcon, color: "#9c27b0" },
+                  ].map((kpi) => (
+                    <Grid item xs={6} md={3} key={kpi.label}>
+                      <Card elevation={0} sx={{ borderRadius: 3, border: "1px solid #e3e8ef" }}>
+                        <CardContent>
+                          <Box display="flex" justifyContent="space-between" alignItems="center">
+                            <Box sx={{ minWidth: 0 }}>
+                              <Typography variant="body2" color="text.secondary">{kpi.label}</Typography>
+                              <Typography variant="h5" fontWeight="bold" sx={{ color: kpi.color }} noWrap>{kpi.value}</Typography>
+                            </Box>
+                            <Box sx={{ width: 44, height: 44, borderRadius: 2, bgcolor: `${kpi.color}15`, color: kpi.color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                              <kpi.icon />
+                            </Box>
+                          </Box>
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                  ))}
+                </Grid>
+              )}
 
               {loading ? (
                 <Box display="flex" justifyContent="center" py={8}>
@@ -1149,19 +1171,19 @@ const MonPatrimoinePage = () => {
                             {/* BADGES DE STATUT */}
                             <Stack direction="row" spacing={1} mb={2} flexWrap="wrap">
                               {bien.enregistrementStatut === "paye" && (
-                                <Chip label="✓ Enregistré" size="small" color="success" />
+                                <Chip label="Enregistré" size="small" color="success" />
                               )}
                               {bien.enregistrementStatut === "en_attente" && (
-                                <Chip label="⏳ Paiement requis" size="small" color="warning" />
+                                <Chip label="Paiement requis" size="small" color="warning" />
                               )}
                               {bien.abonnementStatut === "actif" && (
                                 <Chip label="Abonnement OK" size="small" color="info" />
                               )}
                               {bien.abonnementStatut === "expire" && (
-                                <Chip label="🔴 Abonnement expiré" size="small" color="error" />
+                                <Chip label="Abonnement expiré" size="small" color="error" />
                               )}
                               {bien.statutVerification === "verifie" && (
-                                <Chip label="✓ Vérifié" size="small" sx={{ bgcolor: "#4caf50", color: "white" }} />
+                                <Chip label="Vérifié" size="small" sx={{ bgcolor: "#4caf50", color: "white" }} />
                               )}
                               {bien.statutVerification === "en_cours" && (
                                 <Chip label="En vérification..." size="small" color="info" />
@@ -1170,7 +1192,7 @@ const MonPatrimoinePage = () => {
                                 <Chip label="En vente" size="small" sx={{ bgcolor: "#9c27b0", color: "white" }} />
                               )}
                               {!bien.visible && (
-                                <Chip label="🚫 Désactivé" size="small" color="default" />
+                                <Chip label="Désactivé" size="small" color="default" />
                               )}
                             </Stack>
 
@@ -1296,7 +1318,7 @@ const MonPatrimoinePage = () => {
         <DialogTitle>
           <Box display="flex" justifyContent="space-between" alignItems="center">
             <Typography variant="h6" fontWeight="bold">
-              📍 Sélectionnez la position sur la carte
+              Sélectionnez la position sur la carte
             </Typography>
             <IconButton onClick={() => setMapDialog(false)}>
               <Close />
@@ -1334,7 +1356,7 @@ const MonPatrimoinePage = () => {
           </Button>
         </DialogActions>
       </Dialog>
-    </PageLayout>
+    </ClientLayout>
   );
 };
 

@@ -7,7 +7,7 @@ import {
   CardContent,
   TextField,
   Button,
-  Grid,
+  GridLegacy as Grid,
   MenuItem,
   Stepper,
   Step,
@@ -46,10 +46,29 @@ import {
   Elevator,
   CheckCircle,
 } from "@mui/icons-material";
+import { Business as FIBusiness, Chair as FIChair, HomeWork as FIHomeWork, Info as FIInfo, LocationCity as FILocationCity, LocationOn as FILocationOn, Notes as FINotes, Place as FIPlace, Savings as FISavings, Title as FITitle } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
-import PageLayout from "../../components/shared/PageLayout";
+import PageLayout from "../../components/admin/AdminLayout";
+import SectionCard from "../../components/admin/SectionCard";
 import api from "../../services/api";
+
+// Couleur et icône de la carte, une par étape
+const STEP_STYLES = [
+  { color: "#3030F9", icon: "info" },
+  { color: "#0A7C4F", icon: "tune" },
+  { color: "#0e1133", icon: "checklist" },
+  { color: "#3030F9", icon: "photo" },
+];
+
+const StepCard = ({ step, title, children }) => {
+  const s = STEP_STYLES[step] || STEP_STYLES[0];
+  return (
+    <SectionCard title={title} color={s.color} icon={s.icon} sx={{ mb: 0 }}>
+      {children}
+    </SectionCard>
+  );
+};
 
 const steps = [
   "Informations de base",
@@ -108,7 +127,7 @@ const CreateLocationPage = () => {
     latitude: "",
     longitude: "",
   });
-  const [mapCenter, setMapCenter] = useState([12.3714, -1.5197]); // Ouagadougou par défaut
+  const [mapCenter, setMapCenter] = useState([13.5116, 2.1254]); // Niamey par défaut
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -250,7 +269,7 @@ const CreateLocationPage = () => {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      setSuccess("✅ Location créée avec succès !");
+      setSuccess("Location créée avec succès !");
       setTimeout(() => {
         navigate("/admin/locations");
       }, 1500);
@@ -270,29 +289,52 @@ const CreateLocationPage = () => {
             <Grid item xs={12}>
               <TextField
                 fullWidth
-                label="Titre de l'annonce *"
+                inputProps={{ "aria-label": "Titre de l'annonce", title: "Titre de l'annonce" }}
+                placeholder="Titre de l'annonce *"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <FITitle color="action" />
+                    </InputAdornment>
+                  ),
+                }}
                 name="titre"
                 value={formData.titre}
                 onChange={handleChange}
-                placeholder="Ex: Appartement moderne 2 chambres à Ouaga 2000"
               />
             </Grid>
 
             {user?.role === "Admin" && (
               <Grid item xs={12}>
                 <FormControl fullWidth>
-                  <InputLabel>Agence *</InputLabel>
                   <Select
                     name="agenceId"
+                    startAdornment={<InputAdornment position="start"><FIBusiness color="action" /></InputAdornment>}
                     value={formData.agenceId}
                     onChange={handleChange}
-                    label="Agence *"
+                    displayEmpty
+                    renderValue={(selected) => {
+                      if (!selected) {
+                        return <span style={{ color: "#9aa4b2" }}>Sélectionnez une agence</span>;
+                      }
+                      const ag = agences.find((a) => a._id === selected);
+                      return ag ? `${ag.nom} - ${ag.ville}` : selected;
+                    }}
                   >
-                    {agences.map((agence) => (
-                      <MenuItem key={agence._id} value={agence._id}>
-                        {agence.nom} - {agence.ville}
+                    <MenuItem value="" disabled>
+                      Sélectionnez une agence
+                    </MenuItem>
+                    {agences.length === 0 ? (
+                      <MenuItem value="" disabled>
+                        Aucune agence disponible
                       </MenuItem>
-                    ))}
+                    ) : (
+                      agences.map((agence) => (
+                        <MenuItem key={agence._id} value={agence._id}>
+                          {agence.nom} - {agence.ville}
+                        </MenuItem>
+                      ))
+                    )}
                   </Select>
                 </FormControl>
               </Grid>
@@ -303,22 +345,28 @@ const CreateLocationPage = () => {
                 fullWidth
                 multiline
                 rows={4}
-                label="Description *"
+                inputProps={{ "aria-label": "Description", title: "Description" }}
+                placeholder="Description *"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start" sx={{ alignSelf: "flex-start", mt: 1.5 }}>
+                      <FINotes color="action" />
+                    </InputAdornment>
+                  ),
+                }}
                 name="description"
                 value={formData.description}
                 onChange={handleChange}
-                placeholder="Décrivez votre bien en détail..."
               />
             </Grid>
 
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth>
-                <InputLabel>Type de bien *</InputLabel>
                 <Select
                   name="typeBien"
+                  startAdornment={<InputAdornment position="start"><FIHomeWork color="action" /><Typography variant="body2" color="text.secondary" sx={{ ml: 1 }}>Type de bien</Typography></InputAdornment>}
                   value={formData.typeBien}
                   onChange={handleChange}
-                  label="Type de bien *"
                 >
                   <MenuItem value="Villa">Villa</MenuItem>
                   <MenuItem value="Appartement">Appartement</MenuItem>
@@ -332,12 +380,11 @@ const CreateLocationPage = () => {
 
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth>
-                <InputLabel>Statut *</InputLabel>
                 <Select
                   name="statut"
+                  startAdornment={<InputAdornment position="start"><FIInfo color="action" /><Typography variant="body2" color="text.secondary" sx={{ ml: 1 }}>Statut</Typography></InputAdornment>}
                   value={formData.statut}
                   onChange={handleChange}
-                  label="Statut *"
                 >
                   <MenuItem value="disponible">Disponible</MenuItem>
                   <MenuItem value="loue">Loué</MenuItem>
@@ -349,7 +396,15 @@ const CreateLocationPage = () => {
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
-                label="Ville *"
+                inputProps={{ "aria-label": "Ville", title: "Ville" }}
+                placeholder="Ville *"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <FILocationCity color="action" />
+                    </InputAdornment>
+                  ),
+                }}
                 name="ville"
                 value={formData.ville}
                 onChange={handleChange}
@@ -359,7 +414,15 @@ const CreateLocationPage = () => {
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
-                label="Quartier *"
+                inputProps={{ "aria-label": "Quartier", title: "Quartier" }}
+                placeholder="Quartier *"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <FIPlace color="action" />
+                    </InputAdornment>
+                  ),
+                }}
                 name="quartier"
                 value={formData.quartier}
                 onChange={handleChange}
@@ -369,11 +432,18 @@ const CreateLocationPage = () => {
             <Grid item xs={12}>
               <TextField
                 fullWidth
-                label="Adresse complète"
+                inputProps={{ "aria-label": "Adresse complète", title: "Adresse complète" }}
+                placeholder="Adresse complète"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <FILocationOn color="action" />
+                    </InputAdornment>
+                  ),
+                }}
                 name="adresse"
                 value={formData.adresse}
                 onChange={handleChange}
-                placeholder="Ex: Rue de la Paix, n°123"
               />
             </Grid>
           </Grid>
@@ -382,17 +452,12 @@ const CreateLocationPage = () => {
       case 1:
         return (
           <Grid container spacing={3}>
-            <Grid item xs={12}>
-              <Typography variant="h6" gutterBottom>
-                Caractéristiques principales
-              </Typography>
-            </Grid>
-
             <Grid item xs={12} sm={6} md={4}>
               <TextField
                 fullWidth
                 type="number"
-                label="Superficie (m²) *"
+                inputProps={{ "aria-label": "Superficie (m²)", title: "Superficie (m²)" }}
+                placeholder="Superficie (m²) *"
                 name="superficie"
                 value={formData.superficie}
                 onChange={handleChange}
@@ -406,7 +471,8 @@ const CreateLocationPage = () => {
               <TextField
                 fullWidth
                 type="number"
-                label="Nombre de chambres *"
+                inputProps={{ "aria-label": "Nombre de chambres", title: "Nombre de chambres" }}
+                placeholder="Nbre de chambres *"
                 name="nombreChambres"
                 value={formData.nombreChambres}
                 onChange={handleChange}
@@ -424,7 +490,15 @@ const CreateLocationPage = () => {
               <TextField
                 fullWidth
                 type="number"
-                label="Nombre de salons"
+                inputProps={{ "aria-label": "Nombre de salons", title: "Nombre de salons" }}
+                placeholder="Nbre de salons"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <FIChair color="action" />
+                    </InputAdornment>
+                  ),
+                }}
                 name="nombreSalons"
                 value={formData.nombreSalons}
                 onChange={handleChange}
@@ -435,7 +509,8 @@ const CreateLocationPage = () => {
               <TextField
                 fullWidth
                 type="number"
-                label="Nombre de salles de bain *"
+                inputProps={{ "aria-label": "Nombre de salles de bain", title: "Nombre de salles de bain" }}
+                placeholder="Nbre de salles de bain *"
                 name="nombreSallesDeBain"
                 value={formData.nombreSallesDeBain}
                 onChange={handleChange}
@@ -453,7 +528,8 @@ const CreateLocationPage = () => {
               <TextField
                 fullWidth
                 type="number"
-                label="Prix mensuel (FCFA) *"
+                inputProps={{ "aria-label": "Prix mensuel (FCFA)", title: "Prix mensuel (FCFA)" }}
+                placeholder="Prix mensuel (FCFA) *"
                 name="prixMensuel"
                 value={formData.prixMensuel}
                 onChange={handleChange}
@@ -471,7 +547,15 @@ const CreateLocationPage = () => {
               <TextField
                 fullWidth
                 type="number"
-                label="Dépôt de garantie (FCFA)"
+                inputProps={{ "aria-label": "Dépôt de garantie (FCFA)", title: "Dépôt de garantie (FCFA)" }}
+                placeholder="Dépôt de garantie (FCFA)"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <FISavings color="action" />
+                    </InputAdornment>
+                  ),
+                }}
                 name="depotGarantie"
                 value={formData.depotGarantie}
                 onChange={handleChange}
@@ -498,9 +582,6 @@ const CreateLocationPage = () => {
         return (
           <Grid container spacing={3}>
             <Grid item xs={12}>
-              <Typography variant="h6" gutterBottom>
-                Services et équipements
-              </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
                 Sélectionnez les équipements disponibles
               </Typography>
@@ -520,13 +601,15 @@ const CreateLocationPage = () => {
               return (
                 <Grid item xs={12} sm={6} md={3} key={service.name}>
                   <Paper
-                    elevation={services[service.name] ? 4 : 1}
+                    elevation={0}
                     sx={{
                       p: 2,
                       cursor: "pointer",
-                      border: services[service.name] ? "2px solid #ff5722" : "2px solid transparent",
+                      borderRadius: 2.5,
+                      border: services[service.name] ? "2px solid #3030F9" : "1px solid #e3e8ef",
+                      bgcolor: services[service.name] ? "rgba(48,48,249,0.06)" : "transparent",
                       transition: "all 0.2s",
-                      "&:hover": { transform: "translateY(-4px)" },
+                      "&:hover": { transform: "translateY(-3px)", borderColor: "#3030F9" },
                     }}
                     onClick={() =>
                       setServices((prev) => ({
@@ -580,11 +663,11 @@ const CreateLocationPage = () => {
               />
               <label htmlFor="upload-photos">
                 <Button
-                  variant="contained"
+                  variant="outlined"
                   component="span"
                   startIcon={<AddPhotoAlternate />}
                   fullWidth
-                  sx={{ py: 2, mb: 3 }}
+                  sx={{ py: 2, mb: 3, borderRadius: 2.5, borderStyle: "dashed", borderColor: "#3030F9", color: "#3030F9", "&:hover": { borderColor: "#2020C8", bgcolor: "rgba(48,48,249,0.06)" } }}
                 >
                   {photoFiles.length === 0
                     ? "Ajouter des photos"
@@ -640,7 +723,7 @@ const CreateLocationPage = () => {
             <Grid item xs={12}>
               <Divider sx={{ my: 3 }} />
               <Typography variant="h6" gutterBottom>
-                📍 Géolocalisation du bien
+                <LocationOn fontSize="small" sx={{ mr: 0.5, verticalAlign: "text-bottom" }} />Géolocalisation du bien
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
                 Indiquez les coordonnées GPS du bien pour permettre aux clients de le localiser facilement
@@ -650,11 +733,11 @@ const CreateLocationPage = () => {
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
-                label="Latitude"
+                inputProps={{ "aria-label": "Latitude", title: "Latitude" }}
+                placeholder="Latitude (ex. 13.5116)"
                 type="number"
                 value={coordinates.latitude}
                 onChange={(e) => handleCoordinateChange("latitude", e.target.value)}
-                placeholder="Ex: 12.3714"
                 InputProps={{
                   endAdornment: <InputAdornment position="end">°</InputAdornment>,
                 }}
@@ -664,11 +747,11 @@ const CreateLocationPage = () => {
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
-                label="Longitude"
+                inputProps={{ "aria-label": "Longitude", title: "Longitude" }}
+                placeholder="Longitude (ex. 2.1254)"
                 type="number"
                 value={coordinates.longitude}
                 onChange={(e) => handleCoordinateChange("longitude", e.target.value)}
-                placeholder="Ex: -1.5197"
                 InputProps={{
                   endAdornment: <InputAdornment position="end">°</InputAdornment>,
                 }}
@@ -680,7 +763,7 @@ const CreateLocationPage = () => {
                 variant="outlined"
                 onClick={getCurrentLocation}
                 startIcon={<LocationOn />}
-                sx={{ mb: 2 }}
+                sx={{ mb: 2, color: "#3030F9", borderColor: "#3030F9", "&:hover": { borderColor: "#2020C8", bgcolor: "rgba(48,48,249,0.06)" } }}
               >
                 Utiliser ma position actuelle
               </Button>
@@ -690,7 +773,7 @@ const CreateLocationPage = () => {
               <Grid item xs={12}>
                 <Card sx={{ p: 2, bgcolor: "grey.50" }}>
                   <Typography variant="subtitle2" gutterBottom>
-                    📍 Coordonnées sélectionnées
+                    <LocationOn fontSize="small" sx={{ mr: 0.5, verticalAlign: "text-bottom" }} />Coordonnées sélectionnées
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     Latitude: {coordinates.latitude}° | Longitude: {coordinates.longitude}°
@@ -723,20 +806,21 @@ const CreateLocationPage = () => {
           </Button>
 
           <Paper
-            elevation={3}
+            elevation={0}
             sx={{
               p: 4,
-              background: "linear-gradient(135deg, #ff5722 0%, #ff7043 100%)",
+              borderRadius: 3,
+              background: "#3030F9",
               color: "white",
             }}
           >
             <Box display="flex" alignItems="center" gap={3}>
               <Avatar
                 sx={{
-                  width: 80,
-                  height: 80,
-                  bgcolor: "white",
-                  color: "#ff5722",
+                  width: 72,
+                  height: 72,
+                  bgcolor: "rgba(255,255,255,0.2)",
+                  color: "white",
                 }}
               >
                 <AddPhotoAlternate fontSize="large" />
@@ -754,7 +838,18 @@ const CreateLocationPage = () => {
         </Box>
 
         {/* Stepper */}
-        <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
+        <Paper
+          elevation={0}
+          sx={{
+            p: 3,
+            mb: 4,
+            borderRadius: 3,
+            border: "1px solid #e3e8ef",
+            "& .MuiStepIcon-root.Mui-active": { color: "#3030F9" },
+            "& .MuiStepIcon-root.Mui-completed": { color: "#3030F9" },
+            "& .MuiStepLabel-label.Mui-active": { fontWeight: 700 },
+          }}
+        >
           <Stepper activeStep={activeStep} alternativeLabel>
             {steps.map((label, index) => (
               <Step key={label}>
@@ -777,10 +872,12 @@ const CreateLocationPage = () => {
         )}
 
         {/* Formulaire */}
-        <Card elevation={3}>
-          <CardContent sx={{ p: 4 }}>
-            <form onSubmit={handleSubmit}>
-              {renderStepContent()}
+        <Card elevation={0} sx={{ borderRadius: 3, bgcolor: "transparent" }}>
+          <CardContent sx={{ p: 0, "&:last-child": { pb: 0 } }}>
+            <Box component="form" onSubmit={handleSubmit} sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2.5 }, "& legend": { display: "none" } }}>
+              <StepCard step={activeStep} title={steps[activeStep]}>
+{renderStepContent()}
+</StepCard>
 
               <Divider sx={{ my: 4 }} />
 
@@ -790,6 +887,8 @@ const CreateLocationPage = () => {
                   onClick={handleBack}
                   disabled={activeStep === 0}
                   startIcon={<ArrowBack />}
+                  color="inherit"
+                  sx={{ borderRadius: 2 }}
                 >
                   Précédent
                 </Button>
@@ -798,9 +897,9 @@ const CreateLocationPage = () => {
                   <Button
                     type="submit"
                     variant="contained"
-                    color="primary"
                     disabled={loading}
                     startIcon={<CheckCircle />}
+                    sx={{ borderRadius: 2, px: 3, bgcolor: "#3030F9", boxShadow: "none", "&:hover": { bgcolor: "#2020C8", boxShadow: "none" } }}
                   >
                     {loading ? "Création en cours..." : "Créer la location"}
                   </Button>
@@ -809,12 +908,13 @@ const CreateLocationPage = () => {
                     variant="contained"
                     onClick={handleNext}
                     endIcon={<ArrowBack sx={{ transform: "scaleX(-1)" }} />}
+                    sx={{ borderRadius: 2, px: 3, bgcolor: "#3030F9", boxShadow: "none", "&:hover": { bgcolor: "#2020C8", boxShadow: "none" } }}
                   >
                     Suivant
                   </Button>
                 )}
               </Box>
-            </form>
+            </Box>
           </CardContent>
         </Card>
       </Container>

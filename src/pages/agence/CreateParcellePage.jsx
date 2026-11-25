@@ -6,7 +6,7 @@ import {
   Button,
   TextField,
   MenuItem,
-  Grid,
+  GridLegacy as Grid,
   Card,
   CardContent,
   Alert,
@@ -56,8 +56,11 @@ import {
   VideoLibrary,
   Close,
 } from "@mui/icons-material";
+import { MyLocation as FIMyLocation, Explore as FIExplore, Flag as FIFlag } from "@mui/icons-material";
 import { useNavigate, useLocation } from "react-router-dom";
-import PageLayout from "../../components/shared/PageLayout";
+import AgenceLayout from "../../components/agence/AgenceLayout";
+import SectionCard from "../../components/admin/SectionCard";
+import AgencePageHeader from "../../components/agence/AgencePageHeader";
 import api from "../../services/api";
 import { BASE_SERVER_URL } from "../../config/config";
 
@@ -183,7 +186,7 @@ const CreateParcellePage = () => {
     e.preventDefault();
     e.stopPropagation();
 
-    // ⚠️ VALIDATION : Ne soumettre QUE si on est à la dernière étape
+    // VALIDATION : Ne soumettre QUE si on est à la dernière étape
     if (currentStep < steps.length - 1) {
       console.log("⚠️ [FRONTEND] Soumission bloquée - Pas à la dernière étape");
       return;
@@ -217,7 +220,7 @@ const CreateParcellePage = () => {
 
       console.log("📝 [FRONTEND] Création parcelle unique");
       await api.post("/agence/parcelles/parcelles", singleData);
-      setSuccess("Parcelle créée avec succès ! 🎉");
+      setSuccess("Parcelle créée avec succès !");
 
       // Reset
       resetForm();
@@ -348,7 +351,7 @@ const CreateParcellePage = () => {
       });
 
       await api.put(`/agence/parcelles/${editingParcelle._id}`, updateData);
-      setSuccess("✅ Parcelle modifiée avec succès !");
+      setSuccess("Parcelle modifiée avec succès !");
       setEditDialog(false);
       setEditImageFiles([]);
       setEditDocumentFiles([]);
@@ -356,7 +359,7 @@ const CreateParcellePage = () => {
       setExistingEditDocuments([]);
       fetchParcelles();
     } catch (err) {
-      setError(err.response?.data?.message || "❌ Erreur lors de la modification");
+      setError(err.response?.data?.message || " Erreur lors de la modification");
     }
   };
 
@@ -401,31 +404,30 @@ const CreateParcellePage = () => {
   };
 
   return (
-    <PageLayout>
+    <AgenceLayout>
       <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
         {/* En-tête */}
-        <Box sx={{ mb: 4 }}>
-          <Typography variant="h4" fontWeight="bold" gutterBottom>
-            🏘️ Gestion des Parcelles
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Créez et gérez vos parcelles immobilières
-          </Typography>
-        </Box>
+        <AgencePageHeader
+          icon={Map}
+          title="Gestion des Parcelles"
+          subtitle="Créez et gérez vos parcelles immobilières"
+        />
 
         {/* Onglets principaux */}
-        <Paper sx={{ mb: 3 }}>
+        <Paper elevation={0} sx={{ mb: 3, borderRadius: 3, border: "1px solid #e3e8ef", overflow: "hidden" }}>
           <Tabs
             value={activeTab}
             onChange={(_, newValue) => setActiveTab(newValue)}
             variant="fullWidth"
+            TabIndicatorProps={{ sx: { height: 3, bgcolor: "#3030F9" } }}
             sx={{
-              borderBottom: 1,
-              borderColor: "divider",
               "& .MuiTab-root": {
                 fontWeight: "bold",
                 fontSize: "1rem",
+                textTransform: "none",
+                py: 1.75,
               },
+              "& .Mui-selected": { color: "#3030F9 !important" },
             }}
           >
             <Tab icon={<Add />} label="Créer" iconPosition="start" />
@@ -435,15 +437,15 @@ const CreateParcellePage = () => {
 
         {/* ONGLET 1 : Création */}
         {activeTab === 0 && (
-          <Card elevation={3}>
-            <CardContent sx={{ p: 4 }}>
+          <Card elevation={0} sx={{ bgcolor: "transparent", border: "none", boxShadow: "none" }}>
+            <CardContent sx={{ p: 0, "&:last-child": { pb: 0 }, "& .MuiOutlinedInput-root": { borderRadius: 2 } }}>
               {success && <Alert severity="success" sx={{ mb: 3 }}>{success}</Alert>}
               {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
 
               {/* Mode de création */}
               <Alert severity="info" sx={{ mb: 3 }}>
                 <Typography variant="body2" fontWeight="bold" gutterBottom>
-                  💡 Besoin de créer plusieurs parcelles ?
+                  Besoin de créer plusieurs parcelles ?
                 </Typography>
                 <Typography variant="caption">
                   Utilisez le mode "Parcelles multiples" pour ajouter des coordonnées GPS et photos spécifiques à chaque parcelle
@@ -462,7 +464,16 @@ const CreateParcellePage = () => {
               <Divider sx={{ my: 3 }} />
 
               {/* Stepper */}
-              <Stepper activeStep={currentStep} sx={{ mb: 4 }}>
+              <Stepper
+                activeStep={currentStep}
+                sx={{
+                  mb: 4,
+                  "& .MuiStepLabel-label": { fontWeight: 600 },
+                  "& .MuiStepLabel-label.Mui-active": { color: "#3030F9" },
+                  "& .MuiStepIcon-root.Mui-active": { color: "#3030F9" },
+                  "& .MuiStepIcon-root.Mui-completed": { color: "#0A7C4F" },
+                }}
+              >
                 {steps.map((label) => (
                   <Step key={label}>
                     <StepLabel>{label}</StepLabel>
@@ -473,6 +484,7 @@ const CreateParcellePage = () => {
               <Box 
                 component="form" 
                 onSubmit={handleSubmit}
+                sx={{ "& legend": { display: "none" } }}
                 onKeyDown={(e) => {
                   // Empêcher la soumission sur "Entrée" sauf sur le dernier bouton
                   if (e.key === 'Enter' && currentStep < steps.length - 1) {
@@ -482,12 +494,13 @@ const CreateParcellePage = () => {
               >
                 {/* ÉTAPE 1 : Informations de base */}
                 {currentStep === 0 && (
-                  <Box>
+                  <SectionCard title="Informations de base" color="#3030F9" icon="info" sx={{ mb: 0 }}>
                     <Grid container spacing={3}>
                       {/* Numéro de parcelle */}
                       <Grid item xs={12} md={6}>
                         <TextField
-                          label="Numéro de la parcelle"
+                          inputProps={{ "aria-label": "Numéro de la parcelle", title: "Numéro de la parcelle" }}
+                          placeholder="Numéro de la parcelle *"
                           name="numeroParcelle"
                           value={formData.numeroParcelle}
                           onChange={handleChange}
@@ -504,15 +517,16 @@ const CreateParcellePage = () => {
                       </Grid>
 
                       {/* Îlot */}
-                      <Grid item xs={12} md={6}>
+                      <Grid item xs={12}>
                         <TextField
                           select
-                          label="Îlot"
+                          inputProps={{ "aria-label": "Îlot", title: "Îlot" }}
                           name="ilot"
                           value={formData.ilot}
                           onChange={handleChange}
                           fullWidth
                           required
+                          SelectProps={{ displayEmpty: true }}
                           InputProps={{
                             startAdornment: (
                               <InputAdornment position="start">
@@ -521,6 +535,9 @@ const CreateParcellePage = () => {
                             ),
                           }}
                         >
+                          <MenuItem value="" disabled>
+                            Sélectionnez un îlot *
+                          </MenuItem>
                           {ilots.map((ilot) => (
                             <MenuItem key={ilot._id} value={ilot._id}>
                               {ilot.numeroIlot}
@@ -532,7 +549,8 @@ const CreateParcellePage = () => {
                       {/* Superficie */}
                       <Grid item xs={12} md={6}>
                         <TextField
-                          label="Superficie"
+                          inputProps={{ "aria-label": "Superficie", title: "Superficie" }}
+                          placeholder="Superficie"
                           name="superficie"
                           type="number"
                           value={formData.superficie}
@@ -552,7 +570,8 @@ const CreateParcellePage = () => {
                       {/* Prix */}
                       <Grid item xs={12} md={6}>
                         <TextField
-                          label="Prix"
+                          inputProps={{ "aria-label": "Prix", title: "Prix" }}
+                          placeholder="Prix"
                           name="prix"
                           type="number"
                           value={formData.prix}
@@ -572,7 +591,15 @@ const CreateParcellePage = () => {
                       <Grid item xs={12} md={6}>
                         <TextField
                           select
-                          label="Statut"
+                          inputProps={{ "aria-label": "Statut", title: "Statut" }}
+                          InputProps={{
+                            startAdornment: (
+                              <InputAdornment position="start">
+                                <FIFlag color="action" />
+                                <Typography variant="body2" color="text.secondary" sx={{ ml: 1 }}>Statut</Typography>
+                              </InputAdornment>
+                            ),
+                          }}
                           name="statut"
                           value={formData.statut}
                           onChange={handleChange}
@@ -587,7 +614,7 @@ const CreateParcellePage = () => {
                       {/* Description */}
                       <Grid item xs={12}>
                         <TextField
-                          label="Description"
+                          inputProps={{ "aria-label": "Description", title: "Description" }}
                           name="description"
                           value={formData.description}
                           onChange={handleChange}
@@ -605,16 +632,12 @@ const CreateParcellePage = () => {
                         />
                       </Grid>
                     </Grid>
-                  </Box>
+                  </SectionCard>
                 )}
 
                 {/* ÉTAPE 2 : Localisation */}
                 {currentStep === 1 && (
-                  <Box>
-                    <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ mb: 3 }}>
-                      <LocationOn color="primary" sx={{ verticalAlign: "middle", mr: 1 }} />
-                      Points de localisation
-                    </Typography>
+                  <SectionCard title="Points de localisation" color="#0A7C4F" icon="location" sx={{ mb: 0 }}>
                     
                     {localisations.map((loc, index) => (
                       <Card key={index} variant="outlined" sx={{ mb: 2, p: 2 }}>
@@ -631,22 +654,36 @@ const CreateParcellePage = () => {
                         <Grid container spacing={2}>
                           <Grid item xs={12} md={6}>
                             <TextField
-                              label="Latitude"
+                              inputProps={{ "aria-label": "Latitude", title: "Latitude" }}
+                              placeholder="Latitude (ex. 13.5116)"
+                              InputProps={{
+                                startAdornment: (
+                                  <InputAdornment position="start">
+                                    <FIMyLocation color="action" />
+                                  </InputAdornment>
+                                ),
+                              }}
                               type="number"
                               value={loc.lat}
                               onChange={(e) => handleLocalisationChange(index, "lat", e.target.value)}
                               fullWidth
-                              placeholder="Ex: 12.3456"
                             />
                           </Grid>
                           <Grid item xs={12} md={6}>
                             <TextField
-                              label="Longitude"
+                              inputProps={{ "aria-label": "Longitude", title: "Longitude" }}
+                              placeholder="Longitude (ex. 2.1254)"
+                              InputProps={{
+                                startAdornment: (
+                                  <InputAdornment position="start">
+                                    <FIExplore color="action" />
+                                  </InputAdornment>
+                                ),
+                              }}
                               type="number"
                               value={loc.lng}
                               onChange={(e) => handleLocalisationChange(index, "lng", e.target.value)}
                               fullWidth
-                              placeholder="Ex: -1.2345"
                             />
                           </Grid>
                         </Grid>
@@ -661,15 +698,15 @@ const CreateParcellePage = () => {
                     >
                       Ajouter un point
                     </Button>
-                  </Box>
+                  </SectionCard>
                 )}
 
                 {/* ÉTAPE 3 : Documents */}
                 {currentStep === 2 && (
-                  <Box>
+                  <SectionCard title="Documents" color="#0e1133" icon="description" sx={{ mb: 0 }}>
                     <Alert severity="info" sx={{ mb: 3 }}>
                       <Typography variant="body2">
-                        ℹ️ <strong>Note importante :</strong> Les photos et vidéos sont gérées au niveau de l'îlot et seront automatiquement partagées par toutes les parcelles de cet îlot. 
+                        <strong>Note importante :</strong> Les photos et vidéos sont gérées au niveau de l'îlot et seront automatiquement partagées par toutes les parcelles de cet îlot. 
                         Vous pouvez ajouter des photos/vidéos lors de la création ou modification de l'îlot.
                       </Typography>
                     </Alert>
@@ -725,7 +762,7 @@ const CreateParcellePage = () => {
                         )}
                       </Grid>
                     </Grid>
-                  </Box>
+                  </SectionCard>
                 )}
 
                 {/* Boutons de navigation */}
@@ -776,11 +813,11 @@ const CreateParcellePage = () => {
 
         {/* ONGLET 2 : Liste */}
         {activeTab === 1 && (
-          <Card elevation={3}>
+          <Card elevation={0} sx={{ borderRadius: 3, border: "1px solid #e3e8ef" }}>
             <CardContent>
               <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
                 <Typography variant="h6" fontWeight="bold">
-                  📋 Liste des Parcelles ({parcelles.length})
+                  Liste des Parcelles ({parcelles.length})
                 </Typography>
                 <Button
                   variant="contained"
@@ -802,14 +839,26 @@ const CreateParcellePage = () => {
                 <>
                   <TableContainer component={Paper} variant="outlined">
                     <Table>
-                      <TableHead sx={{ bgcolor: "grey.100" }}>
+                      <TableHead
+                        sx={{
+                          "& th": {
+                            bgcolor: "#f6f8fb",
+                            color: "text.secondary",
+                            fontWeight: 700,
+                            fontSize: "0.75rem",
+                            textTransform: "uppercase",
+                            letterSpacing: 0.5,
+                            borderBottom: "2px solid #e3e8ef",
+                          },
+                        }}
+                      >
                         <TableRow>
-                          <TableCell><strong>Numéro</strong></TableCell>
-                          <TableCell><strong>Îlot</strong></TableCell>
-                          <TableCell><strong>Superficie</strong></TableCell>
-                          <TableCell><strong>Prix</strong></TableCell>
-                          <TableCell><strong>Statut</strong></TableCell>
-                          <TableCell align="right"><strong>Actions</strong></TableCell>
+                          <TableCell>Numéro</TableCell>
+                          <TableCell>Îlot</TableCell>
+                          <TableCell>Superficie</TableCell>
+                          <TableCell>Prix</TableCell>
+                          <TableCell>Statut</TableCell>
+                          <TableCell align="right">Actions</TableCell>
                         </TableRow>
                       </TableHead>
                       <TableBody>
@@ -892,7 +941,7 @@ const CreateParcellePage = () => {
             </Typography>
           </Box>
         </DialogTitle>
-        <DialogContent dividers>
+        <DialogContent dividers sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}>
           <Grid container spacing={3} sx={{ pt: 2 }}>
             <Grid item xs={12} md={6}>
               <TextField
@@ -1289,7 +1338,7 @@ const CreateParcellePage = () => {
           </Button>
         </DialogActions>
       </Dialog>
-    </PageLayout>
+    </AgenceLayout>
   );
 };
 

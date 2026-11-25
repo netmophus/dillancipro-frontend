@@ -6,12 +6,11 @@ import {
   Card,
   CardContent,
   Button,
-  Grid,
+  GridLegacy as Grid,
   Avatar,
   Chip,
   IconButton,
   Dialog,
-  DialogTitle,
   DialogContent,
   DialogActions,
   TextField,
@@ -41,12 +40,43 @@ import {
   CheckCircle,
   Cancel,
   Refresh,
+  Close,
 } from "@mui/icons-material";
 import { useAuth } from "../../contexts/AuthContext";
-import PageLayout from "../../components/shared/PageLayout";
+import PageLayout from "../../components/admin/AdminLayout";
 import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
 import { BASE_SERVER_URL } from "../../config/config";
+
+// En-tête de dialogue moderne, coloré, réutilisable
+const DialogHeader = ({ icon: Icon, title, subtitle, color, onClose }) => (
+  <Box
+    sx={{
+      p: 3,
+      background: color,
+      color: "white",
+      position: "relative",
+    }}
+  >
+    <IconButton
+      onClick={onClose}
+      sx={{ position: "absolute", top: 12, right: 12, color: "white", "&:hover": { bgcolor: "rgba(255,255,255,0.15)" } }}
+    >
+      <Close />
+    </IconButton>
+    <Stack direction="row" spacing={2} alignItems="center">
+      <Avatar sx={{ bgcolor: "rgba(255,255,255,0.22)", width: 52, height: 52 }}>
+        <Icon fontSize="large" />
+      </Avatar>
+      <Box>
+        <Typography variant="h6" fontWeight="bold">{title}</Typography>
+        {subtitle && <Typography variant="body2" sx={{ opacity: 0.9 }}>{subtitle}</Typography>}
+      </Box>
+    </Stack>
+  </Box>
+);
+
+const FIELD_SX = { "& .MuiOutlinedInput-root": { borderRadius: 2.5 } };
 
 const AdminLocationsPage = () => {
   const { user } = useAuth();
@@ -180,7 +210,7 @@ const AdminLocationsPage = () => {
           elevation={3}
           sx={{
             mb: 4,
-            background: "linear-gradient(135deg, #ff5722 0%, #ff7043 100%)",
+            background: "#3030F9",
             color: "white",
           }}
         >
@@ -193,14 +223,14 @@ const AdminLocationsPage = () => {
                     height: 80,
                     border: "4px solid white",
                     bgcolor: "white",
-                    color: "primary.main",
+                    color: "#3030F9",
                   }}
                 >
                   <Home fontSize="large" />
                 </Avatar>
                 <Box>
-                  <Typography variant="h4" fontWeight="bold">
-                    🏠 Gestion des Locations
+                  <Typography variant="h4" fontWeight="bold" display="flex" alignItems="center" gap={1}>
+                    <Home fontSize="large" /> Gestion des Locations
                   </Typography>
                   <Typography variant="body1" sx={{ opacity: 0.9, mt: 0.5 }}>
                     Gérez toutes les offres de location de la plateforme
@@ -231,18 +261,19 @@ const AdminLocationsPage = () => {
         {/* Statistiques rapides */}
         <Grid container spacing={3} mb={4}>
           {[
-            { label: "Total Locations", value: locations.length, color: "#ff5722", icon: Home },
-            { label: "Disponibles", value: locations.filter(l => l.statut === "disponible").length, color: "#4caf50", icon: CheckCircle },
+            { label: "Total Locations", value: locations.length, color: "#3030F9", icon: Home },
+            { label: "Disponibles", value: locations.filter(l => l.statut === "disponible").length, color: "#0A7C4F", icon: CheckCircle },
             { label: "Louées", value: locations.filter(l => l.statut === "loue").length, color: "#f44336", icon: Cancel },
             { label: "En Maintenance", value: locations.filter(l => l.statut === "maintenance").length, color: "#ff9800", icon: FilterList },
           ].map((stat, index) => (
             <Grid item xs={12} sm={6} md={3} key={index}>
               <Card
-                elevation={3}
+                elevation={0}
                 sx={{
-                  borderLeft: `4px solid ${stat.color}`,
-                  transition: "all 0.3s",
-                  "&:hover": { transform: "translateY(-4px)", boxShadow: 6 },
+                  borderRadius: 3,
+                  border: "1px solid #e3e8ef",
+                  transition: "all 0.25s ease",
+                  "&:hover": { transform: "translateY(-3px)", boxShadow: `0 8px 24px ${stat.color}22` },
                 }}
               >
                 <CardContent>
@@ -251,11 +282,11 @@ const AdminLocationsPage = () => {
                       <Typography color="text.secondary" variant="body2">
                         {stat.label}
                       </Typography>
-                      <Typography variant="h4" fontWeight="bold" color={stat.color}>
+                      <Typography variant="h4" fontWeight="bold" sx={{ color: stat.color }}>
                         {stat.value}
                       </Typography>
                     </Box>
-                    <Avatar sx={{ bgcolor: stat.color, width: 48, height: 48 }}>
+                    <Avatar sx={{ bgcolor: `${stat.color}15`, color: stat.color, width: 48, height: 48 }}>
                       <stat.icon />
                     </Avatar>
                   </Box>
@@ -266,13 +297,13 @@ const AdminLocationsPage = () => {
         </Grid>
 
         {/* Filtres et recherche */}
-        <Card elevation={3} sx={{ mb: 4 }}>
+        <Card elevation={0} sx={{ mb: 4, borderRadius: 3, border: "1px solid #e3e8ef" }}>
           <CardContent>
-            <Grid container spacing={3} alignItems="center">
+            <Grid container spacing={3} alignItems="center" sx={{ ...FIELD_SX, "& legend": { display: "none" } }}>
               <Grid item xs={12} md={4}>
                 <TextField
                   fullWidth
-                  placeholder="Rechercher par titre ou ville..."
+                  placeholder="Rechercher une location..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   InputProps={{
@@ -282,11 +313,10 @@ const AdminLocationsPage = () => {
               </Grid>
               <Grid item xs={12} md={3}>
                 <FormControl fullWidth>
-                  <InputLabel>Type de bien</InputLabel>
                   <Select
                     value={filterType}
                     onChange={(e) => setFilterType(e.target.value)}
-                    label="Type de bien"
+                    inputProps={{ "aria-label": "Type de bien" }}
                   >
                     <MenuItem value="all">Tous les types</MenuItem>
                     <MenuItem value="Villa">Villa</MenuItem>
@@ -299,11 +329,10 @@ const AdminLocationsPage = () => {
               </Grid>
               <Grid item xs={12} md={3}>
                 <FormControl fullWidth>
-                  <InputLabel>Statut</InputLabel>
                   <Select
                     value={filterStatus}
                     onChange={(e) => setFilterStatus(e.target.value)}
-                    label="Statut"
+                    inputProps={{ "aria-label": "Statut" }}
                   >
                     <MenuItem value="all">Tous les statuts</MenuItem>
                     <MenuItem value="disponible">Disponible</MenuItem>
@@ -318,6 +347,7 @@ const AdminLocationsPage = () => {
                   variant="outlined"
                   startIcon={<Refresh />}
                   onClick={fetchLocations}
+                  sx={{ borderRadius: 2, py: 1.5, color: "#3030F9", borderColor: "#3030F9", "&:hover": { borderColor: "#2020C8", bgcolor: "rgba(48,48,249,0.06)" } }}
                 >
                   Actualiser
                 </Button>
@@ -331,13 +361,16 @@ const AdminLocationsPage = () => {
           {filteredLocations.map((location) => (
             <Grid item xs={12} md={6} lg={4} key={location._id}>
               <Card
-                elevation={4}
+                elevation={0}
                 sx={{
                   height: "100%",
-                  transition: "all 0.3s",
+                  borderRadius: 3,
+                  border: "1px solid #e3e8ef",
+                  overflow: "hidden",
+                  transition: "all 0.25s ease",
                   "&:hover": {
-                    transform: "translateY(-8px)",
-                    boxShadow: 8,
+                    transform: "translateY(-6px)",
+                    boxShadow: "0 14px 34px rgba(13,43,78,0.12)",
                   },
                 }}
               >
@@ -346,7 +379,7 @@ const AdminLocationsPage = () => {
                     height: 200,
                     backgroundImage: location.images?.[0]?.url 
                       ? `url(${fixImageUrl(location.images[0].url)})` 
-                      : "linear-gradient(135deg, #ff5722 0%, #ff7043 100%)",
+                      : "linear-gradient(#0e1133, #0e1133)",
                     backgroundSize: "cover",
                     backgroundPosition: "center",
                     position: "relative",
@@ -366,7 +399,7 @@ const AdminLocationsPage = () => {
                       label={location.typeBien}
                       sx={{
                         bgcolor: "rgba(255,255,255,0.9)",
-                        color: "#ff5722",
+                        color: "#3030F9",
                         fontWeight: "bold",
                       }}
                     />
@@ -376,6 +409,7 @@ const AdminLocationsPage = () => {
                       label={getStatusLabel(location.statut)}
                       color={getStatusColor(location.statut)}
                       variant="filled"
+                      sx={location.statut === "disponible" ? { bgcolor: "#0A7C4F", color: "white" } : undefined}
                     />
                   </Box>
                 </Box>
@@ -400,7 +434,7 @@ const AdminLocationsPage = () => {
                     </Box>
                     <Box display="flex" alignItems="center" gap={1}>
                       <AttachMoney fontSize="small" color="action" />
-                      <Typography variant="body2" fontWeight="bold" color="primary">
+                      <Typography variant="body2" fontWeight="bold" sx={{ color: "#0e1133" }}>
                         {formatMoney(location.prixMensuel)}/mois
                       </Typography>
                     </Box>
@@ -413,25 +447,11 @@ const AdminLocationsPage = () => {
                       Agence: {location.agenceId?.nom || "Non spécifiée"}
                     </Typography>
                     <Box>
-                      <Tooltip title="Test image">
-                        <IconButton
-                          size="small"
-                          onClick={() => {
-                            if (location.images?.[0]?.url) {
-                              const fixedUrl = fixImageUrl(location.images[0].url);
-                              window.open(fixedUrl, '_blank');
-                            }
-                          }}
-                          sx={{ color: "info.main" }}
-                        >
-                          🖼️
-                        </IconButton>
-                      </Tooltip>
                       <Tooltip title="Voir détails">
                         <IconButton
                           size="small"
                           onClick={() => handleViewLocation(location)}
-                          sx={{ color: "primary.main" }}
+                          sx={{ color: "#3030F9" }}
                         >
                           <Visibility />
                         </IconButton>
@@ -440,7 +460,7 @@ const AdminLocationsPage = () => {
                         <IconButton
                           size="small"
                           onClick={() => navigate(`/agence/locations/edit/${location._id}`)}
-                          sx={{ color: "warning.main" }}
+                          sx={{ color: "#3030F9" }}
                         >
                           <Edit />
                         </IconButton>
@@ -463,7 +483,7 @@ const AdminLocationsPage = () => {
         </Grid>
 
         {filteredLocations.length === 0 && (
-          <Card elevation={3} sx={{ mt: 4 }}>
+          <Card elevation={0} sx={{ mt: 4, borderRadius: 3, border: "1px solid #e3e8ef" }}>
             <CardContent sx={{ textAlign: "center", py: 6 }}>
               <Home sx={{ fontSize: 80, color: "text.secondary", mb: 2 }} />
               <Typography variant="h6" color="text.secondary" gutterBottom>
@@ -478,6 +498,7 @@ const AdminLocationsPage = () => {
                 variant="contained"
                 startIcon={<Add />}
                 onClick={() => navigate("/admin/locations/create")}
+                sx={{ borderRadius: 2, bgcolor: "#3030F9", boxShadow: "none", "&:hover": { bgcolor: "#2020C8", boxShadow: "none" } }}
               >
                 Créer une location
               </Button>
@@ -491,14 +512,16 @@ const AdminLocationsPage = () => {
           onClose={() => setOpenDialog(false)}
           maxWidth="md"
           fullWidth
+          PaperProps={{ sx: { borderRadius: 4, overflow: "hidden" } }}
         >
-          <DialogTitle>
-            <Box display="flex" alignItems="center" gap={2}>
-              <Home color="primary" />
-              <Typography variant="h6">{selectedLocation?.titre}</Typography>
-            </Box>
-          </DialogTitle>
-          <DialogContent>
+          <DialogHeader
+            icon={Home}
+            title={selectedLocation?.titre}
+            subtitle={selectedLocation?.ville}
+            color="#3030F9"
+            onClose={() => setOpenDialog(false)}
+          />
+          <DialogContent sx={{ p: 3 }}>
             {selectedLocation && (
               <Stack spacing={3}>
                 <Box>
@@ -525,7 +548,7 @@ const AdminLocationsPage = () => {
                   </Grid>
                   <Grid item xs={6}>
                     <Typography variant="subtitle2" fontWeight="bold">Prix mensuel</Typography>
-                    <Typography variant="body2" color="primary" fontWeight="bold">
+                    <Typography variant="body2" sx={{ color: "#0e1133" }} fontWeight="bold">
                       {formatMoney(selectedLocation.prixMensuel)}
                     </Typography>
                   </Grid>
@@ -533,14 +556,18 @@ const AdminLocationsPage = () => {
               </Stack>
             )}
           </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setOpenDialog(false)}>Fermer</Button>
+          <DialogActions sx={{ px: 3, pb: 3, pt: 1 }}>
+            <Button onClick={() => setOpenDialog(false)} color="inherit" sx={{ borderRadius: 2 }}>
+              Fermer
+            </Button>
             <Button
               variant="contained"
+              startIcon={<Edit />}
               onClick={() => {
                 setOpenDialog(false);
                 navigate(`/agence/locations/edit/${selectedLocation?._id}`);
               }}
+              sx={{ borderRadius: 2, px: 3, bgcolor: "#3030F9", boxShadow: "none", "&:hover": { bgcolor: "#2020C8", boxShadow: "none" } }}
             >
               Modifier
             </Button>

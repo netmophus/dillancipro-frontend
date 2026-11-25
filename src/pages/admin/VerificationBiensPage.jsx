@@ -20,7 +20,6 @@ import {
   IconButton,
   Tooltip,
   Dialog,
-  DialogTitle,
   DialogContent,
   DialogActions,
   TextField,
@@ -49,10 +48,55 @@ import {
   AttachMoney,
   AttachFile,
   Delete,
+  Person,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import PageLayout from "../../components/shared/PageLayout";
+import PageLayout from "../../components/admin/AdminLayout";
 import api from "../../services/api";
+
+// En-tête de dialogue moderne, coloré, réutilisable
+const DialogHeader = ({ icon: Icon, title, subtitle, color, onClose }) => (
+  <Box
+    sx={{
+      p: 3,
+      background: `linear-gradient(135deg, ${color} 0%, ${color}cc 100%)`,
+      color: "white",
+      position: "relative",
+    }}
+  >
+    <IconButton
+      onClick={onClose}
+      sx={{ position: "absolute", top: 12, right: 12, color: "white", "&:hover": { bgcolor: "rgba(255,255,255,0.15)" } }}
+    >
+      <Close />
+    </IconButton>
+    <Stack direction="row" spacing={2} alignItems="center">
+      <Avatar sx={{ bgcolor: "rgba(255,255,255,0.22)", width: 52, height: 52 }}>
+        <Icon fontSize="large" />
+      </Avatar>
+      <Box>
+        <Typography variant="h6" fontWeight="bold">{title}</Typography>
+        {subtitle && <Typography variant="body2" sx={{ opacity: 0.9 }}>{subtitle}</Typography>}
+      </Box>
+    </Stack>
+  </Box>
+);
+
+// Bloc récapitulatif du bien sélectionné
+const BienInfoBox = ({ bien }) => (
+  <Box sx={{ p: 2, borderRadius: 2, bgcolor: "#f7f9fc", border: "1px solid #eef2f7", mb: 2.5 }}>
+    <Typography variant="subtitle1" fontWeight="bold">{bien?.titre}</Typography>
+    <Stack direction="row" alignItems="center" spacing={0.75} mt={0.5}>
+      <Person sx={{ fontSize: 16, color: "text.secondary" }} />
+      <Typography variant="body2" color="text.secondary">
+        {bien?.clientId?.fullName || "N/A"}
+        {bien?.clientId?.phone ? ` · ${bien.clientId.phone}` : ""}
+      </Typography>
+    </Stack>
+  </Box>
+);
+
+const FIELD_SX = { "& .MuiOutlinedInput-root": { borderRadius: 2.5 } };
 
 const VerificationBiensPage = () => {
   const navigate = useNavigate();
@@ -272,13 +316,18 @@ const VerificationBiensPage = () => {
 
   const KPICard = ({ title, value, subtitle, icon: Icon, color, onClick }) => (
     <Card
-      elevation={3}
+      elevation={0}
       sx={{
         height: "100%",
-        borderLeft: `4px solid ${color}`,
-        transition: "all 0.3s",
-        "&:hover": { transform: "translateY(-4px)", boxShadow: 6 },
+        borderRadius: 3,
+        border: "1px solid #e3e8ef",
+        transition: "all 0.25s ease",
         cursor: onClick ? "pointer" : "default",
+        "&:hover": {
+          transform: "translateY(-3px)",
+          boxShadow: `0 8px 24px ${color}22`,
+          borderColor: onClick ? color : "#e3e8ef",
+        },
       }}
       onClick={onClick}
     >
@@ -288,7 +337,7 @@ const VerificationBiensPage = () => {
             <Typography color="text.secondary" variant="body2" gutterBottom>
               {title}
             </Typography>
-            <Typography variant="h4" fontWeight="bold" color={color} sx={{ mb: 1 }}>
+            <Typography variant="h4" fontWeight="bold" sx={{ color, mb: 0.5 }}>
               {value}
             </Typography>
             {subtitle && (
@@ -297,8 +346,8 @@ const VerificationBiensPage = () => {
               </Typography>
             )}
           </Box>
-          <Avatar sx={{ bgcolor: color, width: 56, height: 56, ml: 2 }}>
-            <Icon fontSize="large" />
+          <Avatar sx={{ bgcolor: `${color}15`, color, width: 48, height: 48, ml: 2 }}>
+            <Icon />
           </Avatar>
         </Box>
       </CardContent>
@@ -421,7 +470,7 @@ const VerificationBiensPage = () => {
         />
 
         {/* Tableau */}
-        <Card elevation={3}>
+        <Card elevation={0} sx={{ borderRadius: 3, border: "1px solid #e3e8ef" }}>
           <CardContent>
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
               <Typography variant="h6" fontWeight="bold">
@@ -579,16 +628,21 @@ const VerificationBiensPage = () => {
       </Container>
 
       {/* DIALOG : Détails */}
-      <Dialog open={detailsDialog} onClose={() => setDetailsDialog(false)} maxWidth="md" fullWidth>
-        <DialogTitle>
-          <Box display="flex" justifyContent="space-between" alignItems="center">
-            <Typography variant="h6">Détails du bien</Typography>
-            <IconButton onClick={() => setDetailsDialog(false)}>
-              <Close />
-            </IconButton>
-          </Box>
-        </DialogTitle>
-        <DialogContent dividers>
+      <Dialog
+        open={detailsDialog}
+        onClose={() => setDetailsDialog(false)}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: 4, overflow: "hidden" } }}
+      >
+        <DialogHeader
+          icon={Visibility}
+          title="Détails du bien"
+          subtitle={selectedBien?.titre}
+          color="#0288d1"
+          onClose={() => setDetailsDialog(false)}
+        />
+        <DialogContent dividers sx={{ p: 3 }}>
           {selectedBien && (
             <Grid container spacing={2}>
               <Grid item xs={12}>
@@ -736,21 +790,30 @@ const VerificationBiensPage = () => {
             </Grid>
           )}
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDetailsDialog(false)}>Fermer</Button>
+        <DialogActions sx={{ px: 3, pb: 3, pt: 2 }}>
+          <Button onClick={() => setDetailsDialog(false)} variant="outlined" sx={{ borderRadius: 2 }}>
+            Fermer
+          </Button>
         </DialogActions>
       </Dialog>
 
       {/* DIALOG : Valider */}
-      <Dialog open={validerDialog} onClose={() => setValiderDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>✅ Valider la vérification</DialogTitle>
-        <DialogContent>
-          <Typography variant="body2" color="text.secondary" mb={2}>
-            Bien : <strong>{selectedBien?.titre}</strong>
-          </Typography>
-          <Typography variant="body2" color="text.secondary" mb={3}>
-            Le bien recevra le badge "Vérifié ✓"
-          </Typography>
+      <Dialog
+        open={validerDialog}
+        onClose={() => setValiderDialog(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: 4, overflow: "hidden" } }}
+      >
+        <DialogHeader
+          icon={CheckCircle}
+          title="Valider la vérification"
+          subtitle={'Le bien recevra le badge « Vérifié ✓ »'}
+          color="#2e7d32"
+          onClose={() => setValiderDialog(false)}
+        />
+        <DialogContent sx={{ p: 3 }}>
+          <BienInfoBox bien={selectedBien} />
 
           <TextField
             label="Notes de vérification (optionnel)"
@@ -760,14 +823,14 @@ const VerificationBiensPage = () => {
             multiline
             rows={3}
             placeholder="Remarques ou observations..."
-            sx={{ mb: 3 }}
+            sx={{ ...FIELD_SX, mb: 3 }}
           />
 
           {/* Upload de documents */}
           <Typography variant="subtitle2" gutterBottom color="text.secondary">
             Documents de vérification (optionnel)
           </Typography>
-          
+
           <input
             accept="image/*,.pdf,.doc,.docx"
             style={{ display: "none" }}
@@ -783,7 +846,7 @@ const VerificationBiensPage = () => {
               component="span"
               startIcon={<AttachFile />}
               fullWidth
-              sx={{ mb: 2 }}
+              sx={{ mb: 2, borderRadius: 2, borderStyle: "dashed", py: 1.25 }}
             >
               Attacher des documents
             </Button>
@@ -839,16 +902,16 @@ const VerificationBiensPage = () => {
             </Box>
           )}
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setValiderDialog(false)} disabled={uploadingDocs}>
+        <DialogActions sx={{ px: 3, pb: 3, pt: 0 }}>
+          <Button onClick={() => setValiderDialog(false)} disabled={uploadingDocs} color="inherit" sx={{ borderRadius: 2 }}>
             Annuler
           </Button>
-          <Button 
-            onClick={handleValider} 
-            variant="contained" 
-            color="success" 
+          <Button
+            onClick={handleValider}
+            variant="contained"
             startIcon={<CheckCircle />}
             disabled={uploadingDocs}
+            sx={{ borderRadius: 2, px: 3, bgcolor: "#2e7d32", boxShadow: "none", "&:hover": { bgcolor: "#1b5e20", boxShadow: "none" } }}
           >
             {uploadingDocs ? "Envoi..." : "Valider"}
           </Button>
@@ -856,12 +919,22 @@ const VerificationBiensPage = () => {
       </Dialog>
 
       {/* DIALOG : Rejeter */}
-      <Dialog open={rejeterDialog} onClose={() => setRejeterDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>❌ Rejeter la vérification</DialogTitle>
-        <DialogContent>
-          <Typography variant="body2" color="text.secondary" mb={2}>
-            Bien : <strong>{selectedBien?.titre}</strong>
-          </Typography>
+      <Dialog
+        open={rejeterDialog}
+        onClose={() => setRejeterDialog(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: 4, overflow: "hidden" } }}
+      >
+        <DialogHeader
+          icon={Cancel}
+          title="Rejeter la vérification"
+          subtitle="Le bien ne recevra pas le badge vérifié"
+          color="#e53935"
+          onClose={() => setRejeterDialog(false)}
+        />
+        <DialogContent sx={{ p: 3 }}>
+          <BienInfoBox bien={selectedBien} />
 
           <TextField
             label="Motif du rejet"
@@ -872,68 +945,95 @@ const VerificationBiensPage = () => {
             multiline
             rows={4}
             placeholder="Expliquez pourquoi ce bien ne peut pas être vérifié..."
+            helperText="Communiqué au propriétaire"
+            sx={FIELD_SX}
           />
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setRejeterDialog(false)}>Annuler</Button>
-          <Button onClick={handleRejeter} variant="contained" color="error" startIcon={<Cancel />}>
+        <DialogActions sx={{ px: 3, pb: 3, pt: 0 }}>
+          <Button onClick={() => setRejeterDialog(false)} color="inherit" sx={{ borderRadius: 2 }}>
+            Annuler
+          </Button>
+          <Button
+            onClick={handleRejeter}
+            variant="contained"
+            startIcon={<Cancel />}
+            sx={{ borderRadius: 2, px: 3, bgcolor: "#e53935", boxShadow: "none", "&:hover": { bgcolor: "#c62828", boxShadow: "none" } }}
+          >
             Rejeter
           </Button>
         </DialogActions>
       </Dialog>
 
       {/* DIALOG : Valider paiement en espèces */}
-      <Dialog open={validerPaiementDialog} onClose={() => setValiderPaiementDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>💰 Valider le paiement d'enregistrement</DialogTitle>
-        <DialogContent>
-          <Typography variant="body2" color="text.secondary" mb={2}>
-            Bien : <strong>{selectedBien?.titre}</strong>
-          </Typography>
-          <Typography variant="body2" mb={2}>
-            Propriétaire : <strong>{selectedBien?.clientId?.fullName}</strong>
-          </Typography>
-          <Typography variant="body2" color="warning.main" mb={2}>
-            Le paiement d'enregistrement sera validé pour ce bien.
-          </Typography>
-          <Alert severity="info" sx={{ mt: 2 }}>
-            <Typography variant="body2">
-              Cette action valide que le propriétaire a payé en espèces le montant d'enregistrement.
-              Le bien sera marqué comme "payé" et visible.
-            </Typography>
+      <Dialog
+        open={validerPaiementDialog}
+        onClose={() => setValiderPaiementDialog(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: 4, overflow: "hidden" } }}
+      >
+        <DialogHeader
+          icon={AttachMoney}
+          title="Valider le paiement d'enregistrement"
+          subtitle="Paiement en espèces"
+          color="#f57c00"
+          onClose={() => setValiderPaiementDialog(false)}
+        />
+        <DialogContent sx={{ p: 3 }}>
+          <BienInfoBox bien={selectedBien} />
+          <Alert severity="info" sx={{ borderRadius: 2 }}>
+            Cette action confirme que le propriétaire a payé en espèces le montant d'enregistrement.
+            Le bien sera marqué comme <strong>« payé »</strong> et visible.
           </Alert>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setValiderPaiementDialog(false)}>Annuler</Button>
-          <Button onClick={handleValiderPaiement} variant="contained" color="success" startIcon={<AttachMoney />}>
-            Valider le paiement
+        <DialogActions sx={{ px: 3, pb: 3, pt: 0 }}>
+          <Button onClick={() => setValiderPaiementDialog(false)} color="inherit" sx={{ borderRadius: 2 }}>
+            Annuler
+          </Button>
+          <Button
+            onClick={handleValiderPaiement}
+            variant="contained"
+            startIcon={<AttachMoney />}
+            sx={{ borderRadius: 2, px: 3, bgcolor: "#f57c00", boxShadow: "none", "&:hover": { bgcolor: "#ef6c00", boxShadow: "none" } }}
+          >
+            Valider
           </Button>
         </DialogActions>
       </Dialog>
 
       {/* DIALOG : Valider abonnement en espèces */}
-      <Dialog open={validerAbonnementDialog} onClose={() => setValiderAbonnementDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>✅ Activer l'abonnement</DialogTitle>
-        <DialogContent>
-          <Typography variant="body2" color="text.secondary" mb={2}>
-            Bien : <strong>{selectedBien?.titre}</strong>
-          </Typography>
-          <Typography variant="body2" mb={2}>
-            Propriétaire : <strong>{selectedBien?.clientId?.fullName}</strong>
-          </Typography>
-          <Typography variant="body2" color="success.main" mb={2}>
-            L'abonnement annuel sera activé pour ce bien.
-          </Typography>
-          <Alert severity="info" sx={{ mt: 2 }}>
-            <Typography variant="body2">
-              Cette action active l'abonnement annuel du bien. L'abonnement expirera dans 1 an.
-              Le bien pourra alors être soumis à la vente.
-            </Typography>
+      <Dialog
+        open={validerAbonnementDialog}
+        onClose={() => setValiderAbonnementDialog(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: 4, overflow: "hidden" } }}
+      >
+        <DialogHeader
+          icon={CheckCircle}
+          title="Activer l'abonnement"
+          subtitle="Abonnement annuel — 1 an"
+          color="#2e7d32"
+          onClose={() => setValiderAbonnementDialog(false)}
+        />
+        <DialogContent sx={{ p: 3 }}>
+          <BienInfoBox bien={selectedBien} />
+          <Alert severity="info" sx={{ borderRadius: 2 }}>
+            Cette action active l'abonnement annuel du bien (expiration dans <strong>1 an</strong>).
+            Le bien pourra alors être soumis à la vente.
           </Alert>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setValiderAbonnementDialog(false)}>Annuler</Button>
-          <Button onClick={handleValiderAbonnement} variant="contained" color="success" startIcon={<CheckCircle />}>
-            Activer l'abonnement
+        <DialogActions sx={{ px: 3, pb: 3, pt: 0 }}>
+          <Button onClick={() => setValiderAbonnementDialog(false)} color="inherit" sx={{ borderRadius: 2 }}>
+            Annuler
+          </Button>
+          <Button
+            onClick={handleValiderAbonnement}
+            variant="contained"
+            startIcon={<CheckCircle />}
+            sx={{ borderRadius: 2, px: 3, bgcolor: "#2e7d32", boxShadow: "none", "&:hover": { bgcolor: "#1b5e20", boxShadow: "none" } }}
+          >
+            Activer
           </Button>
         </DialogActions>
       </Dialog>

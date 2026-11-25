@@ -1,319 +1,296 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
-  Container,
   Typography,
   Box,
   Card,
   CardContent,
-  Button,
   Grid,
   Avatar,
-  Divider,
+  Stack,
+  LinearProgress,
   Chip,
+  Skeleton,
+  Alert,
+  Divider,
+  IconButton,
+  Tooltip,
 } from "@mui/material";
 import {
   Business,
   AccountBalance,
-  AccountBalanceWallet,
   People,
-  Assessment,
-  Settings,
   AttachMoney,
-  Timer,
-  VerifiedUser,
   Gavel,
   Landscape,
-  ArrowForward,
   Home,
-  LocationCity,
+  Apartment,
+  Refresh,
+  Assessment,
   CheckCircle,
+  HourglassEmpty,
 } from "@mui/icons-material";
 import { useAuth } from "../../contexts/AuthContext";
-import PageLayout from "../../components/shared/PageLayout";
-import { useNavigate } from "react-router-dom";
+import AdminLayout from "../../components/admin/AdminLayout";
+import API from "../../api";
 
+const ROLE_COLORS = {
+  Admin: "#9c27b0",
+  Agence: "#1976d2",
+  Banque: "#388e3c",
+  Ministere: "#0288d1",
+  Commercial: "#ff9800",
+  Notaire: "#7b1fa2",
+  User: "#607d8b",
+  Client: "#607d8b",
+};
 
 const AdminDashboardPage = () => {
   const { user } = useAuth();
-  const navigate = useNavigate();
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const modulesGlobaux = [
-    {
-      title: "Gestion géographique",
-      description: "Villes, quartiers et zones du système",
-      route: "/admin/geographic",
-      icon: LocationCity,
-      color: "#2e7d32",
-    },
-    {
-      title: "Gestion des agences",
-      description: "Créez et gérez les agences immobilières",
-      route: "/admin/agences",
-      icon: Business,
-      color: "#1976d2",
-    },
-    {
-      title: "Gestion des banques",
-      description: "Biens hors exploitation des banques",
-      route: "/admin/banques",
-      icon: AccountBalance,
-      color: "#388e3c",
-    },
-    {
-      title: "Patrimoine de l'État",
-      description: "Patrimoine immobilier public",
-      route: "/admin/etat",
-      icon: AccountBalanceWallet,
-      color: "#7b1fa2",
-    },
-    {
-      title: "Gestion des locations",
-      description: "Créez et gérez les offres de location",
-      route: "/admin/locations",
-      icon: Home,
-      color: "#ff5722",
-      badge: "Nouveau",
-    },
-    {
-      title: "Gestion des utilisateurs",
-      description: "Comptes et accès utilisateurs",
-      route: "/admin/utilisateurs",
-      icon: People,
-      color: "#f57c00",
-    },
-    {
-      title: "Gestion des notaires",
-      description: "Notaires partenaires de la plateforme",
-      route: "/admin/notaires",
-      icon: Gavel,
-      color: "#9c27b0",
-    },
-    {
-      title: "Statistiques",
-      description: "Rapports et indicateurs clés",
-      route: "/admin/statistiques",
-      icon: Assessment,
-      color: "#0288d1",
-    },
-    {
-      title: "Configuration",
-      description: "Paramètres du système",
-      route: "/admin/configuration",
-      icon: Settings,
-      color: "#616161",
-    },
-  ];
+  const fetchStats = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await API.get("/admin/stats");
+      setStats(res.data);
+    } catch (err) {
+      console.error("Erreur stats:", err);
+      setError("Impossible de charger les statistiques. Vérifiez que le serveur est démarré.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const modulesPatrimoine = [
-    {
-      title: "Gestion des Tarifs",
-      description: "Paramétrez les montants d'enregistrement, abonnements et commissions",
-      route: "/admin/gestion-tarifs",
-      icon: AttachMoney,
-      color: "#4caf50",
-      badge: "FCFA",
-    },
-    {
-      title: "Gestion des Abonnements",
-      description: "Gérez les renouvellements et désactivations manuelles",
-      route: "/admin/gestion-abonnements",
-      icon: Timer,
-      color: "#ff9800",
-      badge: "Annuel",
-    },
-    {
-      title: "Vérification des Biens",
-      description: "Validez les biens et attribuez le badge 'Vérifié ✓'",
-      route: "/admin/verification-biens",
-      icon: VerifiedUser,
-      color: "#2196f3",
-      badge: "Badge",
-    },
-    {
-      title: "Vérification Agences",
-      description: "Vérifiez les parcelles et biens publiés par les agences",
-      route: "/admin/verification-agences",
-      icon: CheckCircle,
-      color: "#00bcd4",
-      badge: "Nouveau",
-    },
-    {
-      title: "Gestion des Ventes",
-      description: "Gérez les ventes soumises et les commissions",
-      route: "/admin/gestion-ventes",
-      icon: Gavel,
-      color: "#9c27b0",
-      badge: "Commission",
-    },
-  ];
+  useEffect(() => {
+    fetchStats();
+  }, []);
 
-  const ModuleCard = ({ module }) => (
-    <Card
-      elevation={3}
-      sx={{
-        height: "100%",
-        borderLeft: `4px solid ${module.color}`,
-        transition: "all 0.3s ease",
-        cursor: "pointer",
-        "&:hover": {
-          boxShadow: "0px 12px 40px rgba(0,0,0,0.15)",
-          transform: "translateY(-8px)",
-        },
-      }}
-      onClick={() => navigate(module.route)}
-    >
-      <CardContent>
-        <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
-          <Avatar sx={{ bgcolor: module.color, width: 56, height: 56 }}>
-            <module.icon fontSize="large" />
+  // Cartes KPI principales
+  const kpis = stats
+    ? [
+        { label: "Utilisateurs", value: stats.utilisateurs.total, sub: `${stats.utilisateurs.actifs} actifs`, color: "#f57c00", icon: People },
+        { label: "Agences", value: stats.agences.total, sub: `${stats.agences.actives} actives`, color: "#1976d2", icon: Business },
+        { label: "Banques", value: stats.banques.total, sub: "partenaires", color: "#388e3c", icon: AccountBalance },
+        { label: "Notaires", value: stats.notaires.total, sub: "partenaires", color: "#7b1fa2", icon: Gavel },
+        { label: "Parcelles", value: stats.parcelles.total, sub: `${stats.parcelles.vendues} vendues`, color: "#2e7d32", icon: Landscape },
+        { label: "Biens", value: stats.biens.total, sub: `${stats.biens.vendus} vendus`, color: "#5e35b1", icon: Apartment },
+        { label: "Locations", value: stats.locations.total, sub: "offres", color: "#ff5722", icon: Home },
+        { label: "Ventes patrimoine", value: stats.ventes.total, sub: "au total", color: "#c2185b", icon: AttachMoney },
+      ]
+    : [];
+
+  // Barre de répartition réutilisable
+  const DistroBar = ({ label, value, total, color }) => {
+    const pct = total > 0 ? Math.round((value / total) * 100) : 0;
+    return (
+      <Box mb={1.5}>
+        <Stack direction="row" justifyContent="space-between" mb={0.5}>
+          <Typography variant="body2" sx={{ fontWeight: 500 }}>{label}</Typography>
+          <Typography variant="body2" color="text.secondary">
+            <strong>{value}</strong> ({pct}%)
+          </Typography>
+        </Stack>
+        <LinearProgress
+          variant="determinate"
+          value={pct}
+          sx={{
+            height: 8,
+            borderRadius: 5,
+            bgcolor: "#eef2f7",
+            "& .MuiLinearProgress-bar": { bgcolor: color, borderRadius: 5 },
+          }}
+        />
+      </Box>
+    );
+  };
+
+  const PanelCard = ({ title, icon: Icon, color, children }) => (
+    <Card elevation={0} sx={{ height: "100%", borderRadius: 3, border: "1px solid #e3e8ef" }}>
+      <CardContent sx={{ p: 3 }}>
+        <Stack direction="row" alignItems="center" spacing={1.5} mb={2.5}>
+          <Avatar sx={{ bgcolor: `${color}15`, color, width: 40, height: 40 }}>
+            <Icon />
           </Avatar>
-          {module.badge && (
-            <Chip label={module.badge} size="small" sx={{ bgcolor: module.color, color: "white" }} />
-          )}
-        </Box>
-
-        <Typography variant="h6" fontWeight="bold" gutterBottom>
-          {module.title}
-        </Typography>
-        <Typography variant="body2" color="text.secondary" mb={2}>
-          {module.description}
-        </Typography>
-
-        <Button
-          endIcon={<ArrowForward />}
-          sx={{ color: module.color, fontWeight: "bold" }}
-          fullWidth
-        >
-          Accéder
-        </Button>
+          <Typography variant="h6" fontWeight="bold">{title}</Typography>
+        </Stack>
+        {children}
       </CardContent>
     </Card>
   );
 
+  const rolesEntries = stats ? Object.entries(stats.utilisateurs.parRole || {}) : [];
+  const ventesEntries = stats ? Object.entries(stats.ventes.parStatut || {}) : [];
+
   return (
-    <PageLayout>
-      <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
-        {/* En-tête moderne */}
-        <Card
-          elevation={3}
-          sx={{
-            mb: 4,
-            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-            color: "white",
-          }}
-        >
-          <CardContent sx={{ p: 4 }}>
-            <Box display="flex" alignItems="center" gap={3}>
-              <Avatar
-                sx={{
-                  width: 80,
-                  height: 80,
-                  border: "4px solid white",
-                  bgcolor: "white",
-                  color: "primary.main",
-                }}
-              >
-                <Settings fontSize="large" />
+    <AdminLayout>
+      {/* Bandeau de bienvenue */}
+      <Card
+        elevation={0}
+        sx={{
+          mb: 3.5,
+          borderRadius: 4,
+          background: "linear-gradient(135deg, #0D2B4E 0%, #1B5285 55%, #27AE60 165%)",
+          color: "white",
+        }}
+      >
+        <CardContent sx={{ p: { xs: 3, md: 4 } }}>
+          <Stack direction="row" alignItems="center" justifyContent="space-between" flexWrap="wrap" gap={2}>
+            <Stack direction="row" alignItems="center" spacing={2.5}>
+              <Avatar sx={{ width: 64, height: 64, bgcolor: "rgba(255,255,255,0.15)", border: "3px solid rgba(255,255,255,0.4)" }}>
+                <Assessment fontSize="large" />
               </Avatar>
               <Box>
-                <Typography variant="h4" fontWeight="bold">
-                  Tableau de bord Administrateur
-                </Typography>
+                <Typography variant="h4" fontWeight="bold">Tableau de bord</Typography>
                 <Typography variant="body1" sx={{ opacity: 0.9, mt: 0.5 }}>
-                  Bonjour {user?.phone} • Rôle : <strong>{user?.role}</strong>
+                  Bonjour {user?.fullName || user?.phone} • Vue d'ensemble de la plateforme
                 </Typography>
               </Box>
-            </Box>
-          </CardContent>
-        </Card>
+            </Stack>
+            <Tooltip title="Rafraîchir">
+              <IconButton onClick={fetchStats} sx={{ color: "white", border: "1px solid rgba(255,255,255,0.3)" }}>
+                <Refresh />
+              </IconButton>
+            </Tooltip>
+          </Stack>
+        </CardContent>
+      </Card>
 
-        {/* KPIs rapides */}
-        <Grid container spacing={3} mb={4}>
-          {[
-            { label: "Agences", value: 12, color: "#1976d2", icon: Business },
-            { label: "Banques", value: 8, color: "#388e3c", icon: AccountBalance },
-            { label: "Utilisateurs", value: 123, color: "#f57c00", icon: People },
-            { label: "Biens", value: 342, color: "#7b1fa2", icon: Landscape },
-            { label: "Locations", value: 45, color: "#ff5722", icon: Home },
-          ].map((stat, index) => (
-            <Grid item xs={12} sm={6} md={2.4} key={index}>
-              <Card
-                elevation={3}
-                sx={{
-                  borderLeft: `4px solid ${stat.color}`,
-                  transition: "all 0.3s",
-                  "&:hover": { transform: "translateY(-4px)", boxShadow: 6 },
-                }}
-              >
-                <CardContent>
-                  <Box display="flex" justifyContent="space-between" alignItems="center">
-                    <Box>
-                      <Typography color="text.secondary" variant="body2">
-                        {stat.label}
-                      </Typography>
-                      <Typography variant="h4" fontWeight="bold" color={stat.color}>
-                        {stat.value}
-                      </Typography>
-                    </Box>
-                    <Avatar sx={{ bgcolor: stat.color, width: 48, height: 48 }}>
-                      <stat.icon />
-                    </Avatar>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
+      {error && <Alert severity="warning" sx={{ mb: 3, borderRadius: 2 }}>{error}</Alert>}
+
+      {/* KPIs principaux */}
+      <Grid container spacing={2.5} mb={1}>
+        {loading
+          ? Array.from({ length: 8 }).map((_, i) => (
+              <Grid item xs={6} sm={4} md={3} key={i}>
+                <Skeleton variant="rounded" height={118} sx={{ borderRadius: 3 }} />
+              </Grid>
+            ))
+          : kpis.map((stat, index) => (
+              <Grid item xs={6} sm={4} md={3} key={index}>
+                <Card
+                  elevation={0}
+                  sx={{
+                    borderRadius: 3,
+                    border: "1px solid #e3e8ef",
+                    transition: "all 0.25s",
+                    "&:hover": { transform: "translateY(-3px)", boxShadow: "0 8px 24px rgba(13,43,78,0.08)" },
+                  }}
+                >
+                  <CardContent>
+                    <Stack direction="row" justifyContent="space-between" alignItems="center">
+                      <Box>
+                        <Typography color="text.secondary" variant="body2">{stat.label}</Typography>
+                        <Typography variant="h4" fontWeight="bold" sx={{ color: stat.color }}>{stat.value}</Typography>
+                        <Typography variant="caption" color="text.secondary">{stat.sub}</Typography>
+                      </Box>
+                      <Avatar sx={{ bgcolor: `${stat.color}15`, color: stat.color, width: 46, height: 46 }}>
+                        <stat.icon />
+                      </Avatar>
+                    </Stack>
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+      </Grid>
+
+      {/* Répartitions */}
+      <Grid container spacing={2.5} mt={1}>
+        {/* Utilisateurs par rôle */}
+        <Grid item xs={12} md={4}>
+          <PanelCard title="Utilisateurs par rôle" icon={People} color="#f57c00">
+            {loading ? (
+              <Skeleton variant="rounded" height={180} />
+            ) : rolesEntries.length === 0 ? (
+              <Typography variant="body2" color="text.secondary">Aucune donnée.</Typography>
+            ) : (
+              rolesEntries
+                .sort((a, b) => b[1] - a[1])
+                .map(([role, count]) => (
+                  <DistroBar
+                    key={role}
+                    label={role}
+                    value={count}
+                    total={stats.utilisateurs.total}
+                    color={ROLE_COLORS[role] || "#607d8b"}
+                  />
+                ))
+            )}
+          </PanelCard>
         </Grid>
 
-        {/* Section Patrimoine Foncier */}
-        <Box mb={4}>
-          <Box display="flex" alignItems="center" gap={2} mb={3}>
-            <Landscape fontSize="large" color="success" />
-            <Box>
-              <Typography variant="h5" fontWeight="bold">
-                🏡 Gestion du Patrimoine Foncier
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Tarifs, abonnements, vérifications et ventes
-              </Typography>
-            </Box>
-          </Box>
+        {/* Foncier */}
+        <Grid item xs={12} md={4}>
+          <PanelCard title="Foncier & immobilier" icon={Landscape} color="#2e7d32">
+            {loading ? (
+              <Skeleton variant="rounded" height={180} />
+            ) : (
+              <>
+                <Typography variant="overline" color="text.secondary">Parcelles</Typography>
+                <DistroBar label="Vendues" value={stats.parcelles.vendues} total={stats.parcelles.total} color="#2e7d32" />
+                <DistroBar label="À vendre" value={stats.parcelles.aVendre} total={stats.parcelles.total} color="#66bb6a" />
+                <Divider sx={{ my: 1.5 }} />
+                <Typography variant="overline" color="text.secondary">Biens immobiliers</Typography>
+                <DistroBar label="Disponibles" value={stats.biens.disponibles} total={stats.biens.total} color="#5e35b1" />
+                <DistroBar label="Vendus" value={stats.biens.vendus} total={stats.biens.total} color="#9575cd" />
+              </>
+            )}
+          </PanelCard>
+        </Grid>
 
-          <Grid container spacing={3}>
-            {modulesPatrimoine.map((module, index) => (
-              <Grid item xs={12} sm={6} md={3} key={index}>
-                <ModuleCard module={module} />
-              </Grid>
-            ))}
-          </Grid>
-        </Box>
+        {/* Éléments à traiter + ventes */}
+        <Grid item xs={12} md={4}>
+          <PanelCard title="À traiter" icon={HourglassEmpty} color="#e53935">
+            {loading ? (
+              <Skeleton variant="rounded" height={180} />
+            ) : (
+              <Stack spacing={1.5}>
+                <Stack direction="row" alignItems="center" justifyContent="space-between"
+                  sx={{ p: 1.5, borderRadius: 2, bgcolor: "#fff5f5", border: "1px solid #ffd6d6" }}>
+                  <Stack direction="row" alignItems="center" spacing={1}>
+                    <HourglassEmpty sx={{ color: "#e53935" }} fontSize="small" />
+                    <Typography variant="body2">Agences en attente</Typography>
+                  </Stack>
+                  <Chip label={stats.agences.enAttente} size="small" sx={{ bgcolor: "#e53935", color: "white", fontWeight: 700 }} />
+                </Stack>
+                <Stack direction="row" alignItems="center" justifyContent="space-between"
+                  sx={{ p: 1.5, borderRadius: 2, bgcolor: "#fff8ec", border: "1px solid #ffe2b3" }}>
+                  <Stack direction="row" alignItems="center" spacing={1}>
+                    <HourglassEmpty sx={{ color: "#ff9800" }} fontSize="small" />
+                    <Typography variant="body2">Parcelles non vérifiées</Typography>
+                  </Stack>
+                  <Chip label={stats.parcelles.nonVerifiees} size="small" sx={{ bgcolor: "#ff9800", color: "white", fontWeight: 700 }} />
+                </Stack>
 
-        <Divider sx={{ my: 4 }} />
+                <Divider sx={{ my: 0.5 }} />
+                <Typography variant="overline" color="text.secondary">Ventes par statut</Typography>
+                {ventesEntries.length === 0 ? (
+                  <Typography variant="body2" color="text.secondary">Aucune vente.</Typography>
+                ) : (
+                  ventesEntries.map(([statut, count]) => (
+                    <Stack key={statut} direction="row" alignItems="center" justifyContent="space-between">
+                      <Stack direction="row" alignItems="center" spacing={1}>
+                        <CheckCircle sx={{ color: "#27AE60", fontSize: 16 }} />
+                        <Typography variant="body2" sx={{ textTransform: "capitalize" }}>{statut}</Typography>
+                      </Stack>
+                      <Chip label={count} size="small" variant="outlined" />
+                    </Stack>
+                  ))
+                )}
+              </Stack>
+            )}
+          </PanelCard>
+        </Grid>
+      </Grid>
 
-        {/* Section Modules globaux */}
-        <Box>
-          <Box display="flex" alignItems="center" gap={2} mb={3}>
-            <Settings fontSize="large" color="primary" />
-            <Box>
-              <Typography variant="h5" fontWeight="bold">
-                ⚙️ Modules Système
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Gestion globale de la plateforme
-              </Typography>
-            </Box>
-          </Box>
-
-          <Grid container spacing={3}>
-            {modulesGlobaux.map((module, index) => (
-              <Grid item xs={12} sm={6} md={4} key={index}>
-                <ModuleCard module={module} />
-              </Grid>
-            ))}
-          </Grid>
-        </Box>
-      </Container>
-    </PageLayout>
+      {stats?.generatedAt && (
+        <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 3, textAlign: "right" }}>
+          Mis à jour le {new Date(stats.generatedAt).toLocaleString("fr-FR")}
+        </Typography>
+      )}
+    </AdminLayout>
   );
 };
 

@@ -58,7 +58,7 @@ import {
   People,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import PageLayout from "../../../components/shared/PageLayout";
+import CommercialLayout from "../../../components/commercial/CommercialLayout";
 import api from "../../../services/api";
 
 const InscrireClientPage = () => {
@@ -199,7 +199,7 @@ const InscrireClientPage = () => {
         role: "Client",
       });
 
-      setSuccess("✅ Client inscrit avec succès !");
+      setSuccess("Client inscrit avec succès !");
       
       // Reset form
       setFormData({
@@ -224,7 +224,7 @@ const InscrireClientPage = () => {
         fetchClients();
       }, 1500);
     } catch (err) {
-      setError(err.response?.data?.message || "❌ Erreur lors de l'inscription");
+      setError(err.response?.data?.message || " Erreur lors de l'inscription");
     } finally {
       setSubmitting(false);
     }
@@ -243,7 +243,7 @@ const InscrireClientPage = () => {
   const handleUpdate = async () => {
     try {
       await api.put(`/agence/clients/${editingClient._id}`, editFormData);
-      setSuccess("✅ Client modifié avec succès");
+      setSuccess("Client modifié avec succès");
       setEditDialog(false);
       fetchClients();
     } catch (err) {
@@ -254,7 +254,7 @@ const InscrireClientPage = () => {
   const handleToggleActive = async (clientId, currentStatus) => {
     try {
       await api.patch(`/agence/clients/${clientId}/toggle-active`);
-      setSuccess(`✅ Client ${currentStatus ? "désactivé" : "activé"} avec succès`);
+      setSuccess(`Client ${currentStatus ? "désactivé" : "activé"} avec succès`);
       fetchClients();
     } catch (err) {
       setError("Erreur lors de la modification du statut");
@@ -266,7 +266,7 @@ const InscrireClientPage = () => {
 
     try {
       await api.delete(`/agence/clients/${clientId}`);
-      setSuccess("✅ Client supprimé avec succès");
+      setSuccess("Client supprimé avec succès");
       fetchClients();
     } catch (err) {
       setError("Erreur lors de la suppression");
@@ -277,12 +277,12 @@ const InscrireClientPage = () => {
   const prevStep = () => setCurrentStep((prev) => Math.max(prev - 1, 0));
 
   return (
-    <PageLayout>
+    <CommercialLayout>
       <Box sx={{ width: "100%", minHeight: "100vh", bgcolor: "#f5f7fa" }}>
         {/* En-tête modernisé */}
         <Box
           sx={{
-            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            background: "linear-gradient(135deg, #0D2B4E 0%, #1B5285 55%, #27AE60 165%)",
             py: 6,
             mb: 4,
             width: "100%",
@@ -425,7 +425,7 @@ const InscrireClientPage = () => {
               "& .MuiTabs-indicator": {
                 height: 3,
                 borderRadius: "3px 3px 0 0",
-                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                background: "linear-gradient(135deg, #0D2B4E 0%, #1B5285 55%, #27AE60 165%)",
               },
             }}
           >
@@ -501,7 +501,7 @@ const InscrireClientPage = () => {
                       gutterBottom 
                       mb={3}
                       sx={{
-                        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                        background: "linear-gradient(135deg, #0D2B4E 0%, #1B5285 55%, #27AE60 165%)",
                         backgroundClip: "text",
                         WebkitBackgroundClip: "text",
                         WebkitTextFillColor: "transparent",
@@ -523,7 +523,7 @@ const InscrireClientPage = () => {
                           onChange={handleChange}
                           fullWidth
                           required
-                          placeholder="Ex: Jean Dupont"
+                          placeholder="Ex: KANE ML"
                           sx={{
                             "& .MuiOutlinedInput-root": {
                               borderRadius: 2,
@@ -659,7 +659,7 @@ const InscrireClientPage = () => {
                       gutterBottom 
                       mb={3}
                       sx={{
-                        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                        background: "linear-gradient(135deg, #0D2B4E 0%, #1B5285 55%, #27AE60 165%)",
                         backgroundClip: "text",
                         WebkitBackgroundClip: "text",
                         WebkitTextFillColor: "transparent",
@@ -767,7 +767,7 @@ const InscrireClientPage = () => {
                       gutterBottom 
                       mb={3}
                       sx={{
-                        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                        background: "linear-gradient(135deg, #0D2B4E 0%, #1B5285 55%, #27AE60 165%)",
                         backgroundClip: "text",
                         WebkitBackgroundClip: "text",
                         WebkitTextFillColor: "transparent",
@@ -884,7 +884,7 @@ const InscrireClientPage = () => {
                       gutterBottom 
                       mb={3}
                       sx={{
-                        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                        background: "linear-gradient(135deg, #0D2B4E 0%, #1B5285 55%, #27AE60 165%)",
                         backgroundClip: "text",
                         WebkitBackgroundClip: "text",
                         WebkitTextFillColor: "transparent",
@@ -954,7 +954,7 @@ const InscrireClientPage = () => {
                         onClick={nextStep}
                         disabled={!stepValid}
                         sx={{
-                          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                          background: "linear-gradient(135deg, #0D2B4E 0%, #1B5285 55%, #27AE60 165%)",
                           boxShadow: "0 4px 14px rgba(102, 126, 234, 0.4)",
                           borderRadius: 2,
                           textTransform: "none",
@@ -986,7 +986,7 @@ const InscrireClientPage = () => {
                           py: 1.5, 
                           fontSize: "1rem", 
                           fontWeight: 700,
-                          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                          background: "linear-gradient(135deg, #0D2B4E 0%, #1B5285 55%, #27AE60 165%)",
                           boxShadow: "0 4px 14px rgba(102, 126, 234, 0.4)",
                           borderRadius: 2,
                           textTransform: "none",
@@ -1028,20 +1028,20 @@ const InscrireClientPage = () => {
                   variant="h5" 
                   fontWeight={700}
                   sx={{
-                    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                    background: "linear-gradient(135deg, #0D2B4E 0%, #1B5285 55%, #27AE60 165%)",
                     backgroundClip: "text",
                     WebkitBackgroundClip: "text",
                     WebkitTextFillColor: "transparent",
                   }}
                 >
-                  👥 Mes Clients ({clients.length})
+                  Mes Clients ({clients.length})
                 </Typography>
                 <Button
                   variant="contained"
                   startIcon={<Add />}
                   onClick={() => setActiveTab(0)}
                   sx={{
-                    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                    background: "linear-gradient(135deg, #0D2B4E 0%, #1B5285 55%, #27AE60 165%)",
                     boxShadow: "0 4px 14px rgba(102, 126, 234, 0.4)",
                     borderRadius: 2,
                     textTransform: "none",
@@ -1117,7 +1117,7 @@ const InscrireClientPage = () => {
                                       sx={{ 
                                         width: 40, 
                                         height: 40, 
-                                        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                                        background: "linear-gradient(135deg, #0D2B4E 0%, #1B5285 55%, #27AE60 165%)",
                                         fontWeight: 700,
                                       }}
                                     >
@@ -1245,7 +1245,7 @@ const InscrireClientPage = () => {
               variant="h6" 
               fontWeight={700}
               sx={{
-                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                background: "linear-gradient(135deg, #0D2B4E 0%, #1B5285 55%, #27AE60 165%)",
                 backgroundClip: "text",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
@@ -1314,7 +1314,7 @@ const InscrireClientPage = () => {
             variant="contained" 
             startIcon={<CheckCircle />}
             sx={{
-              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+              background: "linear-gradient(135deg, #0D2B4E 0%, #1B5285 55%, #27AE60 165%)",
               boxShadow: "0 4px 14px rgba(102, 126, 234, 0.4)",
               borderRadius: 2,
               textTransform: "none",
@@ -1334,7 +1334,7 @@ const InscrireClientPage = () => {
         </Dialog>
         </Container>
       </Box>
-    </PageLayout>
+    </CommercialLayout>
   );
 };
 

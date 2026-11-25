@@ -1,0 +1,17 @@
+:root {
+  --lam-blue: #3030F9;
+  --lam-blue-alt: #3333FF;
+  --lam-blue-dark: #2020C8;
+  --lam-ink: #0e1133;
+  --lam-ink-2: #131A3A;
+  --lam-green: #0A7C4F;
+  --lam-sky: #EAF9FF;
+  --lam-sky-2: #C1E1FF;
+  --lam-sky-3: #D8E8FE;
+  --lam-text: #2d3a5e;
+  --lam-muted: #6b7a9e;
+  --lam-gray: #505056;
+  --lam-font-titre: "DM Sans", system-ui, Arial, sans-serif;
+  --lam-font-corps: Arial, "Helvetica Neue", system-ui, sans-serif;
+  --lam-font-alt: "Poppins", system-ui, Arial, sans-serif;
+}

@@ -31,7 +31,7 @@ import {
   Timer,
 } from "@mui/icons-material";
 import { useNavigate, useParams } from "react-router-dom";
-import PageLayout from "../../components/shared/PageLayout";
+import ClientLayout from "../../components/client/ClientLayout";
 import api from "../../services/api";
 
 const RenouvelerAbonnementPage = () => {
@@ -70,7 +70,7 @@ const RenouvelerAbonnementPage = () => {
     setError("");
     try {
       // TODO: Intégrer API paiement mobile
-      setSuccess(`✅ Paiement initié ! Contactez Softlink pour finaliser.`);
+      setSuccess(`Paiement initié ! Contactez Softlink pour finaliser.`);
 
       setTimeout(() => {
         navigate("/user/mon-patrimoine");
@@ -99,24 +99,24 @@ const RenouvelerAbonnementPage = () => {
 
   if (loading) {
     return (
-      <PageLayout>
+      <ClientLayout>
         <Box display="flex" justifyContent="center" alignItems="center" minHeight="80vh">
           <CircularProgress size={60} />
         </Box>
-      </PageLayout>
+      </ClientLayout>
     );
   }
 
   if (!bien || !tarif) {
     return (
-      <PageLayout>
+      <ClientLayout>
         <Container maxWidth="sm" sx={{ mt: 4 }}>
           <Alert severity="error">Bien ou tarif non trouvé</Alert>
           <Button startIcon={<ArrowBack />} onClick={() => navigate("/user/mon-patrimoine")} sx={{ mt: 2 }}>
             Retour
           </Button>
         </Container>
-      </PageLayout>
+      </ClientLayout>
     );
   }
 
@@ -124,7 +124,7 @@ const RenouvelerAbonnementPage = () => {
   const expire = jours < 0;
 
   return (
-    <PageLayout>
+    <ClientLayout>
       <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
         <Button startIcon={<ArrowBack />} onClick={() => navigate("/user/mon-patrimoine")} sx={{ mb: 3 }}>
           Retour à mon patrimoine
@@ -147,7 +147,7 @@ const RenouvelerAbonnementPage = () => {
           sx={{
             background: expire
               ? "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)"
-              : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+              : "linear-gradient(135deg, #0D2B4E 0%, #1B5285 55%, #27AE60 165%)",
             color: "white",
             mb: 3,
           }}
@@ -162,7 +162,7 @@ const RenouvelerAbonnementPage = () => {
                   Renouvellement d'abonnement annuel
                 </Typography>
                 <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                  {expire ? "⚠️ Votre abonnement a expiré" : "Renouvelez pour 1 an"}
+                  {expire ? "Votre abonnement a expiré" : "Renouvelez pour 1 an"}
                 </Typography>
               </Box>
             </Box>
@@ -173,7 +173,7 @@ const RenouvelerAbonnementPage = () => {
         <Card elevation={3} sx={{ mb: 3 }}>
           <CardContent>
             <Typography variant="h6" fontWeight="bold" gutterBottom>
-              📊 Statut de l'abonnement
+              Statut de l'abonnement
             </Typography>
             <Divider sx={{ my: 2 }} />
 
@@ -192,10 +192,10 @@ const RenouvelerAbonnementPage = () => {
                 </Typography>
                 <Box mt={1}>
                   {bien.abonnementStatut === "actif" && (
-                    <Chip label="✓ Actif" color="success" />
+                    <Chip label="Actif" color="success" />
                   )}
                   {bien.abonnementStatut === "expire" && (
-                    <Chip label="⚠️ Expiré" color="error" />
+                    <Chip label="Expiré" color="error" />
                   )}
                   {bien.abonnementStatut === "en_attente" && (
                     <Chip label="En attente" color="warning" />
@@ -249,7 +249,7 @@ const RenouvelerAbonnementPage = () => {
                         <TableCell>{formatDate(paiement.datePaiement)}</TableCell>
                         <TableCell align="right">{formatMoney(paiement.montant)}</TableCell>
                         <TableCell>
-                          <Chip label="Payé ✓" size="small" color="success" />
+                          <Chip label="Payé" size="small" color="success" />
                         </TableCell>
                       </TableRow>
                     ))}
@@ -287,11 +287,11 @@ const RenouvelerAbonnementPage = () => {
               onChange={(e) => setMethodePaiement(e.target.value)}
               fullWidth
             >
-              <MenuItem value="orange_money">🟠 Orange Money</MenuItem>
-              <MenuItem value="moov_money">🔵 Moov Money</MenuItem>
-              <MenuItem value="airtel_money">🔴 Airtel Money</MenuItem>
-              <MenuItem value="zamani">🟢 Zamani</MenuItem>
-              <MenuItem value="especes">💵 Espèces (à payer chez Softlink)</MenuItem>
+              <MenuItem value="orange_money">Orange Money</MenuItem>
+              <MenuItem value="moov_money">Moov Money</MenuItem>
+              <MenuItem value="airtel_money">Airtel Money</MenuItem>
+              <MenuItem value="zamani">Zamani</MenuItem>
+              <MenuItem value="especes">Espèces (à payer chez Softlink)</MenuItem>
             </TextField>
           </CardContent>
         </Card>
@@ -313,7 +313,7 @@ const RenouvelerAbonnementPage = () => {
           {processing ? "Traitement..." : `Renouveler pour ${formatMoney(tarif.montantAbonnementAnnuel)}`}
         </Button>
       </Container>
-    </PageLayout>
+    </ClientLayout>
   );
 };
 

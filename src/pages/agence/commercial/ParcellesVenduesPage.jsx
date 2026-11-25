@@ -14,6 +14,9 @@ import {
   Chip,
   Tooltip,
   Box,
+  Grid,
+  Card,
+  CardContent,
 } from "@mui/material";
 import { useAuth } from "../../../contexts/AuthContext";
 import api from "../../../services/api";
@@ -24,6 +27,13 @@ import CreerEcheancierModal from "../../../components/commercial/CreerEcheancier
 import EcheancierDrawer from "../../../components/commercial/EcheancierDrawer";
 import { useNavigate } from "react-router-dom";
 import { Gavel, CalendarToday } from "@mui/icons-material";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import CommercialLayout from "../../../components/commercial/CommercialLayout";
+import AgencePageHeader from "../../../components/agence/AgencePageHeader";
+import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
+import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
 
 const ParcellesVenduesPage = () => {
   const { user } = useAuth();
@@ -88,19 +98,47 @@ const handleRefresh = () => {
 
 
   return (
-    <Container sx={{ mt: 4 }}>
-<Button
-  variant="outlined"
-  onClick={() => navigate("/agence/commercial/dashboard")}
-  sx={{ mb: 2 }}
->
-  ⬅️ Retour 
-</Button>
+    <CommercialLayout>
+      <Container sx={{ mt: 4 }}>
+        <AgencePageHeader
+          icon={Gavel}
+          title="Parcelles vendues"
+          subtitle="Suivi des paiements et transferts au notaire"
+          action={
+            <Button variant="outlined" startIcon={<ArrowBackIcon />}
+              onClick={() => navigate("/agence/commercial/dashboard")}
+              sx={{ borderColor: "rgba(255,255,255,0.6)", color: "white" }}>
+              Retour
+            </Button>
+          }
+        />
 
-
-      <Typography variant="h5" gutterBottom>
-        📒 Parcelles vendues
-      </Typography>
+      {!loading && paiements.length > 0 && (
+        <Grid container spacing={2.5} sx={{ mb: 3 }}>
+          {[
+            { label: "Total", value: paiements.length, icon: ReceiptLongIcon, color: "#1976d2" },
+            { label: "Payés", value: paiements.filter((p) => p.statut === "paid").length, icon: CheckCircleIcon, color: "#2e7d32" },
+            { label: "Encaissé", value: paiements.reduce((s, p) => s + (p.montantPaye || 0), 0).toLocaleString() + " FCFA", icon: AttachMoneyIcon, color: "#00897b" },
+            { label: "Reste à percevoir", value: paiements.reduce((s, p) => s + (p.montantRestant || 0), 0).toLocaleString() + " FCFA", icon: HourglassEmptyIcon, color: "#ff9800" },
+          ].map((kpi) => (
+            <Grid item xs={6} md={3} key={kpi.label}>
+              <Card elevation={0} sx={{ borderRadius: 3, border: "1px solid #e3e8ef" }}>
+                <CardContent>
+                  <Box display="flex" justifyContent="space-between" alignItems="center">
+                    <Box sx={{ minWidth: 0 }}>
+                      <Typography variant="body2" color="text.secondary">{kpi.label}</Typography>
+                      <Typography variant="h5" fontWeight="bold" sx={{ color: kpi.color }} noWrap>{kpi.value}</Typography>
+                    </Box>
+                    <Box sx={{ width: 44, height: 44, borderRadius: 2, bgcolor: `${kpi.color}15`, color: kpi.color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <kpi.icon />
+                    </Box>
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      )}
 
       {loading ? (
         <CircularProgress />
@@ -171,7 +209,7 @@ const handleRefresh = () => {
                                   setDrawerOpen(true);
                                 }}
                               >
-                                📜 Suivi
+                                Suivi
                               </Button>
                             </Tooltip>
                             <Tooltip title={echeanciersMap[p._id] ? "Échéancier déjà créé" : "Créer un échéancier"}>
@@ -232,13 +270,13 @@ const handleRefresh = () => {
                                 setOpenTransférerModal(true);
                               }}
                             >
-                              ⚖️ Transférer au notaire
+                              Transférer au notaire
                             </Button>
                           </Tooltip>
                         )}
                         {p.statut === "paid" && !venteExiste && (
                           <Chip
-                            label="⚠️ Vente non créée"
+                            label="Vente non créée"
                             color="warning"
                             size="small"
                           />
@@ -332,6 +370,7 @@ const handleRefresh = () => {
     />
 
     </Container>
+    </CommercialLayout>
   );
 };
 

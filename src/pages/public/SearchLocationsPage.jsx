@@ -3,7 +3,7 @@ import {
   Container,
   Box,
   Typography,
-  Grid,
+  GridLegacy as Grid,
   Card,
   CardContent,
   CardMedia,
@@ -24,6 +24,8 @@ import {
   Alert,
   CircularProgress,
   InputAdornment,
+  Menu,
+  Popover,
   Checkbox,
   FormControlLabel,
   ImageList,
@@ -62,6 +64,16 @@ import {
   CalendarToday,
   Map as MapIcon,
   OpenInNew,
+  LocationCity as FILocationCity,
+  Place as FIPlace,
+  Payments as FIPayments,
+  SquareFoot as FISquareFoot,
+  Sort as FISort,
+  SwapVert as FISwapVert,
+  Chair as FIChair,
+  Tune as FITune,
+  ExpandMore as FIExpandMore,
+  Refresh as FIRefresh,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/shared/Navbar";
@@ -100,6 +112,9 @@ const SearchLocationsPage = () => {
   });
   const [sortBy, setSortBy] = useState("createdAt");
   const [sortOrder, setSortOrder] = useState("desc");
+  // Affichage uniquement : panneau avancé et menu des segments de la barre
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [segMenu, setSegMenu] = useState({ key: null, el: null });
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [openLocationsDrawer, setOpenLocationsDrawer] = useState(false);
   
@@ -296,7 +311,7 @@ const SearchLocationsPage = () => {
       <Box
         sx={{
           background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-          py: 6,
+          py: 4,
           mb: 4,
           width: "100%",
         }}
@@ -305,320 +320,326 @@ const SearchLocationsPage = () => {
           <Typography variant="h3" fontWeight="bold" color="white" gutterBottom>
             Recherche de Locations
           </Typography>
-          <Typography variant="h6" color="rgba(255,255,255,0.9)" sx={{ mb: 3 }}>
+          <Typography variant="h6" color="rgba(255,255,255,0.9)">
             Trouvez le logement idéal parmi {stats?.totalLocations || 0} locations disponibles
           </Typography>
-
-          {/* Statistiques rapides */}
-          {stats && (
-            <Grid container spacing={2} sx={{ mt: 2 }}>
-              <Grid item xs={12} sm={4}>
-                <Paper sx={{ p: 2, bgcolor: "rgba(255,255,255,0.2)", color: "white" }}>
-                  <Typography variant="caption">Prix minimum</Typography>
-                  <Typography variant="h6" fontWeight="bold">
-                    {stats.prix.prixMin?.toLocaleString() || 0} FCFA/mois
-                  </Typography>
-                </Paper>
-              </Grid>
-              <Grid item xs={12} sm={4}>
-                <Paper sx={{ p: 2, bgcolor: "rgba(255,255,255,0.2)", color: "white" }}>
-                  <Typography variant="caption">Prix maximum</Typography>
-                  <Typography variant="h6" fontWeight="bold">
-                    {stats.prix.prixMax?.toLocaleString() || 0} FCFA/mois
-                  </Typography>
-                </Paper>
-              </Grid>
-              <Grid item xs={12} sm={4}>
-                <Paper sx={{ p: 2, bgcolor: "rgba(255,255,255,0.2)", color: "white" }}>
-                  <Typography variant="caption">Prix moyen</Typography>
-                  <Typography variant="h6" fontWeight="bold">
-                    {Math.round(stats.prix.prixMoyen || 0).toLocaleString()} FCFA/mois
-                  </Typography>
-                </Paper>
-              </Grid>
-            </Grid>
-          )}
         </Container>
       </Box>
 
       <Container maxWidth="xl" sx={{ width: "100%", mb: 4 }}>
-        {/* Barre de recherche horizontale */}
-        <Paper sx={{ p: 3, mb: 3 }}>
-          <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-            <Typography variant="h6" fontWeight="bold" sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <FilterList />
-              Filtres de recherche
-            </Typography>
-            {activeFiltersCount > 0 && (
-              <Chip
-                label={`${activeFiltersCount} filtre${activeFiltersCount > 1 ? "s" : ""} actif${activeFiltersCount > 1 ? "s" : ""}`}
-                color="primary"
-                size="small"
-                onClick={handleClearFilters}
-                deleteIcon={<Clear />}
-                onDelete={handleClearFilters}
-                sx={{ cursor: "pointer" }}
-              />
-            )}
-          </Box>
-
-          <Grid container spacing={2}>
-            {/* Ligne 1: Localisation et Type */}
-            <Grid item xs={12} sm={6} md={3}>
-              <FormControl fullWidth size="small">
-                <InputLabel id="ville-label" shrink>Ville</InputLabel>
-                <Select
-                  labelId="ville-label"
-                  value={filters.ville || ""}
-                  onChange={(e) => handleFilterChange("ville", e.target.value)}
-                  label="Ville"
-                  displayEmpty
-                  renderValue={(selected) => {
-                    if (!selected || selected === "") {
-                      return <span style={{ color: "rgba(0, 0, 0, 0.6)" }}>Toutes les villes</span>;
-                    }
-                    return selected;
-                  }}
-                >
-                  <MenuItem value="">
-                    <em>Toutes les villes</em>
-                  </MenuItem>
-                  {filterOptions.villes.map((ville) => (
-                    <MenuItem key={ville.id} value={ville.nom}>
-                      {ville.nom}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-
-            <Grid item xs={12} sm={6} md={3}>
-              <FormControl fullWidth size="small">
-                <InputLabel id="quartier-label" shrink>Quartier</InputLabel>
-                <Select
-                  labelId="quartier-label"
-                  value={filters.quartier || ""}
-                  onChange={(e) => handleFilterChange("quartier", e.target.value)}
-                  label="Quartier"
-                  displayEmpty
-                  renderValue={(selected) => {
-                    if (!selected || selected === "") {
-                      return <span style={{ color: "rgba(0, 0, 0, 0.6)" }}>Tous les quartiers</span>;
-                    }
-                    return selected;
-                  }}
-                >
-                  <MenuItem value="">
-                    <em>Tous les quartiers</em>
-                  </MenuItem>
-                  {filterOptions.quartiers.map((quartier) => (
-                    <MenuItem key={quartier.id} value={quartier.nom}>
-                      {quartier.nom}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-
-            <Grid item xs={12} sm={6} md={3}>
-              <FormControl fullWidth size="small">
-                <InputLabel id="type-label" shrink>Type de logement</InputLabel>
-                <Select
-                  labelId="type-label"
-                  value={filters.type || ""}
-                  onChange={(e) => handleFilterChange("type", e.target.value)}
-                  label="Type de logement"
-                  displayEmpty
-                  renderValue={(selected) => {
-                    if (!selected || selected === "") {
-                      return <span style={{ color: "rgba(0, 0, 0, 0.6)" }}>Tous les types</span>;
-                    }
-                    const selectedType = filterOptions.types.find((type) => type.id === selected);
-                    return selectedType ? selectedType.nom : "";
-                  }}
-                >
-                  <MenuItem value="">
-                    <em>Tous les types</em>
-                  </MenuItem>
-                  {filterOptions.types.map((type) => (
-                    <MenuItem key={type.id} value={type.id}>
-                      {type.nom}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-
-            <Grid item xs={12} sm={6} md={3}>
-              <FormControl fullWidth size="small">
-                <InputLabel id="agence-label" shrink>Agence Immobilière</InputLabel>
-                <Select
-                  labelId="agence-label"
-                  value={filters.agence || ""}
-                  onChange={(e) => handleFilterChange("agence", e.target.value)}
-                  label="Agence Immobilière"
-                  displayEmpty
-                  renderValue={(selected) => {
-                    if (!selected || selected === "") {
-                      return <span style={{ color: "rgba(0, 0, 0, 0.6)" }}>Toutes les agences</span>;
-                    }
-                    return filterOptions.agences.find(a => a.id === selected)?.nom || selected;
-                  }}
-                >
-                  <MenuItem value="">
-                    <em>Toutes les agences</em>
-                  </MenuItem>
-                  {filterOptions.agences.map((agence) => (
-                    <MenuItem key={agence.id} value={agence.id}>
-                      {agence.nom}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-
-            {/* Ligne 2: Prix */}
-            <Grid item xs={12} sm={6} md={3}>
-              <TextField
-                fullWidth
-                size="small"
-                label="Prix Min (FCFA/mois)"
-                type="number"
-                value={filters.prixMin}
-                onChange={(e) => handleFilterChange("prixMin", e.target.value)}
-                InputProps={{
-                  startAdornment: <InputAdornment position="start">FCFA</InputAdornment>,
+        {/* Barre de filtres unifiée */}
+        {(() => {
+          const optNom = (list, id) => list.find((o) => o.id === id)?.nom || id;
+          const fmt = (n) => Number(n).toLocaleString("fr-FR");
+          const prixActif = Boolean(filters.prixMin || filters.prixMax);
+          const prixLabel = prixActif
+            ? `Prix : ${filters.prixMin ? fmt(filters.prixMin) : "0"} - ${filters.prixMax ? fmt(filters.prixMax) : "max"}`
+            : "Prix";
+          const segments = [
+            { key: "ville", Icon: FILocationCity, color: "#3030F9", all: "Toutes les villes", options: filterOptions.villes.map((v) => ({ id: v.nom, nom: v.nom })) },
+            { key: "type", Icon: Home, color: "#0A7C4F", all: "Tous les types", options: filterOptions.types.map((t) => ({ id: t.id, nom: t.nom })) },
+          ];
+          const segSx = {
+            display: "flex",
+            alignItems: "center",
+            gap: 1,
+            px: 2,
+            py: 1.4,
+            flex: "1 1 170px",
+            minWidth: 0,
+            cursor: "pointer",
+            border: 0,
+            bgcolor: "transparent",
+            font: "inherit",
+            textAlign: "left",
+            borderRight: { xs: "none", sm: "1px solid rgba(48,48,249,0.15)" },
+            borderBottom: { xs: "1px solid rgba(48,48,249,0.15)", sm: "none" },
+            "&:hover": { bgcolor: "rgba(48,48,249,0.04)" },
+          };
+          const panelField = { flex: "1 1 200px", minWidth: { xs: "100%", sm: 180 } };
+          const chips = [
+            filters.ville && { key: "ville", label: filters.ville, Icon: FILocationCity, bg: "#3030F9" },
+            filters.type && { key: "type", label: optNom(filterOptions.types, filters.type), Icon: Home, bg: "#3030F9" },
+            filters.quartier && { key: "quartier", label: filters.quartier, Icon: FIPlace, bg: "#0A7C4F" },
+            filters.agence && { key: "agence", label: `Agence: ${optNom(filterOptions.agences, filters.agence)}`, Icon: Business, bg: "#0e1133" },
+            filters.prixMin && { key: "prixMin", label: `Prix > ${fmt(filters.prixMin)}`, Icon: FIPayments, bg: "#3030F9" },
+            filters.prixMax && { key: "prixMax", label: `Prix < ${fmt(filters.prixMax)}`, Icon: FIPayments, bg: "#3030F9" },
+            filters.superficieMin && { key: "superficieMin", label: `Sup > ${filters.superficieMin} m²`, Icon: FISquareFoot, bg: "#0A7C4F" },
+            filters.superficieMax && { key: "superficieMax", label: `Sup < ${filters.superficieMax} m²`, Icon: FISquareFoot, bg: "#0A7C4F" },
+            filters.chambres && { key: "chambres", label: `${filters.chambres} chambre${Number(filters.chambres) > 1 ? "s" : ""}`, Icon: Bed, bg: "#0A7C4F" },
+            filters.meuble && { key: "meuble", label: filters.meuble === "true" ? "Meublé" : "Non meublé", Icon: FIChair, bg: "#0e1133" },
+          ].filter(Boolean);
+          return (
+            <Box sx={{ mb: 3 }}>
+              {/* Barre principale */}
+              <Box
+                sx={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  alignItems: "stretch",
+                  bgcolor: "#ffffff",
+                  border: "1.5px solid #3030F9",
+                  borderRadius: "16px",
+                  boxShadow: "0 2px 8px rgba(15,23,42,0.05)",
+                  overflow: "hidden",
                 }}
-              />
-            </Grid>
-
-            <Grid item xs={12} sm={6} md={3}>
-              <TextField
-                fullWidth
-                size="small"
-                label="Prix Max (FCFA/mois)"
-                type="number"
-                value={filters.prixMax}
-                onChange={(e) => handleFilterChange("prixMax", e.target.value)}
-                InputProps={{
-                  startAdornment: <InputAdornment position="start">FCFA</InputAdornment>,
-                }}
-              />
-            </Grid>
-
-            {/* Ligne 2: Superficie */}
-            <Grid item xs={12} sm={6} md={3}>
-              <TextField
-                fullWidth
-                size="small"
-                label="Superficie Min (m²)"
-                type="number"
-                value={filters.superficieMin}
-                onChange={(e) => handleFilterChange("superficieMin", e.target.value)}
-                InputProps={{
-                  startAdornment: <InputAdornment position="start">m²</InputAdornment>,
-                }}
-              />
-            </Grid>
-
-            <Grid item xs={12} sm={6} md={3}>
-              <TextField
-                fullWidth
-                size="small"
-                label="Superficie Max (m²)"
-                type="number"
-                value={filters.superficieMax}
-                onChange={(e) => handleFilterChange("superficieMax", e.target.value)}
-                InputProps={{
-                  startAdornment: <InputAdornment position="start">m²</InputAdornment>,
-                }}
-              />
-            </Grid>
-
-            {/* Ligne 3: Chambres et Meublé */}
-            <Grid item xs={12} sm={6} md={3}>
-              <TextField
-                fullWidth
-                size="small"
-                label="Nombre de chambres"
-                type="number"
-                value={filters.chambres}
-                onChange={(e) => handleFilterChange("chambres", e.target.value)}
-                InputProps={{
-                  inputProps: { min: 0 },
-                }}
-              />
-            </Grid>
-
-            <Grid item xs={12} sm={6} md={3}>
-              <FormControl fullWidth size="small">
-                <InputLabel id="meuble-label" shrink>Meublé</InputLabel>
-                <Select
-                  labelId="meuble-label"
-                  value={filters.meuble || ""}
-                  onChange={(e) => handleFilterChange("meuble", e.target.value)}
-                  label="Meublé"
-                  displayEmpty
-                  renderValue={(selected) => {
-                    if (!selected || selected === "") {
-                      return <span style={{ color: "rgba(0, 0, 0, 0.6)" }}>Tous</span>;
-                    }
-                    return selected === "true" ? "Meublé" : "Non meublé";
-                  }}
-                >
-                  <MenuItem value="">
-                    <em>Tous</em>
-                  </MenuItem>
-                  <MenuItem value="true">Meublé</MenuItem>
-                  <MenuItem value="false">Non meublé</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-
-            {/* Ligne 3: Tri */}
-            <Grid item xs={12} sm={6} md={3}>
-              <FormControl fullWidth size="small">
-                <InputLabel>Trier par</InputLabel>
-                <Select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  label="Trier par"
-                >
-                  <MenuItem value="createdAt">Date d'ajout</MenuItem>
-                  <MenuItem value="prixMensuel">Prix mensuel</MenuItem>
-                  <MenuItem value="superficie">Superficie</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-
-            <Grid item xs={12} sm={6} md={3}>
-              <FormControl fullWidth size="small">
-                <InputLabel>Ordre</InputLabel>
-                <Select
-                  value={sortOrder}
-                  onChange={(e) => setSortOrder(e.target.value)}
-                  label="Ordre"
-                >
-                  <MenuItem value="asc">Croissant</MenuItem>
-                  <MenuItem value="desc">Décroissant</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-
-            <Grid item xs={12} sm={6} md={6}>
-              <Button
-                variant="outlined"
-                fullWidth
-                startIcon={<Clear />}
-                onClick={handleClearFilters}
-                disabled={activeFiltersCount === 0}
-                sx={{ height: "40px" }}
               >
-                Réinitialiser les filtres
-              </Button>
-            </Grid>
-          </Grid>
-        </Paper>
+                {segments.map(({ key, Icon, color, all, options }) => (
+                  <Box
+                    key={key}
+                    component="button"
+                    type="button"
+                    aria-label={all}
+                    title={all}
+                    onClick={(e) => setSegMenu({ key, el: e.currentTarget })}
+                    sx={segSx}
+                  >
+                    <Icon sx={{ color }} />
+                    <Typography noWrap sx={{ flex: 1, color: filters[key] ? "#0e1133" : "text.secondary", fontWeight: filters[key] ? 600 : 400 }}>
+                      {filters[key] ? optNom(options, filters[key]) : all}
+                    </Typography>
+                    <FIExpandMore sx={{ color: "text.secondary" }} />
+                  </Box>
+                ))}
+                <Box
+                  component="button"
+                  type="button"
+                  aria-label="Prix"
+                  title="Prix"
+                  onClick={(e) => setSegMenu({ key: "prix", el: e.currentTarget })}
+                  sx={segSx}
+                >
+                  <FIPayments sx={{ color: "#3030F9" }} />
+                  <Typography noWrap sx={{ flex: 1, color: prixActif ? "#0e1133" : "text.secondary", fontWeight: prixActif ? 600 : 400 }}>
+                    {prixLabel}
+                  </Typography>
+                  <FIExpandMore sx={{ color: "text.secondary" }} />
+                </Box>
+                <Button
+                  variant="contained"
+                  disableElevation
+                  startIcon={<FITune />}
+                  onClick={() => setShowAdvanced((v) => !v)}
+                  aria-expanded={showAdvanced}
+                  sx={{
+                    bgcolor: "#3030F9",
+                    color: "white",
+                    borderRadius: 0,
+                    px: 3,
+                    py: 1.4,
+                    textTransform: "none",
+                    fontWeight: 700,
+                    flex: { xs: "1 1 100%", sm: "0 0 auto" },
+                    "&:hover": { bgcolor: "#2020C8" },
+                  }}
+                >
+                  Filtres{activeFiltersCount > 0 ? ` (${activeFiltersCount})` : ""}
+                </Button>
+              </Box>
+
+              {/* Menus des segments */}
+              {segments.map(({ key, options, all }) => (
+                <Menu
+                  key={key}
+                  anchorEl={segMenu.el}
+                  open={segMenu.key === key && Boolean(segMenu.el)}
+                  onClose={() => setSegMenu({ key: null, el: null })}
+                  slotProps={{ paper: { sx: { borderRadius: 3, mt: 0.5, minWidth: 220, maxHeight: 360 } } }}
+                >
+                  <MenuItem
+                    selected={!filters[key]}
+                    onClick={() => { handleFilterChange(key, ""); setSegMenu({ key: null, el: null }); }}
+                  >
+                    <em>{all}</em>
+                  </MenuItem>
+                  {options.map((o) => (
+                    <MenuItem
+                      key={o.id}
+                      selected={filters[key] === o.id}
+                      onClick={() => { handleFilterChange(key, o.id); setSegMenu({ key: null, el: null }); }}
+                    >
+                      {o.nom}
+                    </MenuItem>
+                  ))}
+                </Menu>
+              ))}
+              <Popover
+                anchorEl={segMenu.el}
+                open={segMenu.key === "prix" && Boolean(segMenu.el)}
+                onClose={() => setSegMenu({ key: null, el: null })}
+                anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+                slotProps={{ paper: { sx: { borderRadius: 3, mt: 0.5, p: 2, width: 300, "& .MuiOutlinedInput-root": { borderRadius: "10px" }, "& legend": { display: "none" } } } }}
+              >
+                <Stack spacing={1.5}>
+                  {[
+                    { key: "prixMin", ph: "Prix min (FCFA)" },
+                    { key: "prixMax", ph: "Prix max (FCFA)" },
+                  ].map(({ key, ph }) => (
+                    <TextField
+                      key={key}
+                      size="small"
+                      type="number"
+                      placeholder={ph}
+                      value={filters[key]}
+                      onChange={(e) => handleFilterChange(key, e.target.value)}
+                      inputProps={{ "aria-label": ph, title: ph }}
+                      InputProps={{ startAdornment: <InputAdornment position="start"><FIPayments fontSize="small" sx={{ color: "#3030F9" }} /></InputAdornment> }}
+                    />
+                  ))}
+                </Stack>
+              </Popover>
+
+              {/* Panneau avancé */}
+              {showAdvanced && (
+                <Box
+                  sx={{
+                    mt: 1.5,
+                    p: { xs: 2, md: 2.5 },
+                    borderRadius: "14px",
+                    bgcolor: "rgba(48,48,249,0.05)",
+                    border: "1.5px solid rgba(48,48,249,0.25)",
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: 1.5,
+                    "& .MuiOutlinedInput-root": { borderRadius: "10px", bgcolor: "#ffffff" },
+                    "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: "#3030F9" },
+                    "& legend": { display: "none" },
+                  }}
+                >
+                  <FormControl size="small" sx={panelField}>
+                    <Select
+                      value={filters.quartier || ""}
+                      onChange={(e) => handleFilterChange("quartier", e.target.value)}
+                      displayEmpty
+                      inputProps={{ "aria-label": "Quartier", title: "Quartier" }}
+                      startAdornment={<InputAdornment position="start"><FIPlace fontSize="small" sx={{ color: "#0A7C4F" }} /></InputAdornment>}
+                      renderValue={(selected) => (!selected ? <span style={{ color: "rgba(0, 0, 0, 0.6)" }}>Tous les quartiers</span> : selected)}
+                    >
+                      <MenuItem value=""><em>Tous les quartiers</em></MenuItem>
+                      {filterOptions.quartiers.map((quartier) => (
+                        <MenuItem key={quartier.id} value={quartier.nom}>{quartier.nom}</MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+
+                  <FormControl size="small" sx={panelField}>
+                    <Select
+                      value={filters.agence || ""}
+                      onChange={(e) => handleFilterChange("agence", e.target.value)}
+                      displayEmpty
+                      inputProps={{ "aria-label": "Agence Immobilière", title: "Agence Immobilière" }}
+                      startAdornment={<InputAdornment position="start"><Business fontSize="small" sx={{ color: "#0e1133" }} /></InputAdornment>}
+                      renderValue={(selected) =>
+                        !selected ? <span style={{ color: "rgba(0, 0, 0, 0.6)" }}>Toutes les agences</span> : optNom(filterOptions.agences, selected)
+                      }
+                    >
+                      <MenuItem value=""><em>Toutes les agences</em></MenuItem>
+                      {filterOptions.agences.map((agence) => (
+                        <MenuItem key={agence.id} value={agence.id}>{agence.nom}</MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+
+                  {[
+                    { key: "superficieMin", ph: "Superficie min (m²)" },
+                    { key: "superficieMax", ph: "Superficie max (m²)" },
+                  ].map(({ key, ph }) => (
+                    <TextField
+                      key={key}
+                      size="small"
+                      type="number"
+                      placeholder={ph}
+                      value={filters[key]}
+                      onChange={(e) => handleFilterChange(key, e.target.value)}
+                      inputProps={{ "aria-label": ph, title: ph }}
+                      InputProps={{ startAdornment: <InputAdornment position="start"><FISquareFoot fontSize="small" sx={{ color: "#0A7C4F" }} /></InputAdornment> }}
+                      sx={panelField}
+                    />
+                  ))}
+
+                  <TextField
+                    size="small"
+                    type="number"
+                    placeholder="Nbre de chambres"
+                    value={filters.chambres}
+                    onChange={(e) => handleFilterChange("chambres", e.target.value)}
+                    inputProps={{ min: 0, "aria-label": "Nombre de chambres", title: "Nombre de chambres" }}
+                    InputProps={{ startAdornment: <InputAdornment position="start"><Bed fontSize="small" sx={{ color: "#0A7C4F" }} /></InputAdornment> }}
+                    sx={panelField}
+                  />
+
+                  <FormControl size="small" sx={panelField}>
+                    <Select
+                      value={filters.meuble || ""}
+                      onChange={(e) => handleFilterChange("meuble", e.target.value)}
+                      displayEmpty
+                      inputProps={{ "aria-label": "Meublé", title: "Meublé" }}
+                      startAdornment={<InputAdornment position="start"><FIChair fontSize="small" sx={{ color: "#0e1133" }} /></InputAdornment>}
+                      renderValue={(selected) =>
+                        !selected ? <span style={{ color: "rgba(0, 0, 0, 0.6)" }}>Meublé : tous</span> : selected === "true" ? "Meublé" : "Non meublé"
+                      }
+                    >
+                      <MenuItem value=""><em>Tous</em></MenuItem>
+                      <MenuItem value="true">Meublé</MenuItem>
+                      <MenuItem value="false">Non meublé</MenuItem>
+                    </Select>
+                  </FormControl>
+
+                  <FormControl size="small" sx={panelField}>
+                    <Select
+                      value={sortBy}
+                      onChange={(e) => setSortBy(e.target.value)}
+                      inputProps={{ "aria-label": "Trier par", title: "Trier par" }}
+                      startAdornment={<InputAdornment position="start"><FISort fontSize="small" sx={{ color: "#3030F9" }} /></InputAdornment>}
+                    >
+                      <MenuItem value="createdAt">Date d'ajout</MenuItem>
+                      <MenuItem value="prixMensuel">Prix mensuel</MenuItem>
+                      <MenuItem value="superficie">Superficie</MenuItem>
+                    </Select>
+                  </FormControl>
+
+                  <FormControl size="small" sx={panelField}>
+                    <Select
+                      value={sortOrder}
+                      onChange={(e) => setSortOrder(e.target.value)}
+                      inputProps={{ "aria-label": "Ordre", title: "Ordre" }}
+                      startAdornment={<InputAdornment position="start"><FISwapVert fontSize="small" sx={{ color: "#3030F9" }} /></InputAdornment>}
+                    >
+                      <MenuItem value="asc">Croissant</MenuItem>
+                      <MenuItem value="desc">Décroissant</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Box>
+              )}
+
+              {/* Filtres actifs + réinitialisation */}
+              <Box sx={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 1, mt: 1.5 }}>
+                {chips.map(({ key, label, Icon, bg }) => (
+                  <Chip
+                    key={key}
+                    label={label}
+                    size="small"
+                    icon={<Icon sx={{ color: "white !important", fontSize: 16 }} />}
+                    deleteIcon={<CloseIcon sx={{ color: "white !important", fontSize: 16 }} />}
+                    onDelete={() => handleFilterChange(key, "")}
+                    sx={{ bgcolor: bg, color: "white", fontWeight: 600, "&:hover": { bgcolor: bg, filter: "brightness(1.1)" } }}
+                  />
+                ))}
+                <Box sx={{ flexGrow: 1 }} />
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={<FIRefresh />}
+                  onClick={handleClearFilters}
+                  disabled={activeFiltersCount === 0}
+                  sx={{ borderColor: "#3030F9", color: "#3030F9", borderRadius: "10px", textTransform: "none", fontWeight: 600, "&:hover": { borderColor: "#2020C8", bgcolor: "rgba(48,48,249,0.06)" } }}
+                >
+                  Réinitialiser
+                </Button>
+              </Box>
+            </Box>
+          );
+        })()}
 
         {/* Liste des locations */}
         <Box>

@@ -12,7 +12,8 @@ import {
 
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Chip } from "@mui/material";
 
-import PageLayout from "../../../components/shared/PageLayout";
+import CommercialLayout from "../../../components/commercial/CommercialLayout";
+import AgencePageHeader from "../../../components/agence/AgencePageHeader";
 import { useAuth } from "../../../contexts/AuthContext";
 import api from "../../../services/api";
 
@@ -70,14 +71,12 @@ const showParcellesOfIlot = async (ilot) => {
   const handleChangePage = (_, newPage) => setPage(newPage);
 
   return (
-    <PageLayout>
+    <CommercialLayout>
       <Container maxWidth="lg" sx={{ mt: 4, mb: 6 }}>
-        <Typography variant="h5" fontWeight={700} gutterBottom>
-          Mes îlots affectés
-        </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          Liste des îlots qui vous sont assignés.
-        </Typography>
+        <AgencePageHeader
+          title="Mes îlots affectés"
+          subtitle="Liste des îlots qui vous sont assignés"
+        />
 
         {err && <Alert severity="error" sx={{ mb: 2 }}>{err}</Alert>}
 
@@ -191,7 +190,7 @@ const showParcellesOfIlot = async (ilot) => {
 </Dialog>
 
       </Container>
-    </PageLayout>
+    </CommercialLayout>
   );
 };
 

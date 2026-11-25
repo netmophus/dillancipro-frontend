@@ -37,7 +37,8 @@ import {
   Visibility,
   AccountBalance,
 } from "@mui/icons-material";
-import PageLayout from "../../components/shared/PageLayout";
+import ClientLayout from "../../components/client/ClientLayout";
+import AgencePageHeader from "../../components/agence/AgencePageHeader";
 import { useAuth } from "../../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
@@ -80,23 +81,19 @@ const MesAchatsAgencePage = () => {
 
   // Composant KPI Card
   const KPICard = ({ title, value, subtitle, icon: Icon, color }) => (
-    <Card elevation={3} sx={{ height: "100%", borderLeft: `4px solid ${color}` }}>
+    <Card elevation={0} sx={{ height: "100%", borderRadius: 3, border: "1px solid #e3e8ef" }}>
       <CardContent>
-        <Box display="flex" justifyContent="space-between" alignItems="flex-start">
-          <Box flex={1}>
-            <Typography color="text.secondary" variant="body2" gutterBottom>
-              {title}
-            </Typography>
-            <Typography variant="h4" fontWeight="bold" color={color} sx={{ mb: 1 }}>
-              {value}
-            </Typography>
+        <Box display="flex" justifyContent="space-between" alignItems="center">
+          <Box sx={{ minWidth: 0 }}>
+            <Typography color="text.secondary" variant="body2">{title}</Typography>
+            <Typography variant="h5" fontWeight="bold" sx={{ color }} noWrap>{value}</Typography>
             {subtitle && (
-              <Typography variant="caption" color="text.secondary">
-                {subtitle}
-              </Typography>
+              <Typography variant="caption" color="text.secondary">{subtitle}</Typography>
             )}
           </Box>
-          <Icon sx={{ fontSize: 48, color, opacity: 0.7 }} />
+          <Box sx={{ width: 44, height: 44, borderRadius: 2, bgcolor: `${color}15`, color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <Icon />
+          </Box>
         </Box>
       </CardContent>
     </Card>
@@ -104,19 +101,19 @@ const MesAchatsAgencePage = () => {
 
   if (loading) {
     return (
-      <PageLayout>
+      <ClientLayout>
         <Container maxWidth="xl" sx={{ py: 4 }}>
           <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
             <CircularProgress size={60} />
           </Box>
         </Container>
-      </PageLayout>
+      </ClientLayout>
     );
   }
 
   if (error) {
     return (
-      <PageLayout>
+      <ClientLayout>
         <Container maxWidth="xl" sx={{ py: 4 }}>
           <Alert severity="error" sx={{ mb: 3 }}>
             {error}
@@ -125,33 +122,29 @@ const MesAchatsAgencePage = () => {
             Réessayer
           </Button>
         </Container>
-      </PageLayout>
+      </ClientLayout>
     );
   }
 
   return (
-    <PageLayout>
+    <ClientLayout>
       <Container maxWidth="xl" sx={{ py: 4 }}>
         {/* En-tête */}
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
-          <Box>
-            <Typography variant="h4" fontWeight="bold" gutterBottom>
-              🛒 Mes Achats via Agence
-            </Typography>
-            <Typography variant="body1" color="text.secondary">
-              Suivez vos achats de parcelles et biens immobiliers
-            </Typography>
-          </Box>
-          <Tooltip title="Actualiser">
-            <IconButton onClick={fetchAchats} color="primary">
-              <Refresh />
-            </IconButton>
-          </Tooltip>
-        </Box>
+        <AgencePageHeader
+          title="Mes Achats via Agence"
+          subtitle="Suivez vos achats de parcelles et biens immobiliers"
+          action={
+            <Tooltip title="Actualiser">
+              <IconButton onClick={fetchAchats} sx={{ color: "white", border: "1px solid rgba(255,255,255,0.3)" }}>
+                <Refresh />
+              </IconButton>
+            </Tooltip>
+          }
+        />
 
         {/* Statistiques */}
         <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
-          📊 Vue d'ensemble
+          Vue d'ensemble
         </Typography>
         <Grid container spacing={3} mb={4}>
           <Grid item xs={12} sm={6} md={3}>
@@ -196,11 +189,11 @@ const MesAchatsAgencePage = () => {
         </Grid>
 
         {/* Liste des achats */}
-        <Card elevation={3}>
+        <Card elevation={0} sx={{ borderRadius: 3, border: "1px solid #e3e8ef" }}>
           <CardContent>
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
               <Typography variant="h6" fontWeight="bold">
-                📋 Liste de mes achats ({achats.length})
+                Liste de mes achats ({achats.length})
               </Typography>
               <Chip
                 label={`${stats?.dansPatrimoine || 0} dans patrimoine`}
@@ -371,7 +364,7 @@ const MesAchatsAgencePage = () => {
         {stats?.achatsEnCours > 0 && (
           <Alert severity="info" sx={{ mt: 3 }}>
             <Typography variant="body2" fontWeight="bold" gutterBottom>
-              ℹ️ Information sur le patrimoine
+              Information sur le patrimoine
             </Typography>
             <Typography variant="body2">
               Vos achats seront automatiquement ajoutés à votre patrimoine foncier une fois le paiement complet effectué. 
@@ -380,7 +373,7 @@ const MesAchatsAgencePage = () => {
           </Alert>
         )}
       </Container>
-    </PageLayout>
+    </ClientLayout>
   );
 };
 

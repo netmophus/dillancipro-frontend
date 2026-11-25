@@ -55,9 +55,11 @@ import {
   Close,
   Refresh,
 } from "@mui/icons-material";
+import EmailIcon from "@mui/icons-material/Email";
 import { useNavigate, useParams } from "react-router-dom";
 import api from "../../../services/api";
-import PageLayout from "../../../components/shared/PageLayout";
+import CommercialLayout from "../../../components/commercial/CommercialLayout";
+import AgencePageHeader from "../../../components/agence/AgencePageHeader";
 import { useAuth } from "../../../contexts/AuthContext";
 
 const VenteParcellePage = () => {
@@ -182,9 +184,9 @@ const VenteParcellePage = () => {
       
       // Message de succès avec indication de l'email
       if (email) {
-        setSuccess(`✅ Client trouvé ! Email: ${email}`);
+        setSuccess(`Client trouvé ! Email: ${email}`);
       } else {
-        setSuccess("✅ Client trouvé !");
+        setSuccess("Client trouvé !");
       }
     } catch (err) {
       console.error("❌ [CLIENT_INTROUVABLE] Erreur:", err);
@@ -274,7 +276,7 @@ const VenteParcellePage = () => {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      setSuccess("✅ Vente enregistrée avec succès !");
+      setSuccess("Vente enregistrée avec succès !");
       setTimeout(() => navigate("/commercial/parcelles-vendues"), 2000);
     } catch (err) {
       setError(err.response?.data?.message || "Erreur lors de l'enregistrement");
@@ -286,7 +288,7 @@ const VenteParcellePage = () => {
   // Écran de chargement initial
   if (initialLoading) {
     return (
-      <PageLayout>
+      <CommercialLayout>
         <Container maxWidth="lg" sx={{ py: 4, textAlign: "center" }}>
           <Box sx={{ mt: 8 }}>
             <CircularProgress size={60} sx={{ mb: 3 }} />
@@ -298,22 +300,18 @@ const VenteParcellePage = () => {
             </Typography>
           </Box>
         </Container>
-      </PageLayout>
+      </CommercialLayout>
     );
   }
 
   return (
-    <PageLayout>
+    <CommercialLayout>
       <Container maxWidth="lg" sx={{ py: 4 }}>
         {/* Header */}
-        <Box sx={{ mb: 4, textAlign: "center" }}>
-          <Typography variant="h4" fontWeight="bold" gutterBottom>
-            🏡 Vente de Parcelle
-          </Typography>
-          <Typography variant="subtitle1" color="text.secondary">
-            Processus de vente simplifié et sécurisé
-          </Typography>
-        </Box>
+        <AgencePageHeader
+          title="Vente de Parcelle"
+          subtitle="Processus de vente simplifié et sécurisé"
+        />
 
         {/* Stepper */}
         <Paper sx={{ p: 3, mb: 4 }}>
@@ -409,7 +407,7 @@ const VenteParcellePage = () => {
                         InputProps={{
                           startAdornment: (
                             <InputAdornment position="start">
-                              📧
+                              <EmailIcon color="action" />
                             </InputAdornment>
                           ),
                         }}
@@ -438,7 +436,7 @@ const VenteParcellePage = () => {
                       <Grid item xs={12}>
                         <Alert severity="info" icon={<Info />}>
                           <Typography variant="body2" gutterBottom>
-                            <strong>ℹ️ Parcelle pré-sélectionnée:</strong> {selectedParcelle.numeroParcelle}
+                            <strong>Parcelle pré-sélectionnée:</strong> {selectedParcelle.numeroParcelle}
                           </Typography>
                           <Typography variant="body2" color="text.secondary">
                             Vous pourrez confirmer cette sélection à l'étape suivante après avoir renseigné les informations client.
@@ -470,7 +468,7 @@ const VenteParcellePage = () => {
                   {selectedParcelle && (
                     <Alert severity="success" icon={<CheckCircle />} sx={{ mb: 3 }}>
                       <Typography variant="body2">
-                        <strong>✅ Parcelle déjà sélectionnée:</strong> {selectedParcelle.numeroParcelle} - {selectedParcelle.superficie} m²
+                        <strong>Parcelle déjà sélectionnée:</strong> {selectedParcelle.numeroParcelle} - {selectedParcelle.superficie} m²
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
                         Vous pouvez continuer à l'étape de paiement ou sélectionner une autre parcelle ci-dessous.
@@ -507,7 +505,7 @@ const VenteParcellePage = () => {
                       <Grid item xs={12}>
                         <Card variant="outlined" sx={{ bgcolor: "success.light", p: 2 }}>
                           <Typography variant="h6" gutterBottom>
-                            📍 Parcelle sélectionnée
+                            Parcelle sélectionnée
                           </Typography>
                           <Grid container spacing={2}>
                             <Grid item xs={6}>
@@ -655,7 +653,7 @@ const VenteParcellePage = () => {
                         startIcon={<Upload />}
                         sx={{ py: 2 }}
                       >
-                        📎 Joindre le reçu signé
+                        Joindre le reçu signé
                         <input
                           type="file"
                           hidden
@@ -667,7 +665,7 @@ const VenteParcellePage = () => {
                       {recu && (
                         <Box sx={{ mt: 2 }}>
                           <Typography variant="body2" color="success.main">
-                            ✅ Fichier sélectionné: {recu.name}
+                            Fichier sélectionné: {recu.name}
                           </Typography>
                           {recuPreview && (
                             <Box sx={{ mt: 1 }}>
@@ -705,7 +703,7 @@ const VenteParcellePage = () => {
                     <Grid item xs={12} md={6}>
                       <Card variant="outlined" sx={{ p: 2 }}>
                         <Typography variant="subtitle1" gutterBottom>
-                          👤 Informations client
+                          Informations client
                         </Typography>
                         <Typography variant="body2">
                           <strong>Nom:</strong> {clientName}
@@ -724,7 +722,7 @@ const VenteParcellePage = () => {
                     <Grid item xs={12} md={6}>
                       <Card variant="outlined" sx={{ p: 2 }}>
                         <Typography variant="subtitle1" gutterBottom>
-                          🏡 Parcelle
+                          Parcelle
                         </Typography>
                         <Typography variant="body2">
                           <strong>Numéro:</strong> {selectedParcelle?.numeroParcelle}
@@ -741,7 +739,7 @@ const VenteParcellePage = () => {
                     <Grid item xs={12}>
                       <Card variant="outlined" sx={{ p: 2 }}>
                         <Typography variant="subtitle1" gutterBottom>
-                          💰 Paiement
+                          Paiement
                         </Typography>
                         <Typography variant="body2">
                           <strong>Type:</strong> {typePaiement === "total" ? "Paiement total" : "Paiement partiel"}
@@ -751,7 +749,7 @@ const VenteParcellePage = () => {
                         </Typography>
                         {recu && (
                           <Typography variant="body2" color="success.main">
-                            ✅ Reçu joint: {recu.name}
+                            Reçu joint: {recu.name}
                           </Typography>
                         )}
                       </Card>
@@ -794,7 +792,7 @@ const VenteParcellePage = () => {
           )}
         </Box>
       </Container>
-    </PageLayout>
+    </CommercialLayout>
   );
 };
 

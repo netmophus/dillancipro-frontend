@@ -40,8 +40,11 @@ import {
   Gavel,
   HourglassEmpty,
 } from "@mui/icons-material";
+import StarIcon from "@mui/icons-material/Star";
+import WhatshotIcon from "@mui/icons-material/Whatshot";
 import { useNavigate } from "react-router-dom";
-import PageLayout from "../../../components/shared/PageLayout";
+import CommercialLayout from "../../../components/commercial/CommercialLayout";
+import AgencePageHeader from "../../../components/agence/AgencePageHeader";
 import api from "../../../services/api";
 
 const MesBiensCommercialPage = () => {
@@ -131,7 +134,7 @@ const MesBiensCommercialPage = () => {
         prixVente: parseFloat(prixVente),
       });
       setSuccess(
-        `✅ Vente initiée avec succès ! Le bien est maintenant "En cours de vente". ` +
+        `Vente initiée avec succès ! Le bien est maintenant "En cours de vente". ` +
         `Vous pouvez suivre l'avancement avec le notaire dans la page "Mes Ventes".`
       );
       setVenteDialog(false);
@@ -144,7 +147,7 @@ const MesBiensCommercialPage = () => {
         }
       }, 2000);
     } catch (err) {
-      setError(err.response?.data?.message || "❌ Erreur lors de la vente");
+      setError(err.response?.data?.message || " Erreur lors de la vente");
     }
   };
 
@@ -187,26 +190,21 @@ const MesBiensCommercialPage = () => {
   const biensVendus = biens.filter(b => b.statut === "vendu");
 
   return (
-    <PageLayout>
+    <CommercialLayout>
       <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
         {/* En-tête */}
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
-          <Box>
-            <Typography variant="h4" fontWeight="bold">
-              🏡 Mes Biens Affectés
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Gérez et vendez les biens qui vous sont confiés
-            </Typography>
-          </Box>
-          <Button
-            variant="outlined"
-            startIcon={<ArrowBack />}
-            onClick={() => navigate("/agence/commercial/dashboard")}
-          >
-            Retour au dashboard
-          </Button>
-        </Box>
+        <AgencePageHeader
+          icon={Home}
+          title="Mes Biens Affectés"
+          subtitle="Gérez et vendez les biens qui vous sont confiés"
+          action={
+            <Button variant="outlined" startIcon={<ArrowBack />}
+              onClick={() => navigate("/agence/commercial/dashboard")}
+              sx={{ borderColor: "rgba(255,255,255,0.6)", color: "white" }}>
+              Retour au dashboard
+            </Button>
+          }
+        />
 
         {/* Alertes */}
         {success && (
@@ -225,67 +223,30 @@ const MesBiensCommercialPage = () => {
         )}
 
         {/* Statistiques rapides */}
-        <Grid container spacing={2} mb={4}>
-          <Grid item xs={6} md={3}>
-            <Card sx={{ bgcolor: "primary.main", color: "white" }}>
-              <CardContent>
-                <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                  Total Biens
-                </Typography>
-                <Typography variant="h4" fontWeight="bold">
-                  {biens.length}
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid item xs={6} md={3}>
-            <Card sx={{ bgcolor: "success.main", color: "white" }}>
-              <CardContent>
-                <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                  Disponibles
-                </Typography>
-                <Typography variant="h4" fontWeight="bold">
-                  {biensDisponibles.length}
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid item xs={6} md={3}>
-            <Card sx={{ bgcolor: "warning.main", color: "white" }}>
-              <CardContent>
-                <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                  En cours
-                </Typography>
-                <Typography variant="h4" fontWeight="bold">
-                  {biensEnCours.length}
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid item xs={6} md={3}>
-            <Card sx={{ bgcolor: "info.main", color: "white" }}>
-              <CardContent>
-                <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                  Vendus
-                </Typography>
-                <Typography variant="h4" fontWeight="bold">
-                  {biensVendus.length}
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid item xs={12} md={3}>
-            <Card sx={{ bgcolor: "primary.dark", color: "white" }}>
-              <CardContent>
-                <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                  CA Total
-                </Typography>
-                <Typography variant="h5" fontWeight="bold">
-                  {(biensVendus.reduce((sum, b) => sum + (b.prix || 0), 0)).toLocaleString()} FCFA
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
+        <Grid container spacing={2.5} mb={4}>
+          {[
+            { label: "Total biens", value: biens.length, icon: Home, color: "#1976d2" },
+            { label: "Disponibles", value: biensDisponibles.length, icon: CheckCircle, color: "#2e7d32" },
+            { label: "En cours", value: biensEnCours.length, icon: HourglassEmpty, color: "#ff9800" },
+            { label: "Vendus", value: biensVendus.length, icon: Sell, color: "#0288d1" },
+            { label: "CA total", value: biensVendus.reduce((sum, b) => sum + (b.prix || 0), 0).toLocaleString() + " FCFA", icon: AttachMoney, color: "#673ab7" },
+          ].map((kpi) => (
+            <Grid item xs={6} md={2.4} key={kpi.label}>
+              <Card elevation={0} sx={{ borderRadius: 3, border: "1px solid #e3e8ef" }}>
+                <CardContent>
+                  <Box display="flex" justifyContent="space-between" alignItems="center">
+                    <Box sx={{ minWidth: 0 }}>
+                      <Typography variant="body2" color="text.secondary">{kpi.label}</Typography>
+                      <Typography variant="h5" fontWeight="bold" sx={{ color: kpi.color }} noWrap>{kpi.value}</Typography>
+                    </Box>
+                    <Box sx={{ width: 44, height: 44, borderRadius: 2, bgcolor: `${kpi.color}15`, color: kpi.color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <kpi.icon />
+                    </Box>
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
         </Grid>
 
         {/* Liste des biens */}
@@ -331,10 +292,10 @@ const MesBiensCommercialPage = () => {
                     {/* Badges */}
                     <Box position="absolute" top={8} right={8} display="flex" gap={1} flexDirection="column">
                       {bien.featured && (
-                        <Chip label="⭐ Vedette" size="small" color="warning" />
+                        <Chip icon={<StarIcon />} label="Vedette" size="small" color="warning" />
                       )}
                       {bien.urgent && (
-                        <Chip label="🔥 Urgent" size="small" color="error" />
+                        <Chip icon={<WhatshotIcon />} label="Urgent" size="small" color="error" />
                       )}
                     </Box>
 
@@ -538,7 +499,7 @@ const MesBiensCommercialPage = () => {
 
               <Alert severity="info" sx={{ mt: 2 }}>
                 <Typography variant="body2" fontWeight="bold" gutterBottom>
-                  📋 Processus de vente :
+                  Processus de vente :
                 </Typography>
                 <Box component="ol" sx={{ pl: 2, m: 0 }}>
                   <li>Le bien sera marqué comme "En cours de vente" (pas encore vendu)</li>
@@ -745,7 +706,7 @@ const MesBiensCommercialPage = () => {
                 {selectedBien.localisation && (
                   <Grid item xs={12}>
                     <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                      📍 Localisation
+                      Localisation
                     </Typography>
                     <Typography variant="body2">
                       {selectedBien.localisation.adresse && `${selectedBien.localisation.adresse}, `}
@@ -806,7 +767,7 @@ const MesBiensCommercialPage = () => {
           </>
         )}
       </Dialog>
-    </PageLayout>
+    </CommercialLayout>
   );
 };
 

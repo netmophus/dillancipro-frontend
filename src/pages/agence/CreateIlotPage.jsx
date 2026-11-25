@@ -53,8 +53,12 @@ import {
   Image as ImageIcon,
   VideoLibrary,
   Close,
+  PhotoCamera,
+  Assessment,
+  FormatListBulleted,
 } from "@mui/icons-material";
-import PageLayout from "../../components/shared/PageLayout";
+import AgenceLayout from "../../components/agence/AgenceLayout";
+import AgencePageHeader from "../../components/agence/AgencePageHeader";
 import api from "../../services/api";
 
 const CreateIlotPage = () => {
@@ -246,14 +250,14 @@ const CreateIlotPage = () => {
         },
       });
       
-      setSuccess("✅ Îlot créé avec succès !");
+      setSuccess("Îlot créé avec succès !");
       setFormData({ numeroIlot: "", zone: "", quartier: "", surfaceTotale: "" });
       setImageFiles([]);
       setImagePreviews([]);
       setVideos([]);
       fetchIlots();
     } catch (err) {
-      setError(err.response?.data?.message || "❌ Erreur lors de la création");
+      setError(err.response?.data?.message || " Erreur lors de la création");
     }
   };
 
@@ -332,11 +336,11 @@ const CreateIlotPage = () => {
         ilots: [selectedIlotId],
         propagerParcelles,
       });
-      setSuccess("✅ Îlot affecté avec succès !");
+      setSuccess("Îlot affecté avec succès !");
       setOpenAffecter(false);
       fetchIlots();
     } catch (err) {
-      setError(err.response?.data?.message || "❌ Erreur lors de l'affectation");
+      setError(err.response?.data?.message || " Erreur lors de l'affectation");
     } finally {
       setSavingAffect(false);
     }
@@ -357,11 +361,11 @@ const CreateIlotPage = () => {
   const handleUpdate = async () => {
     try {
       await api.put(`/agence/ilots/${editingIlot._id}`, editFormData);
-      setSuccess("✅ Îlot modifié avec succès !");
+      setSuccess("Îlot modifié avec succès !");
       setEditDialog(false);
       fetchIlots();
     } catch (err) {
-      setError(err.response?.data?.message || "❌ Erreur lors de la modification");
+      setError(err.response?.data?.message || " Erreur lors de la modification");
     }
   };
 
@@ -370,32 +374,22 @@ const CreateIlotPage = () => {
 
     try {
       await api.delete(`/agence/ilots/${id}`);
-      setSuccess("✅ Îlot supprimé avec succès");
+      setSuccess("Îlot supprimé avec succès");
       fetchIlots();
     } catch (err) {
-      setError("❌ Erreur lors de la suppression");
+      setError("Erreur lors de la suppression");
     }
   };
 
   return (
-    <PageLayout>
-      <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
+    <AgenceLayout>
+      <Container maxWidth="xl" sx={{ mb: 4 }}>
         {/* En-tête */}
-        <Box sx={{ mb: 4 }}>
-          <Box display="flex" alignItems="center" gap={2} mb={1}>
-            <Avatar sx={{ bgcolor: "warning.main", width: 56, height: 56 }}>
-              <GridView fontSize="large" />
-            </Avatar>
-            <Box>
-              <Typography variant="h4" fontWeight="bold">
-                Gestion des Îlots
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Organisez vos îlots par zone et quartier
-              </Typography>
-            </Box>
-          </Box>
-        </Box>
+        <AgencePageHeader
+          icon={GridView}
+          title="Gestion des Îlots"
+          subtitle="Organisez vos îlots par zone et quartier"
+        />
 
         {/* Alertes */}
         {success && (
@@ -416,7 +410,7 @@ const CreateIlotPage = () => {
         <Grid container spacing={3}>
           {/* FORMULAIRE DE CRÉATION */}
           <Grid item xs={12} lg={4}>
-            <Card elevation={3} sx={{ position: "sticky", top: 20 }}>
+            <Card elevation={0} sx={{ position: "sticky", top: 20, borderRadius: 3, border: "1px solid #e3e8ef" }}>
               <CardContent sx={{ p: 3 }}>
                 <Box display="flex" alignItems="center" gap={1} mb={3}>
                   <Add color="warning" />
@@ -529,9 +523,12 @@ const CreateIlotPage = () => {
                     <Divider sx={{ my: 2 }} />
 
                     {/* Section Photos et Vidéos (partagées par toutes les parcelles) */}
-                    <Typography variant="subtitle2" fontWeight="bold" color="text.secondary" sx={{ mb: 1 }}>
-                      📸 Photos et Vidéos (partagées par toutes les parcelles de cet îlot)
-                    </Typography>
+                    <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
+                      <PhotoCamera fontSize="small" color="action" />
+                      <Typography variant="subtitle2" fontWeight="bold" color="text.secondary">
+                        Photos et Vidéos (partagées par toutes les parcelles de cet îlot)
+                      </Typography>
+                    </Stack>
 
                     {/* Upload Images */}
                     <Box>
@@ -657,11 +654,14 @@ const CreateIlotPage = () => {
             </Card>
 
             {/* Statistiques */}
-            <Card elevation={2} sx={{ mt: 3 }}>
+            <Card elevation={0} sx={{ mt: 3, borderRadius: 3, border: "1px solid #e3e8ef" }}>
               <CardContent>
-                <Typography variant="h6" fontWeight="bold" gutterBottom>
-                  📊 Statistiques
-                </Typography>
+                <Stack direction="row" alignItems="center" spacing={1} mb={1}>
+                  <Assessment fontSize="small" color="action" />
+                  <Typography variant="h6" fontWeight="bold">
+                    Statistiques
+                  </Typography>
+                </Stack>
                 <Divider sx={{ mb: 2 }} />
                 <Stack spacing={1.5}>
                   <Box display="flex" justifyContent="space-between">
@@ -689,12 +689,15 @@ const CreateIlotPage = () => {
 
           {/* LISTE DES ÎLOTS */}
           <Grid item xs={12} lg={8}>
-            <Card elevation={3}>
+            <Card elevation={0} sx={{ borderRadius: 3, border: "1px solid #e3e8ef" }}>
               <CardContent sx={{ p: 3 }}>
                 <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-                  <Typography variant="h6" fontWeight="bold">
-                    📋 Liste des Îlots ({filteredIlots.length})
-                  </Typography>
+                  <Stack direction="row" alignItems="center" spacing={1}>
+                    <FormatListBulleted color="action" />
+                    <Typography variant="h6" fontWeight="bold">
+                      Liste des Îlots ({filteredIlots.length})
+                    </Typography>
+                  </Stack>
 
                   {/* Barre de recherche */}
                   <TextField
@@ -1032,7 +1035,7 @@ const CreateIlotPage = () => {
           </Button>
         </DialogActions>
       </Dialog>
-    </PageLayout>
+    </AgenceLayout>
   );
 };
 

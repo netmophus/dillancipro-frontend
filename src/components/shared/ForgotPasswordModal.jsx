@@ -1,7 +1,6 @@
 import React, { useMemo, useState } from "react";
 import {
   Dialog,
-  DialogTitle,
   DialogContent,
   DialogActions,
   TextField,
@@ -18,7 +17,7 @@ import {
   IconButton,
   Stack,
 } from "@mui/material";
-import { Visibility, VisibilityOff, Phone as PhoneIcon, Email as EmailIcon } from "@mui/icons-material";
+import { Visibility, VisibilityOff, Phone as PhoneIcon, Email as EmailIcon, LockReset, Close } from "@mui/icons-material";
 import axios from "axios";
 import { BASE_URL } from "../../config/config";
 
@@ -261,13 +260,59 @@ const ForgotPasswordModal = ({ open, onClose }) => {
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-      <DialogTitle>
-        <Typography variant="h6">Mot de passe oublié</Typography>
-      </DialogTitle>
-      <DialogContent>
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      maxWidth="sm"
+      fullWidth
+      PaperProps={{ sx: { borderRadius: 4, overflow: "hidden" } }}
+    >
+      <Box
+        sx={{
+          background: "linear-gradient(135deg, #0D2B4E 0%, #1B5285 55%, #27AE60 165%)",
+          color: "white",
+          p: 3,
+          display: "flex",
+          alignItems: "center",
+          gap: 2,
+        }}
+      >
+        <Box
+          sx={{
+            width: 48,
+            height: 48,
+            borderRadius: 2.5,
+            bgcolor: "rgba(255,255,255,0.18)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <LockReset />
+        </Box>
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Typography variant="h6" fontWeight={800}>
+            Mot de passe oublié
+          </Typography>
+          <Typography variant="body2" sx={{ opacity: 0.9 }}>
+            Réinitialisez votre accès en 3 étapes
+          </Typography>
+        </Box>
+        <IconButton onClick={handleClose} sx={{ color: "white" }}>
+          <Close />
+        </IconButton>
+      </Box>
+      <DialogContent sx={{ pt: 3, "& .MuiOutlinedInput-root": { borderRadius: 2 } }}>
         <Box sx={{ mb: 3 }}>
-          <Stepper activeStep={activeStep} alternativeLabel>
+          <Stepper
+            activeStep={activeStep}
+            alternativeLabel
+            sx={{
+              "& .MuiStepLabel-label": { fontWeight: 600, fontSize: "0.78rem" },
+              "& .MuiStepIcon-root.Mui-active": { color: "#27AE60" },
+              "& .MuiStepIcon-root.Mui-completed": { color: "#0D2B4E" },
+            }}
+          >
             {steps.map((label) => (
               <Step key={label}>
                 <StepLabel>{label}</StepLabel>
@@ -291,32 +336,36 @@ const ForgotPasswordModal = ({ open, onClose }) => {
         {/* Étape 1 : Numéro de téléphone ou email */}
         {activeStep === 0 && (
           <Box>
-            <Box sx={{ mb: 2 }}>
-              <Button
-                variant={resetMethod === "phone" ? "contained" : "outlined"}
-                onClick={() => {
-                  setResetMethod("phone");
-                  setEmail("");
-                  setError("");
-                }}
-                sx={{ mr: 1 }}
-                size="small"
-                startIcon={<PhoneIcon />}
-              >
-                Téléphone
-              </Button>
-              <Button
-                variant={resetMethod === "email" ? "contained" : "outlined"}
-                onClick={() => {
-                  setResetMethod("email");
-                  setPhone("");
-                  setError("");
-                }}
-                size="small"
-                startIcon={<EmailIcon />}
-              >
-                Email
-              </Button>
+            <Box sx={{ display: "flex", p: 0.5, borderRadius: 2.5, bgcolor: "#f1f4f9", mb: 2 }}>
+              {[
+                { key: "phone", label: "Téléphone", icon: <PhoneIcon /> },
+                { key: "email", label: "Email", icon: <EmailIcon /> },
+              ].map((m) => (
+                <Button
+                  key={m.key}
+                  fullWidth
+                  disableElevation
+                  startIcon={m.icon}
+                  onClick={() => {
+                    setResetMethod(m.key);
+                    if (m.key === "phone") setEmail("");
+                    else setPhone("");
+                    setError("");
+                  }}
+                  sx={{
+                    py: 0.9,
+                    borderRadius: 2,
+                    fontWeight: 700,
+                    textTransform: "none",
+                    color: resetMethod === m.key ? "#0D2B4E" : "text.secondary",
+                    bgcolor: resetMethod === m.key ? "#fff" : "transparent",
+                    boxShadow: resetMethod === m.key ? "0 2px 8px rgba(13,43,78,0.10)" : "none",
+                    "&:hover": { bgcolor: resetMethod === m.key ? "#fff" : "rgba(0,0,0,0.03)" },
+                  }}
+                >
+                  {m.label}
+                </Button>
+              ))}
             </Box>
 
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
@@ -382,7 +431,7 @@ const ForgotPasswordModal = ({ open, onClose }) => {
               margin="normal"
               required
               placeholder="123456"
-              inputProps={{ maxLength: 6 }}
+              inputProps={{ maxLength: 6, style: { letterSpacing: "0.4em", textAlign: "center", fontSize: "1.3rem", fontWeight: 700 } }}
             />
             <Link
               component="button"
@@ -462,12 +511,12 @@ const ForgotPasswordModal = ({ open, onClose }) => {
           </Box>
         )}
       </DialogContent>
-      <DialogActions>
-        <Button onClick={handleClose} disabled={loading}>
+      <DialogActions sx={{ px: 3, pb: 3 }}>
+        <Button onClick={handleClose} disabled={loading} sx={{ textTransform: "none", fontWeight: 600, color: "text.secondary" }}>
           Annuler
         </Button>
         {activeStep > 0 && (
-          <Button onClick={handleBack} disabled={loading}>
+          <Button onClick={handleBack} disabled={loading} sx={{ textTransform: "none", fontWeight: 600, color: "#0D2B4E" }}>
             Retour
           </Button>
         )}
@@ -475,7 +524,16 @@ const ForgotPasswordModal = ({ open, onClose }) => {
           onClick={handleNext}
           variant="contained"
           disabled={isNextDisabled}
-          endIcon={loading && <CircularProgress size={20} />}
+          endIcon={loading && <CircularProgress size={20} color="inherit" />}
+          sx={{
+            borderRadius: 2,
+            fontWeight: 700,
+            textTransform: "none",
+            px: 3,
+            background: "linear-gradient(135deg, #0D2B4E 0%, #27AE60 160%)",
+            "&:hover": { background: "linear-gradient(135deg, #0a2240 0%, #229152 160%)" },
+            "&:disabled": { background: "#c7cfdb", color: "#fff" },
+          }}
         >
           {loading
             ? "En cours..."

@@ -4,7 +4,7 @@ import {
   Box,
   Typography,
   Button,
-  Grid,
+  GridLegacy as Grid,
   Card,
   CardContent,
   CardMedia,
@@ -43,8 +43,19 @@ import {
   Person,
   VideoLibrary,
 } from "@mui/icons-material";
+import { AttachMoney as FIAttachMoney } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import PageLayout from "../../components/shared/PageLayout";
+import AgenceLayout from "../../components/agence/AgenceLayout";
+import AgencePageHeader from "../../components/agence/AgencePageHeader";
+import Star from "@mui/icons-material/Star";
+import Whatshot from "@mui/icons-material/Whatshot";
+import KingBed from "@mui/icons-material/KingBed";
+import Bathtub from "@mui/icons-material/Bathtub";
+import Construction from "@mui/icons-material/Construction";
+import ApartmentIcon from "@mui/icons-material/Apartment";
+import SellIcon from "@mui/icons-material/Sell";
+import TrendingUpIcon from "@mui/icons-material/TrendingUp";
+import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import api from "../../services/api";
 
 const MesBiensPage = () => {
@@ -142,10 +153,10 @@ const MesBiensPage = () => {
 
     try {
       await api.delete(`/agence/biens/${id}`);
-      setSuccess("✅ Bien supprimé avec succès");
+      setSuccess("Bien supprimé avec succès");
       fetchBiens();
     } catch (err) {
-      setError("❌ Erreur lors de la suppression");
+      setError("Erreur lors de la suppression");
     }
   };
 
@@ -199,11 +210,11 @@ const MesBiensPage = () => {
       await api.put(`/agence/biens/${bienToAffect._id}/affecter`, {
         commercialId: selectedCommercial,
       });
-      setSuccess("✅ Bien affecté au commercial avec succès");
+      setSuccess("Bien affecté au commercial avec succès");
       setAffectDialog(false);
       fetchBiens();
     } catch (err) {
-      setError("❌ Erreur lors de l'affectation");
+      setError("Erreur lors de l'affectation");
     }
   };
 
@@ -252,27 +263,24 @@ const MesBiensPage = () => {
   };
 
   return (
-    <PageLayout>
+    <AgenceLayout>
       <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
         {/* En-tête */}
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
-          <Box>
-            <Typography variant="h4" fontWeight="bold">
-              🏡 Mes Biens Immobiliers
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Gérez votre catalogue de biens ({filteredBiens.length} bien{filteredBiens.length > 1 ? "s" : ""})
-            </Typography>
-          </Box>
-          <Button
-            variant="contained"
-            startIcon={<Add />}
-            onClick={() => navigate("/agence/create-bien")}
-            size="large"
-          >
-            Nouveau bien
-          </Button>
-        </Box>
+        <AgencePageHeader
+          icon={Home}
+          title="Mes Biens Immobiliers"
+          subtitle={`Gérez votre catalogue de biens (${filteredBiens.length} bien${filteredBiens.length > 1 ? "s" : ""})`}
+          action={
+            <Button
+              variant="contained"
+              startIcon={<Add />}
+              onClick={() => navigate("/agence/create-bien")}
+              sx={{ bgcolor: "white", color: "#0D2B4E", fontWeight: "bold", "&:hover": { bgcolor: "#e3e8ef" } }}
+            >
+              Nouveau bien
+            </Button>
+          }
+        />
 
         {/* Alertes */}
         {success && (
@@ -290,24 +298,50 @@ const MesBiensPage = () => {
           </Fade>
         )}
 
+        {/* Statistiques du catalogue */}
+        <Grid container spacing={2.5} sx={{ mb: 3 }}>
+          {[
+            { label: "Total biens", value: biens.length, icon: ApartmentIcon, color: "#3030F9" },
+            { label: "Disponibles", value: biens.filter((b) => b.statut === "disponible").length, icon: CheckCircle, color: "#0A7C4F" },
+            { label: "Vendus", value: biens.filter((b) => b.statut === "vendu").length, icon: SellIcon, color: "#0e1133" },
+            { label: "Valeur catalogue", value: new Intl.NumberFormat("fr-FR").format(biens.reduce((s, b) => s + (b.prix || 0), 0)) + " FCFA", icon: TrendingUpIcon, color: "#3030F9" },
+          ].map((kpi) => (
+            <Grid item xs={6} md={3} key={kpi.label}>
+              <Card elevation={0} sx={{ borderRadius: 4, border: "1px solid rgba(15,23,42,0.08)", boxShadow: "0 2px 8px rgba(15,23,42,0.05)" }}>
+                <CardContent>
+                  <Stack direction="row" justifyContent="space-between" alignItems="center">
+                    <Box sx={{ minWidth: 0 }}>
+                      <Typography variant="body2" color="text.secondary">{kpi.label}</Typography>
+                      <Typography variant="h5" fontWeight="bold" sx={{ color: kpi.color }} noWrap>{kpi.value}</Typography>
+                    </Box>
+                    <Avatar sx={{ bgcolor: `${kpi.color}15`, color: kpi.color, width: 44, height: 44 }}>
+                      <kpi.icon />
+                    </Avatar>
+                  </Stack>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+
         {/* Filtres */}
-        <Card elevation={2} sx={{ mb: 4 }}>
-          <CardContent>
-            <Box display="flex" alignItems="center" gap={1} mb={2}>
+        <Card elevation={0} sx={{ mb: 4, borderRadius: 4, border: "1px solid rgba(15,23,42,0.08)", boxShadow: "0 2px 8px rgba(15,23,42,0.05)" }}>
+          <CardContent sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2, bgcolor: "#ffffff" }, "& legend": { display: "none" } }}>
+            <Box display="flex" alignItems="center" gap={1} mb={2.5}>
               <FilterList color="primary" />
-              <Typography variant="h6" fontWeight="bold">
+              <Typography variant="h6" fontWeight="bold" sx={{ color: "#3030F9" }}>
                 Filtres
               </Typography>
             </Box>
 
             <Grid container spacing={2}>
-              <Grid item xs={12} md={3}>
+              <Grid item xs={12} md={4}>
                 <TextField
                   fullWidth
-                  placeholder="Rechercher..."
+                  inputProps={{ "aria-label": "Recherche", title: "Recherche" }}
+                  placeholder="Titre, référence, ville..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  size="small"
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
@@ -318,16 +352,16 @@ const MesBiensPage = () => {
                 />
               </Grid>
 
-              <Grid item xs={6} md={2}>
+              <Grid item xs={6} md={4}>
                 <TextField
                   select
                   fullWidth
-                  label="Type"
+                  inputProps={{ "aria-label": "Type de bien", title: "Type de bien" }}
                   value={filterType}
                   onChange={(e) => setFilterType(e.target.value)}
-                  size="small"
+                  SelectProps={{ displayEmpty: true }}
                 >
-                  <MenuItem value="">Tous</MenuItem>
+                  <MenuItem value="">Tous les types</MenuItem>
                   {Object.keys(typesLabels).map((type) => (
                     <MenuItem key={type} value={type}>
                       {typesLabels[type]}
@@ -336,46 +370,66 @@ const MesBiensPage = () => {
                 </TextField>
               </Grid>
 
-              <Grid item xs={6} md={2}>
+              <Grid item xs={6} md={4}>
                 <TextField
                   select
                   fullWidth
-                  label="Statut"
+                  inputProps={{ "aria-label": "Statut", title: "Statut" }}
                   value={filterStatut}
                   onChange={(e) => setFilterStatut(e.target.value)}
-                  size="small"
+                  SelectProps={{ displayEmpty: true }}
                 >
-                  <MenuItem value="">Tous</MenuItem>
+                  <MenuItem value="">Tous les statuts</MenuItem>
                   <MenuItem value="disponible">Disponible</MenuItem>
                   <MenuItem value="vendu">Vendu</MenuItem>
                   <MenuItem value="reserve">Réservé</MenuItem>
                 </TextField>
               </Grid>
 
-              <Grid item xs={6} md={2}>
+              <Grid item xs={6} md={5}>
                 <TextField
                   fullWidth
-                  label="Prix min"
+                  inputProps={{ "aria-label": "Prix min (FCFA)", title: "Prix min (FCFA)" }}
+                  placeholder="Prix min (FCFA)"
                   type="number"
                   value={filterMinPrix}
                   onChange={(e) => setFilterMinPrix(e.target.value)}
-                  size="small"
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <FIAttachMoney color="action" />
+                      </InputAdornment>
+                    ),
+                  }}
                 />
               </Grid>
 
-              <Grid item xs={6} md={2}>
+              <Grid item xs={6} md={5}>
                 <TextField
                   fullWidth
-                  label="Prix max"
+                  inputProps={{ "aria-label": "Prix max (FCFA)", title: "Prix max (FCFA)" }}
+                  placeholder="Prix max (FCFA)"
                   type="number"
                   value={filterMaxPrix}
                   onChange={(e) => setFilterMaxPrix(e.target.value)}
-                  size="small"
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <FIAttachMoney color="action" />
+                      </InputAdornment>
+                    ),
+                  }}
                 />
               </Grid>
 
-              <Grid item xs={12} md={1}>
-                <Button fullWidth variant="outlined" onClick={resetFilters} size="small">
+              <Grid item xs={12} md={2}>
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  onClick={resetFilters}
+                  startIcon={<RestartAltIcon />}
+                  sx={{ height: "100%", minHeight: 56, borderRadius: 2 }}
+                >
                   Réinitialiser
                 </Button>
               </Grid>
@@ -389,7 +443,7 @@ const MesBiensPage = () => {
             <CircularProgress />
           </Box>
         ) : filteredBiens.length === 0 ? (
-          <Card>
+          <Card elevation={0} sx={{ borderRadius: 3, border: "1px solid #e3e8ef" }}>
             <CardContent sx={{ textAlign: "center", py: 8 }}>
               <Home sx={{ fontSize: 80, color: "text.secondary", mb: 2 }} />
               <Typography variant="h6" color="text.secondary" gutterBottom>
@@ -410,13 +464,15 @@ const MesBiensPage = () => {
             {filteredBiens.map((bien) => (
               <Grid item xs={12} sm={6} md={4} lg={3} key={bien._id}>
                 <Card
-                  elevation={3}
+                  elevation={0}
                   sx={{
                     height: "100%",
+                    borderRadius: 3,
+                    border: "1px solid #e3e8ef",
                     display: "flex",
                     flexDirection: "column",
-                    transition: "transform 0.3s",
-                    "&:hover": { transform: "translateY(-8px)", boxShadow: 6 },
+                    transition: "all 0.25s",
+                    "&:hover": { transform: "translateY(-8px)", boxShadow: "0 12px 28px rgba(13,43,78,0.12)" },
                   }}
                 >
                   {/* Image */}
@@ -431,10 +487,10 @@ const MesBiensPage = () => {
                     {/* Badges */}
                     <Box position="absolute" top={8} right={8} display="flex" gap={1}>
                       {bien.featured && (
-                        <Chip label="⭐ Vedette" size="small" color="warning" />
+                        <Chip icon={<Star />} label="Vedette" size="small" color="warning" />
                       )}
                       {bien.urgent && (
-                        <Chip label="🔥 Urgent" size="small" color="error" />
+                        <Chip icon={<Whatshot />} label="Urgent" size="small" color="error" />
                       )}
                     </Box>
 
@@ -447,6 +503,7 @@ const MesBiensPage = () => {
                         position: "absolute",
                         bottom: 8,
                         left: 8,
+                        ...(bien.statut === "disponible" && { bgcolor: "#0A7C4F", color: "white" }),
                       }}
                     />
                   </Box>
@@ -491,10 +548,10 @@ const MesBiensPage = () => {
                     {bien.caracteristiques && (
                       <Stack direction="row" spacing={1} mt={2} flexWrap="wrap">
                         {bien.caracteristiques.nbChambres && (
-                          <Chip label={`${bien.caracteristiques.nbChambres} 🛏️`} size="small" variant="outlined" />
+                          <Chip icon={<KingBed />} label={`${bien.caracteristiques.nbChambres}`} size="small" variant="outlined" />
                         )}
                         {bien.caracteristiques.nbSallesBain && (
-                          <Chip label={`${bien.caracteristiques.nbSallesBain} 🚿`} size="small" variant="outlined" />
+                          <Chip icon={<Bathtub />} label={`${bien.caracteristiques.nbSallesBain}`} size="small" variant="outlined" />
                         )}
                       </Stack>
                     )}
@@ -666,9 +723,9 @@ const MesBiensPage = () => {
               {process.env.NODE_ENV === 'development' && (
                 <Box sx={{ p: 2, bgcolor: 'info.light', mb: 2, borderRadius: 1 }}>
                   <Typography variant="caption" fontWeight="bold">DEBUG:</Typography>
-                  <Typography variant="caption" display="block">situationGeographique: {selectedBien.situationGeographique ? '✅ Présent' : '❌ Absent'}</Typography>
-                  <Typography variant="caption" display="block">descriptionPhysique: {selectedBien.descriptionPhysique ? '✅ Présent' : '❌ Absent'}</Typography>
-                  <Typography variant="caption" display="block">atoutsMajeurs: {selectedBien.atoutsMajeurs && Array.isArray(selectedBien.atoutsMajeurs) ? `✅ Présent (${selectedBien.atoutsMajeurs.length})` : '❌ Absent'}</Typography>
+                  <Typography variant="caption" display="block">situationGeographique: {selectedBien.situationGeographique ? 'Présent' : 'Absent'}</Typography>
+                  <Typography variant="caption" display="block">descriptionPhysique: {selectedBien.descriptionPhysique ? 'Présent' : 'Absent'}</Typography>
+                  <Typography variant="caption" display="block">atoutsMajeurs: {selectedBien.atoutsMajeurs && Array.isArray(selectedBien.atoutsMajeurs) ? `Présent (${selectedBien.atoutsMajeurs.length})` : 'Absent'}</Typography>
                 </Box>
               )}
               <Grid container spacing={3}>
@@ -691,9 +748,12 @@ const MesBiensPage = () => {
                 {/* Vidéos */}
                 {selectedBien.videos?.length > 0 && (
                   <Grid item xs={12}>
-                    <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
-                      🎥 Vidéos
-                    </Typography>
+                    <Box display="flex" alignItems="center" gap={0.5} sx={{ mb: 1 }}>
+                      <VideoLibrary fontSize="small" color="action" />
+                      <Typography variant="subtitle2" fontWeight="bold">
+                        Vidéos
+                      </Typography>
+                    </Box>
                     <Grid container spacing={2}>
                       {selectedBien.videos.map((videoUrl, index) => {
                         const embedUrl = getVideoEmbedUrl(videoUrl);
@@ -793,35 +853,44 @@ const MesBiensPage = () => {
 
                 {/* Situation géographique du terrain - AFFICHAGE FORCÉ */}
                 <Grid item xs={12}>
-                  <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                    📍 Situation géographique du terrain
-                  </Typography>
+                  <Box display="flex" alignItems="center" gap={0.5} sx={{ mb: 0.5 }}>
+                    <LocationOn fontSize="small" color="action" />
+                    <Typography variant="subtitle2" color="text.secondary">
+                      Situation géographique du terrain
+                    </Typography>
+                  </Box>
                   <Typography variant="body2" sx={{ whiteSpace: "pre-wrap", bgcolor: selectedBien.situationGeographique ? "success.light" : "error.light", p: 1 }}>
-                    {selectedBien.situationGeographique || "❌ AUCUNE DONNÉE"}
+                    {selectedBien.situationGeographique || "Non renseigné"}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    Debug: {selectedBien.situationGeographique ? "✅ Présent" : "❌ Absent"} | Type: {typeof selectedBien.situationGeographique}
+                    Debug: {selectedBien.situationGeographique ? "Présent" : "Absent"} | Type: {typeof selectedBien.situationGeographique}
                   </Typography>
                 </Grid>
 
                 {/* Description physique - AFFICHAGE FORCÉ */}
                 <Grid item xs={12}>
-                  <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                    🏗️ Description physique
-                  </Typography>
+                  <Box display="flex" alignItems="center" gap={0.5} sx={{ mb: 0.5 }}>
+                    <Construction fontSize="small" color="action" />
+                    <Typography variant="subtitle2" color="text.secondary">
+                      Description physique
+                    </Typography>
+                  </Box>
                   <Typography variant="body2" sx={{ whiteSpace: "pre-wrap", bgcolor: selectedBien.descriptionPhysique ? "success.light" : "error.light", p: 1 }}>
-                    {selectedBien.descriptionPhysique || "❌ AUCUNE DONNÉE"}
+                    {selectedBien.descriptionPhysique || "Non renseigné"}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    Debug: {selectedBien.descriptionPhysique ? "✅ Présent" : "❌ Absent"} | Type: {typeof selectedBien.descriptionPhysique}
+                    Debug: {selectedBien.descriptionPhysique ? "Présent" : "Absent"} | Type: {typeof selectedBien.descriptionPhysique}
                   </Typography>
                 </Grid>
 
                 {/* Atouts majeurs - AFFICHAGE FORCÉ */}
                 <Grid item xs={12}>
-                  <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                    ⭐ Atouts majeurs
-                  </Typography>
+                  <Box display="flex" alignItems="center" gap={0.5} sx={{ mb: 0.5 }}>
+                    <Star fontSize="small" color="action" />
+                    <Typography variant="subtitle2" color="text.secondary">
+                      Atouts majeurs
+                    </Typography>
+                  </Box>
                   {selectedBien.atoutsMajeurs && Array.isArray(selectedBien.atoutsMajeurs) && selectedBien.atoutsMajeurs.length > 0 ? (
                     <Stack spacing={1}>
                       {selectedBien.atoutsMajeurs
@@ -840,14 +909,14 @@ const MesBiensPage = () => {
                               borderColor: "success.main",
                             }}
                           >
-                            <CheckCircle fontSize="small" color="success" />
+                            <CheckCircle fontSize="small" sx={{ color: "#0A7C4F" }} />
                             <Typography variant="body2">{String(atout)}</Typography>
                           </Box>
                         ))}
                     </Stack>
                   ) : (
-                    <Typography variant="body2" sx={{ bgcolor: "error.light", p: 1 }}>
-                      ❌ AUCUNE DONNÉE | Debug: {selectedBien.atoutsMajeurs ? `Type: ${typeof selectedBien.atoutsMajeurs}, IsArray: ${Array.isArray(selectedBien.atoutsMajeurs)}, Length: ${selectedBien.atoutsMajeurs?.length}` : "Absent"}
+                    <Typography variant="body2" color="text.secondary" sx={{ p: 1 }}>
+                      Non renseigné
                     </Typography>
                   )}
                 </Grid>
@@ -855,9 +924,12 @@ const MesBiensPage = () => {
                 {/* Localisation */}
                 {selectedBien.localisation && (
                   <Grid item xs={12}>
-                    <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                      📍 Localisation
-                    </Typography>
+                    <Box display="flex" alignItems="center" gap={0.5} sx={{ mb: 0.5 }}>
+                      <LocationOn fontSize="small" color="action" />
+                      <Typography variant="subtitle2" color="text.secondary">
+                        Localisation
+                      </Typography>
+                    </Box>
                     <Typography variant="body2">
                       {selectedBien.localisation.adresse && `${selectedBien.localisation.adresse}, `}
                       {selectedBien.localisation.quartier && `${selectedBien.localisation.quartier}, `}
@@ -876,9 +948,9 @@ const MesBiensPage = () => {
                       {selectedBien.caracteristiques.nbChambres && (
                         <Chip label={`${selectedBien.caracteristiques.nbChambres} chambres`} />
                       )}
-                      {selectedBien.caracteristiques.garage && <Chip label="Garage" color="success" />}
-                      {selectedBien.caracteristiques.piscine && <Chip label="Piscine" color="info" />}
-                      {selectedBien.caracteristiques.jardin && <Chip label="Jardin" color="success" />}
+                      {selectedBien.caracteristiques.garage && <Chip label="Garage" sx={{ bgcolor: "#0A7C4F", color: "white" }} />}
+                      {selectedBien.caracteristiques.piscine && <Chip label="Piscine" sx={{ bgcolor: "#0e1133", color: "white" }} />}
+                      {selectedBien.caracteristiques.jardin && <Chip label="Jardin" sx={{ bgcolor: "#0A7C4F", color: "white" }} />}
                       {selectedBien.caracteristiques.climatisation && (
                         <Chip label="Climatisation" color="primary" />
                       )}
@@ -902,7 +974,7 @@ const MesBiensPage = () => {
           </>
         )}
       </Dialog>
-    </PageLayout>
+    </AgenceLayout>
   );
 };
 

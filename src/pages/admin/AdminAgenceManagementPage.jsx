@@ -4,7 +4,7 @@ import {
   Typography,
   Box,
   TextField,
-  Grid,
+  GridLegacy as Grid,
   Button,
   Paper,
   Stack,
@@ -26,7 +26,6 @@ import {
   Tabs,
   Tab,
   Dialog,
-  DialogTitle,
   DialogContent,
   DialogActions,
   InputAdornment,
@@ -56,9 +55,41 @@ import {
 
 import API from "../../api";
 import { BASE_SERVER_URL } from "../../config/config";
-import PageLayout from "../../components/shared/PageLayout";
+import PageLayout from "../../components/admin/AdminLayout";
+import FormSection from "../../components/admin/SectionCard";
+import { Badge as FIBadge, Business as FIBusiness, CalendarMonth as FICalendarMonth, Explore as FIExplore, Gavel as FIGavel, LocationCity as FILocationCity, Mail as FIMail, MyLocation as FIMyLocation, Notes as FINotes, Numbers as FINumbers, Person as FIPerson, Public as FIPublic } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import LinkAdminToAgenceModal from "../../components/admin/LinkAdminToAgenceModal";
+
+// En-tête de dialogue moderne, coloré, réutilisable
+const DialogHeader = ({ icon: Icon, title, subtitle, color, onClose }) => (
+  <Box
+    sx={{
+      p: 3,
+      background: `linear-gradient(135deg, ${color} 0%, ${color}cc 100%)`,
+      color: "white",
+      position: "relative",
+    }}
+  >
+    <IconButton
+      onClick={onClose}
+      sx={{ position: "absolute", top: 12, right: 12, color: "white", "&:hover": { bgcolor: "rgba(255,255,255,0.15)" } }}
+    >
+      <Close />
+    </IconButton>
+    <Stack direction="row" spacing={2} alignItems="center">
+      <Avatar sx={{ bgcolor: "rgba(255,255,255,0.22)", width: 52, height: 52 }}>
+        <Icon fontSize="large" />
+      </Avatar>
+      <Box>
+        <Typography variant="h6" fontWeight="bold">{title}</Typography>
+        {subtitle && <Typography variant="body2" sx={{ opacity: 0.9 }}>{subtitle}</Typography>}
+      </Box>
+    </Stack>
+  </Box>
+);
+
+const FIELD_SX = { "& .MuiOutlinedInput-root": { borderRadius: 2.5 } };
 
 const AdminAgenceManagementPage = () => {
   const navigate = useNavigate();
@@ -338,12 +369,12 @@ const AdminAgenceManagementPage = () => {
           </Button>
 
           <Box display="flex" alignItems="center" gap={2}>
-            <Avatar sx={{ bgcolor: "primary.main", width: 64, height: 64 }}>
+            <Avatar sx={{ bgcolor: "#1976d215", color: "#1976d2", width: 60, height: 60 }}>
               <Business fontSize="large" />
             </Avatar>
             <Box>
               <Typography variant="h4" fontWeight="bold">
-                Gestion des Agences Immobilières
+                Gestion des agences immobilières
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 Créez et gérez les agences partenaires
@@ -370,65 +401,39 @@ const AdminAgenceManagementPage = () => {
 
         {/* KPIs */}
         <Grid container spacing={3} mb={4}>
-          <Grid item xs={12} md={4}>
-            <Card elevation={3} sx={{ borderLeft: "4px solid #2196f3" }}>
-              <CardContent>
-                <Box display="flex" justifyContent="space-between" alignItems="center">
-                  <Box>
-                    <Typography color="text.secondary" variant="body2">
-                      Total Agences
-                    </Typography>
-                    <Typography variant="h4" fontWeight="bold" color="primary">
-                      {stats.total}
-                    </Typography>
+          {[
+            { label: "Total Agences", value: stats.total, color: "#1976d2", icon: Business },
+            { label: "Avec Admin", value: stats.avecAdmin, color: "#2e7d32", icon: CheckCircle },
+            { label: "Sans Admin", value: stats.sansAdmin, color: "#ff9800", icon: Warning },
+          ].map((kpi) => (
+            <Grid item xs={12} md={4} key={kpi.label}>
+              <Card
+                elevation={0}
+                sx={{
+                  borderRadius: 3,
+                  border: "1px solid #e3e8ef",
+                  transition: "all 0.25s ease",
+                  "&:hover": { transform: "translateY(-3px)", boxShadow: `0 8px 24px ${kpi.color}22` },
+                }}
+              >
+                <CardContent>
+                  <Box display="flex" justifyContent="space-between" alignItems="center">
+                    <Box>
+                      <Typography color="text.secondary" variant="body2">
+                        {kpi.label}
+                      </Typography>
+                      <Typography variant="h4" fontWeight="bold" sx={{ color: kpi.color }}>
+                        {kpi.value}
+                      </Typography>
+                    </Box>
+                    <Avatar sx={{ bgcolor: `${kpi.color}15`, color: kpi.color, width: 48, height: 48 }}>
+                      <kpi.icon />
+                    </Avatar>
                   </Box>
-                  <Avatar sx={{ bgcolor: "#2196f3", width: 48, height: 48 }}>
-                    <Business />
-                  </Avatar>
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-
-          <Grid item xs={12} md={4}>
-            <Card elevation={3} sx={{ borderLeft: "4px solid #4caf50" }}>
-              <CardContent>
-                <Box display="flex" justifyContent="space-between" alignItems="center">
-                  <Box>
-                    <Typography color="text.secondary" variant="body2">
-                      Avec Admin
-                    </Typography>
-                    <Typography variant="h4" fontWeight="bold" color="success.main">
-                      {stats.avecAdmin}
-                    </Typography>
-                  </Box>
-                  <Avatar sx={{ bgcolor: "#4caf50", width: 48, height: 48 }}>
-                    <CheckCircle />
-                  </Avatar>
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-
-          <Grid item xs={12} md={4}>
-            <Card elevation={3} sx={{ borderLeft: "4px solid #ff9800" }}>
-              <CardContent>
-                <Box display="flex" justifyContent="space-between" alignItems="center">
-                  <Box>
-                    <Typography color="text.secondary" variant="body2">
-                      Sans Admin
-                    </Typography>
-                    <Typography variant="h4" fontWeight="bold" color="warning.main">
-                      {stats.sansAdmin}
-                    </Typography>
-                  </Box>
-                  <Avatar sx={{ bgcolor: "#ff9800", width: 48, height: 48 }}>
-                    <Warning />
-                  </Avatar>
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
         </Grid>
 
         {/* Onglets */}
@@ -450,17 +455,17 @@ const AdminAgenceManagementPage = () => {
 
         {/* ONGLET 1 : Créer agence */}
         {activeTab === 0 && (
-          <Card elevation={3}>
-            <CardContent sx={{ p: 4 }}>
-              <Box component="form" onSubmit={editingAgence ? handleUpdateAgence : handleSubmit}>
-                <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                  <Typography variant="h6" fontWeight="bold">
-                    {editingAgence ? "Modifier l'agence" : "Informations générales"}
-                  </Typography>
-                  {editingAgence && (
+          <Card elevation={0} sx={{ bgcolor: "transparent", border: "none", boxShadow: "none" }}>
+            <CardContent sx={{ p: 0, "&:last-child": { pb: 0 } }}>
+              <Box component="form" onSubmit={editingAgence ? handleUpdateAgence : handleSubmit} sx={{ ...FIELD_SX, "& legend": { display: "none" } }}>
+                <FormSection
+                  icon="business" title={editingAgence ? "Modifier l'agence" : "Informations générales"}
+                  color="#3030F9"
+                  action={editingAgence && (
                     <Button
                       variant="outlined"
                       size="small"
+                      sx={{ borderRadius: 2 }}
                       onClick={() => {
                         setEditingAgence(null);
                         resetForm();
@@ -470,14 +475,20 @@ const AdminAgenceManagementPage = () => {
                       Annuler
                     </Button>
                   )}
-                </Box>
-                <Divider sx={{ my: 2 }} />
-
-                <Grid container spacing={3} mb={4}>
-                  <Grid item xs={12} md={6}>
+                >
+                <Grid container spacing={3}>
+                  <Grid item xs={12} sm={6} md={4}>
                     <TextField
                       name="nom"
-                      label="Nom de l'agence"
+                      inputProps={{ "aria-label": "Nom de l'agence", title: "Nom de l'agence" }}
+                      placeholder="Nom de l'agence *"
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <FIBusiness color="action" />
+                          </InputAdornment>
+                        ),
+                      }}
                       value={formData.nom}
                       onChange={handleChange}
                       fullWidth
@@ -485,69 +496,108 @@ const AdminAgenceManagementPage = () => {
                     />
                   </Grid>
 
-                  <Grid item xs={12} md={6}>
+                  <Grid item xs={12} sm={6} md={4}>
                     <TextField
                       name="promoteur"
-                      label="Nom du promoteur"
+                      inputProps={{ "aria-label": "Nom du promoteur", title: "Nom du promoteur" }}
+                      placeholder="Nom du promoteur"
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <FIPerson color="action" />
+                          </InputAdornment>
+                        ),
+                      }}
                       value={formData.promoteur}
                       onChange={handleChange}
                       fullWidth
                     />
                   </Grid>
 
-                  <Grid item xs={12} md={4}>
+                  <Grid item xs={12} sm={6} md={4}>
                     <TextField
                       name="nif"
-                      label="NIF"
+                      inputProps={{ "aria-label": "NIF", title: "NIF" }}
+                      placeholder="NIF"
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <FIBadge color="action" />
+                          </InputAdornment>
+                        ),
+                      }}
                       value={formData.nif}
                       onChange={handleChange}
                       fullWidth
                     />
                   </Grid>
 
-                  <Grid item xs={12} md={4}>
+                  <Grid item xs={12} sm={6} md={4}>
                     <TextField
                       name="rccm"
-                      label="RCCM"
+                      inputProps={{ "aria-label": "RCCM", title: "RCCM" }}
+                      placeholder="RCCM"
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <FINumbers color="action" />
+                          </InputAdornment>
+                        ),
+                      }}
                       value={formData.rccm}
                       onChange={handleChange}
                       fullWidth
                     />
                   </Grid>
 
-                  <Grid item xs={12} md={4}>
+                  <Grid item xs={12} sm={6} md={4}>
                     <TextField
                       name="statutJuridique"
-                      label="Statut juridique"
+                      inputProps={{ "aria-label": "Statut juridique", title: "Statut juridique" }}
+                      placeholder="Statut juridique"
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <FIGavel color="action" />
+                          </InputAdornment>
+                        ),
+                      }}
                       value={formData.statutJuridique}
                       onChange={handleChange}
                       fullWidth
                     />
                   </Grid>
 
-                  <Grid item xs={12} md={6}>
+                  <Grid item xs={12} sm={6} md={4}>
                     <TextField
                       name="dateCreation"
-                      label="Date de création"
+                      inputProps={{ "aria-label": "Date de création", title: "Date de création" }}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <FICalendarMonth color="action" />
+                          </InputAdornment>
+                        ),
+                      }}
                       type="date"
                       value={formData.dateCreation}
                       onChange={handleChange}
                       fullWidth
-                      InputLabelProps={{ shrink: true }}
                     />
                   </Grid>
                 </Grid>
+                </FormSection>
 
-                <Typography variant="h6" fontWeight="bold" gutterBottom mt={3}>
-                  Coordonnées
-                </Typography>
-                <Divider sx={{ my: 2 }} />
-
-                <Grid container spacing={3} mb={4}>
-                  <Grid item xs={12}>
+                <FormSection
+                  icon="location" title="Coordonnées"
+                  color="#0A7C4F"
+                >
+                <Grid container spacing={3}>
+                  <Grid item xs={12} md={8}>
                     <TextField
                       name="adresse"
-                      label="Adresse complète"
+                      inputProps={{ "aria-label": "Adresse complète", title: "Adresse complète" }}
+                      placeholder="Adresse complète"
                       value={formData.adresse}
                       onChange={handleChange}
                       fullWidth
@@ -561,10 +611,18 @@ const AdminAgenceManagementPage = () => {
                     />
                   </Grid>
 
-                  <Grid item xs={12} md={4}>
+                  <Grid item xs={12} sm={6} md={4}>
                     <TextField
                       name="ville"
-                      label="Ville"
+                      inputProps={{ "aria-label": "Ville", title: "Ville" }}
+                      placeholder="Ville *"
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <FILocationCity color="action" />
+                          </InputAdornment>
+                        ),
+                      }}
                       value={formData.ville}
                       onChange={handleChange}
                       fullWidth
@@ -572,10 +630,18 @@ const AdminAgenceManagementPage = () => {
                     />
                   </Grid>
 
-                  <Grid item xs={12} md={4}>
+                  <Grid item xs={12} sm={6} md={4}>
                     <TextField
                       name="pays"
-                      label="Pays"
+                      inputProps={{ "aria-label": "Pays", title: "Pays" }}
+                      placeholder="Pays *"
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <FIPublic color="action" />
+                          </InputAdornment>
+                        ),
+                      }}
                       value={formData.pays}
                       onChange={handleChange}
                       fullWidth
@@ -583,20 +649,29 @@ const AdminAgenceManagementPage = () => {
                     />
                   </Grid>
 
-                  <Grid item xs={12} md={4}>
+                  <Grid item xs={12} sm={6} md={4}>
                     <TextField
                       name="bp"
-                      label="Boîte Postale (optionnel)"
+                      inputProps={{ "aria-label": "Boîte Postale (optionnel)", title: "Boîte Postale (optionnel)" }}
+                      placeholder="Boîte Postale (optionnel)"
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <FIMail color="action" />
+                          </InputAdornment>
+                        ),
+                      }}
                       value={formData.bp}
                       onChange={handleChange}
                       fullWidth
                     />
                   </Grid>
 
-                  <Grid item xs={12} md={6}>
+                  <Grid item xs={12} sm={6} md={4}>
                     <TextField
                       name="telephone"
-                      label="Téléphone"
+                      inputProps={{ "aria-label": "Téléphone", title: "Téléphone" }}
+                      placeholder="Téléphone *"
                       value={formData.telephone}
                       onChange={handleChange}
                       fullWidth
@@ -611,10 +686,11 @@ const AdminAgenceManagementPage = () => {
                     />
                   </Grid>
 
-                  <Grid item xs={12} md={6}>
+                  <Grid item xs={12} sm={6} md={4}>
                     <TextField
                       name="email"
-                      label="Email"
+                      inputProps={{ "aria-label": "Email", title: "Email" }}
+                      placeholder="Email *"
                       type="email"
                       value={formData.email}
                       onChange={handleChange}
@@ -630,34 +706,56 @@ const AdminAgenceManagementPage = () => {
                     />
                   </Grid>
 
-                  <Grid item xs={12} md={6}>
+                  <Grid item xs={12} sm={6} md={4}>
                     <TextField
                       name="latitude"
-                      label="Latitude"
+                      inputProps={{ "aria-label": "Latitude", title: "Latitude" }}
+                      placeholder="Latitude (ex. 13.5116)"
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <FIMyLocation color="action" />
+                          </InputAdornment>
+                        ),
+                      }}
                       type="number"
                       value={formData.latitude}
                       onChange={handleChange}
                       fullWidth
-                      placeholder="12.3714"
                     />
                   </Grid>
 
-                  <Grid item xs={12} md={6}>
+                  <Grid item xs={12} sm={6} md={4}>
                     <TextField
                       name="longitude"
-                      label="Longitude"
+                      inputProps={{ "aria-label": "Longitude", title: "Longitude" }}
+                      placeholder="Longitude (ex. 2.1254)"
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <FIExplore color="action" />
+                          </InputAdornment>
+                        ),
+                      }}
                       type="number"
                       value={formData.longitude}
                       onChange={handleChange}
                       fullWidth
-                      placeholder="-1.5197"
                     />
                   </Grid>
 
                   <Grid item xs={12}>
                     <TextField
                       name="description"
-                      label="Description"
+                      inputProps={{ "aria-label": "Description", title: "Description" }}
+                      placeholder="Description"
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start" sx={{ alignSelf: "flex-start", mt: 1.5 }}>
+                            <FINotes color="action" />
+                          </InputAdornment>
+                        ),
+                      }}
                       value={formData.description}
                       onChange={handleChange}
                       fullWidth
@@ -666,15 +764,15 @@ const AdminAgenceManagementPage = () => {
                     />
                   </Grid>
                 </Grid>
+                </FormSection>
 
-                <Typography variant="h6" fontWeight="bold" gutterBottom mt={3}>
-                  Documents
-                </Typography>
-                <Divider sx={{ my: 2 }} />
-
-                <Grid container spacing={2} mb={4}>
-                  <Grid item xs={12} md={6}>
-                    <Paper variant="outlined" sx={{ p: 2, borderStyle: "dashed" }}>
+                <FormSection
+                  icon="description" title="Documents"
+                  color="#0e1133"
+                >
+                <Grid container spacing={3} sx={{ "& > .MuiGrid-root > .MuiPaper-root": { width: "100%", height: "100%" } }}>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <Paper variant="outlined" sx={{ p: 2, borderStyle: "dashed", borderRadius: 3, borderColor: "#cdd7e3", transition: "all 0.2s", "&:hover": { borderColor: "#1976d2", bgcolor: "#f7f9fc" } }}>
                       <input
                         type="file"
                         name="logo"
@@ -726,8 +824,8 @@ const AdminAgenceManagementPage = () => {
                     </Paper>
                   </Grid>
 
-                  <Grid item xs={12} md={6}>
-                    <Paper variant="outlined" sx={{ p: 2, borderStyle: "dashed" }}>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <Paper variant="outlined" sx={{ p: 2, borderStyle: "dashed", borderRadius: 3, borderColor: "#cdd7e3", transition: "all 0.2s", "&:hover": { borderColor: "#1976d2", bgcolor: "#f7f9fc" } }}>
                       <input
                         type="file"
                         name="nifFile"
@@ -766,8 +864,8 @@ const AdminAgenceManagementPage = () => {
                     </Paper>
                   </Grid>
 
-                  <Grid item xs={12} md={6}>
-                    <Paper variant="outlined" sx={{ p: 2, borderStyle: "dashed" }}>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <Paper variant="outlined" sx={{ p: 2, borderStyle: "dashed", borderRadius: 3, borderColor: "#cdd7e3", transition: "all 0.2s", "&:hover": { borderColor: "#1976d2", bgcolor: "#f7f9fc" } }}>
                       <input
                         type="file"
                         name="rccmFile"
@@ -806,8 +904,8 @@ const AdminAgenceManagementPage = () => {
                     </Paper>
                   </Grid>
 
-                  <Grid item xs={12} md={6}>
-                    <Paper variant="outlined" sx={{ p: 2, borderStyle: "dashed" }}>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <Paper variant="outlined" sx={{ p: 2, borderStyle: "dashed", borderRadius: 3, borderColor: "#cdd7e3", transition: "all 0.2s", "&:hover": { borderColor: "#1976d2", bgcolor: "#f7f9fc" } }}>
                       <input
                         type="file"
                         name="statutFile"
@@ -846,9 +944,10 @@ const AdminAgenceManagementPage = () => {
                     </Paper>
                   </Grid>
                 </Grid>
+                </FormSection>
 
                 <Box display="flex" justifyContent="flex-end" gap={2}>
-                  <Button variant="outlined" onClick={resetForm}>
+                  <Button variant="outlined" onClick={resetForm} color="inherit" sx={{ borderRadius: 2 }}>
                     Réinitialiser
                   </Button>
                   <Button
@@ -856,10 +955,10 @@ const AdminAgenceManagementPage = () => {
                     type="submit"
                     disabled={loading}
                     startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <CheckCircle />}
-                    sx={{ minWidth: 200 }}
+                    sx={{ minWidth: 200, borderRadius: 2, bgcolor: "#3030F9", boxShadow: "none", "&:hover": { bgcolor: "#2020C8", boxShadow: "none" } }}
                   >
-                    {loading 
-                      ? (editingAgence ? "Modification..." : "Création...") 
+                    {loading
+                      ? (editingAgence ? "Modification..." : "Création...")
                       : (editingAgence ? "Mettre à jour l'agence" : "Créer l'agence")
                     }
                   </Button>
@@ -875,7 +974,7 @@ const AdminAgenceManagementPage = () => {
             {/* Recherche */}
             <TextField
               fullWidth
-              placeholder="Rechercher par nom, ville ou téléphone..."
+              placeholder="Rechercher une agence..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               sx={{ mb: 3 }}
@@ -888,11 +987,11 @@ const AdminAgenceManagementPage = () => {
               }}
             />
 
-            <Card elevation={3}>
+            <Card elevation={0} sx={{ borderRadius: 3, border: "1px solid #e3e8ef" }}>
               <CardContent>
                 <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
                   <Typography variant="h6" fontWeight="bold">
-                    📋 Liste des agences ({filteredAgences.length})
+                    Liste des agences ({filteredAgences.length})
                   </Typography>
                   <Stack direction="row" spacing={1}>
                     <Button
@@ -927,7 +1026,7 @@ const AdminAgenceManagementPage = () => {
                     </Button>
                   </Box>
                 ) : (
-                  <TableContainer>
+                  <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 2, border: "1px solid #eef2f7" }}>
                     <Table>
                       <TableHead>
                         <TableRow>
@@ -1036,19 +1135,38 @@ const AdminAgenceManagementPage = () => {
       />
 
       {/* DIALOG : Confirmation suppression */}
-      <Dialog open={deleteDialog} onClose={() => setDeleteDialog(false)}>
-        <DialogTitle>⚠️ Confirmer la suppression</DialogTitle>
-        <DialogContent>
+      <Dialog
+        open={deleteDialog}
+        onClose={() => setDeleteDialog(false)}
+        maxWidth="xs"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: 4, overflow: "hidden" } }}
+      >
+        <DialogHeader
+          icon={Delete}
+          title="Confirmer la suppression"
+          subtitle="Action irréversible"
+          color="#e53935"
+          onClose={() => setDeleteDialog(false)}
+        />
+        <DialogContent sx={{ p: 3 }}>
           <Typography variant="body2">
             Voulez-vous vraiment supprimer l'agence <strong>{selectedAgence?.nom}</strong> ?
           </Typography>
-          <Typography variant="caption" color="error" sx={{ mt: 2, display: "block" }}>
+          <Alert severity="error" sx={{ mt: 2, borderRadius: 2 }}>
             Cette action est irréversible.
-          </Typography>
+          </Alert>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteDialog(false)}>Annuler</Button>
-          <Button onClick={handleDelete} color="error" variant="contained" startIcon={<Delete />}>
+        <DialogActions sx={{ px: 3, pb: 3, pt: 0 }}>
+          <Button onClick={() => setDeleteDialog(false)} color="inherit" sx={{ borderRadius: 2 }}>
+            Annuler
+          </Button>
+          <Button
+            onClick={handleDelete}
+            variant="contained"
+            startIcon={<Delete />}
+            sx={{ borderRadius: 2, px: 3, bgcolor: "#e53935", boxShadow: "none", "&:hover": { bgcolor: "#c62828", boxShadow: "none" } }}
+          >
             Supprimer
           </Button>
         </DialogActions>

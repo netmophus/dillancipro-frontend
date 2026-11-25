@@ -26,7 +26,7 @@ import {
   TrendingUp,
 } from "@mui/icons-material";
 import { useNavigate, useParams } from "react-router-dom";
-import PageLayout from "../../components/shared/PageLayout";
+import ClientLayout from "../../components/client/ClientLayout";
 import api from "../../services/api";
 
 const SoumettreVentePage = () => {
@@ -86,7 +86,7 @@ const SoumettreVentePage = () => {
         prixVente: parseFloat(prixVente),
       });
 
-      setSuccess(`✅ Vente soumise avec succès ! En attente de validation par Softlink.`);
+      setSuccess(`Vente soumise avec succès ! En attente de validation par Softlink.`);
 
       setTimeout(() => {
         navigate("/user/mon-patrimoine");
@@ -104,42 +104,42 @@ const SoumettreVentePage = () => {
 
   if (loading) {
     return (
-      <PageLayout>
+      <ClientLayout>
         <Box display="flex" justifyContent="center" alignItems="center" minHeight="80vh">
           <CircularProgress size={60} />
         </Box>
-      </PageLayout>
+      </ClientLayout>
     );
   }
 
   if (!bien || !tarif) {
     return (
-      <PageLayout>
+      <ClientLayout>
         <Container maxWidth="sm" sx={{ mt: 4 }}>
           <Alert severity="error">Bien ou tarif non trouvé</Alert>
           <Button startIcon={<ArrowBack />} onClick={() => navigate("/user/mon-patrimoine")} sx={{ mt: 2 }}>
             Retour
           </Button>
         </Container>
-      </PageLayout>
+      </ClientLayout>
     );
   }
 
   if (bien.soumiseVente) {
     return (
-      <PageLayout>
+      <ClientLayout>
         <Container maxWidth="sm" sx={{ mt: 4 }}>
           <Alert severity="warning">Ce bien est déjà soumis à la vente.</Alert>
           <Button startIcon={<ArrowBack />} onClick={() => navigate("/user/mon-patrimoine")} sx={{ mt: 2 }}>
             Retour
           </Button>
         </Container>
-      </PageLayout>
+      </ClientLayout>
     );
   }
 
   return (
-    <PageLayout>
+    <ClientLayout>
       <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
         <Button startIcon={<ArrowBack />} onClick={() => navigate("/user/mon-patrimoine")} sx={{ mb: 3 }}>
           Retour à mon patrimoine
@@ -196,7 +196,7 @@ const SoumettreVentePage = () => {
                 <Stack direction="row" spacing={1} mt={1}>
                   <Chip label={bien.type} size="small" color="primary" />
                   {bien.statutVerification === "verifie" && (
-                    <Chip label="✓ Vérifié" size="small" color="success" />
+                    <Chip label="Vérifié" size="small" color="success" />
                   )}
                 </Stack>
               </Grid>
@@ -263,8 +263,8 @@ const SoumettreVentePage = () => {
             {bien.valeurEstimee && prixVente && (
               <Alert severity={parseFloat(prixVente) < bien.valeurEstimee ? "warning" : "info"} sx={{ mt: 2 }}>
                 {parseFloat(prixVente) < bien.valeurEstimee
-                  ? "⚠️ Prix inférieur à votre estimation"
-                  : "✓ Prix cohérent avec votre estimation"}
+                  ? "Prix inférieur à votre estimation"
+                  : "Prix cohérent avec votre estimation"}
               </Alert>
             )}
           </CardContent>
@@ -345,13 +345,13 @@ const SoumettreVentePage = () => {
           sx={{
             py: 2,
             fontSize: "1.1rem",
-            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            background: "linear-gradient(135deg, #0D2B4E 0%, #1B5285 55%, #27AE60 165%)",
           }}
         >
           {processing ? "Soumission en cours..." : "Soumettre à la vente"}
         </Button>
       </Container>
-    </PageLayout>
+    </ClientLayout>
   );
 };
 

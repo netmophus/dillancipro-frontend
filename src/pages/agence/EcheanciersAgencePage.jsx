@@ -21,10 +21,7 @@ import {
   DialogActions,
   TextField,
   IconButton,
-  Select,
   MenuItem,
-  FormControl,
-  InputLabel,
   Grid,
   Card,
   CardContent,
@@ -44,7 +41,10 @@ import {
   Delete,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import PageLayout from "../../components/shared/PageLayout";
+import AgenceLayout from "../../components/agence/AgenceLayout";
+import AgencePageHeader from "../../components/agence/AgencePageHeader";
+import CalendarMonth from "@mui/icons-material/CalendarMonth";
+import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
 import { useAuth } from "../../contexts/AuthContext";
 import api from "../../services/api";
 
@@ -272,20 +272,23 @@ const EcheanciersAgencePage = () => {
   });
 
   return (
-    <PageLayout>
+    <AgenceLayout>
       <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-          <Typography variant="h4" fontWeight="bold">
-            📅 Gestion des Échéanciers
-          </Typography>
-          <Button
-            variant="outlined"
-            startIcon={<Refresh />}
-            onClick={fetchEcheanciers}
-          >
-            Actualiser
-          </Button>
-        </Box>
+        <AgencePageHeader
+          icon={CalendarMonth}
+          title="Gestion des Échéanciers"
+          subtitle="Suivez les paiements et échéances de vos ventes"
+          action={
+            <Button
+              variant="outlined"
+              startIcon={<Refresh />}
+              onClick={fetchEcheanciers}
+              sx={{ borderColor: "rgba(255,255,255,0.6)", color: "white" }}
+            >
+              Actualiser
+            </Button>
+          }
+        />
 
         {error && (
           <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError("")}>
@@ -293,21 +296,47 @@ const EcheanciersAgencePage = () => {
           </Alert>
         )}
 
+        {!loading && echeanciers.length > 0 && (
+          <Grid container spacing={2.5} sx={{ mb: 3 }}>
+            {[
+              { label: "Total échéanciers", value: echeanciers.length, icon: CalendarMonth, color: "#00bcd4" },
+              { label: "En cours", value: echeanciers.filter((e) => e.statut === "en_cours").length, icon: HourglassEmptyIcon, color: "#ff9800" },
+              { label: "Terminés", value: echeanciers.filter((e) => e.statut === "termine").length, icon: CheckCircle, color: "#2e7d32" },
+            ].map((kpi) => (
+              <Grid item xs={12} sm={4} key={kpi.label}>
+                <Card elevation={0} sx={{ borderRadius: 3, border: "1px solid #e3e8ef" }}>
+                  <CardContent>
+                    <Box display="flex" justifyContent="space-between" alignItems="center">
+                      <Box sx={{ minWidth: 0 }}>
+                        <Typography variant="body2" color="text.secondary">{kpi.label}</Typography>
+                        <Typography variant="h5" fontWeight="bold" sx={{ color: kpi.color }} noWrap>{kpi.value}</Typography>
+                      </Box>
+                      <Box sx={{ width: 44, height: 44, borderRadius: 2, bgcolor: `${kpi.color}15`, color: kpi.color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        <kpi.icon />
+                      </Box>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        )}
+
         {/* Filtres */}
         <Box sx={{ mb: 3, display: "flex", gap: 2, alignItems: "center" }}>
-          <FormControl size="small" sx={{ minWidth: 200 }}>
-            <InputLabel>Filtrer par statut</InputLabel>
-            <Select
-              value={statutFiltre}
-              label="Filtrer par statut"
-              onChange={(e) => setStatutFiltre(e.target.value)}
-            >
-              <MenuItem value="all">Tous</MenuItem>
-              <MenuItem value="en_cours">En cours</MenuItem>
-              <MenuItem value="en_retard">Avec retards</MenuItem>
-              <MenuItem value="termine">Terminés</MenuItem>
-            </Select>
-          </FormControl>
+          <TextField
+            select
+            size="small"
+            label="Statut"
+            value={statutFiltre}
+            onChange={(e) => setStatutFiltre(e.target.value)}
+            sx={{ minWidth: 220, "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
+          >
+            <MenuItem value="all">Tous les statuts</MenuItem>
+            <MenuItem value="en_cours">En cours</MenuItem>
+            <MenuItem value="en_retard">Avec retards</MenuItem>
+            <MenuItem value="termine">Terminés</MenuItem>
+          </TextField>
           <Chip
             label={`Total: ${echeanciers.length}`}
             color="primary"
@@ -711,7 +740,7 @@ const EcheanciersAgencePage = () => {
           </DialogActions>
         </Dialog>
       </Container>
-    </PageLayout>
+    </AgenceLayout>
   );
 };
 

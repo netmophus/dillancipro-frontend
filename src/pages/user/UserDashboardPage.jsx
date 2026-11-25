@@ -62,7 +62,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
 import "leaflet-routing-machine";
-import PageLayout from "../../components/shared/PageLayout";
+import ClientLayout from "../../components/client/ClientLayout";
 import { useAuth } from "../../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
@@ -261,21 +261,22 @@ const UserDashboardPage = () => {
 
   const KPICard = ({ title, value, subtitle, icon: Icon, color }) => (
     <Card
-      elevation={3}
+      elevation={0}
       sx={{
         height: "100%",
-        borderLeft: `4px solid ${color}`,
-        transition: "all 0.3s",
-        "&:hover": { transform: "translateY(-4px)", boxShadow: 6 },
+        borderRadius: 3,
+        border: "1px solid #e3e8ef",
+        transition: "all 0.25s",
+        "&:hover": { transform: "translateY(-4px)", boxShadow: "0 8px 24px rgba(13,43,78,0.10)" },
       }}
     >
       <CardContent>
         <Box display="flex" justifyContent="space-between" alignItems="flex-start">
-          <Box flex={1}>
+          <Box flex={1} sx={{ minWidth: 0 }}>
             <Typography color="text.secondary" variant="body2" gutterBottom>
               {title}
             </Typography>
-            <Typography variant="h4" fontWeight="bold" color={color} sx={{ mb: 1 }}>
+            <Typography variant="h4" fontWeight="bold" sx={{ color, mb: 1 }} noWrap>
               {value}
             </Typography>
             {subtitle && (
@@ -284,8 +285,8 @@ const UserDashboardPage = () => {
               </Typography>
             )}
           </Box>
-          <Avatar sx={{ bgcolor: color, width: 56, height: 56, ml: 2 }}>
-            <Icon fontSize="large" />
+          <Avatar sx={{ bgcolor: `${color}15`, color, width: 48, height: 48, ml: 2 }}>
+            <Icon />
           </Avatar>
         </Box>
       </CardContent>
@@ -294,21 +295,21 @@ const UserDashboardPage = () => {
 
   if (loading) {
     return (
-      <PageLayout>
+      <ClientLayout>
         <Box display="flex" justifyContent="center" alignItems="center" minHeight="80vh">
           <CircularProgress size={60} />
         </Box>
-      </PageLayout>
+      </ClientLayout>
     );
   }
 
   if (error || !dashboardData) {
     return (
-      <PageLayout>
+      <ClientLayout>
         <Container maxWidth="lg" sx={{ mt: 4 }}>
           <Alert severity="error">{error || "Erreur de chargement"}</Alert>
         </Container>
-      </PageLayout>
+      </ClientLayout>
     );
   }
 
@@ -318,14 +319,15 @@ const UserDashboardPage = () => {
     : 0;
 
   return (
-    <PageLayout>
+    <ClientLayout>
       <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
         {/* En-tête */}
         <Card
-          elevation={3}
+          elevation={0}
           sx={{
             mb: 4,
-            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            borderRadius: 4,
+            background: "linear-gradient(135deg, #0D2B4E 0%, #1B5285 55%, #27AE60 165%)",
             color: "white",
           }}
         >
@@ -340,10 +342,10 @@ const UserDashboardPage = () => {
                 </Avatar>
                 <Box>
                   <Typography variant="h4" fontWeight="bold">
-                    Bonjour, {user?.fullName || "Client"} 👋
+                    Bonjour, {user?.fullName || "Client"}
                   </Typography>
                   <Typography variant="body1" sx={{ opacity: 0.9, mt: 0.5 }}>
-                    📞 {user?.phone} • 🏡 {stats.totalParcelles} parcelle(s)
+                    {user?.phone} • {stats.totalParcelles} parcelle(s)
                   </Typography>
                 </Box>
               </Box>
@@ -359,7 +361,7 @@ const UserDashboardPage = () => {
 
         {/* KPIs */}
         <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
-          📊 Aperçu de vos acquisitions
+          Aperçu de vos acquisitions
         </Typography>
         <Grid container spacing={3} mb={4}>
           <Grid item xs={12} sm={6} md={3}>
@@ -404,12 +406,12 @@ const UserDashboardPage = () => {
         </Grid>
 
         {/* Accès rapide aux achats agence */}
-        <Card elevation={3} sx={{ mb: 4, bgcolor: "primary.main", color: "white" }}>
+        <Card elevation={0} sx={{ mb: 4, borderRadius: 3, background: "linear-gradient(135deg, #0D2B4E 0%, #1B5285 100%)", color: "white" }}>
           <CardContent sx={{ p: 3 }}>
             <Box display="flex" justifyContent="space-between" alignItems="center">
               <Box>
                 <Typography variant="h6" fontWeight="bold" gutterBottom>
-                  🛒 Mes Achats via Agence
+                  Mes Achats via Agence
                 </Typography>
                 <Typography variant="body2" sx={{ opacity: 0.9 }}>
                   Consultez vos achats de parcelles et biens immobiliers via les agences
@@ -429,11 +431,11 @@ const UserDashboardPage = () => {
 
         {/* Achats de biens en cours avec les notaires */}
         {ventesEnCours.length > 0 && (
-          <Card elevation={3} sx={{ mb: 4, bgcolor: "warning.light", borderLeft: "4px solid #ff9800" }}>
+          <Card elevation={0} sx={{ mb: 4, borderRadius: 3, border: "1px solid #e3e8ef", borderLeft: "4px solid #ff9800" }}>
             <CardContent>
               <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
                 <Typography variant="h6" fontWeight="bold" sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <Gavel /> Mes Achats de Biens en Cours ({ventesEnCours.length})
+                  <Gavel sx={{ color: "#ff9800" }} /> Mes Achats de Biens en Cours ({ventesEnCours.length})
                 </Typography>
                 <Button
                   variant="outlined"
@@ -518,19 +520,19 @@ const UserDashboardPage = () => {
                                 </Typography>
                                 <Box display="flex" gap={1} mt={0.5} flexWrap="wrap">
                                   <Chip
-                                    label={`Vous: ${vente.signatures.client ? "✓" : "⏳"}`}
+                                    label={`Vous: ${vente.signatures.client ? "Signé" : "En attente"}`}
                                     size="small"
                                     color={vente.signatures.client ? "success" : "warning"}
                                     variant="outlined"
                                   />
                                   <Chip
-                                    label={`Com.: ${vente.signatures.commercial ? "✓" : "⏳"}`}
+                                    label={`Com.: ${vente.signatures.commercial ? "Signé" : "En attente"}`}
                                     size="small"
                                     color={vente.signatures.commercial ? "success" : "warning"}
                                     variant="outlined"
                                   />
                                   <Chip
-                                    label={`Ag.: ${vente.signatures.agence ? "✓" : "⏳"}`}
+                                    label={`Ag.: ${vente.signatures.agence ? "Signé" : "En attente"}`}
                                     size="small"
                                     color={vente.signatures.agence ? "success" : "warning"}
                                     variant="outlined"
@@ -576,11 +578,11 @@ const UserDashboardPage = () => {
 
         {/* Mes Échéanciers */}
         {echeanciers.length > 0 && (
-          <Card elevation={3} sx={{ mb: 4, bgcolor: "info.light", borderLeft: "4px solid #2196f3" }}>
+          <Card elevation={0} sx={{ mb: 4, borderRadius: 3, border: "1px solid #e3e8ef", borderLeft: "4px solid #2196f3" }}>
             <CardContent>
               <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
                 <Typography variant="h6" fontWeight="bold" sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <CalendarToday /> Mes Échéanciers ({echeanciers.length})
+                  <CalendarToday sx={{ color: "#2196f3" }} /> Mes Échéanciers ({echeanciers.length})
                 </Typography>
               </Box>
               <Divider sx={{ mb: 2 }} />
@@ -698,11 +700,11 @@ const UserDashboardPage = () => {
 
         {/* Barre de progression du paiement */}
         {stats.totalPaiements > 0 && (
-          <Card elevation={2} sx={{ mb: 4, bgcolor: "info.light" }}>
+          <Card elevation={0} sx={{ mb: 4, borderRadius: 3, border: "1px solid #e3e8ef", borderLeft: "4px solid #2196f3" }}>
             <CardContent>
               <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
                 <Typography variant="subtitle1" fontWeight="bold">
-                  📈 Progression des paiements
+                  Progression des paiements
                 </Typography>
                 <Typography variant="h6" fontWeight="bold" color="primary">
                   {pourcentagePaye}%
@@ -714,7 +716,7 @@ const UserDashboardPage = () => {
                 sx={{
                   height: 12,
                   borderRadius: 6,
-                  backgroundColor: "white",
+                  backgroundColor: "#eef2f7",
                   "& .MuiLinearProgress-bar": {
                     borderRadius: 6,
                     background: "linear-gradient(90deg, #4caf50 0%, #8bc34a 100%)",
@@ -734,12 +736,12 @@ const UserDashboardPage = () => {
         )}
 
         {/* Section Patrimoine Consolidé */}
-        <Card elevation={3} sx={{ mb: 4, background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)", color: "white" }}>
+        <Card elevation={0} sx={{ mb: 4, borderRadius: 4, background: "linear-gradient(135deg, #0D2B4E 0%, #1B5285 55%, #27AE60 165%)", color: "white" }}>
           <CardContent sx={{ p: 3 }}>
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
               <Box>
                 <Typography variant="h6" fontWeight="bold" gutterBottom>
-                  🏡 Mon Patrimoine Foncier
+                  Mon Patrimoine Foncier
                 </Typography>
                 <Typography variant="body2" sx={{ opacity: 0.9 }}>
                   Gérez l'ensemble de vos biens immobiliers
@@ -786,7 +788,7 @@ const UserDashboardPage = () => {
               <Button
                 variant="contained"
                 startIcon={<Add />}
-                sx={{ bgcolor: "white", color: "#f5576c", "&:hover": { bgcolor: "rgba(255,255,255,0.9)" } }}
+                sx={{ bgcolor: "white", color: "#0D2B4E", fontWeight: "bold", "&:hover": { bgcolor: "rgba(255,255,255,0.9)" } }}
                 onClick={() => navigate("/user/mon-patrimoine")}
                 fullWidth
               >
@@ -815,10 +817,10 @@ const UserDashboardPage = () => {
         </Card>
 
         {/* Mes Parcelles */}
-        <Card elevation={3} sx={{ mb: 4 }}>
+        <Card elevation={0} sx={{ mb: 4, borderRadius: 3, border: "1px solid #e3e8ef" }}>
           <CardContent>
             <Typography variant="h6" fontWeight="bold" gutterBottom>
-              🏘️ Mes Parcelles ({parcelles.length})
+              Mes Parcelles ({parcelles.length})
             </Typography>
             <Divider sx={{ mb: 3 }} />
 
@@ -944,10 +946,10 @@ const UserDashboardPage = () => {
 
         {/* Mes Paiements */}
         {paiements.length > 0 && (
-          <Card elevation={3}>
+          <Card elevation={0} sx={{ borderRadius: 3, border: "1px solid #e3e8ef" }}>
             <CardContent>
               <Typography variant="h6" fontWeight="bold" gutterBottom>
-                💳 Mes Paiements ({paiements.length})
+                Mes Paiements ({paiements.length})
               </Typography>
               <Divider sx={{ mb: 3 }} />
 
@@ -1032,11 +1034,11 @@ const UserDashboardPage = () => {
                           <Grid item xs={12}>
                             <Divider sx={{ my: 2 }} />
                             <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
-                              📋 Historique des versements ({paiement.versements.length})
+                              Historique des versements ({paiement.versements.length})
                             </Typography>
                             <TableContainer component={Paper} variant="outlined" sx={{ mt: 2 }}>
                               <Table size="small">
-                                <TableHead sx={{ bgcolor: "grey.100" }}>
+                                <TableHead sx={{ "& th": { bgcolor: "#f6f8fb", color: "text.secondary", fontWeight: 700, fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: 0.5, borderBottom: "2px solid #e3e8ef" } }}>
                                   <TableRow>
                                     <TableCell><strong>Date</strong></TableCell>
                                     <TableCell align="right"><strong>Montant</strong></TableCell>
@@ -1101,7 +1103,7 @@ const UserDashboardPage = () => {
 
         {/* Message si aucun achat */}
         {stats.totalParcelles === 0 && (
-          <Card elevation={2}>
+          <Card elevation={0} sx={{ borderRadius: 3, border: "1px solid #e3e8ef" }}>
             <CardContent sx={{ textAlign: "center", py: 6 }}>
               <Home sx={{ fontSize: 80, color: "text.secondary", mb: 2 }} />
               <Typography variant="h6" color="text.secondary" gutterBottom>
@@ -1164,7 +1166,7 @@ const UserDashboardPage = () => {
                 {showRoute && userPosition && (
                   <Alert severity="success" sx={{ boxShadow: 4 }}>
                     <Typography variant="body2" fontWeight="bold">
-                      ✓ Itinéraire calculé
+                      Itinéraire calculé
                     </Typography>
                   </Alert>
                 )}
@@ -1173,8 +1175,8 @@ const UserDashboardPage = () => {
               {/* Carte */}
               <MapContainer
                 center={[
-                  selectedParcelle.localisation.lat || 12.3714,
-                  selectedParcelle.localisation.lng || -1.5197,
+                  selectedParcelle.localisation.lat || 13.5116,
+                  selectedParcelle.localisation.lng || 2.1254,
                 ]}
                 zoom={13}
                 style={{ height: "100%", width: "100%" }}
@@ -1218,7 +1220,7 @@ const UserDashboardPage = () => {
                   <Marker position={[userPosition.lat, userPosition.lng]}>
                     <Popup>
                       <Typography variant="body2" fontWeight="bold">
-                        📍 Votre position
+                        Votre position
                       </Typography>
                     </Popup>
                   </Marker>
@@ -1281,7 +1283,7 @@ const UserDashboardPage = () => {
               {selectedParcelleDetails.images && selectedParcelleDetails.images.length > 0 && (
                 <Box mb={3}>
                   <Typography variant="h6" fontWeight="bold" gutterBottom>
-                    📸 Photos ({selectedParcelleDetails.images.length})
+                    Photos ({selectedParcelleDetails.images.length})
                   </Typography>
                   <Box
                     component="img"
@@ -1382,7 +1384,7 @@ const UserDashboardPage = () => {
                (selectedParcelleDetails.videos && selectedParcelleDetails.videos.length > 0) ? (
                 <Box>
                   <Typography variant="h6" fontWeight="bold" gutterBottom>
-                    📄 Documents et médias
+                    Documents et médias
                   </Typography>
                   
                   {selectedParcelleDetails.documents && selectedParcelleDetails.documents.length > 0 && (
@@ -1456,7 +1458,7 @@ const UserDashboardPage = () => {
           echeancierId={selectedEcheancier._id}
         />
       )}
-    </PageLayout>
+    </ClientLayout>
   );
 };
 

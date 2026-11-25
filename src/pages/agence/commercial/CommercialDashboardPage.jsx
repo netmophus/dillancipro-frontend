@@ -45,7 +45,7 @@ import {
   Edit,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import PageLayout from "../../../components/shared/PageLayout";
+import CommercialLayout from "../../../components/commercial/CommercialLayout";
 import { useAuth } from "../../../contexts/AuthContext";
 import api from "../../../services/api";
 
@@ -164,27 +164,28 @@ const CommercialDashboardPage = () => {
   // Composant KPI Card
   const KPICard = ({ title, value, subtitle, icon: Icon, color, progress, onClick }) => (
     <Card
-      elevation={3}
+      elevation={0}
       sx={{
         height: "100%",
-        borderLeft: `4px solid ${color}`,
-        transition: "all 0.3s",
+        borderRadius: 3,
+        border: "1px solid #e3e8ef",
+        transition: "all 0.25s",
         cursor: onClick ? "pointer" : "default",
-        "&:hover": { 
-          transform: "translateY(-4px)", 
-          boxShadow: 6,
-          ...(onClick && { bgcolor: "action.hover" })
+        "&:hover": {
+          transform: "translateY(-4px)",
+          boxShadow: "0 8px 24px rgba(13,43,78,0.10)",
+          ...(onClick && { borderColor: color }),
         },
       }}
       onClick={onClick}
     >
       <CardContent>
         <Box display="flex" justifyContent="space-between" alignItems="flex-start">
-          <Box flex={1}>
+          <Box flex={1} sx={{ minWidth: 0 }}>
             <Typography color="text.secondary" variant="body2" gutterBottom>
               {title}
             </Typography>
-            <Typography variant="h4" fontWeight="bold" color={color} sx={{ mb: 1 }}>
+            <Typography variant="h4" fontWeight="bold" sx={{ color, mb: 1 }} noWrap>
               {value}
             </Typography>
             {subtitle && (
@@ -213,8 +214,8 @@ const CommercialDashboardPage = () => {
               </Box>
             )}
           </Box>
-          <Avatar sx={{ bgcolor: color, width: 56, height: 56, ml: 2 }}>
-            <Icon fontSize="large" />
+          <Avatar sx={{ bgcolor: `${color}15`, color, width: 48, height: 48, ml: 2 }}>
+            <Icon />
           </Avatar>
         </Box>
       </CardContent>
@@ -223,23 +224,24 @@ const CommercialDashboardPage = () => {
 
   if (loading) {
     return (
-      <PageLayout>
+      <CommercialLayout>
         <Box display="flex" justifyContent="center" alignItems="center" minHeight="80vh">
           <CircularProgress size={60} />
         </Box>
-      </PageLayout>
+      </CommercialLayout>
     );
   }
 
   return (
-    <PageLayout>
+    <CommercialLayout>
       <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
         {/* En-tête avec profil */}
         <Card
-          elevation={3}
+          elevation={0}
           sx={{
             mb: 4,
-            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            borderRadius: 4,
+            background: "linear-gradient(135deg, #0D2B4E 0%, #1B5285 55%, #27AE60 165%)",
             color: "white",
           }}
         >
@@ -254,11 +256,10 @@ const CommercialDashboardPage = () => {
                 </Avatar>
                 <Box>
                   <Typography variant="h4" fontWeight="bold">
-                    Bonjour, {profil?.fullName || user?.fullName || "Commercial"} 👋
+                    Bonjour, {profil?.fullName || user?.fullName || "Commercial"}
                   </Typography>
                   <Typography variant="body1" sx={{ opacity: 0.9, mt: 0.5 }}>
-                    📞 {user?.phone} • 
-                    💰 Commission: {commissionCfg.mode === "pourcentage" ? `${commissionCfg.valeur}%` : `${formatMoney(commissionCfg.valeur)}`}
+                    {user?.phone} • Commission: {commissionCfg.mode === "pourcentage" ? `${commissionCfg.valeur}%` : `${formatMoney(commissionCfg.valeur)}`}
                   </Typography>
                 </Box>
               </Box>
@@ -274,7 +275,7 @@ const CommercialDashboardPage = () => {
                   color="inherit"
                   startIcon={<Edit />}
                   onClick={() => navigate("/commercial/mon-profil")}
-                  sx={{ color: "#667eea" }}
+                  sx={{ color: "#0D2B4E" }}
                 >
                   Mon profil
                 </Button>
@@ -284,9 +285,12 @@ const CommercialDashboardPage = () => {
         </Card>
 
         {/* KPIs Principaux - Parcelles */}
-        <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
-          🏘️ Parcelles - Vue d'ensemble
-        </Typography>
+        <Box display="flex" alignItems="center" gap={1} sx={{ mb: 2 }}>
+          <Inventory2 color="action" />
+          <Typography variant="h6" fontWeight="bold">
+            Parcelles - Vue d'ensemble
+          </Typography>
+        </Box>
         <Grid container spacing={3} mb={4}>
           <Grid item xs={12} sm={6} md={3}>
             <KPICard
@@ -332,9 +336,12 @@ const CommercialDashboardPage = () => {
         </Grid>
 
         {/* KPIs Biens Immobiliers */}
-        <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
-          🏠 Biens Immobiliers - Vue d'ensemble
-        </Typography>
+        <Box display="flex" alignItems="center" gap={1} sx={{ mb: 2 }}>
+          <Home color="action" />
+          <Typography variant="h6" fontWeight="bold">
+            Biens Immobiliers - Vue d'ensemble
+          </Typography>
+        </Box>
         <Grid container spacing={3} mb={4}>
           <Grid item xs={12} sm={6} md={3}>
             <KPICard
@@ -380,9 +387,12 @@ const CommercialDashboardPage = () => {
         </Grid>
 
         {/* Finances & Commission */}
-        <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
-          💰 Finances & Commission
-        </Typography>
+        <Box display="flex" alignItems="center" gap={1} sx={{ mb: 2 }}>
+          <Euro color="action" />
+          <Typography variant="h6" fontWeight="bold">
+            Finances & Commission
+          </Typography>
+        </Box>
         <Grid container spacing={3} mb={4}>
           <Grid item xs={12} md={4}>
             <KPICard
@@ -408,7 +418,7 @@ const CommercialDashboardPage = () => {
             <Tooltip title="Cliquer pour voir le détail">
               <Box>
                 <KPICard
-                  title="Paiements Partiels 🔍"
+                  title="Paiements Partiels"
                   value={stats.paiementsPartiels?.count || 0}
                   subtitle={`Encaissé: ${formatMoney(stats.paiementsPartiels?.paye || 0)} • Reste: ${formatMoney(stats.paiementsPartiels?.restant || 0)}`}
                   icon={Sell}
@@ -421,7 +431,7 @@ const CommercialDashboardPage = () => {
         </Grid>
 
         {/* Actions rapides */}
-        <Card elevation={2} sx={{ mb: 4, bgcolor: "primary.main", color: "white" }}>
+        <Card elevation={0} sx={{ mb: 4, borderRadius: 3, background: "linear-gradient(135deg, #0D2B4E 0%, #1B5285 100%)", color: "white" }}>
           <CardContent sx={{ p: 3 }}>
             <Box display="flex" alignItems="center" gap={1} mb={2}>
               <Speed />
@@ -438,7 +448,7 @@ const CommercialDashboardPage = () => {
                   onClick={() => navigate("/commercial/inscrire-client")}
                   sx={{ color: "primary.main", fontWeight: "bold" }}
                 >
-                  ➕ Inscrire Client
+                  Inscrire Client
                 </Button>
               </Grid>
               <Grid item xs={12} sm={6} md={3}>
@@ -449,7 +459,7 @@ const CommercialDashboardPage = () => {
                   onClick={() => navigate("/commercial/parcelles-non-vendues")}
                   sx={{ borderColor: "white", color: "white" }}
                 >
-                  🏘️ Parcelles à vendre
+                  Parcelles à vendre
                 </Button>
               </Grid>
               <Grid item xs={12} sm={6} md={3}>
@@ -460,7 +470,7 @@ const CommercialDashboardPage = () => {
                   onClick={() => navigate("/commercial/parcelles-vendues")}
                   sx={{ borderColor: "white", color: "white" }}
                 >
-                  ✅ Parcelles vendues
+                  Parcelles vendues
                 </Button>
               </Grid>
               <Grid item xs={12} sm={6} md={3}>
@@ -471,7 +481,7 @@ const CommercialDashboardPage = () => {
                   onClick={() => navigate("/commercial/mes-ilots")}
                   sx={{ borderColor: "white", color: "white" }}
                 >
-                  🗺️ Mes îlots
+                  Mes îlots
                 </Button>
               </Grid>
               <Grid item xs={12} sm={6} md={3}>
@@ -482,7 +492,7 @@ const CommercialDashboardPage = () => {
                   onClick={() => navigate("/commercial/mes-biens")}
                   sx={{ color: "primary.main", fontWeight: "bold" }}
                 >
-                  🏡 Mes biens
+                  Mes biens
                 </Button>
               </Grid>
               <Grid item xs={12} sm={6} md={3}>
@@ -494,7 +504,7 @@ const CommercialDashboardPage = () => {
                   sx={{ borderColor: "white", color: "white", fontWeight: "bold" }}
                   startIcon={<Sell />}
                 >
-                  📋 Mes ventes de biens
+                  Mes ventes de biens
                 </Button>
               </Grid>
             </Grid>
@@ -504,17 +514,19 @@ const CommercialDashboardPage = () => {
         <Grid container spacing={3}>
           {/* Notifications */}
           <Grid item xs={12} md={4}>
-            <Card elevation={3}>
+            <Card elevation={0} sx={{ height: "100%", borderRadius: 3, border: "1px solid #e3e8ef" }}>
               <CardContent>
                 <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                  <Box display="flex" alignItems="center" gap={1}>
+                  <Stack direction="row" alignItems="center" spacing={1.5}>
                     <Badge badgeContent={notifications.filter((n) => !n.read).length} color="error">
-                      <Notifications color="primary" />
+                      <Avatar sx={{ bgcolor: "#5b6ee815", color: "#5b6ee8", width: 40, height: 40 }}>
+                        <Notifications />
+                      </Avatar>
                     </Badge>
                     <Typography variant="h6" fontWeight="bold">
                       Notifications
                     </Typography>
-                  </Box>
+                  </Stack>
                   <Chip label={`${notifications.length} message(s)`} size="small" />
                 </Box>
                 <Divider sx={{ mb: 2 }} />
@@ -554,14 +566,16 @@ const CommercialDashboardPage = () => {
 
           {/* Statistiques visuelles - Parcelles */}
           <Grid item xs={12} md={4}>
-            <Card elevation={3}>
+            <Card elevation={0} sx={{ height: "100%", borderRadius: 3, border: "1px solid #e3e8ef" }}>
               <CardContent>
-                <Box display="flex" alignItems="center" gap={1} mb={2}>
-                  <Assessment color="primary" />
+                <Stack direction="row" alignItems="center" spacing={1.5} mb={2}>
+                  <Avatar sx={{ bgcolor: "#2e7d3215", color: "#2e7d32", width: 40, height: 40 }}>
+                    <Assessment />
+                  </Avatar>
                   <Typography variant="h6" fontWeight="bold">
-                    🏘️ Parcelles
+                    Parcelles
                   </Typography>
-                </Box>
+                </Stack>
                 <Divider sx={{ mb: 3 }} />
 
                 {/* Barre de progression composée */}
@@ -662,14 +676,16 @@ const CommercialDashboardPage = () => {
 
           {/* Statistiques visuelles - Biens */}
           <Grid item xs={12} md={4}>
-            <Card elevation={3}>
+            <Card elevation={0} sx={{ height: "100%", borderRadius: 3, border: "1px solid #e3e8ef" }}>
               <CardContent>
-                <Box display="flex" alignItems="center" gap={1} mb={2}>
-                  <Home color="primary" />
+                <Stack direction="row" alignItems="center" spacing={1.5} mb={2}>
+                  <Avatar sx={{ bgcolor: "#673ab715", color: "#673ab7", width: 40, height: 40 }}>
+                    <Home />
+                  </Avatar>
                   <Typography variant="h6" fontWeight="bold">
-                    🏠 Biens Immobiliers
+                    Biens Immobiliers
                   </Typography>
-                </Box>
+                </Stack>
                 <Divider sx={{ mb: 3 }} />
 
                 {/* Barre de progression composée pour biens */}
@@ -771,12 +787,17 @@ const CommercialDashboardPage = () => {
 
         {/* Mes parcelles récentes */}
         {parcelles.length > 0 && (
-          <Card elevation={3} sx={{ mt: 3 }}>
+          <Card elevation={0} sx={{ mt: 3, borderRadius: 3, border: "1px solid #e3e8ef" }}>
             <CardContent>
               <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                <Typography variant="h6" fontWeight="bold">
-                  🏘️ Mes parcelles récentes ({parcelles.length})
-                </Typography>
+                <Stack direction="row" alignItems="center" spacing={1.5}>
+                  <Avatar sx={{ bgcolor: "#2196f315", color: "#2196f3", width: 40, height: 40 }}>
+                    <Inventory2 />
+                  </Avatar>
+                  <Typography variant="h6" fontWeight="bold">
+                    Mes parcelles récentes ({parcelles.length})
+                  </Typography>
+                </Stack>
                 <Button endIcon={<ArrowForward />} onClick={() => navigate("/commercial/parcelles-non-vendues")}>
                   Voir tout
                 </Button>
@@ -785,13 +806,25 @@ const CommercialDashboardPage = () => {
 
               <TableContainer>
                 <Table>
-                  <TableHead sx={{ bgcolor: "grey.100" }}>
+                  <TableHead
+                    sx={{
+                      "& th": {
+                        bgcolor: "#f6f8fb",
+                        color: "text.secondary",
+                        fontWeight: 700,
+                        fontSize: "0.75rem",
+                        textTransform: "uppercase",
+                        letterSpacing: 0.5,
+                        borderBottom: "2px solid #e3e8ef",
+                      },
+                    }}
+                  >
                     <TableRow>
-                      <TableCell><strong>Numéro</strong></TableCell>
-                      <TableCell><strong>Îlot</strong></TableCell>
-                      <TableCell><strong>Superficie</strong></TableCell>
-                      <TableCell><strong>Prix</strong></TableCell>
-                      <TableCell><strong>Statut</strong></TableCell>
+                      <TableCell>Numéro</TableCell>
+                      <TableCell>Îlot</TableCell>
+                      <TableCell>Superficie</TableCell>
+                      <TableCell>Prix</TableCell>
+                      <TableCell>Statut</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -827,7 +860,7 @@ const CommercialDashboardPage = () => {
           </Card>
         )}
       </Container>
-    </PageLayout>
+    </CommercialLayout>
   );
 };
 

@@ -36,6 +36,7 @@ import {
 } from "@mui/icons-material";
 import { useParams, useNavigate } from "react-router-dom";
 import PageLayout from "../../../components/shared/PageLayout";
+import AgencePageHeader from "../../../components/agence/AgencePageHeader";
 import api from "../../../services/api";
 
 const CommercialProfilPage = () => {
@@ -110,11 +111,11 @@ const CommercialProfilPage = () => {
       const found = res.data.find((c) => c.phone === phoneSearch.trim());
 
       if (found) {
-        // Commercial trouvé → charger ses infos
+        // Commercial trouvé charger ses infos
         await loadCommercialById(found._id);
-        setSuccess(`✅ Commercial trouvé : ${found.fullName || found.phone}`);
+        setSuccess(`Commercial trouvé : ${found.fullName || found.phone}`);
       } else {
-        setError("❌ Aucun commercial trouvé avec ce numéro");
+        setError("Aucun commercial trouvé avec ce numéro");
       }
     } catch (err) {
       setError("Erreur lors de la recherche");
@@ -254,7 +255,7 @@ const CommercialProfilPage = () => {
       if (pieceFile) fdPiece.append("pieceFichier", pieceFile);
       await api.patch(`/agence/commerciaux/${commercialId}/profil/piece`, fdPiece);
 
-      setSuccess("✅ Profil enregistré avec succès !");
+      setSuccess("Profil enregistré avec succès !");
       
       // Recharger pour voir les nouvelles infos
       await loadCommercialById(commercialId);
@@ -263,7 +264,7 @@ const CommercialProfilPage = () => {
     } catch (e) {
       setError(
         e.response?.data?.message ||
-          "❌ Erreur lors de l'enregistrement du profil"
+          "Erreur lors de l'enregistrement du profil"
       );
     } finally {
       setSaving(false);
@@ -299,30 +300,19 @@ const CommercialProfilPage = () => {
   if (!id && !commercialLoaded) {
     return (
       <PageLayout>
-        <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
-          <Box sx={{ mb: 4 }}>
-            <Button
-              startIcon={<ArrowBack />}
-              onClick={() => navigate("/agence/enroller-commercial")}
-              sx={{ mb: 2 }}
-            >
-              Retour à la liste
-            </Button>
-
-            <Box display="flex" alignItems="center" gap={2}>
-              <Avatar sx={{ bgcolor: "primary.main", width: 64, height: 64 }}>
-                <Search fontSize="large" />
-              </Avatar>
-              <Box>
-                <Typography variant="h4" fontWeight="bold">
-                  Remplir le Profil Commercial
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Recherchez le commercial par son numéro de téléphone
-                </Typography>
-              </Box>
-            </Box>
-          </Box>
+        <Container maxWidth="md" sx={{ mt: 4, mb: 4, "& .MuiOutlinedInput-root": { borderRadius: 2 } }}>
+          <AgencePageHeader
+            icon={Search}
+            title="Remplir le Profil Commercial"
+            subtitle="Recherchez le commercial par son numéro de téléphone"
+            action={
+              <Button startIcon={<ArrowBack />} variant="outlined"
+                onClick={() => navigate("/agence/enroller-commercial")}
+                sx={{ borderColor: "rgba(255,255,255,0.6)", color: "white" }}>
+                Retour à la liste
+              </Button>
+            }
+          />
 
           {error && (
             <Fade in={!!error}>
@@ -332,11 +322,12 @@ const CommercialProfilPage = () => {
             </Fade>
           )}
 
-          <Card elevation={3}>
+          <Card elevation={0} sx={{ borderRadius: 3, border: "1px solid #e3e8ef" }}>
             <CardContent sx={{ p: 4 }}>
               <Paper variant="outlined" sx={{ p: 4, textAlign: "center", bgcolor: "grey.50" }}>
                 <Typography variant="h6" gutterBottom>
-                  🔍 Recherche du commercial
+                  <Search sx={{ verticalAlign: "middle", mr: 1 }} />
+                  Recherche du commercial
                 </Typography>
                 <Typography variant="body2" color="text.secondary" mb={4}>
                   Saisissez le numéro de téléphone du commercial enrôlé
@@ -392,37 +383,23 @@ const CommercialProfilPage = () => {
     );
   }
 
-  // Commercial chargé → Afficher le formulaire complet
+  // Commercial chargé Afficher le formulaire complet
   return (
     <PageLayout>
-      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      <Container maxWidth="lg" sx={{ mt: 4, mb: 4, "& .MuiOutlinedInput-root": { borderRadius: 2 } }}>
         {/* En-tête */}
-        <Box sx={{ mb: 4 }}>
-          <Button
-            startIcon={<ArrowBack />}
-            onClick={() => navigate("/agence/enroller-commercial")}
-            sx={{ mb: 2 }}
-          >
-            Retour à la liste
-          </Button>
-
-          <Box display="flex" alignItems="center" gap={2}>
-            <Avatar
-              src={photoSrc}
-              sx={{ bgcolor: "primary.main", width: 80, height: 80 }}
-            >
-              {(fullName || "U").charAt(0).toUpperCase()}
-            </Avatar>
-            <Box>
-              <Typography variant="h4" fontWeight="bold">
-                Profil de {fullName || "Commercial"}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                📞 {phone} • Complétez les informations manquantes
-              </Typography>
-            </Box>
-          </Box>
-        </Box>
+        <AgencePageHeader
+          icon={Person}
+          title={`Profil de ${fullName || "Commercial"}`}
+          subtitle={`${phone} • Complétez les informations manquantes`}
+          action={
+            <Button startIcon={<ArrowBack />} variant="outlined"
+              onClick={() => navigate("/agence/enroller-commercial")}
+              sx={{ borderColor: "rgba(255,255,255,0.6)", color: "white" }}>
+              Retour à la liste
+            </Button>
+          }
+        />
 
         {/* Alertes */}
         {success && (
@@ -443,7 +420,7 @@ const CommercialProfilPage = () => {
         <Grid container spacing={3}>
           {/* SECTION 1 : Identité & Photo */}
           <Grid item xs={12}>
-            <Card elevation={3}>
+            <Card elevation={0} sx={{ borderRadius: 3, border: "1px solid #e3e8ef" }}>
               <CardContent sx={{ p: 3 }}>
                 <Typography variant="h6" fontWeight="bold" gutterBottom mb={3}>
                   <Person sx={{ verticalAlign: "middle", mr: 1 }} />
@@ -479,7 +456,7 @@ const CommercialProfilPage = () => {
                       </label>
                       {photoFile && (
                         <Chip
-                          label="✓ Photo sélectionnée"
+                          label="Photo sélectionnée"
                           color="success"
                           size="small"
                           sx={{ mt: 1 }}
@@ -533,7 +510,7 @@ const CommercialProfilPage = () => {
 
           {/* SECTION 2 : Adresse */}
           <Grid item xs={12}>
-            <Card elevation={3}>
+            <Card elevation={0} sx={{ borderRadius: 3, border: "1px solid #e3e8ef" }}>
               <CardContent sx={{ p: 3 }}>
                 <Typography variant="h6" fontWeight="bold" gutterBottom mb={3}>
                   <Home sx={{ verticalAlign: "middle", mr: 1 }} />
@@ -611,7 +588,7 @@ const CommercialProfilPage = () => {
 
           {/* SECTION 3 : Commission */}
           <Grid item xs={12} md={6}>
-            <Card elevation={3} sx={{ height: "100%" }}>
+            <Card elevation={0} sx={{ height: "100%", borderRadius: 3, border: "1px solid #e3e8ef" }}>
               <CardContent sx={{ p: 3 }}>
                 <Typography variant="h6" fontWeight="bold" gutterBottom mb={3}>
                   <Euro sx={{ verticalAlign: "middle", mr: 1 }} />
@@ -713,7 +690,7 @@ const CommercialProfilPage = () => {
 
           {/* SECTION 4 : Pièce d'identité */}
           <Grid item xs={12} md={6}>
-            <Card elevation={3} sx={{ height: "100%" }}>
+            <Card elevation={0} sx={{ height: "100%", borderRadius: 3, border: "1px solid #e3e8ef" }}>
               <CardContent sx={{ p: 3 }}>
                 <Typography variant="h6" fontWeight="bold" gutterBottom mb={3}>
                   <BadgeIcon sx={{ verticalAlign: "middle", mr: 1 }} />
@@ -770,8 +747,8 @@ const CommercialProfilPage = () => {
                       helperText={
                         pieceIsExpired !== null
                           ? pieceIsExpired
-                            ? "⚠️ Expirée"
-                            : "✓ Valide"
+                            ? "Expirée"
+                            : "Valide"
                           : ""
                       }
                     />
@@ -780,7 +757,7 @@ const CommercialProfilPage = () => {
                   <Grid item xs={12}>
                     <Paper variant="outlined" sx={{ p: 2 }}>
                       <Typography variant="body2" gutterBottom>
-                        📄 Fichier de la pièce
+                        Fichier de la pièce
                       </Typography>
                       <Stack direction="row" spacing={1} flexWrap="wrap">
                         <input

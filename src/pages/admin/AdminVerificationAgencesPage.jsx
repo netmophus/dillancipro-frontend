@@ -20,7 +20,6 @@ import {
   IconButton,
   Tooltip,
   Dialog,
-  DialogTitle,
   DialogContent,
   DialogActions,
   TextField,
@@ -31,6 +30,7 @@ import {
   Checkbox,
   FormControlLabel,
   Pagination,
+  Avatar,
 } from "@mui/material";
 import {
   CheckCircle,
@@ -48,8 +48,46 @@ import {
   CheckBoxOutlineBlank,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import PageLayout from "../../components/shared/PageLayout";
+import PageLayout from "../../components/admin/AdminLayout";
 import api from "../../services/api";
+
+// En-tête de dialogue moderne, coloré, réutilisable
+const DialogHeader = ({ icon: Icon, title, subtitle, color, onClose }) => (
+  <Box
+    sx={{
+      p: 3,
+      background: `linear-gradient(135deg, ${color} 0%, ${color}cc 100%)`,
+      color: "white",
+      position: "relative",
+    }}
+  >
+    <IconButton
+      onClick={onClose}
+      sx={{ position: "absolute", top: 12, right: 12, color: "white", "&:hover": { bgcolor: "rgba(255,255,255,0.15)" } }}
+    >
+      <Close />
+    </IconButton>
+    <Stack direction="row" spacing={2} alignItems="center">
+      <Avatar sx={{ bgcolor: "rgba(255,255,255,0.22)", width: 52, height: 52 }}>
+        <Icon fontSize="large" />
+      </Avatar>
+      <Box>
+        <Typography variant="h6" fontWeight="bold">{title}</Typography>
+        {subtitle && <Typography variant="body2" sx={{ opacity: 0.9 }}>{subtitle}</Typography>}
+      </Box>
+    </Stack>
+  </Box>
+);
+
+// Ligne label / valeur dans un dialogue de détails
+const InfoItem = ({ label, value, highlight }) => (
+  <Box>
+    <Typography variant="caption" color="text.secondary">{label}</Typography>
+    <Typography variant="body1" fontWeight={highlight ? 800 : 600} sx={{ color: highlight ? "#1976d2" : "inherit" }}>
+      {value}
+    </Typography>
+  </Box>
+);
 
 const AdminVerificationAgencesPage = () => {
   const navigate = useNavigate();
@@ -242,13 +280,18 @@ const AdminVerificationAgencesPage = () => {
   return (
     <PageLayout>
       <Container maxWidth="xl" sx={{ py: 4 }}>
-        <Box sx={{ mb: 4 }}>
-          <Typography variant="h4" fontWeight="bold" gutterBottom>
-            ✅ Vérification des Parcelles et Biens des Agences
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Vérifiez les parcelles et biens immobiliers publiés par les agences avant leur publication publique
-          </Typography>
+        <Box sx={{ mb: 4 }} display="flex" alignItems="center" gap={2}>
+          <Avatar sx={{ bgcolor: "#00bcd415", color: "#00897b", width: 60, height: 60 }}>
+            <VerifiedUser fontSize="large" />
+          </Avatar>
+          <Box>
+            <Typography variant="h4" fontWeight="bold">
+              Vérification des agences
+            </Typography>
+            <Typography variant="body1" color="text.secondary">
+              Validez les parcelles et biens publiés par les agences avant leur publication publique
+            </Typography>
+          </Box>
         </Box>
 
         {error && (
@@ -335,7 +378,7 @@ const AdminVerificationAgencesPage = () => {
               <Alert severity="info">Aucune parcelle en attente de vérification</Alert>
             ) : (
               <>
-                <TableContainer component={Paper}>
+                <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 3, border: "1px solid #e3e8ef" }}>
                   <Table>
                     <TableHead>
                       <TableRow>
@@ -474,7 +517,7 @@ const AdminVerificationAgencesPage = () => {
               <Alert severity="info">Aucun bien en attente de vérification</Alert>
             ) : (
               <>
-                <TableContainer component={Paper}>
+                <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 3, border: "1px solid #e3e8ef" }}>
                   <Table>
                     <TableHead>
                       <TableRow>
@@ -574,124 +617,88 @@ const AdminVerificationAgencesPage = () => {
           onClose={() => setDetailsDialog(false)}
           maxWidth="md"
           fullWidth
+          PaperProps={{ sx: { borderRadius: 4, overflow: "hidden" } }}
         >
-          <DialogTitle>
-            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <Typography variant="h6">
-                Détails {itemType === "parcelle" ? "de la Parcelle" : "du Bien"}
-              </Typography>
-              <IconButton onClick={() => setDetailsDialog(false)}>
-                <Close />
-              </IconButton>
-            </Box>
-          </DialogTitle>
-          <DialogContent>
-            {selectedItem && (
-              <Box>
-                {itemType === "parcelle" ? (
-                  <Grid container spacing={2}>
-                    <Grid item xs={12} sm={6}>
-                      <Typography variant="subtitle2" color="text.secondary">Référence</Typography>
-                      <Typography variant="body1" fontWeight="bold">{selectedItem.numeroParcelle}</Typography>
+          {(() => {
+            const isParcelle = itemType === "parcelle";
+            const headColor = isParcelle ? "#2e7d32" : "#5e35b1";
+            const HeadIcon = isParcelle ? Landscape : Home;
+            const fmt = (v) => (v ? new Intl.NumberFormat("fr-FR").format(v) + " FCFA" : "N/A");
+            return (
+              <>
+                <DialogHeader
+                  icon={HeadIcon}
+                  title={isParcelle ? "Détails de la parcelle" : "Détails du bien"}
+                  subtitle={isParcelle ? selectedItem?.numeroParcelle : selectedItem?.titre}
+                  color={headColor}
+                  onClose={() => setDetailsDialog(false)}
+                />
+                <DialogContent sx={{ p: 3 }}>
+                  {selectedItem && (
+                    <Grid container spacing={2.5}>
+                      {isParcelle ? (
+                        <>
+                          <Grid item xs={12} sm={6}><InfoItem label="Référence" value={selectedItem.numeroParcelle || "N/A"} /></Grid>
+                          <Grid item xs={12} sm={6}><InfoItem label="Agence" value={selectedItem.agenceId?.nom || "N/A"} /></Grid>
+                          <Grid item xs={12} sm={6}><InfoItem label="Îlot" value={`Îlot ${selectedItem.ilot?.numeroIlot || "N/A"}`} /></Grid>
+                          <Grid item xs={12} sm={6}><InfoItem label="Superficie" value={`${selectedItem.superficie || 0} m²`} /></Grid>
+                          <Grid item xs={12} sm={6}><InfoItem label="Prix" value={fmt(selectedItem.prix)} highlight /></Grid>
+                          <Grid item xs={12} sm={6}>
+                            <Typography variant="caption" color="text.secondary">Statut</Typography>
+                            <Box><Chip label={selectedItem.statut || "avendre"} size="small" sx={{ mt: 0.5 }} /></Box>
+                          </Grid>
+                          {selectedItem.description && (
+                            <Grid item xs={12}><InfoItem label="Description" value={selectedItem.description} /></Grid>
+                          )}
+                        </>
+                      ) : (
+                        <>
+                          <Grid item xs={12} sm={6}><InfoItem label="Titre" value={selectedItem.titre || "N/A"} /></Grid>
+                          <Grid item xs={12} sm={6}><InfoItem label="Agence" value={selectedItem.agenceId?.nom || "N/A"} /></Grid>
+                          <Grid item xs={12} sm={6}><InfoItem label="Type" value={selectedItem.type || "N/A"} /></Grid>
+                          <Grid item xs={12} sm={6}><InfoItem label="Référence" value={selectedItem.reference || "N/A"} /></Grid>
+                          <Grid item xs={12} sm={6}><InfoItem label="Superficie" value={`${selectedItem.superficie || 0} m²`} /></Grid>
+                          <Grid item xs={12} sm={6}><InfoItem label="Prix" value={fmt(selectedItem.prix)} highlight /></Grid>
+                          <Grid item xs={12} sm={6}>
+                            <Typography variant="caption" color="text.secondary">Statut</Typography>
+                            <Box><Chip label={selectedItem.statut || "disponible"} size="small" sx={{ mt: 0.5 }} /></Box>
+                          </Grid>
+                          {selectedItem.localisation?.ville && (
+                            <Grid item xs={12} sm={6}><InfoItem label="Ville" value={selectedItem.localisation.ville} /></Grid>
+                          )}
+                          {selectedItem.description && (
+                            <Grid item xs={12}><InfoItem label="Description" value={selectedItem.description} /></Grid>
+                          )}
+                        </>
+                      )}
                     </Grid>
-                    <Grid item xs={12} sm={6}>
-                      <Typography variant="subtitle2" color="text.secondary">Agence</Typography>
-                      <Typography variant="body1">{selectedItem.agenceId?.nom || "N/A"}</Typography>
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                      <Typography variant="subtitle2" color="text.secondary">Îlot</Typography>
-                      <Typography variant="body1">Îlot {selectedItem.ilot?.numeroIlot || "N/A"}</Typography>
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                      <Typography variant="subtitle2" color="text.secondary">Superficie</Typography>
-                      <Typography variant="body1">{selectedItem.superficie || 0} m²</Typography>
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                      <Typography variant="subtitle2" color="text.secondary">Prix</Typography>
-                      <Typography variant="body1" color="primary" fontWeight="bold">
-                        {selectedItem.prix ? new Intl.NumberFormat("fr-FR").format(selectedItem.prix) + " FCFA" : "N/A"}
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                      <Typography variant="subtitle2" color="text.secondary">Statut</Typography>
-                      <Chip label={selectedItem.statut || "avendre"} size="small" />
-                    </Grid>
-                    {selectedItem.description && (
-                      <Grid item xs={12}>
-                        <Typography variant="subtitle2" color="text.secondary">Description</Typography>
-                        <Typography variant="body2">{selectedItem.description}</Typography>
-                      </Grid>
-                    )}
-                  </Grid>
-                ) : (
-                  <Grid container spacing={2}>
-                    <Grid item xs={12} sm={6}>
-                      <Typography variant="subtitle2" color="text.secondary">Titre</Typography>
-                      <Typography variant="body1" fontWeight="bold">{selectedItem.titre}</Typography>
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                      <Typography variant="subtitle2" color="text.secondary">Agence</Typography>
-                      <Typography variant="body1">{selectedItem.agenceId?.nom || "N/A"}</Typography>
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                      <Typography variant="subtitle2" color="text.secondary">Type</Typography>
-                      <Typography variant="body1">{selectedItem.type || "N/A"}</Typography>
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                      <Typography variant="subtitle2" color="text.secondary">Référence</Typography>
-                      <Typography variant="body1">{selectedItem.reference || "N/A"}</Typography>
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                      <Typography variant="subtitle2" color="text.secondary">Superficie</Typography>
-                      <Typography variant="body1">{selectedItem.superficie || 0} m²</Typography>
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                      <Typography variant="subtitle2" color="text.secondary">Prix</Typography>
-                      <Typography variant="body1" color="primary" fontWeight="bold">
-                        {selectedItem.prix ? new Intl.NumberFormat("fr-FR").format(selectedItem.prix) + " FCFA" : "N/A"}
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                      <Typography variant="subtitle2" color="text.secondary">Statut</Typography>
-                      <Chip label={selectedItem.statut || "disponible"} size="small" />
-                    </Grid>
-                    {selectedItem.localisation?.ville && (
-                      <Grid item xs={12} sm={6}>
-                        <Typography variant="subtitle2" color="text.secondary">Ville</Typography>
-                        <Typography variant="body1">{selectedItem.localisation.ville}</Typography>
-                      </Grid>
-                    )}
-                    {selectedItem.description && (
-                      <Grid item xs={12}>
-                        <Typography variant="subtitle2" color="text.secondary">Description</Typography>
-                        <Typography variant="body2">{selectedItem.description}</Typography>
-                      </Grid>
-                    )}
-                  </Grid>
-                )}
-              </Box>
-            )}
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setDetailsDialog(false)}>Fermer</Button>
-            {selectedItem && (
-              <Button
-                variant="contained"
-                color="success"
-                startIcon={<CheckCircle />}
-                onClick={() => {
-                  if (itemType === "parcelle") {
-                    handleVerifyParcelle(selectedItem._id);
-                  } else {
-                    handleVerifyBien(selectedItem._id);
-                  }
-                  setDetailsDialog(false);
-                }}
-              >
-                Vérifier
-              </Button>
-            )}
-          </DialogActions>
+                  )}
+                </DialogContent>
+                <DialogActions sx={{ px: 3, pb: 3, pt: 1 }}>
+                  <Button onClick={() => setDetailsDialog(false)} color="inherit" sx={{ borderRadius: 2 }}>
+                    Fermer
+                  </Button>
+                  {selectedItem && (
+                    <Button
+                      variant="contained"
+                      startIcon={<CheckCircle />}
+                      onClick={() => {
+                        if (isParcelle) {
+                          handleVerifyParcelle(selectedItem._id);
+                        } else {
+                          handleVerifyBien(selectedItem._id);
+                        }
+                        setDetailsDialog(false);
+                      }}
+                      sx={{ borderRadius: 2, px: 3, bgcolor: "#2e7d32", boxShadow: "none", "&:hover": { bgcolor: "#1b5e20", boxShadow: "none" } }}
+                    >
+                      Vérifier
+                    </Button>
+                  )}
+                </DialogActions>
+              </>
+            );
+          })()}
         </Dialog>
       </Container>
     </PageLayout>

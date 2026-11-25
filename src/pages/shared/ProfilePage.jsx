@@ -8,7 +8,7 @@ import {
   Card,
   CardContent,
   Avatar,
-  Grid,
+  GridLegacy as Grid,
   Divider,
   Alert,
   Snackbar,
@@ -35,6 +35,7 @@ import {
   VerifiedUser,
 } from "@mui/icons-material";
 import PageLayout from "../../components/shared/PageLayout";
+import SectionCard from "../../components/admin/SectionCard";
 import { useAuth } from "../../contexts/AuthContext";
 import api from "../../services/api";
 
@@ -195,11 +196,13 @@ const ProfilePage = () => {
       <Container maxWidth="md" sx={{ py: 4 }}>
         {/* En-tête avec avatar */}
         <Card
-          elevation={3}
+          elevation={0}
           sx={{
             mb: 4,
-            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            bgcolor: "#3030F9",
             color: "white",
+            borderRadius: 4,
+            boxShadow: "0 2px 8px rgba(15,23,42,0.05)",
           }}
         >
           <CardContent sx={{ p: 4 }}>
@@ -267,16 +270,15 @@ const ProfilePage = () => {
                       icon={<VerifiedUser />}
                       label={user?.role}
                       size="small"
-                      color="success"
+                      sx={{ bgcolor: "#0A7C4F", color: "white", "& .MuiChip-icon": { color: "white" } }}
                     />
                   </Stack>
                   {editMode && photoFile && (
                     <Chip
                       label="Nouvelle photo sélectionnée"
                       size="small"
-                      color="success"
                       icon={<CheckCircle />}
-                      sx={{ mt: 1 }}
+                      sx={{ mt: 1, bgcolor: "#0A7C4F", color: "white", "& .MuiChip-icon": { color: "white" } }}
                     />
                   )}
                 </Box>
@@ -314,7 +316,7 @@ const ProfilePage = () => {
                   backgroundColor: "rgba(255,255,255,0.3)",
                   "& .MuiLinearProgress-bar": {
                     borderRadius: 5,
-                    background: "linear-gradient(90deg, #4caf50 0%, #8bc34a 100%)",
+                    backgroundColor: "#0A7C4F",
                   },
                 }}
               />
@@ -323,30 +325,29 @@ const ProfilePage = () => {
         </Card>
 
         {/* Formulaire de profil */}
-        <Card elevation={3}>
-          <CardContent sx={{ p: 4 }}>
-            <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-              <Typography variant="h5" fontWeight="bold">
-                {isEditing ? "Informations personnelles" : "Créer votre profil"}
-              </Typography>
-              {!isEditing && (
-                <Chip
-                  label="Nouveau profil"
-                  color="primary"
-                  icon={<Person />}
-                />
-              )}
-            </Box>
-
-            <Divider sx={{ mb: 3 }} />
-
+        <SectionCard
+          title={isEditing ? "Informations personnelles" : "Créer votre profil"}
+          color="#3030F9"
+          icon="person"
+          sx={{ mb: 0, "& legend": { display: "none" } }}
+          action={
+            !isEditing && (
+              <Chip
+                label="Nouveau profil"
+                color="primary"
+                icon={<Person />}
+              />
+            )
+          }
+        >
             <Box component="form" onSubmit={handleSubmit}>
               <Grid container spacing={3}>
                 {/* Nom complet */}
                 <Grid item xs={12}>
                   <TextField
                     fullWidth
-                    label="Nom complet"
+                    inputProps={{ "aria-label": "Nom complet", title: "Nom complet" }}
+                    placeholder="Nom complet *"
                     name="fullName"
                     value={profile.fullName}
                     onChange={handleChange}
@@ -365,7 +366,8 @@ const ProfilePage = () => {
                 <Grid item xs={12}>
                   <TextField
                     fullWidth
-                    label="Email"
+                    inputProps={{ "aria-label": "Email", title: "Email" }}
+                    placeholder="Email"
                     name="email"
                     type="email"
                     value={profile.email}
@@ -385,7 +387,8 @@ const ProfilePage = () => {
                 <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
-                    label="Région"
+                    inputProps={{ "aria-label": "Région", title: "Région" }}
+                    placeholder="Région"
                     name="region"
                     value={profile.region}
                     onChange={handleChange}
@@ -402,7 +405,8 @@ const ProfilePage = () => {
                 <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
-                    label="Ville"
+                    inputProps={{ "aria-label": "Ville", title: "Ville" }}
+                    placeholder="Ville"
                     name="ville"
                     value={profile.ville}
                     onChange={handleChange}
@@ -420,7 +424,8 @@ const ProfilePage = () => {
                 <Grid item xs={12}>
                   <TextField
                     fullWidth
-                    label="Fonction / Profession"
+                    inputProps={{ "aria-label": "Fonction / Profession", title: "Fonction / Profession" }}
+                    placeholder="Fonction / Profession"
                     name="fonction"
                     value={profile.fonction}
                     onChange={handleChange}
@@ -461,14 +466,13 @@ const ProfilePage = () => {
                 </Box>
               )}
             </Box>
-          </CardContent>
-        </Card>
+        </SectionCard>
 
         {/* Informations supplémentaires */}
         {isEditing && !editMode && (
-          <Paper elevation={2} sx={{ p: 3, mt: 3, bgcolor: "info.light" }}>
-            <Typography variant="body2" color="info.dark">
-              💡 <strong>Astuce :</strong> Gardez votre profil à jour pour une meilleure expérience. 
+          <Paper elevation={0} sx={{ p: 3, mt: 3, borderRadius: 4, bgcolor: "rgba(48,48,249,0.07)", border: "1.5px solid rgba(48,48,249,0.3)" }}>
+            <Typography variant="body2" sx={{ color: "#0e1133" }}>
+              <strong>Astuce :</strong> Gardez votre profil à jour pour une meilleure expérience. 
               Un profil complet facilite la communication et les transactions.
             </Typography>
           </Paper>

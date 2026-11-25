@@ -23,15 +23,22 @@
 import React from "react";
 import AppRoutes from "./routes/AppRoutes";
 import { AuthProvider } from "./contexts/AuthContext";
-import { Box } from "@mui/material";
+import { Box, GlobalStyles } from "@mui/material";
+import { ThemeProvider } from "@mui/material/styles";
+import theme from "./theme";
 
 const App = () => {
   return (
-    <Box sx={{ backgroundColor: "#e3f2fd", minHeight: "100vh" }}>
-      <AuthProvider>
-        <AppRoutes />
-      </AuthProvider>
-    </Box>
+    <ThemeProvider theme={theme}>
+      <GlobalStyles
+        styles={{ body: { fontFamily: theme.typography.fontFamily } }}
+      />
+      <Box sx={{ backgroundColor: "#f5f7fa", minHeight: "100vh" }}>
+        <AuthProvider>
+          <AppRoutes />
+        </AuthProvider>
+      </Box>
+    </ThemeProvider>
   );
 };
 

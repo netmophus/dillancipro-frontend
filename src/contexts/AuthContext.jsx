@@ -55,7 +55,15 @@ export const AuthProvider = ({ children }) => {
     const savedUser = localStorage.getItem("user");
 
     if (savedToken) setToken(savedToken);
-    if (savedUser) setUser(JSON.parse(savedUser));
+    if (savedUser) {
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch (error) {
+        console.warn("AuthContext - valeur 'user' corrompue dans le localStorage, réinitialisation :", error);
+        localStorage.removeItem("user");
+        localStorage.removeItem("token");
+      }
+    }
   }, []);
 
   const login = (token, user) => {

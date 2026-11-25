@@ -4,7 +4,7 @@ import {
   Typography,
   Box,
   TextField,
-  Grid,
+  GridLegacy as Grid,
   Button,
   Paper,
   Stack,
@@ -23,7 +23,6 @@ import {
   IconButton,
   Tooltip,
   Dialog,
-  DialogTitle,
   DialogContent,
   DialogActions,
   InputAdornment,
@@ -31,6 +30,7 @@ import {
   Snackbar,
   Switch,
   FormControlLabel,
+  Avatar,
 } from "@mui/material";
 import {
   AccountBalance,
@@ -50,10 +50,42 @@ import {
   LocationOn,
   Map as MapIcon,
 } from "@mui/icons-material";
+import { AccountBalance as FIAccountBalance, Checklist as FIChecklist, Image as FIImage, Notes as FINotes, Numbers as FINumbers } from "@mui/icons-material";
 
 import api from "../../services/api";
-import PageLayout from "../../components/shared/PageLayout";
+import PageLayout from "../../components/admin/AdminLayout";
+import FormSection from "../../components/admin/SectionCard";
 import { useNavigate } from "react-router-dom";
+
+// En-tête de dialogue moderne, coloré, réutilisable
+const DialogHeader = ({ icon: Icon, title, subtitle, color, onClose }) => (
+  <Box
+    sx={{
+      p: 3,
+      background: color,
+      color: "white",
+      position: "relative",
+    }}
+  >
+    <IconButton
+      onClick={onClose}
+      sx={{ position: "absolute", top: 12, right: 12, color: "white", "&:hover": { bgcolor: "rgba(255,255,255,0.15)" } }}
+    >
+      <Close />
+    </IconButton>
+    <Stack direction="row" spacing={2} alignItems="center">
+      <Avatar sx={{ bgcolor: "rgba(255,255,255,0.22)", width: 52, height: 52 }}>
+        <Icon fontSize="large" />
+      </Avatar>
+      <Box>
+        <Typography variant="h6" fontWeight="bold">{title}</Typography>
+        {subtitle && <Typography variant="body2" sx={{ opacity: 0.9 }}>{subtitle}</Typography>}
+      </Box>
+    </Stack>
+  </Box>
+);
+
+const FIELD_SX = { "& .MuiOutlinedInput-root": { borderRadius: 2.5 } };
 
 const AdminBanqueManagementPage = () => {
   const navigate = useNavigate();
@@ -63,6 +95,7 @@ const AdminBanqueManagementPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingBanque, setEditingBanque] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   const [formData, setFormData] = useState({
     nom: "",
@@ -220,13 +253,13 @@ const AdminBanqueManagementPage = () => {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Êtes-vous sûr de vouloir supprimer cette banque ?")) return;
-    
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
     try {
       setLoading(true);
-      await api.delete(`/admin/banques/${id}`);
+      await api.delete(`/admin/banques/${deleteTarget._id}`);
       setSuccess("Banque supprimée avec succès");
+      setDeleteTarget(null);
       fetchBanques();
     } catch (err) {
       console.error("Erreur suppression banque:", err);
@@ -251,12 +284,21 @@ const AdminBanqueManagementPage = () => {
           >
             Retour au tableau de bord
           </Button>
-          <Typography variant="h4" fontWeight="bold" gutterBottom>
-            🏦 Gestion des Banques Partenaires
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Gérez les informations des banques partenaires affichées sur la page d'accueil
-          </Typography>
+          <Paper elevation={0} sx={{ background: "#3030F9", p: 4, borderRadius: 3, color: "white" }}>
+            <Box display="flex" alignItems="center" gap={2}>
+              <Avatar sx={{ bgcolor: "rgba(255,255,255,0.2)", color: "white", width: 60, height: 60 }}>
+                <AccountBalance fontSize="large" />
+              </Avatar>
+              <Box>
+                <Typography variant="h4" fontWeight="bold">
+                  Gestion des banques partenaires
+                </Typography>
+                <Typography variant="body1" sx={{ opacity: 0.9 }}>
+                  Gérez les banques partenaires affichées sur la page d'accueil
+                </Typography>
+              </Box>
+            </Box>
+          </Paper>
         </Box>
 
         {error && (
@@ -277,8 +319,8 @@ const AdminBanqueManagementPage = () => {
           </Snackbar>
         )}
 
-        <Paper sx={{ p: 3, mb: 3 }}>
-          <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+        <Paper elevation={0} sx={{ p: 3, mb: 3, borderRadius: 3, border: "1px solid #e3e8ef" }}>
+          <Box display="flex" justifyContent="space-between" alignItems="center" mb={2} gap={2} flexWrap="wrap">
             <TextField
               placeholder="Rechercher une banque..."
               value={searchTerm}
@@ -291,12 +333,13 @@ const AdminBanqueManagementPage = () => {
                   </InputAdornment>
                 ),
               }}
-              sx={{ width: 300 }}
+              sx={{ width: 300, ...FIELD_SX }}
             />
             <Button
               variant="contained"
               startIcon={<Add />}
               onClick={() => handleOpenDialog()}
+              sx={{ borderRadius: 2, bgcolor: "#3030F9", boxShadow: "none", "&:hover": { bgcolor: "#2020C8", boxShadow: "none" } }}
             >
               Ajouter une banque
             </Button>
@@ -313,7 +356,7 @@ const AdminBanqueManagementPage = () => {
               </Typography>
             </Box>
           ) : (
-            <TableContainer>
+            <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 2, border: "1px solid #eef2f7" }}>
               <Table>
                 <TableHead>
                   <TableRow>
@@ -342,13 +385,13 @@ const AdminBanqueManagementPage = () => {
                       <TableCell>
                         <Box>
                           {banque.contact?.telephone && (
-                            <Typography variant="caption" display="block">
-                              📞 {banque.contact.telephone}
+                            <Typography variant="caption" display="flex" alignItems="center" gap={0.5}>
+                              <Phone sx={{ fontSize: 14 }} /> {banque.contact.telephone}
                             </Typography>
                           )}
                           {banque.contact?.email && (
-                            <Typography variant="caption" display="block">
-                              ✉️ {banque.contact.email}
+                            <Typography variant="caption" display="flex" alignItems="center" gap={0.5}>
+                              <Email sx={{ fontSize: 14 }} /> {banque.contact.email}
                             </Typography>
                           )}
                         </Box>
@@ -358,6 +401,7 @@ const AdminBanqueManagementPage = () => {
                           label={banque.actif ? "Actif" : "Inactif"}
                           color={banque.actif ? "success" : "default"}
                           size="small"
+                          sx={banque.actif ? { bgcolor: "#0A7C4F", color: "white" } : undefined}
                         />
                       </TableCell>
                       <TableCell>{banque.ordre}</TableCell>
@@ -375,7 +419,7 @@ const AdminBanqueManagementPage = () => {
                           <IconButton
                             size="small"
                             color="error"
-                            onClick={() => handleDelete(banque._id)}
+                            onClick={() => setDeleteTarget(banque)}
                           >
                             <Delete />
                           </IconButton>
@@ -396,44 +440,66 @@ const AdminBanqueManagementPage = () => {
           maxWidth="md"
           fullWidth
           PaperProps={{
-            sx: { maxHeight: "90vh" },
+            sx: { maxHeight: "90vh", borderRadius: 4, overflow: "hidden" },
           }}
         >
-          <DialogTitle>
-            <Box display="flex" justifyContent="space-between" alignItems="center">
-              <Typography variant="h6" fontWeight="bold">
-                {editingBanque ? "Modifier la banque" : "Nouvelle banque"}
-              </Typography>
-              <IconButton onClick={handleCloseDialog} size="small">
-                <Close />
-              </IconButton>
-            </Box>
-          </DialogTitle>
-          <DialogContent dividers>
-            <Stack spacing={3}>
-              <Grid container spacing={2}>
-                <Grid item xs={12}>
-                  <TextField
-                    label="Nom de la banque *"
+          <DialogHeader
+            icon={AccountBalance}
+            title={editingBanque ? "Modifier la banque" : "Nouvelle banque"}
+            subtitle={editingBanque ? editingBanque.nom : "Banque partenaire"}
+            color="#3030F9"
+            onClose={handleCloseDialog}
+          />
+          <DialogContent dividers sx={{ p: 3 }}>
+            <Stack spacing={3} sx={{ ...FIELD_SX, "& legend": { display: "none" } }}>
+              <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" }, gap: 3 }}>
+<FormSection icon="info" sx={{ mb: 0, minWidth: 0, gridColumn: { md: "1 / -1" } }} title="Informations" color="#3030F9">
+<Grid container spacing={2}>
+<Grid item xs={12} md={6}>
+<TextField
+inputProps={{ "aria-label": "Nom de la banque", title: "Nom de la banque" }}
+placeholder="Nom de la banque *"
+InputProps={{
+  startAdornment: (
+    <InputAdornment position="start">
+      <FIAccountBalance color="action" />
+    </InputAdornment>
+  ),
+}}
                     fullWidth
                     value={formData.nom}
                     onChange={(e) => setFormData({ ...formData, nom: e.target.value })}
                     required
                   />
                 </Grid>
-                <Grid item xs={12}>
+                <Grid item xs={12} md={6}>
                   <TextField
-                    label="Services (description courte) *"
+                    inputProps={{ "aria-label": "Services", title: "Services" }}
+                    placeholder="Services (ex. Crédit immobilier) *"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <FIChecklist color="action" />
+                        </InputAdornment>
+                      ),
+                    }}
                     fullWidth
                     value={formData.services}
                     onChange={(e) => setFormData({ ...formData, services: e.target.value })}
                     required
-                    placeholder="Ex: Financement immobilier"
                   />
                 </Grid>
                 <Grid item xs={12}>
                   <TextField
-                    label="Description *"
+                    inputProps={{ "aria-label": "Description", title: "Description" }}
+                    placeholder="Description *"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start" sx={{ alignSelf: "flex-start", mt: 1.5 }}>
+                          <FINotes color="action" />
+                        </InputAdornment>
+                      ),
+                    }}
                     fullWidth
                     multiline
                     rows={3}
@@ -442,12 +508,11 @@ const AdminBanqueManagementPage = () => {
                     required
                   />
                 </Grid>
+</Grid>
+</FormSection>
 
-                {/* Produits */}
-                <Grid item xs={12}>
-                  <Typography variant="subtitle1" fontWeight="bold" mb={1}>
-                    💼 Produits et Services
-                  </Typography>
+{/* Produits */}
+<FormSection icon="inventory" sx={{ mb: 0, minWidth: 0 }} title="Produits et services" color="#0A7C4F">
                   <Box display="flex" gap={1} mb={2}>
                     <TextField
                       placeholder="Ajouter un produit..."
@@ -462,7 +527,7 @@ const AdminBanqueManagementPage = () => {
                       }}
                       sx={{ flex: 1 }}
                     />
-                    <Button variant="outlined" onClick={handleAddProduit}>
+                    <Button variant="outlined" onClick={handleAddProduit} sx={{ borderRadius: 2 }}>
                       Ajouter
                     </Button>
                   </Box>
@@ -474,12 +539,13 @@ const AdminBanqueManagementPage = () => {
                           display: "flex",
                           alignItems: "center",
                           gap: 1,
-                          p: 1,
-                          bgcolor: "grey.50",
-                          borderRadius: 1,
+                          p: 1.25,
+                          bgcolor: "rgba(10,124,79,0.06)",
+                          border: "1px solid rgba(10,124,79,0.2)",
+                          borderRadius: 2,
                         }}
                       >
-                        <CheckCircle sx={{ color: "primary.main", fontSize: 20 }} />
+                        <CheckCircle sx={{ color: "#0A7C4F", fontSize: 20 }} />
                         <Typography sx={{ flex: 1 }}>{produit}</Typography>
                         <IconButton
                           size="small"
@@ -490,13 +556,10 @@ const AdminBanqueManagementPage = () => {
                       </Box>
                     ))}
                   </Stack>
-                </Grid>
+</FormSection>
 
-                {/* Avantages */}
-                <Grid item xs={12}>
-                  <Typography variant="subtitle1" fontWeight="bold" mb={1}>
-                    ✨ Avantages
-                  </Typography>
+{/* Avantages */}
+<FormSection icon="star" sx={{ mb: 0, minWidth: 0 }} title="Avantages" color="#0A7C4F">
                   <Box display="flex" gap={1} mb={2}>
                     <TextField
                       placeholder="Ajouter un avantage..."
@@ -511,7 +574,7 @@ const AdminBanqueManagementPage = () => {
                       }}
                       sx={{ flex: 1 }}
                     />
-                    <Button variant="outlined" onClick={handleAddAvantage}>
+                    <Button variant="outlined" onClick={handleAddAvantage} sx={{ borderRadius: 2 }}>
                       Ajouter
                     </Button>
                   </Box>
@@ -523,12 +586,13 @@ const AdminBanqueManagementPage = () => {
                           display: "flex",
                           alignItems: "center",
                           gap: 1,
-                          p: 1,
-                          bgcolor: "success.50",
-                          borderRadius: 1,
+                          p: 1.25,
+                          bgcolor: "rgba(10,124,79,0.06)",
+                          border: "1px solid rgba(10,124,79,0.2)",
+                          borderRadius: 2,
                         }}
                       >
-                        <Star sx={{ color: "success.main", fontSize: 20 }} />
+                        <Star sx={{ color: "#0A7C4F", fontSize: 20 }} />
                         <Typography sx={{ flex: 1 }}>{avantage}</Typography>
                         <IconButton
                           size="small"
@@ -538,19 +602,16 @@ const AdminBanqueManagementPage = () => {
                         </IconButton>
                       </Box>
                     ))}
-                  </Stack>
-                </Grid>
+</Stack>
+</FormSection>
 
-                {/* Contact */}
-                <Grid item xs={12}>
-                  <Divider sx={{ my: 2 }} />
-                  <Typography variant="subtitle1" fontWeight="bold" mb={2}>
-                    📞 Contact
-                  </Typography>
+{/* Contact */}
+<FormSection icon="phone" sx={{ mb: 0, minWidth: 0, gridColumn: { md: "1 / -1" } }} title="Contact" color="#0e1133">
                   <Grid container spacing={2}>
                     <Grid item xs={12} sm={4}>
                       <TextField
-                        label="Téléphone"
+                        inputProps={{ "aria-label": "Téléphone", title: "Téléphone" }}
+                        placeholder="Téléphone"
                         fullWidth
                         value={formData.contact.telephone}
                         onChange={(e) =>
@@ -570,7 +631,8 @@ const AdminBanqueManagementPage = () => {
                     </Grid>
                     <Grid item xs={12} sm={4}>
                       <TextField
-                        label="Email"
+                        inputProps={{ "aria-label": "Email", title: "Email" }}
+                        placeholder="Email"
                         fullWidth
                         type="email"
                         value={formData.contact.email}
@@ -591,7 +653,8 @@ const AdminBanqueManagementPage = () => {
                     </Grid>
                     <Grid item xs={12} sm={4}>
                       <TextField
-                        label="Site Web"
+                        inputProps={{ "aria-label": "Site Web", title: "Site Web" }}
+                        placeholder="Site Web (www.exemple.com)"
                         fullWidth
                         value={formData.contact.siteWeb}
                         onChange={(e) =>
@@ -607,22 +670,18 @@ const AdminBanqueManagementPage = () => {
                             </InputAdornment>
                           ),
                         }}
-                        placeholder="www.exemple.com"
                       />
                     </Grid>
-                  </Grid>
-                </Grid>
+</Grid>
+</FormSection>
 
-                {/* Adresse et Géolocalisation */}
-                <Grid item xs={12}>
-                  <Divider sx={{ my: 2 }} />
-                  <Typography variant="subtitle1" fontWeight="bold" mb={2}>
-                    📍 Adresse et Géolocalisation
-                  </Typography>
+{/* Adresse et Géolocalisation */}
+<FormSection icon="location" sx={{ mb: 0, minWidth: 0, gridColumn: { md: "1 / -1" } }} title="Adresse et géolocalisation" color="#3030F9">
                   <Grid container spacing={2}>
                     <Grid item xs={12}>
                       <TextField
-                        label="Adresse complète"
+                        inputProps={{ "aria-label": "Adresse complète", title: "Adresse complète" }}
+                        placeholder="Adresse complète (ex. Niamey, Niger)"
                         fullWidth
                         multiline
                         rows={2}
@@ -635,12 +694,12 @@ const AdminBanqueManagementPage = () => {
                             </InputAdornment>
                           ),
                         }}
-                        placeholder="Ex: Avenue de la République, Niamey, Niger"
                       />
                     </Grid>
                     <Grid item xs={12} sm={6}>
                       <TextField
-                        label="Latitude"
+                        inputProps={{ "aria-label": "Latitude", title: "Latitude" }}
+                        placeholder="Latitude (ex. 13.5139)"
                         fullWidth
                         type="number"
                         value={formData.localisation.latitude}
@@ -660,13 +719,13 @@ const AdminBanqueManagementPage = () => {
                             </InputAdornment>
                           ),
                         }}
-                        placeholder="Ex: 13.5139"
                         helperText="Coordonnée GPS latitude"
                       />
                     </Grid>
                     <Grid item xs={12} sm={6}>
                       <TextField
-                        label="Longitude"
+                        inputProps={{ "aria-label": "Longitude", title: "Longitude" }}
+                        placeholder="Longitude (ex. 2.1098)"
                         fullWidth
                         type="number"
                         value={formData.localisation.longitude}
@@ -686,7 +745,6 @@ const AdminBanqueManagementPage = () => {
                             </InputAdornment>
                           ),
                         }}
-                        placeholder="Ex: 2.1098"
                         helperText="Coordonnée GPS longitude"
                       />
                     </Grid>
@@ -704,22 +762,40 @@ const AdminBanqueManagementPage = () => {
                         </Button>
                       </Grid>
                     )}
-                  </Grid>
-                </Grid>
+</Grid>
+</FormSection>
 
-                {/* Autres champs */}
+{/* Autres champs */}
+<FormSection icon="visibility" sx={{ mb: 0, minWidth: 0, gridColumn: { md: "1 / -1" } }} title="Affichage" color="#0e1133">
+<Grid container spacing={2}>
                 <Grid item xs={12} sm={6}>
                   <TextField
-                    label="Logo (URL)"
+                    inputProps={{ "aria-label": "Logo (URL)", title: "Logo (URL)" }}
+                    placeholder="Logo (URL, ex. https://...)"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <FIImage color="action" />
+                        </InputAdornment>
+                      ),
+                    }}
                     fullWidth
                     value={formData.logo}
                     onChange={(e) => setFormData({ ...formData, logo: e.target.value })}
-                    placeholder="https://..."
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <TextField
-                    label="Ordre d'affichage"
+                    inputProps={{ "aria-label": "Ordre d'affichage", title: "Ordre d'affichage" }}
+                    placeholder="Ordre d'affichage"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <FINumbers color="action" />
+                          <Typography variant="body2" color="text.secondary" sx={{ ml: 1 }}>Ordre d'affichage</Typography>
+                        </InputAdornment>
+                      ),
+                    }}
                     fullWidth
                     type="number"
                     value={formData.ordre}
@@ -738,17 +814,62 @@ const AdminBanqueManagementPage = () => {
                     label="Banque active (affichée sur la page d'accueil)"
                   />
                 </Grid>
-              </Grid>
-            </Stack>
+</Grid>
+</FormSection>
+</Box>
+</Stack>
           </DialogContent>
-          <DialogActions sx={{ p: 2 }}>
-            <Button onClick={handleCloseDialog}>Annuler</Button>
+          <DialogActions sx={{ px: 3, py: 2.5 }}>
+            <Button onClick={handleCloseDialog} color="inherit" sx={{ borderRadius: 2 }}>
+              Annuler
+            </Button>
             <Button
               variant="contained"
               onClick={handleSubmit}
               disabled={loading || !formData.nom || !formData.services || !formData.description}
+              startIcon={loading ? <CircularProgress size={18} color="inherit" /> : <CheckCircle />}
+              sx={{ borderRadius: 2, px: 3, bgcolor: "#3030F9", boxShadow: "none", "&:hover": { bgcolor: "#2020C8", boxShadow: "none" } }}
             >
-              {loading ? "Enregistrement..." : editingBanque ? "Modifier" : "Créer"}
+              {loading ? "Enregistrement..." : editingBanque ? "Enregistrer" : "Créer"}
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Dialog : confirmation suppression */}
+        <Dialog
+          open={!!deleteTarget}
+          onClose={() => setDeleteTarget(null)}
+          maxWidth="xs"
+          fullWidth
+          PaperProps={{ sx: { borderRadius: 4, overflow: "hidden" } }}
+        >
+          <DialogHeader
+            icon={Delete}
+            title="Confirmer la suppression"
+            subtitle="Action irréversible"
+            color="#e53935"
+            onClose={() => setDeleteTarget(null)}
+          />
+          <DialogContent sx={{ p: 3 }}>
+            <Typography variant="body2">
+              Voulez-vous vraiment supprimer la banque <strong>{deleteTarget?.nom}</strong> ?
+            </Typography>
+            <Alert severity="error" sx={{ mt: 2, borderRadius: 2 }}>
+              Cette action est irréversible.
+            </Alert>
+          </DialogContent>
+          <DialogActions sx={{ px: 3, pb: 3, pt: 0 }}>
+            <Button onClick={() => setDeleteTarget(null)} color="inherit" sx={{ borderRadius: 2 }}>
+              Annuler
+            </Button>
+            <Button
+              onClick={handleDelete}
+              variant="contained"
+              startIcon={<Delete />}
+              disabled={loading}
+              sx={{ borderRadius: 2, px: 3, bgcolor: "#e53935", boxShadow: "none", "&:hover": { bgcolor: "#c62828", boxShadow: "none" } }}
+            >
+              Supprimer
             </Button>
           </DialogActions>
         </Dialog>

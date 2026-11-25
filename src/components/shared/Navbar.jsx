@@ -37,7 +37,7 @@ import {
   Instagram,
   Gavel,
 } from "@mui/icons-material";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import AgenceMenu from "../agence/AgenceMenu";
 import NotificationPanel from "./NotificationPanel";
@@ -45,6 +45,8 @@ import NotificationPanel from "./NotificationPanel";
 const Navbar = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  // Le logo ne déborde sous la barre que sur la page d'accueil (hero bleu)
+  const isHome = useLocation().pathname === "/";
   const [anchorEl, setAnchorEl] = useState(null);
   const [mobileMenuAnchor, setMobileMenuAnchor] = useState(null);
   const [notificationPanelOpen, setNotificationPanelOpen] = useState(false);
@@ -275,20 +277,45 @@ const Navbar = () => {
       <AppBar
         position="sticky"
         sx={{
-          background: "linear-gradient(135deg, #0D2B4E 0%, #1B5285 100%)",
+          background: "#0e1133",
           boxShadow: "0 4px 20px rgba(13,43,78,0.35)",
+          overflow: "visible",
         }}
       >
         <Toolbar
           sx={{
             minHeight: { xs: 60, md: 72 },
             px: { xs: 1.5, sm: 3 },
+            overflow: "visible",
           }}
         >
-        {/* Logo CSS */}
-        <Box sx={{ flexGrow: 1 }}>
-          <LogoCSS size="md" />
-        </Box>
+        {isHome ? (
+          /* Accueil : le logo déborde sous la barre sans modifier le flux (position absolute) */
+          <Box
+            sx={{
+              flexGrow: 1,
+              position: "relative",
+              height: { xs: 60, md: 72 },
+              overflow: "visible",
+            }}
+          >
+            <Box
+              sx={{
+                position: "absolute",
+                top: { xs: 2, sm: 4, md: 6 },
+                left: 0,
+                zIndex: (theme) => theme.zIndex.appBar + 1,
+              }}
+            >
+              <LogoCSS size="float" />
+            </Box>
+          </Box>
+        ) : (
+          /* Autres pages : logo de taille normale, contenu dans la barre */
+          <Box sx={{ flexGrow: 1, display: "flex", alignItems: "center" }}>
+            <LogoCSS size="md" />
+          </Box>
+        )}
 
         {user ? (
           <Box

@@ -20,7 +20,9 @@ import {
   Divider,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import PageLayout from "../../components/shared/PageLayout";
+import AgenceLayout from "../../components/agence/AgenceLayout";
+import AgencePageHeader from "../../components/agence/AgencePageHeader";
+import AssignmentInd from "@mui/icons-material/AssignmentInd";
 import api from "../../services/api";
 
 const CommercialIlotsAffectationsPage = () => {
@@ -77,11 +79,13 @@ const CommercialIlotsAffectationsPage = () => {
   }, [parcelles]);
 
   return (
-    <PageLayout>
+    <AgenceLayout>
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-        <Typography variant="h5" fontWeight="bold" gutterBottom>
-          Îlots & parcelles affectés à un commercial
-        </Typography>
+        <AgencePageHeader
+          icon={AssignmentInd}
+          title="Îlots & parcelles affectés"
+          subtitle="Consultez les affectations d'un commercial"
+        />
 
         <Box sx={{ mb: 3 }}>
           <TextField
@@ -174,7 +178,7 @@ const CommercialIlotsAffectationsPage = () => {
           </Paper>
         )}
       </Container>
-    </PageLayout>
+    </AgenceLayout>
   );
 };
 

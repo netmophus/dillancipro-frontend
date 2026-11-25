@@ -69,6 +69,17 @@ import {
   Description,
   ChevronLeft,
   ChevronRight,
+  Attachment,
+  AutoAwesome,
+  Bathtub,
+  CalendarMonth,
+  Gavel,
+  HourglassEmpty,
+  Info,
+  Mail,
+  Payments,
+  PhotoCamera,
+  Map as MapIcon,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/shared/Navbar";
@@ -300,12 +311,12 @@ const HomePage = () => {
         prix: location.prixMensuel || 0,
         type: location.type || "Appartement",
         gradient: [
-          ["#11998e", "#38ef7d"],
-          ["#e94057", "#f27121"],
-          ["#8e2de2", "#4a00e0"],
-          ["#1B5285", "#27AE60"],
-          ["#f093fb", "#f5576c"],
-          ["#4facfe", "#00f2fe"]
+          ["#0A7C4F", "#0A7C4F"],
+          ["#0A7C4F", "#0A7C4F"],
+          ["#3030F9", "#3030F9"],
+          ["#3030F9", "#3030F9"],
+          ["#3030F9", "#3030F9"],
+          ["#3030F9", "#3030F9"]
         ][index % 6],
         image: location.images && location.images.length > 0 && location.images[0]?.url ? fixImageUrl(location.images[0].url) : "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&h=600&fit=crop&q=90",
         description: location.description || "Bien immobilier de qualité",
@@ -366,12 +377,12 @@ const HomePage = () => {
         statut: location.statut || "disponible",
         reference: location.reference,
         gradient: [
-          ["#11998e", "#38ef7d"],
-          ["#e94057", "#f27121"],
-          ["#8e2de2", "#4a00e0"],
-          ["#1B5285", "#27AE60"],
-          ["#f093fb", "#f5576c"],
-          ["#4facfe", "#00f2fe"]
+          ["#0A7C4F", "#0A7C4F"],
+          ["#0A7C4F", "#0A7C4F"],
+          ["#3030F9", "#3030F9"],
+          ["#3030F9", "#3030F9"],
+          ["#3030F9", "#3030F9"],
+          ["#3030F9", "#3030F9"]
         ][index % 6],
         image: location.images && location.images.length > 0 && location.images[0]?.url ? fixImageUrl(location.images[0].url) : "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&h=600&fit=crop&q=90",
         images: location.images || [], // Inclure toutes les images
@@ -442,12 +453,12 @@ const HomePage = () => {
           agenceVille: bien.agenceId?.ville || "",
           agenceTelephone: bien.agenceId?.telephone || "",
           gradient: [
-            ["#11998e", "#38ef7d"],
-            ["#e94057", "#f27121"],
-            ["#8e2de2", "#4a00e0"],
-            ["#1B5285", "#27AE60"],
-            ["#f093fb", "#f5576c"],
-            ["#4facfe", "#00f2fe"]
+            ["#0A7C4F", "#0A7C4F"],
+            ["#0A7C4F", "#0A7C4F"],
+            ["#3030F9", "#3030F9"],
+            ["#3030F9", "#3030F9"],
+            ["#0A7C4F", "#0A7C4F"],
+            ["#3030F9", "#3030F9"]
           ][index % 6],
           image: bien.images && bien.images.length > 0 && bien.images[0] ? fixImageUrl(bien.images[0]) : "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&h=600&fit=crop&q=90",
           images: bien.images || [],
@@ -757,43 +768,43 @@ const HomePage = () => {
       icon: <Security fontSize="large" />,
       title: "Transactions sécurisées",
       description: "Vérification renforcée des biens et meilleure sécurisation des opérations immobilières.",
-      color: "#27AE60",
-      gradient: ["#10b981", "#059669"],
+      color: "#0A7C4F",
+      gradient: ["#0A7C4F", "#065F3D"],
     },
     {
       icon: <LocationOn fontSize="large" />,
       title: "Biens géolocalisés",
       description: "Localisez les biens avec précision pour mieux apprécier leur emplacement et leur environnement.",
-      color: "#1B5285",
-      gradient: ["#3b82f6", "#2563eb"],
+      color: "#3030F9",
+      gradient: ["#3030F9", "#2020C8"],
     },
     {
       icon: <Speed fontSize="large" />,
       title: "Parcours simplifié",
       description: "Publication, consultation et mise en relation facilitées pour accélérer vos démarches immobilières.",
-      color: "#f59e0b",
-      gradient: ["#f59e0b", "#d97706"],
+      color: "#0A7C4F",
+      gradient: ["#0A7C4F", "#065F3D"],
     },
     {
       icon: <Groups fontSize="large" />,
       title: "Écosystème connecté",
       description: "Agences, banques, notaires, services compétents et particuliers réunis sur une même plateforme.",
-      color: "#1B5285",
-      gradient: ["#1B5285", "#0D2B4E"],
+      color: "#3030F9",
+      gradient: ["#3030F9", "#2020C8"],
     },
     {
       icon: <TrendingUp fontSize="large" />,
       title: "Suivi en temps réel",
       description: "Accédez à l'historique complet des transactions et suivez l'évolution de vos biens instantanément.",
-      color: "#8b5cf6",
-      gradient: ["#8b5cf6", "#7c3aed"],
+      color: "#0A7C4F",
+      gradient: ["#0A7C4F", "#065F3D"],
     },
     {
       icon: <Support fontSize="large" />,
       title: "Accompagnement professionnel",
       description: "Bénéficiez d'un support dédié et de conseils d'experts pour toutes vos démarches immobilières.",
-      color: "#ef4444",
-      gradient: ["#ef4444", "#dc2626"],
+      color: "#0A7C4F",
+      gradient: ["#0A7C4F", "#065F3D"],
     },
   ];
 
@@ -814,12 +825,12 @@ const HomePage = () => {
     }
     
     const gradients = [
-      "linear-gradient(135deg, #1B5285 0%, #27AE60 100%)",
-      "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
-      "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
-      "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",
-      "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
-      "linear-gradient(135deg, #30cfd0 0%, #330867 100%)",
+      "#3030F9",
+      "#0A7C4F",
+      "#0e1133",
+      "#0A7C4F",
+      "#2020C8",
+      "#0A7C4F",
     ];
     const currentGradient = gradients[index % gradients.length];
     
@@ -1111,10 +1122,7 @@ const HomePage = () => {
               fontWeight={800}
               sx={{
                 fontSize: { xs: "1.25rem", sm: "1.5rem", md: "1.75rem" },
-                background: currentGradient,
-                backgroundClip: "text",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
+                color: "#0e1133",
                 mb: 0.5,
                 lineHeight: 1.2,
               }}
@@ -1845,12 +1853,15 @@ const parcellesToDisplay =
 
 
   return (
-    <Box sx={{ width: "100%", minHeight: "100vh", display: "flex", flexDirection: "column", bgcolor: "#EBF5FB" }}>
+    <Box sx={{ width: "100%", minHeight: "100vh", display: "flex", flexDirection: "column", bgcolor: "#f5f7fa" }}>
       <Navbar />
       {/* Hero Section - Design Moderne */}
       <Box
         sx={{
-          background: "linear-gradient(135deg, #0D2B4E 0%, #1B5285 50%, #2471A3 100%)",
+          background: "#3030F9",
+          backgroundImage: "url(/images/hero-immo.jpg)",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
           color: "white",
           pt: 0,
           pb: { xs: 8, md: 12 },
@@ -1864,7 +1875,7 @@ const parcellesToDisplay =
             left: 0,
             right: 0,
             bottom: 0,
-            background: "radial-gradient(circle at 20% 50%, rgba(39,174,96,0.2) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(245,197,24,0.15) 0%, transparent 50%)",
+            background: "rgba(48,48,249,0.82)",
             pointerEvents: "none",
           },
         }}
@@ -1873,6 +1884,8 @@ const parcellesToDisplay =
   maxWidth="xl"
   sx={{
     px: { xs: 1.5, sm: 3, md: 4 },
+    position: "relative",
+    zIndex: 1,
     pt: { xs: 2, sm: 3, md: 4 },
     pb: { xs: 4, sm: 6, md: 8 },
     width: "100%",
@@ -1895,50 +1908,35 @@ const parcellesToDisplay =
         textAlign: { xs: "center", md: "left" },
       }}
     >
-      <Box
-        sx={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 1,
-          mb: 2,
-          mx: { xs: "auto", md: 0 },
-          px: { xs: 1.5, sm: 2 },
-          py: { xs: 0.5, sm: 0.75 },
-          borderRadius: 2,
-          border: "1px solid rgba(39, 174, 96, 0.6)",
-          bgcolor: "rgba(39, 174, 96, 0.1)",
-          backdropFilter: "blur(10px)",
-        }}
-      >
-        <Box
-          sx={{
-            fontSize: { xs: "0.65rem", sm: "0.7rem" },
-            fontWeight: 700,
-            color: "rgba(39, 174, 96, 1)",
-            letterSpacing: 0.5,
-          }}
-        >
-          NEW
-        </Box>
-        <Typography
-          sx={{
-            fontSize: { xs: "0.7rem", sm: "0.8rem" },
-            fontWeight: 600,
-            color: "white",
-            letterSpacing: 0.8,
-            textTransform: "uppercase",
-          }}
-        >
-          PLATEFORME OFFICIELLE
-        </Typography>
-      </Box>
-
       <Typography
         variant="h2"
         component="h1"
         fontWeight={800}
+        sx={{
+          // h1 conservé pour le SEO / l'accessibilité, masqué visuellement (aucun espace occupé)
+          position: "absolute",
+          width: "1px",
+          height: "1px",
+          m: "-1px",
+          p: 0,
+          overflow: "hidden",
+          clip: "rect(0 0 0 0)",
+          whiteSpace: "nowrap",
+          border: 0,
+        }}
+      >
+        Dillanci
+      </Typography>
+
+      {/* Espaceur invisible : garde la hauteur de l'ancien titre pour ne pas remonter le hero (le logo déborde dessous) */}
+      <Typography
+        variant="h2"
+        component="div"
+        aria-hidden="true"
+        fontWeight={800}
         gutterBottom
         sx={{
+          visibility: "hidden",
           fontSize: {
             xs: "2rem",
             sm: "2.3rem",
@@ -1949,7 +1947,7 @@ const parcellesToDisplay =
           letterSpacing: { xs: 0.5, md: 1 },
         }}
       >
-        MIZNAS Patrimoine
+        &nbsp;
       </Typography>
 
       <Typography
@@ -2016,7 +2014,7 @@ const parcellesToDisplay =
   onClick={() => navigate("/register")}
   sx={{
     bgcolor: "white",
-    color: "#0D2B4E",
+    color: "#3030F9",
     fontWeight: "bold",
     px: { xs: 2.4, md: 4 },
     py: { xs: 1.15, md: 1.4 },
@@ -2135,9 +2133,9 @@ const parcellesToDisplay =
 
         <Grid container spacing={2}>
           {[
-            { label: "Agences", value: stats.agences, color: "#1B5285" },
-            { label: "Parcelles", value: stats.parcelles, color: "#27AE60" },
-            { label: "Biens", value: stats.biens, color: "#f59e0b" },
+            { label: "Agences", value: stats.agences, color: "#3030F9" },
+            { label: "Parcelles", value: stats.parcelles, color: "#0A7C4F" },
+            { label: "Biens", value: stats.biens, color: "#0A7C4F" },
             { label: "Clients", value: stats.clients, color: "#ef4444" },
           ].map((item) => (
             <Grid key={item.label} item xs={6}>
@@ -2190,7 +2188,7 @@ const parcellesToDisplay =
     left: 0,
     right: 0,
     height: { xs: 70, sm: 100 },
-    bgcolor: "background.paper",
+    bgcolor: "#f5f7fa",
     clipPath: "polygon(0 50%, 100% 0, 100% 100%, 0 100%)",
     pointerEvents: "none",
   }}
@@ -2205,7 +2203,7 @@ const parcellesToDisplay =
     px: { xs: 1.5, sm: 3 },
   }}
 >
-  {/* Section moderne "Pourquoi choisir MIZNAS Patrimoine" */}
+  {/* Section moderne "Pourquoi choisir Dillanci" */}
   <Box
     sx={{
       position: "relative",
@@ -2223,21 +2221,18 @@ const parcellesToDisplay =
         py: { xs: 0.8, sm: 1 },
         mb: { xs: 2, md: 3 },
         borderRadius: "50px",
-        background: "linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)",
-        border: "1px solid rgba(102, 126, 234, 0.2)",
+        background: "rgba(48, 48, 249, 0.08)",
+        border: "1px solid rgba(48, 48, 249, 0.2)",
         backdropFilter: "blur(10px)",
       }}
     >
-      <Star sx={{ fontSize: { xs: 18, md: 20 }, color: "#fbbf24" }} />
+      <Star sx={{ fontSize: { xs: 18, md: 20 }, color: "#0A7C4F" }} />
       <Typography
         variant="caption"
         sx={{
           fontWeight: 600,
           fontSize: { xs: "0.75rem", sm: "0.85rem" },
-          background: "linear-gradient(135deg, #27AE60 0%, #1B5285 100%)",
-          backgroundClip: "text",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
+          color: "#3030F9",
         }}
       >
         Pourquoi nous choisir ?
@@ -2255,15 +2250,12 @@ const parcellesToDisplay =
           md: "clamp(2.5rem, 3.5vw, 3.5rem)",
         },
         mb: { xs: 2, md: 3 },
-        background: "linear-gradient(135deg, #0D2B4E 0%, #1B5285 50%, #27AE60 100%)",
-        backgroundClip: "text",
-        WebkitBackgroundClip: "text",
-        WebkitTextFillColor: "transparent",
+        color: "#0e1133",
         lineHeight: 1.2,
         letterSpacing: "-0.02em",
       }}
     >
-      Pourquoi choisir MIZNAS Patrimoine ?
+      Pourquoi choisir Dillanci ?
     </Typography>
 
     {/* Sous-titre moderne */}
@@ -2328,7 +2320,7 @@ const parcellesToDisplay =
                 flexDirection: "column",
                 textAlign: "center",
                 borderRadius: { xs: 3, md: 4 },
-                background: `linear-gradient(135deg, ${feature.gradient[0]}15 0%, ${feature.gradient[1]}08 50%, rgba(255, 255, 255, 0.95) 100%)`,
+                background: "#ffffff",
                 backdropFilter: "blur(20px)",
                 border: `2px solid ${feature.color}25`,
                 boxShadow: `0 8px 32px ${feature.color}15, 0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.5)`,
@@ -2342,7 +2334,7 @@ const parcellesToDisplay =
                   left: 0,
                   right: 0,
                   height: "5px",
-                  background: `linear-gradient(90deg, ${feature.gradient[0]}, ${feature.gradient[1]})`,
+                  background: `${feature.gradient[0]}`,
                   transform: "scaleX(0)",
                   transformOrigin: "left",
                   transition: "transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
@@ -2356,7 +2348,7 @@ const parcellesToDisplay =
                   width: 200,
                   height: 200,
                   borderRadius: "50%",
-                  background: `radial-gradient(circle, ${feature.color}20 0%, transparent 70%)`,
+                  background: "none",
                   opacity: 0.6,
                   transition: "all 0.4s ease",
                   filter: "blur(20px)",
@@ -2365,7 +2357,7 @@ const parcellesToDisplay =
                   transform: { xs: "none", md: "translateY(-12px) scale(1.02)" },
                   boxShadow: `0 20px 60px ${feature.color}30, 0 8px 24px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.6)`,
                   borderColor: `${feature.color}40`,
-                  background: `linear-gradient(135deg, ${feature.gradient[0]}20 0%, ${feature.gradient[1]}12 50%, rgba(255, 255, 255, 0.98) 100%)`,
+                  background: "#ffffff",
                   "&::before": {
                     transform: "scaleX(1)",
                   },
@@ -2394,10 +2386,10 @@ const parcellesToDisplay =
                 {/* Icône avec effet de glow */}
                 <Box
                   sx={{
-                    width: { xs: 80, sm: 90, md: 100 },
-                    height: { xs: 80, sm: 90, md: 100 },
+                    width: { xs: 64, sm: 72, md: 80 },
+                    height: { xs: 64, sm: 72, md: 80 },
                     borderRadius: "50%",
-                    background: `linear-gradient(135deg, ${feature.gradient[0]}, ${feature.gradient[1]})`,
+                    background: `${feature.gradient[0]}`,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -2410,7 +2402,7 @@ const parcellesToDisplay =
                       position: "absolute",
                       inset: -4,
                       borderRadius: "50%",
-                      background: `linear-gradient(135deg, ${feature.gradient[0]}, ${feature.gradient[1]})`,
+                      background: `${feature.gradient[0]}`,
                       opacity: 0.3,
                       filter: "blur(12px)",
                       transition: "opacity 0.4s ease",
@@ -2427,7 +2419,7 @@ const parcellesToDisplay =
                   <Box
                     sx={{
                       color: "white",
-                      fontSize: { xs: "2.5rem", sm: "3rem", md: "3.5rem" },
+                      fontSize: { xs: "2rem", sm: "2.4rem", md: "2.8rem" },
                       position: "relative",
                       zIndex: 1,
                       transition: "transform 0.4s ease",
@@ -2483,7 +2475,7 @@ const parcellesToDisplay =
                     width: 60,
                     height: 3,
                     borderRadius: "2px",
-                    background: `linear-gradient(90deg, ${feature.gradient[0]}, ${feature.gradient[1]})`,
+                    background: `${feature.gradient[0]}`,
                     mt: "auto",
                     opacity: 0.6,
                     transition: "all 0.4s ease",
@@ -2533,7 +2525,7 @@ const parcellesToDisplay =
               left: "-100%",
               width: "100%",
               height: "100%",
-              background: "linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent)",
+              background: "none",
               transition: "left 0.5s ease",
             },
             "&:hover": {
@@ -2580,7 +2572,7 @@ const parcellesToDisplay =
 
 
 <Box sx={{ 
-  background: "linear-gradient(135deg, #EBF5FB 0%, #D6EAF8 30%, #F0F9F4 60%, #ffffff 100%)",
+  background: "#ffffff",
   py: { xs: 6, md: 8 },
   position: "relative",
   overflow: "hidden",
@@ -2591,7 +2583,7 @@ const parcellesToDisplay =
     left: 0,
     right: 0,
     bottom: 0,
-    background: "radial-gradient(circle at 30% 20%, rgba(59, 130, 246, 0.08) 0%, transparent 50%), radial-gradient(circle at 70% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 50%)",
+    background: "none",
     pointerEvents: "none",
     zIndex: 0,
   },
@@ -2614,7 +2606,7 @@ const parcellesToDisplay =
           py: { xs: 0.8, sm: 1 },
           mb: { xs: 2, md: 3 },
           borderRadius: "50px",
-          background: "linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%)",
+          background: "rgba(48, 48, 249, 0.1)",
           border: "1px solid rgba(59, 130, 246, 0.2)",
           backdropFilter: "blur(10px)",
         }}
@@ -2625,10 +2617,7 @@ const parcellesToDisplay =
           sx={{
             fontWeight: 600,
             fontSize: { xs: "0.75rem", sm: "0.85rem" },
-            background: "linear-gradient(135deg, #1B5285 0%, #27AE60 100%)",
-            backgroundClip: "text",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
+            color: "#3030F9",
           }}
         >
           Nos partenaires
@@ -2646,10 +2635,7 @@ const parcellesToDisplay =
             md: "clamp(2.5rem, 3.5vw, 3.5rem)",
           },
           mb: { xs: 2, md: 3 },
-          background: "linear-gradient(135deg, #0D2B4E 0%, #1B5285 50%, #2471A3 100%)",
-          backgroundClip: "text",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
+          color: "#0e1133",
           lineHeight: 1.2,
           letterSpacing: "-0.02em",
         }}
@@ -2691,7 +2677,7 @@ const parcellesToDisplay =
             fontWeight: 600,
             borderRadius: "50px",
             textTransform: "none",
-            background: "linear-gradient(135deg, #1B5285 0%, #27AE60 100%)",
+            background: "#3030F9",
             boxShadow: "0 8px 24px rgba(59, 130, 246, 0.3)",
             position: "relative",
             overflow: "hidden",
@@ -2702,7 +2688,7 @@ const parcellesToDisplay =
               left: "-100%",
               width: "100%",
               height: "100%",
-              background: "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)",
+              background: "none",
               transition: "left 0.5s ease",
             },
             "&:hover": {
@@ -2777,8 +2763,8 @@ const parcellesToDisplay =
                   flexDirection: "column",
                   borderRadius: { xs: 3, md: 4 },
                   background: agence.statut === "en_attente"
-                    ? "linear-gradient(135deg, rgba(30, 30, 40, 0.95) 0%, rgba(40, 40, 50, 0.95) 50%, rgba(35, 35, 45, 0.95) 100%)"
-                    : "linear-gradient(135deg, rgba(59, 130, 246, 0.12) 0%, rgba(139, 92, 246, 0.08) 50%, rgba(255, 255, 255, 0.95) 100%)",
+                    ? "#1e1e28"
+                    : "#ffffff",
                   backdropFilter: "blur(20px)",
                   border: agence.statut === "en_attente"
                     ? "2px solid rgba(255, 255, 255, 0.2)"
@@ -2797,8 +2783,8 @@ const parcellesToDisplay =
                     right: 0,
                     height: "5px",
                     background: agence.statut === "en_attente"
-                      ? "linear-gradient(90deg, #ffa726, #fb8c00)"
-                      : "linear-gradient(90deg, #1B5285, #27AE60)",
+                      ? "#f59e0b"
+                      : "#3030F9",
                     transform: "scaleX(0)",
                     transformOrigin: "left",
                     transition: "transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
@@ -2813,8 +2799,8 @@ const parcellesToDisplay =
                     height: 200,
                     borderRadius: "50%",
                     background: agence.statut === "en_attente"
-                      ? "radial-gradient(circle, rgba(255, 167, 38, 0.15) 0%, transparent 70%)"
-                      : "radial-gradient(circle, rgba(59, 130, 246, 0.2) 0%, transparent 70%)",
+                      ? "none"
+                      : "none",
                     opacity: 0.6,
                     transition: "all 0.4s ease",
                     filter: "blur(20px)",
@@ -2828,8 +2814,8 @@ const parcellesToDisplay =
                       ? "rgba(255, 255, 255, 0.3)"
                       : "rgba(59, 130, 246, 0.4)",
                     background: agence.statut === "en_attente"
-                      ? "linear-gradient(135deg, rgba(30, 30, 40, 0.98) 0%, rgba(40, 40, 50, 0.98) 50%, rgba(35, 35, 45, 0.98) 100%)"
-                      : "linear-gradient(135deg, rgba(59, 130, 246, 0.18) 0%, rgba(139, 92, 246, 0.12) 50%, rgba(255, 255, 255, 0.98) 100%)",
+                      ? "#1e1e28"
+                      : "#ffffff",
                     "&::before": {
                       transform: "scaleX(1)",
                     },
@@ -2866,8 +2852,8 @@ const parcellesToDisplay =
                       src={agence.logo || undefined}
                       sx={{
                         background: agence.statut === "en_attente"
-                          ? "linear-gradient(135deg, rgba(255, 167, 38, 0.9), rgba(251, 140, 0, 0.9))"
-                          : "linear-gradient(135deg, #1B5285, #27AE60)",
+                          ? "#f59e0b"
+                          : "#3030F9",
                         width: { xs: 60, md: 70 },
                         height: { xs: 60, md: 70 },
                         boxShadow: agence.statut === "en_attente"
@@ -2940,9 +2926,9 @@ const parcellesToDisplay =
                         <Chip
                           label={
                             agence.statut === "actif"
-                              ? "✅ Actif"
+                              ? <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}><CheckCircle fontSize="inherit" />Actif</Box>
                               : agence.statut === "en_attente"
-                              ? "⏳ En attente"
+                              ? <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}><HourglassEmpty fontSize="inherit" />En attente</Box>
                               : agence.statut
                           }
                           size="small"
@@ -2971,8 +2957,8 @@ const parcellesToDisplay =
                       height: 2,
                       borderRadius: "2px",
                       background: agence.statut === "en_attente"
-                        ? "linear-gradient(90deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.2))"
-                        : "linear-gradient(90deg, rgba(59, 130, 246, 0.3), rgba(139, 92, 246, 0.3))",
+                        ? "rgba(255, 255, 255, 0.2)"
+                        : "rgba(48, 48, 249, 0.3)",
                       my: 1.5,
                     }}
                   />
@@ -3014,7 +3000,7 @@ const parcellesToDisplay =
                           color="text.primary"
                           sx={{ minWidth: "18px" }}
                         >
-                          📍
+                          <LocationOn fontSize="inherit" />
                         </Typography>
                         <Box flex={1}>
                           <Typography
@@ -3073,7 +3059,7 @@ const parcellesToDisplay =
                             color: agence.statut === "en_attente" ? "rgba(255, 255, 255, 0.8)" : "text.secondary",
                           }}
                         >
-                          📮
+                          <Mail fontSize="inherit" />
                         </Typography>
                         <Typography
                           variant="body2"
@@ -3101,7 +3087,7 @@ const parcellesToDisplay =
                               color: agence.statut === "en_attente" ? "rgba(255, 255, 255, 0.8)" : "text.secondary",
                             }}
                           >
-                            👤
+                            <Person fontSize="inherit" />
                           </Typography>
                           <Typography
                             variant="body2"
@@ -3121,8 +3107,8 @@ const parcellesToDisplay =
                         height: 2,
                         borderRadius: "2px",
                         background: agence.statut === "en_attente"
-                          ? "linear-gradient(90deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.2))"
-                          : "linear-gradient(90deg, rgba(59, 130, 246, 0.3), rgba(139, 92, 246, 0.3))",
+                          ? "rgba(255, 255, 255, 0.2)"
+                          : "rgba(48, 48, 249, 0.3)",
                         my: 1.5,
                       }}
                     />
@@ -3141,7 +3127,7 @@ const parcellesToDisplay =
                                 color: agence.statut === "en_attente" ? "rgba(255, 255, 255, 0.8)" : "text.secondary",
                               }}
                             >
-                              📞
+                              <Phone fontSize="inherit" />
                             </Typography>
                             <Typography
                               variant="body2"
@@ -3166,7 +3152,7 @@ const parcellesToDisplay =
                               color: agence.statut === "en_attente" ? "rgba(255, 255, 255, 0.8)" : "text.secondary",
                             }}
                           >
-                            ✉️
+                            <Email fontSize="inherit" />
                           </Typography>
                           <Typography
                             variant="body2"
@@ -3259,7 +3245,7 @@ const parcellesToDisplay =
 <Box
   component="section"
   sx={{
-    background: "linear-gradient(135deg, #EBF5FB 0%, #D6EAF8 30%, #F0F9F4 60%, #ffffff 100%)",
+    background: "#f5f7fa",
     py: { xs: 6, md: 8 },
     position: "relative",
     overflow: "hidden",
@@ -3270,7 +3256,7 @@ const parcellesToDisplay =
       left: 0,
       right: 0,
       bottom: 0,
-      background: "radial-gradient(circle at 30% 20%, rgba(16, 185, 129, 0.08) 0%, transparent 50%), radial-gradient(circle at 70% 80%, rgba(59, 130, 246, 0.08) 0%, transparent 50%)",
+      background: "none",
       pointerEvents: "none",
       zIndex: 0,
     },
@@ -3294,7 +3280,7 @@ const parcellesToDisplay =
           py: { xs: 0.8, sm: 1 },
           mb: { xs: 2, md: 3 },
           borderRadius: "50px",
-          background: "linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%)",
+          background: "rgba(10, 124, 79, 0.1)",
           border: "1px solid rgba(16, 185, 129, 0.2)",
           backdropFilter: "blur(10px)",
         }}
@@ -3305,10 +3291,7 @@ const parcellesToDisplay =
           sx={{
             fontWeight: 600,
             fontSize: { xs: "0.75rem", sm: "0.85rem" },
-            background: "linear-gradient(135deg, #27AE60 0%, #1B5285 100%)",
-            backgroundClip: "text",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
+            color: "#3030F9",
           }}
         >
           Nos partenaires financiers
@@ -3326,10 +3309,7 @@ const parcellesToDisplay =
             md: "clamp(2.5rem, 3.5vw, 3.5rem)",
           },
           mb: { xs: 2, md: 3 },
-          background: "linear-gradient(135deg, #0D2B4E 0%, #1B5285 50%, #2471A3 100%)",
-          backgroundClip: "text",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
+          color: "#0e1133",
           lineHeight: 1.2,
           letterSpacing: "-0.02em",
         }}
@@ -3398,7 +3378,7 @@ const parcellesToDisplay =
                 height: "100%",
                 minHeight: { xs: 240, sm: 260, md: 280 },
                 borderRadius: { xs: 3, md: 4 },
-                background: "linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(59, 130, 246, 0.08) 50%, rgba(255, 255, 255, 0.95) 100%)",
+                background: "#ffffff",
                 backdropFilter: "blur(20px)",
                 border: "2px solid rgba(16, 185, 129, 0.25)",
                 boxShadow: "0 8px 32px rgba(16, 185, 129, 0.15), 0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.5)",
@@ -3417,7 +3397,7 @@ const parcellesToDisplay =
                   left: 0,
                   right: 0,
                   height: "5px",
-                  background: "linear-gradient(90deg, #27AE60, #1B5285)",
+                  background: "#3030F9",
                   transform: "scaleX(0)",
                   transformOrigin: "left",
                   transition: "transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
@@ -3431,7 +3411,7 @@ const parcellesToDisplay =
                   width: 200,
                   height: 200,
                   borderRadius: "50%",
-                  background: "radial-gradient(circle, rgba(16, 185, 129, 0.2) 0%, transparent 70%)",
+                  background: "none",
                   opacity: 0.6,
                   transition: "all 0.4s ease",
                   filter: "blur(20px)",
@@ -3440,7 +3420,7 @@ const parcellesToDisplay =
                   transform: { xs: "none", md: "translateY(-12px) scale(1.02)" },
                   boxShadow: "0 20px 60px rgba(16, 185, 129, 0.3), 0 8px 24px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.6)",
                   borderColor: "rgba(16, 185, 129, 0.4)",
-                  background: "linear-gradient(135deg, rgba(16, 185, 129, 0.18) 0%, rgba(59, 130, 246, 0.12) 50%, rgba(255, 255, 255, 0.98) 100%)",
+                  background: "#ffffff",
                   "&::before": {
                     transform: "scaleX(1)",
                   },
@@ -3476,10 +3456,10 @@ const parcellesToDisplay =
               >
                 <Box
                   sx={{
-                    width: { xs: 70, sm: 80, md: 90 },
-                    height: { xs: 70, sm: 80, md: 90 },
+                    width: { xs: 56, sm: 64, md: 72 },
+                    height: { xs: 56, sm: 64, md: 72 },
                     borderRadius: "50%",
-                    background: "linear-gradient(135deg, #27AE60, #1B5285)",
+                    background: "#3030F9",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -3495,7 +3475,7 @@ const parcellesToDisplay =
                   <AccountBalance
                     sx={{
                       color: "white",
-                      fontSize: { xs: "2rem", sm: "2.2rem", md: "2.5rem" },
+                      fontSize: { xs: "1.6rem", sm: "1.8rem", md: "2rem" },
                     }}
                   />
                 </Box>
@@ -3604,7 +3584,7 @@ const parcellesToDisplay =
 <Box
   component="section"
   sx={{
-    background: "linear-gradient(135deg, #EBF5FB 0%, #D6EAF8 30%, #F0F9F4 60%, #ffffff 100%)",
+    background: "#ffffff",
     py: { xs: 6, md: 8 },
     position: "relative",
     overflow: "hidden",
@@ -3615,7 +3595,7 @@ const parcellesToDisplay =
       left: 0,
       right: 0,
       bottom: 0,
-      background: "radial-gradient(circle at 30% 20%, rgba(139, 92, 246, 0.08) 0%, transparent 50%), radial-gradient(circle at 70% 80%, rgba(99, 102, 241, 0.08) 0%, transparent 50%)",
+      background: "none",
       pointerEvents: "none",
       zIndex: 0,
     },
@@ -3639,7 +3619,7 @@ const parcellesToDisplay =
           py: { xs: 0.8, sm: 1 },
           mb: { xs: 2, md: 3 },
           borderRadius: "50px",
-          background: "linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(99, 102, 241, 0.1) 100%)",
+          background: "rgba(48, 48, 249, 0.1)",
           border: "1px solid rgba(139, 92, 246, 0.2)",
           backdropFilter: "blur(10px)",
         }}
@@ -3650,17 +3630,14 @@ const parcellesToDisplay =
             fontSize: { xs: 18, md: 20 },
           }}
         >
-          ⚖️
+          <Gavel fontSize="inherit" />
         </Box>
         <Typography
           variant="caption"
           sx={{
             fontWeight: 600,
             fontSize: { xs: "0.75rem", sm: "0.85rem" },
-            background: "linear-gradient(135deg, #1B5285 0%, #0D2B4E 100%)",
-            backgroundClip: "text",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
+            color: "#3030F9",
           }}
         >
           Nos partenaires notaires
@@ -3678,10 +3655,7 @@ const parcellesToDisplay =
             md: "clamp(2.5rem, 3.5vw, 3.5rem)",
           },
           mb: { xs: 2, md: 3 },
-          background: "linear-gradient(135deg, #0D2B4E 0%, #1B5285 50%, #2471A3 100%)",
-          backgroundClip: "text",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
+          color: "#0e1133",
           lineHeight: 1.2,
           letterSpacing: "-0.02em",
         }}
@@ -3804,7 +3778,7 @@ const parcellesToDisplay =
                   width: "100%",
                   height: "100%",
                   borderRadius: { xs: 3, md: 4 },
-                  background: "linear-gradient(135deg, rgba(139, 92, 246, 0.12) 0%, rgba(99, 102, 241, 0.08) 50%, rgba(255, 255, 255, 0.95) 100%)",
+                  background: "#ffffff",
                   backdropFilter: "blur(20px)",
                   border: "2px solid rgba(139, 92, 246, 0.25)",
                   boxShadow: "0 8px 32px rgba(139, 92, 246, 0.15), 0 2px 8px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.5)",
@@ -3818,7 +3792,7 @@ const parcellesToDisplay =
                     left: 0,
                     right: 0,
                     height: "5px",
-                    background: "linear-gradient(90deg, #1B5285, #27AE60)",
+                    background: "#3030F9",
                     transform: "scaleX(0)",
                     transformOrigin: "left",
                     transition: "transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
@@ -3832,7 +3806,7 @@ const parcellesToDisplay =
                     width: 200,
                     height: 200,
                     borderRadius: "50%",
-                    background: "radial-gradient(circle, rgba(139, 92, 246, 0.2) 0%, transparent 70%)",
+                    background: "none",
                     opacity: 0.6,
                     transition: "all 0.4s ease",
                     filter: "blur(20px)",
@@ -3841,7 +3815,7 @@ const parcellesToDisplay =
                     transform: { xs: "none", md: "translateY(-12px) scale(1.02)" },
                     boxShadow: "0 20px 60px rgba(139, 92, 246, 0.3), 0 8px 24px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.6)",
                     borderColor: "rgba(139, 92, 246, 0.4)",
-                    background: "linear-gradient(135deg, rgba(139, 92, 246, 0.18) 0%, rgba(99, 102, 241, 0.12) 50%, rgba(255, 255, 255, 0.98) 100%)",
+                    background: "#ffffff",
                     "&::before": {
                       transform: "scaleX(1)",
                     },
@@ -3873,7 +3847,7 @@ const parcellesToDisplay =
                   >
                     <Avatar
                       sx={{
-                        background: "linear-gradient(135deg, #1B5285, #27AE60)",
+                        background: "#3030F9",
                         width: { xs: 60, md: 70 },
                         height: { xs: 60, md: 70 },
                         boxShadow: "0 8px 24px rgba(139, 92, 246, 0.3), 0 4px 12px rgba(99, 102, 241, 0.2)",
@@ -3886,7 +3860,7 @@ const parcellesToDisplay =
                         fontSize: { xs: "1.8rem", md: "2.2rem" },
                       }}
                     >
-                      ⚖️
+                      <Gavel fontSize="inherit" />
                     </Avatar>
                     <Box flex={1} minWidth={0}>
                       <Typography
@@ -3945,7 +3919,7 @@ const parcellesToDisplay =
                       width: "100%",
                       height: 2,
                       borderRadius: "2px",
-                      background: "linear-gradient(90deg, rgba(139, 92, 246, 0.3), rgba(99, 102, 241, 0.3))",
+                      background: "rgba(48, 48, 249, 0.3)",
                       my: 0.5,
                     }}
                   />
@@ -4070,7 +4044,7 @@ const parcellesToDisplay =
 <Box
   component="section"
   sx={{
-    background: "linear-gradient(135deg, #EAFAF1 0%, #D5F5E3 30%, #F0F9F4 60%, #ffffff 100%)",
+    background: "#f5f7fa",
     py: { xs: 6, md: 8 },
     px: { xs: 2, sm: 3 },
     position: "relative",
@@ -4082,7 +4056,7 @@ const parcellesToDisplay =
       left: 0,
       right: 0,
       bottom: 0,
-      background: "radial-gradient(circle at 30% 20%, rgba(16, 185, 129, 0.08) 0%, transparent 50%), radial-gradient(circle at 70% 80%, rgba(5, 150, 105, 0.08) 0%, transparent 50%)",
+      background: "none",
       pointerEvents: "none",
       zIndex: 0,
     },
@@ -4106,7 +4080,7 @@ const parcellesToDisplay =
           py: { xs: 0.8, sm: 1 },
           mb: { xs: 2, md: 3 },
           borderRadius: "50px",
-          background: "linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.1) 100%)",
+          background: "rgba(10, 124, 79, 0.1)",
           border: "1px solid rgba(16, 185, 129, 0.2)",
           backdropFilter: "blur(10px)",
         }}
@@ -4117,17 +4091,14 @@ const parcellesToDisplay =
             fontSize: { xs: 18, md: 20 },
           }}
         >
-          🏘️
+          <Landscape fontSize="inherit" />
         </Box>
         <Typography
           variant="caption"
           sx={{
             fontWeight: 600,
             fontSize: { xs: "0.75rem", sm: "0.85rem" },
-            background: "linear-gradient(135deg, #27AE60 0%, #1E8449 100%)",
-            backgroundClip: "text",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
+            color: "#3030F9",
           }}
         >
           Terrains viabilisés
@@ -4145,10 +4116,7 @@ const parcellesToDisplay =
             md: "clamp(2.5rem, 3.5vw, 3.5rem)",
           },
           mb: { xs: 2, md: 3 },
-          background: "linear-gradient(135deg, #0D2B4E 0%, #1B5285 50%, #2471A3 100%)",
-          backgroundClip: "text",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
+          color: "#0e1133",
           lineHeight: 1.2,
           letterSpacing: "-0.02em",
         }}
@@ -4240,7 +4208,7 @@ const parcellesToDisplay =
               fontSize: { xs: "0.75rem", sm: "0.85rem" },
               fontWeight: 600,
               bgcolor: selectedAgenceId === "all" 
-                ? "linear-gradient(135deg, #10b981, #059669)" 
+                ? "#0A7C4F" 
                 : "rgba(16, 185, 129, 0.1)",
               color: selectedAgenceId === "all" ? "white" : "#10b981",
               border: selectedAgenceId === "all" 
@@ -4249,7 +4217,7 @@ const parcellesToDisplay =
               transition: "all 0.3s ease",
               "&:hover": {
                 bgcolor: selectedAgenceId === "all" 
-                  ? "linear-gradient(135deg, #059669, #047857)" 
+                  ? "#0A7C4F" 
                   : "rgba(16, 185, 129, 0.15)",
                 transform: "translateY(-2px)",
                 boxShadow: "0 4px 12px rgba(16, 185, 129, 0.2)",
@@ -4268,7 +4236,7 @@ const parcellesToDisplay =
                 maxWidth: 220,
                 fontWeight: 600,
                 bgcolor: selectedAgenceId === agence.id 
-                  ? "linear-gradient(135deg, #10b981, #059669)" 
+                  ? "#0A7C4F" 
                   : "rgba(16, 185, 129, 0.1)",
                 color: selectedAgenceId === agence.id ? "white" : "#10b981",
                 border: selectedAgenceId === agence.id 
@@ -4277,7 +4245,7 @@ const parcellesToDisplay =
                 transition: "all 0.3s ease",
                 "&:hover": {
                   bgcolor: selectedAgenceId === agence.id 
-                    ? "linear-gradient(135deg, #059669, #047857)" 
+                    ? "#0A7C4F" 
                     : "rgba(16, 185, 129, 0.15)",
                   transform: "translateY(-2px)",
                   boxShadow: "0 4px 12px rgba(16, 185, 129, 0.2)",
@@ -4330,7 +4298,7 @@ const parcellesToDisplay =
                 gap: 2,
                 p: { xs: 2, sm: 2.5 },
                 borderRadius: 3,
-                background: "linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(5, 150, 105, 0.05) 100%)",
+                background: "rgba(10, 124, 79, 0.1)",
                 border: "1px solid rgba(16, 185, 129, 0.2)",
                 backdropFilter: "blur(10px)",
               }}
@@ -4338,8 +4306,8 @@ const parcellesToDisplay =
               <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                 <Avatar
                   sx={{
-                    bgcolor: "linear-gradient(135deg, #10b981, #059669)",
-                    background: "linear-gradient(135deg, #10b981, #059669)",
+                    bgcolor: "#0A7C4F",
+                    background: "#0A7C4F",
                     width: { xs: 48, sm: 56 },
                     height: { xs: 48, sm: 56 },
                     boxShadow: "0 4px 12px rgba(16, 185, 129, 0.3)",
@@ -4433,15 +4401,15 @@ const parcellesToDisplay =
                         mb: 4,
                         p: { xs: 2, sm: 2.5 },
                         borderRadius: 3,
-                        background: "linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(5, 150, 105, 0.05) 100%)",
+                        background: "rgba(10, 124, 79, 0.1)",
                         border: "1px solid rgba(16, 185, 129, 0.2)",
                         backdropFilter: "blur(10px)",
                       }}
                     >
                       <Avatar
                         sx={{
-                          bgcolor: "linear-gradient(135deg, #10b981, #059669)",
-                          background: "linear-gradient(135deg, #10b981, #059669)",
+                          bgcolor: "#0A7C4F",
+                          background: "#0A7C4F",
                           width: { xs: 48, sm: 56 },
                           height: { xs: 48, sm: 56 },
                           boxShadow: "0 4px 12px rgba(16, 185, 129, 0.3)",
@@ -4548,7 +4516,7 @@ const parcellesToDisplay =
                               fontWeight: 600,
                               borderRadius: "50px",
                               textTransform: "none",
-                              background: "linear-gradient(135deg, #27AE60 0%, #1E8449 100%)",
+                              background: "#0A7C4F",
                               boxShadow: "0 4px 16px rgba(16, 185, 129, 0.3)",
                               position: "relative",
                               overflow: "hidden",
@@ -4559,11 +4527,11 @@ const parcellesToDisplay =
                                 left: "-100%",
                                 width: "100%",
                                 height: "100%",
-                                background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)",
+                                background: "none",
                                 transition: "left 0.5s ease",
                               },
                               "&:hover": {
-                                background: "linear-gradient(135deg, #059669 0%, #047857 100%)",
+                                background: "#0A7C4F",
                                 boxShadow: "0 6px 24px rgba(16, 185, 129, 0.4)",
                                 transform: "translateY(-2px)",
                                 "&::before": {
@@ -4643,7 +4611,7 @@ const parcellesToDisplay =
                           fontWeight: 600,
                           borderRadius: "50px",
                           textTransform: "none",
-                          background: "linear-gradient(135deg, #27AE60 0%, #1E8449 100%)",
+                          background: "#0A7C4F",
                           boxShadow: "0 4px 16px rgba(16, 185, 129, 0.3)",
                           position: "relative",
                           overflow: "hidden",
@@ -4654,11 +4622,11 @@ const parcellesToDisplay =
                             left: "-100%",
                             width: "100%",
                             height: "100%",
-                            background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)",
+                            background: "none",
                             transition: "left 0.5s ease",
                           },
                           "&:hover": {
-                            background: "linear-gradient(135deg, #059669 0%, #047857 100%)",
+                            background: "#0A7C4F",
                             boxShadow: "0 6px 24px rgba(16, 185, 129, 0.4)",
                             transform: "translateY(-2px)",
                             "&::before": {
@@ -4691,7 +4659,7 @@ const parcellesToDisplay =
 <Box
   component="section"
   sx={{
-    background: "linear-gradient(135deg, #eff6ff 0%, #dbeafe 30%, #e0f2fe 60%, #ffffff 100%)",
+    background: "#ffffff",
     py: { xs: 6, md: 8 },
     px: { xs: 2, sm: 3 },
     position: "relative",
@@ -4703,7 +4671,7 @@ const parcellesToDisplay =
       left: 0,
       right: 0,
       bottom: 0,
-      background: "radial-gradient(circle at 30% 20%, rgba(59, 130, 246, 0.08) 0%, transparent 50%), radial-gradient(circle at 70% 80%, rgba(37, 99, 235, 0.08) 0%, transparent 50%)",
+      background: "none",
       pointerEvents: "none",
       zIndex: 0,
     },
@@ -4727,7 +4695,7 @@ const parcellesToDisplay =
           py: { xs: 0.8, sm: 1 },
           mb: { xs: 2, md: 3 },
           borderRadius: "50px",
-          background: "linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(37, 99, 235, 0.1) 100%)",
+          background: "rgba(48, 48, 249, 0.1)",
           border: "1px solid rgba(59, 130, 246, 0.2)",
           backdropFilter: "blur(10px)",
         }}
@@ -4738,17 +4706,14 @@ const parcellesToDisplay =
             fontSize: { xs: 18, md: 20 },
           }}
         >
-          🏠
+          <Home fontSize="inherit" />
         </Box>
         <Typography
           variant="caption"
           sx={{
             fontWeight: 600,
             fontSize: { xs: "0.75rem", sm: "0.85rem" },
-            background: "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)",
-            backgroundClip: "text",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
+            color: "#3030F9",
           }}
         >
           Propriétés sélectionnées
@@ -4766,10 +4731,7 @@ const parcellesToDisplay =
             md: "clamp(2.5rem, 3.5vw, 3.5rem)",
           },
           mb: { xs: 2, md: 3 },
-          background: "linear-gradient(135deg, #0D2B4E 0%, #1B5285 50%, #2471A3 100%)",
-          backgroundClip: "text",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
+          color: "#0e1133",
           lineHeight: 1.2,
           letterSpacing: "-0.02em",
         }}
@@ -4859,7 +4821,7 @@ const parcellesToDisplay =
               fontSize: { xs: "0.75rem", sm: "0.85rem" },
               fontWeight: 600,
               bgcolor: selectedAgenceIdBiens === "all" 
-                ? "linear-gradient(135deg, #3b82f6, #2563eb)" 
+                ? "#3030F9" 
                 : "rgba(59, 130, 246, 0.1)",
               color: selectedAgenceIdBiens === "all" ? "white" : "#3b82f6",
               border: selectedAgenceIdBiens === "all" 
@@ -4868,7 +4830,7 @@ const parcellesToDisplay =
               transition: "all 0.3s ease",
               "&:hover": {
                 bgcolor: selectedAgenceIdBiens === "all" 
-                  ? "linear-gradient(135deg, #2563eb, #1d4ed8)" 
+                  ? "#3030F9" 
                   : "rgba(59, 130, 246, 0.15)",
                 transform: "translateY(-2px)",
                 boxShadow: "0 4px 12px rgba(59, 130, 246, 0.2)",
@@ -4887,7 +4849,7 @@ const parcellesToDisplay =
                 maxWidth: 220,
                 fontWeight: 600,
                 bgcolor: selectedAgenceIdBiens === agence.id 
-                  ? "linear-gradient(135deg, #3b82f6, #2563eb)" 
+                  ? "#3030F9" 
                   : "rgba(59, 130, 246, 0.1)",
                 color: selectedAgenceIdBiens === agence.id ? "white" : "#3b82f6",
                 border: selectedAgenceIdBiens === agence.id 
@@ -4896,7 +4858,7 @@ const parcellesToDisplay =
                 transition: "all 0.3s ease",
                 "&:hover": {
                   bgcolor: selectedAgenceIdBiens === agence.id 
-                    ? "linear-gradient(135deg, #2563eb, #1d4ed8)" 
+                    ? "#3030F9" 
                     : "rgba(59, 130, 246, 0.15)",
                   transform: "translateY(-2px)",
                   boxShadow: "0 4px 12px rgba(59, 130, 246, 0.2)",
@@ -4957,15 +4919,15 @@ const parcellesToDisplay =
                         mb: 4,
                         p: { xs: 2, sm: 2.5 },
                         borderRadius: 3,
-                        background: "linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(37, 99, 235, 0.05) 100%)",
+                        background: "rgba(48, 48, 249, 0.1)",
                         border: "1px solid rgba(59, 130, 246, 0.2)",
                         backdropFilter: "blur(10px)",
                       }}
                     >
                       <Avatar
                         sx={{
-                          bgcolor: "linear-gradient(135deg, #3b82f6, #2563eb)",
-                          background: "linear-gradient(135deg, #3b82f6, #2563eb)",
+                          bgcolor: "#3030F9",
+                          background: "#3030F9",
                           width: { xs: 48, sm: 56 },
                           height: { xs: 48, sm: 56 },
                           boxShadow: "0 4px 12px rgba(59, 130, 246, 0.3)",
@@ -5250,10 +5212,10 @@ const parcellesToDisplay =
                       sm: "0.95rem",
                     },
                     background:
-                      "linear-gradient(135deg,#1B5285 0%,#27AE60 100%)",
+                      "#3030F9",
                     "&:hover": {
                       background:
-                        "linear-gradient(135deg,#1B5285 0%,#27AE60 100%)",
+                        "#3030F9",
                       transform: { xs: "none", md: "translateY(-2px)" },
                     },
                   }}
@@ -5285,7 +5247,7 @@ const parcellesToDisplay =
                               fontWeight: 600,
                               borderRadius: "50px",
                               textTransform: "none",
-                              background: "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)",
+                              background: "#3030F9",
                               boxShadow: "0 4px 16px rgba(59, 130, 246, 0.3)",
                               position: "relative",
                               overflow: "hidden",
@@ -5296,11 +5258,11 @@ const parcellesToDisplay =
                                 left: "-100%",
                                 width: "100%",
                                 height: "100%",
-                                background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)",
+                                background: "none",
                                 transition: "left 0.5s ease",
                               },
                               "&:hover": {
-                                background: "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
+                                background: "#3030F9",
                                 boxShadow: "0 6px 24px rgba(59, 130, 246, 0.4)",
                                 transform: "translateY(-2px)",
                                 "&::before": {
@@ -5625,10 +5587,10 @@ const parcellesToDisplay =
                                   sm: "0.95rem",
                                 },
                                 background:
-                                  "linear-gradient(135deg,#1B5285 0%,#27AE60 100%)",
+                                  "#3030F9",
                                 "&:hover": {
                                   background:
-                                    "linear-gradient(135deg,#1B5285 0%,#27AE60 100%)",
+                                    "#3030F9",
                                   transform: { xs: "none", md: "translateY(-2px)" },
                                 },
                               }}
@@ -5660,7 +5622,7 @@ const parcellesToDisplay =
                             fontWeight: 600,
                             borderRadius: "50px",
                             textTransform: "none",
-                            background: "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)",
+                            background: "#3030F9",
                             boxShadow: "0 4px 16px rgba(59, 130, 246, 0.3)",
                             position: "relative",
                             overflow: "hidden",
@@ -5671,11 +5633,11 @@ const parcellesToDisplay =
                               left: "-100%",
                               width: "100%",
                               height: "100%",
-                              background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)",
+                              background: "none",
                               transition: "left 0.5s ease",
                             },
                             "&:hover": {
-                              background: "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
+                              background: "#3030F9",
                               boxShadow: "0 6px 24px rgba(59, 130, 246, 0.4)",
                               transform: "translateY(-2px)",
                               "&::before": {
@@ -5705,7 +5667,7 @@ const parcellesToDisplay =
 <Box
   component="section"
   sx={{
-    background: "linear-gradient(135deg, #fef2f2 0%, #fce7f3 30%, #fdf2f8 60%, #ffffff 100%)",
+    background: "#f5f7fa",
     py: { xs: 6, md: 8 },
     px: { xs: 2, sm: 3 },
     position: "relative",
@@ -5718,7 +5680,7 @@ const parcellesToDisplay =
       left: 0,
       right: 0,
       bottom: 0,
-      background: "radial-gradient(circle at 30% 20%, rgba(236, 72, 153, 0.08) 0%, transparent 50%), radial-gradient(circle at 70% 80%, rgba(219, 39, 119, 0.08) 0%, transparent 50%)",
+      background: "none",
       pointerEvents: "none",
       zIndex: 0,
     },
@@ -5750,7 +5712,7 @@ const parcellesToDisplay =
           py: { xs: 0.8, sm: 1 },
           mb: { xs: 2, md: 3 },
           borderRadius: "50px",
-          background: "linear-gradient(135deg, rgba(236, 72, 153, 0.1) 0%, rgba(219, 39, 119, 0.1) 100%)",
+          background: "rgba(48, 48, 249, 0.1)",
           border: "1px solid rgba(236, 72, 153, 0.2)",
           backdropFilter: "blur(10px)",
         }}
@@ -5761,17 +5723,14 @@ const parcellesToDisplay =
             fontSize: { xs: 18, md: 20 },
           }}
         >
-          🏠
+          <Home fontSize="inherit" />
         </Box>
         <Typography
           variant="caption"
           sx={{
             fontWeight: 600,
             fontSize: { xs: "0.75rem", sm: "0.85rem" },
-            background: "linear-gradient(135deg, #ec4899 0%, #db2777 100%)",
-            backgroundClip: "text",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
+            color: "#3030F9",
           }}
         >
           Locations premium
@@ -5789,10 +5748,7 @@ const parcellesToDisplay =
             md: "clamp(2.5rem, 3.5vw, 3.5rem)",
           },
           mb: { xs: 2, md: 3 },
-          background: "linear-gradient(135deg, #0D2B4E 0%, #1B5285 50%, #2471A3 100%)",
-          backgroundClip: "text",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
+          color: "#0e1133",
           lineHeight: 1.2,
           letterSpacing: "-0.02em",
         }}
@@ -5931,7 +5887,7 @@ const parcellesToDisplay =
                         left: 0,
                         right: 0,
                         height: 3,
-                        background: `linear-gradient(90deg, ${location.gradient[0]}, ${location.gradient[1]})`,
+                        background: `${location.gradient[0]}`,
                         opacity: 0,
                         transition: "opacity 0.3s ease",
                         zIndex: 1,
@@ -5968,7 +5924,7 @@ const parcellesToDisplay =
                         left: 0,
                         right: 0,
                         bottom: 0,
-                        background: `linear-gradient(135deg, ${location.gradient[0]}10 0%, ${location.gradient[1]}10 100%)`,
+                        background: `${location.gradient[0]}10`,
                         zIndex: 1,
                       },
                     }}
@@ -6185,10 +6141,7 @@ const parcellesToDisplay =
                         variant="h5"
                         fontWeight="bold"
                         sx={{
-                          background: `linear-gradient(135deg, ${location.gradient[0]} 0%, ${location.gradient[1]} 100%)`,
-                          backgroundClip: "text",
-                          WebkitBackgroundClip: "text",
-                          WebkitTextFillColor: "transparent",
+                          color: `${location.gradient[0]}`,
                           fontSize: {
                             xs: "clamp(1.2rem, 4vw, 1.5rem)",
                             md: "1.6rem",
@@ -6220,7 +6173,7 @@ const parcellesToDisplay =
                       onClick={() => handleOpenLocationDetails(location)}
                       sx={{
                         mt: "auto",
-                        background: `linear-gradient(135deg, ${location.gradient[0]} 0%, ${location.gradient[1]} 100%)`,
+                        background: `${location.gradient[0]}`,
                         color: "white",
                         fontWeight: "bold",
                         py: { xs: 1, md: 1.2 },
@@ -6237,7 +6190,7 @@ const parcellesToDisplay =
                             md: "translateY(-2px)",
                           },
                           boxShadow: `0 8px 24px ${location.gradient[0]}40`,
-                          background: `linear-gradient(135deg, ${location.gradient[0]} 0%, ${location.gradient[1]} 100%)`,
+                          background: `${location.gradient[0]}`,
                         },
                         transition: "all 0.3s ease",
                       }}
@@ -6269,7 +6222,7 @@ const parcellesToDisplay =
                     fontWeight: 600,
                     borderRadius: "50px",
                     textTransform: "none",
-                    background: "linear-gradient(135deg, #ec4899 0%, #db2777 100%)",
+                    background: "#3030F9",
                     boxShadow: "0 4px 16px rgba(236, 72, 153, 0.3)",
                     position: "relative",
                     overflow: "hidden",
@@ -6280,11 +6233,11 @@ const parcellesToDisplay =
                       left: "-100%",
                       width: "100%",
                       height: "100%",
-                      background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)",
+                      background: "none",
                       transition: "left 0.5s ease",
                     },
                     "&:hover": {
-                      background: "linear-gradient(135deg, #db2777 0%, #be185d 100%)",
+                      background: "#3030F9",
                       boxShadow: "0 6px 24px rgba(236, 72, 153, 0.4)",
                       transform: "translateY(-2px)",
                       "&::before": {
@@ -6319,7 +6272,7 @@ const parcellesToDisplay =
           position: "relative",
           py: { xs: 6, md: 8 },
           px: { xs: 2, sm: 3 },
-          background: "linear-gradient(135deg, #f0f4ff 0%, #e0e7ff 30%, #ede9fe 60%, #ffffff 100%)",
+          background: "#ffffff",
           overflow: "hidden",
           "&::before": {
             content: '""',
@@ -6328,7 +6281,7 @@ const parcellesToDisplay =
             left: 0,
             right: 0,
             bottom: 0,
-            background: "radial-gradient(circle at 30% 20%, rgba(99, 102, 241, 0.08) 0%, transparent 50%), radial-gradient(circle at 70% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 50%)",
+            background: "none",
             pointerEvents: "none",
             zIndex: 0,
           }
@@ -6347,7 +6300,7 @@ const parcellesToDisplay =
                 py: { xs: 0.8, sm: 1 },
                 mb: { xs: 2, md: 3 },
                 borderRadius: "50px",
-                background: "linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%)",
+                background: "rgba(48, 48, 249, 0.1)",
                 border: "1px solid rgba(99, 102, 241, 0.2)",
                 backdropFilter: "blur(10px)",
               }}
@@ -6358,17 +6311,14 @@ const parcellesToDisplay =
                   fontSize: { xs: 18, md: 20 },
                 }}
               >
-                👥
+                <Groups fontSize="inherit" />
               </Box>
               <Typography
                 variant="caption"
                 sx={{
                   fontWeight: 600,
                   fontSize: { xs: "0.75rem", sm: "0.85rem" },
-                  background: "linear-gradient(135deg, #1B5285 0%, #27AE60 100%)",
-                  backgroundClip: "text",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
+                  color: "#3030F9",
                 }}
               >
                 Acteurs du secteur
@@ -6386,10 +6336,7 @@ const parcellesToDisplay =
                   md: "clamp(2.5rem, 3.5vw, 3.5rem)",
                 },
                 mb: { xs: 2, md: 3 },
-                background: "linear-gradient(135deg, #0D2B4E 0%, #1B5285 50%, #2471A3 100%)",
-                backgroundClip: "text",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
+                color: "#0e1133",
                 lineHeight: 1.2,
                 letterSpacing: "-0.02em",
               }}
@@ -6415,7 +6362,7 @@ const parcellesToDisplay =
                 fontWeight: 400,
               }}
             >
-              MIZNAS Patrimoine est ouvert à tous les acteurs du secteur foncier et immobilier
+              Dillanci est ouvert à tous les acteurs du secteur foncier et immobilier
             </Typography>
           </Box>
 
@@ -6442,7 +6389,7 @@ const parcellesToDisplay =
                 height: "100%",
                 display: "flex",
                 flexDirection: "column",
-                background: "linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%)",
+                background: "#ffffff",
                 border: "2px solid transparent",
                 borderRadius: 3,
                 position: "relative",
@@ -6455,7 +6402,7 @@ const parcellesToDisplay =
                   left: 0,
                   right: 0,
                   height: 4,
-                  background: "linear-gradient(90deg, #1B5285 0%, #27AE60 100%)",
+                  background: "#3030F9",
                 },
                 "&:hover": {
                   transform: "translateY(-8px)",
@@ -6470,7 +6417,7 @@ const parcellesToDisplay =
                     width: { xs: 48, md: 56 },
                     height: { xs: 48, md: 56 },
                     borderRadius: 2,
-                    background: "linear-gradient(135deg, #1B5285 0%, #27AE60 100%)",
+                    background: "#3030F9",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -6521,7 +6468,7 @@ const parcellesToDisplay =
                 height: "100%",
                 display: "flex",
                 flexDirection: "column",
-                background: "linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%)",
+                background: "#ffffff",
                 border: "2px solid transparent",
                 borderRadius: 3,
                 position: "relative",
@@ -6534,7 +6481,7 @@ const parcellesToDisplay =
                   left: 0,
                   right: 0,
                   height: 4,
-                  background: "linear-gradient(90deg, #10b981 0%, #059669 100%)",
+                  background: "#0A7C4F",
                 },
                 "&:hover": {
                   transform: "translateY(-8px)",
@@ -6549,7 +6496,7 @@ const parcellesToDisplay =
                     width: { xs: 48, md: 56 },
                     height: { xs: 48, md: 56 },
                     borderRadius: 2,
-                    background: "linear-gradient(135deg, #27AE60 0%, #1E8449 100%)",
+                    background: "#0A7C4F",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -6600,7 +6547,7 @@ const parcellesToDisplay =
                 height: "100%",
                 display: "flex",
                 flexDirection: "column",
-                background: "linear-gradient(135deg, #ffffff 0%, #fffbf0 100%)",
+                background: "#ffffff",
                 border: "2px solid transparent",
                 borderRadius: 3,
                 position: "relative",
@@ -6613,12 +6560,12 @@ const parcellesToDisplay =
                   left: 0,
                   right: 0,
                   height: 4,
-                  background: "linear-gradient(90deg, #f59e0b 0%, #d97706 100%)",
+                  background: "#0A7C4F",
                 },
                 "&:hover": {
                   transform: "translateY(-8px)",
-                  boxShadow: "0 20px 40px rgba(245, 158, 11, 0.15)",
-                  borderColor: "warning.main",
+                  boxShadow: "0 20px 40px rgba(10, 124, 79, 0.15)",
+                  borderColor: "#0A7C4F",
                 }
               }}
             >
@@ -6628,11 +6575,11 @@ const parcellesToDisplay =
                     width: { xs: 48, md: 56 },
                     height: { xs: 48, md: 56 },
                     borderRadius: 2,
-                    background: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
+                    background: "#0A7C4F",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    boxShadow: "0 8px 24px rgba(245, 158, 11, 0.3)",
+                    boxShadow: "0 8px 24px rgba(10, 124, 79, 0.3)",
                     flexShrink: 0,
                   }}
                 >
@@ -6679,7 +6626,7 @@ const parcellesToDisplay =
                 height: "100%",
                 display: "flex",
                 flexDirection: "column",
-                background: "linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%)",
+                background: "#ffffff",
                 border: "2px solid transparent",
                 borderRadius: 3,
                 position: "relative",
@@ -6692,7 +6639,7 @@ const parcellesToDisplay =
                   left: 0,
                   right: 0,
                   height: 4,
-                  background: "linear-gradient(90deg, #0ea5e9 0%, #0284c7 100%)",
+                  background: "#3030F9",
                 },
                 "&:hover": {
                   transform: "translateY(-8px)",
@@ -6707,7 +6654,7 @@ const parcellesToDisplay =
                     width: { xs: 48, md: 56 },
                     height: { xs: 48, md: 56 },
                     borderRadius: 2,
-                    background: "linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)",
+                    background: "#3030F9",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -6770,7 +6717,7 @@ const parcellesToDisplay =
       p: { xs: 3, sm: 4, md: 5 },
       borderRadius: { xs: 3, md: 4 },
       background:
-        "linear-gradient(135deg, #0D2B4E 0%, #1B5285 50%, #2471A3 100%)",
+        "#0e1133",
       color: "white",
       textAlign: "center",
       position: "relative",
@@ -6780,7 +6727,7 @@ const parcellesToDisplay =
         position: "absolute",
         inset: 0,
         background:
-          "radial-gradient(circle at 10% 0%, rgba(96,165,250,0.25) 0%, transparent 50%), radial-gradient(circle at 90% 100%, rgba(129,140,248,0.25) 0%, transparent 50%)",
+          "none",
         pointerEvents: "none",
       },
     }}
@@ -6814,7 +6761,7 @@ const parcellesToDisplay =
             color: "rgb(209,213,219)",
           }}
         >
-          Plateforme sécurisée MIZNAS Patrimoine
+          Plateforme sécurisée Dillanci
         </Typography>
       </Box>
 
@@ -6850,7 +6797,7 @@ const parcellesToDisplay =
           px: { xs: 1, sm: 1.5, md: 0 },
         }}
       >
-        Rejoignez MIZNAS Patrimoine dès aujourd&apos;hui et digitalisez votre
+        Rejoignez Dillanci dès aujourd&apos;hui et digitalisez votre
         activité foncière et immobilière en toute confiance.
       </Typography>
 
@@ -6962,7 +6909,7 @@ const parcellesToDisplay =
         PaperProps={{
           sx: {
             borderRadius: { xs: 0, sm: 4 },
-            background: "linear-gradient(135deg, #1B5285 0%, #27AE60 50%, #1B5285 100%)",
+            background: "#3030F9",
             color: "white",
             overflow: "hidden",
             position: "relative",
@@ -6975,7 +6922,7 @@ const parcellesToDisplay =
               right: -100,
               width: 300,
               height: 300,
-              background: "radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%)",
+              background: "none",
               borderRadius: "50%",
               zIndex: 0,
             },
@@ -6986,7 +6933,7 @@ const parcellesToDisplay =
               left: -80,
               width: 250,
               height: 250,
-              background: "radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%)",
+              background: "none",
               borderRadius: "50%",
               zIndex: 0,
             },
@@ -7059,7 +7006,7 @@ const parcellesToDisplay =
                   },
                 }}
               >
-                🏢 Devenir Partenaire
+                <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}><Business fontSize="inherit" />Devenir Partenaire</Box>
               </Typography>
               <Typography 
                 variant="body1" 
@@ -7110,7 +7057,7 @@ const parcellesToDisplay =
                 wordBreak: "break-word",
               }}
             >
-              📞 +227 80 64 83 83
+              <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}><Phone fontSize="inherit" />+227 80 64 83 83</Box>
             </Typography>
             <Typography 
               variant="body1" 
@@ -7297,7 +7244,7 @@ const parcellesToDisplay =
           <Box display="flex" alignItems="center" justifyContent="space-between" mb={3}>
             <Box>
               <Typography variant="h4" fontWeight="bold" gutterBottom>
-                {selectedLocation ? `🏠 ${selectedLocation.titre}` : "🏠 Détails de la Location"}
+                <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}><Home fontSize="inherit" />{selectedLocation ? selectedLocation.titre : "Détails de la Location"}</Box>
               </Typography>
               <Typography variant="body1" color="text.secondary">
                 {selectedLocation ? `${selectedLocation.type} à ${selectedLocation.ville}` : "Informations complètes"}
@@ -7321,7 +7268,7 @@ const parcellesToDisplay =
                 {/* Photos de la location */}
                 <Grid item xs={12}>
                   <Typography variant="h6" fontWeight="bold" mb={2}>
-                    📸 Photos de la location
+                    <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}><PhotoCamera fontSize="inherit" />Photos de la location</Box>
                   </Typography>
                   <Box sx={{ p: 2, bgcolor: "grey.50", borderRadius: 2 }}>
                     {/* Photo principale */}
@@ -7394,17 +7341,14 @@ const parcellesToDisplay =
                 {/* Informations principales */}
                 <Grid item xs={12} md={6}>
                   <Typography variant="h6" fontWeight="bold" mb={3} sx={{ 
-                    background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
-                    backgroundClip: "text",
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
+                    color: "#0e1133",
                     fontSize: "1.5rem"
                   }}>
-                    ℹ️ Informations principales
+                    <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}><Info fontSize="inherit" />Informations principales</Box>
                   </Typography>
                   <Paper sx={{ 
                     p: 3, 
-                    background: "linear-gradient(135deg, #fff5f8 0%, #ffeef2 100%)",
+                    background: "#ffffff",
                     borderRadius: 3,
                     boxShadow: "0 8px 32px rgba(240, 147, 251, 0.1)",
                     border: "1px solid rgba(240, 147, 251, 0.1)"
@@ -7415,7 +7359,7 @@ const parcellesToDisplay =
                         <Box sx={{ 
                           p: 2,
                           borderRadius: 2,
-                          background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+                          background: "#0A7C4F",
                           color: "white",
                           textAlign: "center"
                         }}>
@@ -7450,8 +7394,8 @@ const parcellesToDisplay =
                         <Box sx={{ 
                           p: 2,
                           borderRadius: 2,
-                          background: "rgba(255, 152, 0, 0.1)",
-                          border: "1px solid rgba(255, 152, 0, 0.2)"
+                          background: "rgba(10, 124, 79, 0.1)",
+                          border: "1px solid rgba(10, 124, 79, 0.2)"
                         }}>
                           <Typography variant="subtitle2" color="text.secondary" sx={{ fontSize: "0.8rem", fontWeight: 600 }}>
                             MEUBLÉ
@@ -7488,17 +7432,14 @@ const parcellesToDisplay =
                 {/* Informations pratiques */}
                 <Grid item xs={12} md={6}>
                   <Typography variant="h6" fontWeight="bold" mb={3} sx={{ 
-                    background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
-                    backgroundClip: "text",
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
+                    color: "#3030F9",
                     fontSize: "1.5rem"
                   }}>
-                    📅 Informations pratiques
+                    <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}><CalendarMonth fontSize="inherit" />Informations pratiques</Box>
                   </Typography>
                   <Paper sx={{ 
                     p: 3, 
-                    background: "linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)",
+                    background: "#ffffff",
                     borderRadius: 3,
                     boxShadow: "0 8px 32px rgba(79, 172, 254, 0.1)",
                     border: "1px solid rgba(79, 172, 254, 0.1)"
@@ -7509,7 +7450,7 @@ const parcellesToDisplay =
                         <Box sx={{ 
                           p: 2,
                           borderRadius: 2,
-                          background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+                          background: "#3030F9",
                           color: "white",
                           textAlign: "center"
                         }}>
@@ -7587,17 +7528,14 @@ const parcellesToDisplay =
                 {/* Caractéristiques */}
                 <Grid item xs={12} md={6}>
                   <Typography variant="h6" fontWeight="bold" mb={3} sx={{ 
-                    background: "linear-gradient(135deg, #1B5285 0%, #27AE60 100%)",
-                    backgroundClip: "text",
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
+                    color: "#3030F9",
                     fontSize: "1.5rem"
                   }}>
-                    🏠 Caractéristiques détaillées
+                    <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}><Description fontSize="inherit" />Caractéristiques détaillées</Box>
                   </Typography>
                   <Paper sx={{ 
                     p: 3, 
-                    background: "linear-gradient(135deg, #f8f9ff 0%, #e8f2ff 100%)",
+                    background: "#ffffff",
                     borderRadius: 3,
                     boxShadow: "0 8px 32px rgba(102, 126, 234, 0.1)",
                     border: "1px solid rgba(102, 126, 234, 0.1)"
@@ -7609,7 +7547,7 @@ const parcellesToDisplay =
                           textAlign: "center",
                           p: 2,
                           borderRadius: 2,
-                          background: "linear-gradient(135deg, #1B5285 0%, #27AE60 100%)",
+                          background: "#3030F9",
                           color: "white"
                         }}>
                           <Typography variant="h4" fontWeight="bold">
@@ -7630,14 +7568,14 @@ const parcellesToDisplay =
                           textAlign: "center",
                           p: 2,
                           borderRadius: 2,
-                          background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+                          background: "#0A7C4F",
                           color: "white"
                         }}>
                           <Typography variant="h4" fontWeight="bold">
                             {selectedLocation.chambres}
                           </Typography>
                           <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                            🛏️
+                            <Bed fontSize="inherit" />
                           </Typography>
                           <Typography variant="caption" sx={{ opacity: 0.8 }}>
                             Chambres
@@ -7651,14 +7589,14 @@ const parcellesToDisplay =
                           textAlign: "center",
                           p: 2,
                           borderRadius: 2,
-                          background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+                          background: "#3030F9",
                           color: "white"
                         }}>
                           <Typography variant="h4" fontWeight="bold">
                             {selectedLocation.salleDeBain}
                           </Typography>
                           <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                            🚿
+                            <Bathtub fontSize="inherit" />
                           </Typography>
                           <Typography variant="caption" sx={{ opacity: 0.8 }}>
                             Salles de bain
@@ -7740,7 +7678,7 @@ const parcellesToDisplay =
                                 label={feature} 
                                 size="small" 
                                 sx={{ 
-                                  background: "linear-gradient(135deg, #1B5285 0%, #27AE60 100%)",
+                                  background: "#3030F9",
                                   color: "white",
                                   fontWeight: "bold",
                                   "&:hover": {
@@ -7761,9 +7699,9 @@ const parcellesToDisplay =
                 {/* Prix de location */}
                 <Grid item xs={12}>
                   <Typography variant="h6" fontWeight="bold" mb={2}>
-                    💰 Informations financières
+                    <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}><Payments fontSize="inherit" />Informations financières</Box>
                   </Typography>
-                  <Paper sx={{ p: 3, background: "linear-gradient(135deg, #1B5285 0%, #27AE60 100%)", color: "white" }}>
+                  <Paper sx={{ p: 3, background: "#3030F9", color: "white" }}>
                     <Grid container spacing={3}>
                       <Grid item xs={12} sm={3}>
                         <Box textAlign="center">
@@ -7821,7 +7759,7 @@ const parcellesToDisplay =
                           }
                         }}
                       >
-                        📞 Contacter l'agence
+                        <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}><Phone fontSize="inherit" />Contacter l'agence</Box>
                       </Button>
                       <Button
                         variant="outlined"
@@ -7841,7 +7779,7 @@ const parcellesToDisplay =
                           }
                         }}
                       >
-                        🏠 Demander une visite
+                        <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}><Home fontSize="inherit" />Demander une visite</Box>
                       </Button>
                     </Box>
                   </Paper>
@@ -7850,9 +7788,9 @@ const parcellesToDisplay =
                 {/* Localisation */}
                 <Grid item xs={12}>
                   <Typography variant="h6" fontWeight="bold" mb={2}>
-                    📍 Localisation et géolocalisation
+                    <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}><LocationOn fontSize="inherit" />Localisation et géolocalisation</Box>
                   </Typography>
-                  <Paper sx={{ p: 3, background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)" }}>
+                  <Paper sx={{ p: 3, background: "#3030F9" }}>
                     <Grid container spacing={3}>
                       <Grid item xs={12} md={6}>
                         <Stack spacing={3}>
@@ -7926,7 +7864,7 @@ const parcellesToDisplay =
                           {selectedLocation.coordonnees && (
                             <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                               <Box sx={{ 
-                                bgcolor: "warning.main", 
+                                bgcolor: "#0A7C4F", 
                                 color: "white", 
                                 borderRadius: "50%", 
                                 p: 1.5,
@@ -7940,7 +7878,7 @@ const parcellesToDisplay =
                                 <Typography variant="subtitle2" color="text.secondary" sx={{ fontSize: "0.8rem", fontWeight: 600 }}>
                                   COORDONNÉES GPS
                                 </Typography>
-                                <Typography variant="body2" fontWeight="bold" color="warning.main">
+                                <Typography variant="body2" fontWeight="bold" color="#0A7C4F">
                                   Lat: {selectedLocation.coordonnees.latitude || "N/A"}<br/>
                                   Lng: {selectedLocation.coordonnees.longitude || "N/A"}
                                 </Typography>
@@ -7976,7 +7914,7 @@ const parcellesToDisplay =
                           borderRadius: 3, 
                           overflow: "hidden",
                           position: "relative",
-                          background: "linear-gradient(135deg, #1B5285 0%, #27AE60 100%)",
+                          background: "#3030F9",
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center"
@@ -8005,7 +7943,7 @@ const parcellesToDisplay =
                               <LocationOn sx={{ fontSize: 40, color: "primary.main" }} />
                             </Box>
                             <Typography variant="h6" fontWeight="bold" color="white" mb={1}>
-                              🗺️ Géolocalisation Interactive
+                              <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}><MapIcon fontSize="inherit" />Géolocalisation Interactive</Box>
                             </Typography>
                             <Typography variant="body2" color="rgba(255,255,255,0.8)" mb={2} textAlign="center">
                               Visualisez l'emplacement exact sur la carte
@@ -8126,7 +8064,7 @@ const parcellesToDisplay =
           <Box display="flex" alignItems="center" justifyContent="space-between" mb={3}>
             <Box>
               <Typography variant="h4" fontWeight="bold" gutterBottom>
-                {selectedBien ? `🏠 ${selectedBien.titre}` : "🏠 Détails du Bien Immobilier"}
+                <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}><Home fontSize="inherit" />{selectedBien ? selectedBien.titre : "Détails du Bien Immobilier"}</Box>
               </Typography>
               <Typography variant="body1" color="text.secondary">
                 {selectedBien ? `${selectedBien.type} à ${selectedBien.ville}` : "Informations complètes"}
@@ -8150,7 +8088,7 @@ const parcellesToDisplay =
                 {/* Photos du bien */}
                 <Grid item xs={12}>
                   <Typography variant="h6" fontWeight="bold" mb={2}>
-                    📸 Photos du bien
+                    <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}><PhotoCamera fontSize="inherit" />Photos du bien</Box>
                   </Typography>
                   <Box sx={{ p: 2, bgcolor: "grey.50", borderRadius: 2 }}>
                     {/* Photo principale */}
@@ -8224,7 +8162,7 @@ const parcellesToDisplay =
                 {selectedBien.videos && selectedBien.videos.length > 0 && (
                   <Grid item xs={12}>
                     <Typography variant="h6" fontWeight="bold" mb={2}>
-                      🎥 Vidéos du bien
+                      <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}><VideoLibrary fontSize="inherit" />Vidéos du bien</Box>
                     </Typography>
                     <Box sx={{ p: 2, bgcolor: "grey.50", borderRadius: 2 }}>
                       <Grid container spacing={3}>
@@ -8308,11 +8246,11 @@ const parcellesToDisplay =
                 {selectedBien.situationGeographique && (
                   <Grid item xs={12}>
                     <Typography variant="h6" fontWeight="bold" mb={2}>
-                      🗺️ Situation géographique du Terrain
+                      <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}><MapIcon fontSize="inherit" />Situation géographique du Terrain</Box>
                     </Typography>
                     <Paper sx={{ 
                       p: 3, 
-                      background: "linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%)",
+                      background: "#ffffff",
                       borderRadius: 3,
                       boxShadow: "0 4px 20px rgba(76, 175, 80, 0.1)",
                       border: "1px solid rgba(76, 175, 80, 0.2)"
@@ -8328,14 +8266,14 @@ const parcellesToDisplay =
                 {selectedBien.descriptionPhysique && (
                   <Grid item xs={12}>
                     <Typography variant="h6" fontWeight="bold" mb={2}>
-                      📋 Description physique
+                      <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}><Description fontSize="inherit" />Description physique</Box>
                     </Typography>
                     <Paper sx={{ 
                       p: 3, 
-                      background: "linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%)",
+                      background: "#ffffff",
                       borderRadius: 3,
-                      boxShadow: "0 4px 20px rgba(255, 152, 0, 0.1)",
-                      border: "1px solid rgba(255, 152, 0, 0.2)"
+                      boxShadow: "0 4px 20px rgba(10, 124, 79, 0.1)",
+                      border: "1px solid rgba(10, 124, 79, 0.2)"
                     }}>
                       <Typography variant="body1" sx={{ lineHeight: 1.8, color: "text.primary" }}>
                         {selectedBien.descriptionPhysique}
@@ -8348,11 +8286,11 @@ const parcellesToDisplay =
                 {selectedBien.atoutsMajeurs && selectedBien.atoutsMajeurs.length > 0 && (
                   <Grid item xs={12}>
                     <Typography variant="h6" fontWeight="bold" mb={2}>
-                      ⭐ Atouts majeurs
+                      <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}><Star fontSize="inherit" />Atouts majeurs</Box>
                     </Typography>
                     <Paper sx={{ 
                       p: 3, 
-                      background: "linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%)",
+                      background: "#ffffff",
                       borderRadius: 3,
                       boxShadow: "0 4px 20px rgba(156, 39, 176, 0.1)",
                       border: "1px solid rgba(156, 39, 176, 0.2)"
@@ -8386,7 +8324,7 @@ const parcellesToDisplay =
                                 height: 32
                               }}>
                                 <Typography variant="body2" fontWeight="bold">
-                                  ✓
+                                  <CheckCircle fontSize="inherit" />
                                 </Typography>
                               </Box>
                               <Typography variant="body1" fontWeight={500} sx={{ flex: 1 }}>
@@ -8403,17 +8341,14 @@ const parcellesToDisplay =
                 {/* Informations principales */}
                 <Grid item xs={12} md={6}>
                   <Typography variant="h6" fontWeight="bold" mb={3} sx={{ 
-                    background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
-                    backgroundClip: "text",
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
+                    color: "#0e1133",
                     fontSize: "1.5rem"
                   }}>
-                    ℹ️ Informations principales
+                    <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}><Info fontSize="inherit" />Informations principales</Box>
                   </Typography>
                   <Paper sx={{ 
                     p: 3, 
-                    background: "linear-gradient(135deg, #fff5f8 0%, #ffeef2 100%)",
+                    background: "#ffffff",
                     borderRadius: 3,
                     boxShadow: "0 8px 32px rgba(240, 147, 251, 0.1)",
                     border: "1px solid rgba(240, 147, 251, 0.1)"
@@ -8424,7 +8359,7 @@ const parcellesToDisplay =
                         <Box sx={{ 
                           p: 2,
                           borderRadius: 2,
-                          background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+                          background: "#0A7C4F",
                           color: "white",
                           textAlign: "center"
                         }}>
@@ -8459,13 +8394,13 @@ const parcellesToDisplay =
                         <Box sx={{ 
                           p: 2,
                           borderRadius: 2,
-                          background: "rgba(255, 152, 0, 0.1)",
-                          border: "1px solid rgba(255, 152, 0, 0.2)"
+                          background: "rgba(10, 124, 79, 0.1)",
+                          border: "1px solid rgba(10, 124, 79, 0.2)"
                         }}>
                           <Typography variant="subtitle2" color="text.secondary" sx={{ fontSize: "0.8rem", fontWeight: 600 }}>
                             SUPERFICIE
                           </Typography>
-                          <Typography variant="h6" fontWeight="bold" color="warning.main" sx={{ mt: 1 }}>
+                          <Typography variant="h6" fontWeight="bold" color="#0A7C4F" sx={{ mt: 1 }}>
                             {selectedBien.superficie} m²
                           </Typography>
                         </Box>
@@ -8494,17 +8429,14 @@ const parcellesToDisplay =
                 {/* Informations financières */}
                 <Grid item xs={12} md={6}>
                   <Typography variant="h6" fontWeight="bold" mb={3} sx={{ 
-                    background: "linear-gradient(135deg, #1B5285 0%, #27AE60 100%)",
-                    backgroundClip: "text",
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
+                    color: "#3030F9",
                     fontSize: "1.5rem"
                   }}>
-                    💰 Informations financières
+                    <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}><Payments fontSize="inherit" />Informations financières</Box>
                   </Typography>
                   <Paper sx={{ 
                     p: 3, 
-                    background: "linear-gradient(135deg, #1B5285 0%, #27AE60 100%)",
+                    background: "#3030F9",
                     color: "white",
                     borderRadius: 3,
                     boxShadow: "0 8px 32px rgba(102, 126, 234, 0.1)"
@@ -8540,7 +8472,7 @@ const parcellesToDisplay =
                           }
                         }}
                       >
-                        📞 Contacter le propriétaire
+                        <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}><Phone fontSize="inherit" />Contacter le propriétaire</Box>
                       </Button>
                       <Button
                         variant="outlined"
@@ -8560,7 +8492,7 @@ const parcellesToDisplay =
                           }
                         }}
                       >
-                        🏠 Demander une visite
+                        <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}><Home fontSize="inherit" />Demander une visite</Box>
                       </Button>
                     </Box>
                   </Paper>
@@ -8569,9 +8501,9 @@ const parcellesToDisplay =
                 {/* Localisation */}
                 <Grid item xs={12}>
                   <Typography variant="h6" fontWeight="bold" mb={2}>
-                    📍 Localisation et géolocalisation
+                    <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}><LocationOn fontSize="inherit" />Localisation et géolocalisation</Box>
                   </Typography>
-                  <Paper sx={{ p: 3, background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)" }}>
+                  <Paper sx={{ p: 3, background: "#3030F9" }}>
                     <Grid container spacing={3}>
                       <Grid item xs={12} md={6}>
                         <Stack spacing={3}>
@@ -8649,7 +8581,7 @@ const parcellesToDisplay =
                           {selectedBien.latitude && selectedBien.longitude && (
                             <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                               <Box sx={{ 
-                                bgcolor: "warning.main", 
+                                bgcolor: "#0A7C4F", 
                                 color: "white", 
                                 borderRadius: "50%", 
                                 p: 1.5,
@@ -8663,13 +8595,13 @@ const parcellesToDisplay =
                                 <Typography variant="subtitle2" color="text.secondary" sx={{ fontSize: "0.8rem", fontWeight: 600 }}>
                                   COORDONNÉES GPS
                                 </Typography>
-                                <Typography variant="body2" fontWeight="bold" color="warning.main" sx={{ mb: 1 }}>
+                                <Typography variant="body2" fontWeight="bold" color="#0A7C4F" sx={{ mb: 1 }}>
                                   Format décimal:<br/>
                                   Lat: {selectedBien.latitude}<br/>
                                   Lng: {selectedBien.longitude}
                                 </Typography>
                                 {decimalToDMS(selectedBien.latitude, "lat") && decimalToDMS(selectedBien.longitude, "lon") && (
-                                  <Typography variant="body2" fontWeight="bold" color="warning.dark" sx={{ mt: 1, fontSize: "0.85rem" }}>
+                                  <Typography variant="body2" fontWeight="bold" color="#065F3D" sx={{ mt: 1, fontSize: "0.85rem" }}>
                                     Format DMS:<br/>
                                     {decimalToDMS(selectedBien.latitude, "lat")} / {decimalToDMS(selectedBien.longitude, "lon")}
                                   </Typography>
@@ -8729,7 +8661,7 @@ const parcellesToDisplay =
                           borderRadius: 3, 
                           overflow: "hidden",
                           position: "relative",
-                          background: "linear-gradient(135deg, #1B5285 0%, #27AE60 100%)",
+                          background: "#3030F9",
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center"
@@ -8758,7 +8690,7 @@ const parcellesToDisplay =
                               <LocationOn sx={{ fontSize: 40, color: "primary.main" }} />
                             </Box>
                             <Typography variant="h6" fontWeight="bold" color="white" mb={1}>
-                              🗺️ Géolocalisation Interactive
+                              <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}><MapIcon fontSize="inherit" />Géolocalisation Interactive</Box>
                             </Typography>
                             <Typography variant="body2" color="rgba(255,255,255,0.8)" mb={2} textAlign="center">
                               Visualisez l'emplacement exact sur la carte
@@ -8914,7 +8846,7 @@ const parcellesToDisplay =
           <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
             <Box>
               <Typography variant="h4" fontWeight="bold" gutterBottom>
-                🏘️ {selectedParcelle?.ref || "Détails de la parcelle"}
+                <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}><Landscape fontSize="inherit" />{selectedParcelle?.ref || "Détails de la parcelle"}</Box>
               </Typography>
               <Typography variant="body1" color="text.secondary">
                 Îlot {selectedParcelle?.ilot}, Parcelle {selectedParcelle?.ref}
@@ -8932,7 +8864,7 @@ const parcellesToDisplay =
                 <Grid item xs={12}>
                   <Paper sx={{ p: 2, borderRadius: 2 }}>
                     <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ mb: 2 }}>
-                      📸 Photos de la parcelle
+                      <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}><PhotoCamera fontSize="inherit" />Photos de la parcelle</Box>
                     </Typography>
                     <Box sx={{ position: "relative", height: 300, borderRadius: 2, overflow: "hidden", mb: 2 }}>
                       <Box
@@ -8993,9 +8925,9 @@ const parcellesToDisplay =
 
               {/* Informations principales */}
               <Grid item xs={12}>
-                <Paper sx={{ p: 3, borderRadius: 2, background: "linear-gradient(135deg, #1B5285 0%, #27AE60 100%)" }}>
+                <Paper sx={{ p: 3, borderRadius: 2, background: "#3030F9" }}>
                   <Typography variant="h6" fontWeight="bold" sx={{ color: "white", mb: 2 }}>
-                    📋 Informations principales
+                    <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}><Description fontSize="inherit" />Informations principales</Box>
                   </Typography>
                   <Grid container spacing={2}>
                     <Grid item xs={12} sm={6}>
@@ -9044,7 +8976,7 @@ const parcellesToDisplay =
                           VILLE
                         </Typography>
                         <Typography variant="body1" fontWeight="medium">
-                          📍 {selectedParcelle.ville}
+                          <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}><LocationOn fontSize="inherit" />{selectedParcelle.ville}</Box>
                         </Typography>
                       </Paper>
                     </Grid>
@@ -9067,11 +8999,11 @@ const parcellesToDisplay =
                             AGENCE
                           </Typography>
                           <Typography variant="body1" fontWeight="medium">
-                            🏢 {selectedParcelle.agenceNom}
+                            <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}><Business fontSize="inherit" />{selectedParcelle.agenceNom}</Box>
                           </Typography>
                           {selectedParcelle.agenceTelephone && (
                             <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                              📞 {selectedParcelle.agenceTelephone}
+                              <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}><Phone fontSize="inherit" />{selectedParcelle.agenceTelephone}</Box>
                             </Typography>
                           )}
                         </Paper>
@@ -9083,9 +9015,9 @@ const parcellesToDisplay =
 
               {/* Géolocalisation */}
               <Grid item xs={12}>
-                <Paper sx={{ p: 3, borderRadius: 2, background: "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)" }}>
+                <Paper sx={{ p: 3, borderRadius: 2, background: "#0A7C4F" }}>
                   <Typography variant="h6" fontWeight="bold" sx={{ color: "white", mb: 3 }}>
-                    🗺️ Localisation
+                    <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}><MapIcon fontSize="inherit" />Localisation</Box>
                   </Typography>
                   
                   <Box sx={{ 
@@ -9123,7 +9055,7 @@ const parcellesToDisplay =
                       <Paper sx={{ p: 2, borderRadius: 2, bgcolor: "rgba(255, 255, 255, 0.95)" }}>
                         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
                           <Typography variant="h6" fontWeight="bold">
-                            🗺️ Localisation sur la carte
+                            <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}><MapIcon fontSize="inherit" />Localisation sur la carte</Box>
                           </Typography>
                           <Button
                             variant="outlined"
@@ -9205,7 +9137,7 @@ const parcellesToDisplay =
                           alignItems: "center",
                           justifyContent: "center"
                         }}>
-                          <LocationOn sx={{ color: "warning.main" }} />
+                          <LocationOn sx={{ color: "#0A7C4F" }} />
                         </Box>
                         <Box sx={{ flex: 1 }}>
                           <Typography variant="subtitle2" sx={{ fontSize: "0.8rem", fontWeight: 600, color: "white" }}>
@@ -9363,14 +9295,14 @@ const parcellesToDisplay =
                 <Grid item xs={12}>
                   <Paper sx={{ p: 3, borderRadius: 2 }}>
                     <Typography variant="h6" fontWeight="bold" gutterBottom>
-                      📄 Documents et médias
+                      <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}><Description fontSize="inherit" />Documents et médias</Box>
                     </Typography>
                     
                     {/* Section Vidéos */}
                     {selectedParcelle.videos && selectedParcelle.videos.length > 0 && (
                       <Box sx={{ mb: 3 }}>
                         <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 2, fontWeight: 600 }}>
-                          🎥 Vidéos ({selectedParcelle.videos.length})
+                          <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}><VideoLibrary fontSize="inherit" />Vidéos ({selectedParcelle.videos.length})</Box>
                         </Typography>
                         <Stack spacing={2}>
                           {selectedParcelle.videos.map((videoUrl, idx) => {
@@ -9428,7 +9360,7 @@ const parcellesToDisplay =
                     {selectedParcelle.documents && selectedParcelle.documents.length > 0 && (
                       <Box>
                         <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 2, fontWeight: 600 }}>
-                          📎 Documents ({selectedParcelle.documents.length})
+                          <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}><Attachment fontSize="inherit" />Documents ({selectedParcelle.documents.length})</Box>
                         </Typography>
                         <Stack spacing={1.5}>
                           {selectedParcelle.documents.map((docUrl, idx) => {
@@ -9486,7 +9418,7 @@ const parcellesToDisplay =
           "& .MuiDrawer-paper": {
             width: { xs: "100%", sm: "85%", md: "70%", lg: "60%" },
             maxWidth: "1200px",
-            background: "linear-gradient(135deg, #EBF5FB 0%, #D6EAF8 30%, #F0F9F4 60%, #ffffff 100%)",
+            background: "#f5f7fa",
             position: "relative",
             overflow: "hidden",
             "&::before": {
@@ -9496,7 +9428,7 @@ const parcellesToDisplay =
               left: 0,
               right: 0,
               bottom: 0,
-              background: "radial-gradient(circle at 20% 30%, rgba(16, 185, 129, 0.08) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(59, 130, 246, 0.08) 0%, transparent 50%)",
+              background: "none",
               pointerEvents: "none",
               zIndex: 0,
             },
@@ -9522,17 +9454,17 @@ const parcellesToDisplay =
               justifyContent: "space-between",
               gap: { xs: 2, sm: 0 },
               borderBottom: "2px solid",
-              borderImage: "linear-gradient(90deg, rgba(16, 185, 129, 0.3), rgba(59, 130, 246, 0.3)) 1",
+              borderColor: "rgba(48, 48, 249, 0.3)",
               flexShrink: 0,
             }}
           >
             <Box display="flex" alignItems="center" gap={{ xs: 1.5, sm: 2 }} flex={1}>
               <Box
                 sx={{
-                  width: { xs: 70, sm: 80, md: 90 },
-                  height: { xs: 70, sm: 80, md: 90 },
+                  width: { xs: 56, sm: 64, md: 72 },
+                  height: { xs: 56, sm: 64, md: 72 },
                   borderRadius: "50%",
-                  background: "linear-gradient(135deg, #27AE60, #1B5285)",
+                  background: "#3030F9",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -9541,7 +9473,7 @@ const parcellesToDisplay =
                   flexShrink: 0,
                 }}
               >
-                <AccountBalance sx={{ color: "white", fontSize: { xs: "2rem", sm: "2.5rem", md: "3rem" } }} />
+                <AccountBalance sx={{ color: "white", fontSize: { xs: "1.6rem", sm: "2rem", md: "2.4rem" } }} />
               </Box>
               <Box flex={1} minWidth={0}>
                 <Typography 
@@ -9615,7 +9547,7 @@ const parcellesToDisplay =
                     sx={{ 
                       p: { xs: 2.5, sm: 3, md: 3.5 }, 
                       borderRadius: { xs: 2.5, sm: 3 }, 
-                      background: "linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.98) 100%)",
+                      background: "#ffffff",
                       backdropFilter: "blur(20px)",
                       border: "2px solid rgba(16, 185, 129, 0.15)",
                       boxShadow: "0 8px 32px rgba(16, 185, 129, 0.1), 0 2px 8px rgba(0,0,0,0.04)",
@@ -9636,7 +9568,7 @@ const parcellesToDisplay =
                         color: "#27AE60",
                       }}
                     >
-                      📋 À propos
+                      <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}><Description fontSize="inherit" />À propos</Box>
                     </Typography>
                     <Typography 
                       variant="body1" 
@@ -9660,7 +9592,7 @@ const parcellesToDisplay =
                     sx={{ 
                       p: { xs: 2.5, sm: 3, md: 3.5 }, 
                       borderRadius: { xs: 2.5, sm: 3 }, 
-                      background: "linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(255, 255, 255, 0.95) 100%)",
+                      background: "#ffffff",
                       backdropFilter: "blur(20px)",
                       border: "2px solid rgba(59, 130, 246, 0.15)",
                       boxShadow: "0 8px 32px rgba(59, 130, 246, 0.1), 0 2px 8px rgba(0,0,0,0.04)",
@@ -9682,7 +9614,7 @@ const parcellesToDisplay =
                         color: "#1B5285",
                       }}
                     >
-                      💼 Produits et Services
+                      <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}><Business fontSize="inherit" />Produits et Services</Box>
                     </Typography>
                     <Stack spacing={{ xs: 1.5, sm: 2 }}>
                       {selectedBanque.produits && selectedBanque.produits.map((produit, index) => (
@@ -9734,7 +9666,7 @@ const parcellesToDisplay =
                     sx={{ 
                       p: { xs: 2.5, sm: 3, md: 3.5 }, 
                       borderRadius: { xs: 2.5, sm: 3 }, 
-                      background: "linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(255, 255, 255, 0.95) 100%)",
+                      background: "#ffffff",
                       backdropFilter: "blur(20px)",
                       border: "2px solid rgba(16, 185, 129, 0.15)",
                       boxShadow: "0 8px 32px rgba(16, 185, 129, 0.1), 0 2px 8px rgba(0,0,0,0.04)",
@@ -9756,7 +9688,7 @@ const parcellesToDisplay =
                         color: "#27AE60",
                       }}
                     >
-                      ✨ Avantages
+                      <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}><AutoAwesome fontSize="inherit" />Avantages</Box>
                     </Typography>
                     <Stack spacing={{ xs: 1.5, sm: 2 }}>
                       {selectedBanque.avantages && selectedBanque.avantages.map((avantage, index) => (
@@ -9809,7 +9741,7 @@ const parcellesToDisplay =
                       sx={{ 
                         p: { xs: 2.5, sm: 3, md: 3.5 }, 
                         borderRadius: { xs: 2.5, sm: 3 }, 
-                        background: "linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.98) 100%)",
+                        background: "#ffffff",
                         backdropFilter: "blur(20px)",
                         border: "2px solid rgba(16, 185, 129, 0.15)",
                         boxShadow: "0 8px 32px rgba(16, 185, 129, 0.1), 0 2px 8px rgba(0,0,0,0.04)",
@@ -9830,7 +9762,7 @@ const parcellesToDisplay =
                           color: "#27AE60",
                         }}
                       >
-                        📞 Contact
+                        <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}><Phone fontSize="inherit" />Contact</Box>
                       </Typography>
                       <Grid container spacing={{ xs: 2, sm: 2.5 }}>
                         {selectedBanque.contact.telephone && (
@@ -9839,7 +9771,7 @@ const parcellesToDisplay =
                               sx={{
                                 p: { xs: 2, sm: 2.5 },
                                 borderRadius: { xs: 2, sm: 2.5 },
-                                background: "linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(255, 255, 255, 0.9) 100%)",
+                                background: "#ffffff",
                                 backdropFilter: "blur(10px)",
                                 border: "2px solid rgba(59, 130, 246, 0.2)",
                                 display: "flex",
@@ -9848,7 +9780,7 @@ const parcellesToDisplay =
                                 transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                                 cursor: "pointer",
                                 "&:hover": {
-                                  background: "linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(255, 255, 255, 0.95) 100%)",
+                                  background: "#ffffff",
                                   transform: { xs: "none", sm: "translateY(-4px)" },
                                   boxShadow: "0 8px 24px rgba(59, 130, 246, 0.2)",
                                 },
@@ -9860,7 +9792,7 @@ const parcellesToDisplay =
                                   width: { xs: 40, sm: 44 },
                                   height: { xs: 40, sm: 44 },
                                   borderRadius: "50%",
-                                  background: "linear-gradient(135deg, #3b82f6, #2563eb)",
+                                  background: "#3030F9",
                                   display: "flex",
                                   alignItems: "center",
                                   justifyContent: "center",
@@ -9902,7 +9834,7 @@ const parcellesToDisplay =
                               sx={{
                                 p: { xs: 2, sm: 2.5 },
                                 borderRadius: { xs: 2, sm: 2.5 },
-                                background: "linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(255, 255, 255, 0.9) 100%)",
+                                background: "#ffffff",
                                 backdropFilter: "blur(10px)",
                                 border: "2px solid rgba(16, 185, 129, 0.2)",
                                 display: "flex",
@@ -9911,7 +9843,7 @@ const parcellesToDisplay =
                                 transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                                 cursor: "pointer",
                                 "&:hover": {
-                                  background: "linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(255, 255, 255, 0.95) 100%)",
+                                  background: "#ffffff",
                                   transform: { xs: "none", sm: "translateY(-4px)" },
                                   boxShadow: "0 8px 24px rgba(16, 185, 129, 0.2)",
                                 },
@@ -9923,7 +9855,7 @@ const parcellesToDisplay =
                                   width: { xs: 40, sm: 44 },
                                   height: { xs: 40, sm: 44 },
                                   borderRadius: "50%",
-                                  background: "linear-gradient(135deg, #10b981, #059669)",
+                                  background: "#0A7C4F",
                                   display: "flex",
                                   alignItems: "center",
                                   justifyContent: "center",
@@ -9965,7 +9897,7 @@ const parcellesToDisplay =
                               sx={{
                                 p: { xs: 2, sm: 2.5 },
                                 borderRadius: { xs: 2, sm: 2.5 },
-                                background: "linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(255, 255, 255, 0.9) 100%)",
+                                background: "#ffffff",
                                 backdropFilter: "blur(10px)",
                                 border: "2px solid rgba(139, 92, 246, 0.2)",
                                 display: "flex",
@@ -9974,7 +9906,7 @@ const parcellesToDisplay =
                                 transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                                 cursor: "pointer",
                                 "&:hover": {
-                                  background: "linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(255, 255, 255, 0.95) 100%)",
+                                  background: "#ffffff",
                                   transform: { xs: "none", sm: "translateY(-4px)" },
                                   boxShadow: "0 8px 24px rgba(139, 92, 246, 0.2)",
                                 },
@@ -9986,7 +9918,7 @@ const parcellesToDisplay =
                                   width: { xs: 40, sm: 44 },
                                   height: { xs: 40, sm: 44 },
                                   borderRadius: "50%",
-                                  background: "linear-gradient(135deg, #1B5285, #0D2B4E)",
+                                  background: "#0e1133",
                                   display: "flex",
                                   alignItems: "center",
                                   justifyContent: "center",
@@ -10032,7 +9964,7 @@ const parcellesToDisplay =
                   <Grid item xs={12}>
                     <Paper sx={{ p: 3, borderRadius: 2, bgcolor: "white" }}>
                       <Typography variant="h6" fontWeight="bold" mb={2} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                        📍 Adresse et Localisation
+                        <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}><LocationOn fontSize="inherit" />Adresse et Localisation</Box>
                       </Typography>
                       <Stack spacing={2}>
                         {selectedBanque.adresse && (

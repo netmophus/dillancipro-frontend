@@ -5,7 +5,7 @@ import {
   Typography,
   TextField,
   Button,
-  Grid,
+  GridLegacy as Grid,
   Card,
   CardContent,
   Alert,
@@ -44,10 +44,32 @@ import {
   Delete,
   Nature,
 } from "@mui/icons-material";
+import { AddRoad as FIAddRoad, Bathtub as FIBathtub, Bed as FIBed, CalendarMonth as FICalendarMonth, Chair as FIChair, Explore as FIExplore, Flag as FIFlag, Info as FIInfo, Kitchen as FIKitchen, Language as FILanguage, LocationCity as FILocationCity, LocationOn as FILocationOn, Map as FIMap, MyLocation as FIMyLocation, Notes as FINotes, Park as FIPark, Place as FIPlace, Stairs as FIStairs, Title as FITitle } from "@mui/icons-material";
 import { useParams, useNavigate } from "react-router-dom";
-import PageLayout from "../../components/shared/PageLayout";
+import AgenceLayout from "../../components/agence/AgenceLayout";
+import SectionCard from "../../components/admin/SectionCard";
+import AgencePageHeader from "../../components/agence/AgencePageHeader";
+import Star from "@mui/icons-material/Star";
 import api from "../../services/api";
 import { parseDMSString, isDMSFormat, decimalToDMS } from "../../utils/coordinateUtils";
+import CategoryIcon from "@mui/icons-material/Category";
+import TuneIcon from "@mui/icons-material/Tune";
+import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
+
+// En-tête d'étape uniforme (avatar-icône + titre + sous-titre)
+const StepHeader = ({ icon: Icon, title, subtitle }) => (
+  <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 3 }}>
+    <Avatar sx={{ bgcolor: "#27AE6018", color: "#27AE60", width: 42, height: 42 }}>
+      <Icon />
+    </Avatar>
+    <Box>
+      <Typography variant="h6" fontWeight="bold">{title}</Typography>
+      {subtitle && (
+        <Typography variant="body2" color="text.secondary">{subtitle}</Typography>
+      )}
+    </Box>
+  </Stack>
+);
 
 const CreateBienPage = () => {
   const { id } = useParams();
@@ -119,13 +141,13 @@ const CreateBienPage = () => {
   const steps = ["Type de bien", "Informations générales", "Localisation", "Caractéristiques", "Médias"];
 
   const typesLabels = {
-    maison: { label: "Maison", icon: Home, color: "#2196f3" },
-    villa: { label: "Villa", icon: Villa, color: "#9c27b0" },
-    duplex: { label: "Duplex", icon: Home, color: "#ff9800" },
-    appartement: { label: "Appartement", icon: Apartment, color: "#f44336" },
-    jardin: { label: "Jardin", icon: Park, color: "#4caf50" },
-    terrain: { label: "Terrain", icon: Square, color: "#795548" },
-    autre: { label: "Autre", icon: Home, color: "#607d8b" },
+    maison: { label: "Maison", icon: Home, color: "#3030F9" },
+    villa: { label: "Villa", icon: Villa, color: "#0A7C4F" },
+    duplex: { label: "Duplex", icon: Home, color: "#0e1133" },
+    appartement: { label: "Appartement", icon: Apartment, color: "#3030F9" },
+    jardin: { label: "Jardin", icon: Park, color: "#0A7C4F" },
+    terrain: { label: "Terrain", icon: Square, color: "#0e1133" },
+    autre: { label: "Autre", icon: Home, color: "#3030F9" },
   };
 
   const handleChange = (e) => {
@@ -414,10 +436,10 @@ const CreateBienPage = () => {
       // En mode édition, faire un PUT au lieu d'un POST
       if (isEditMode) {
         await api.put(`/agence/biens/${id}`, data);
-        setSuccess("✅ Bien immobilier modifié avec succès !");
+        setSuccess("Bien immobilier modifié avec succès !");
       } else {
         await api.post("/agence/biens", data);
-        setSuccess("✅ Bien immobilier créé avec succès !");
+        setSuccess("Bien immobilier créé avec succès !");
       }
       
       // Reset form
@@ -576,7 +598,7 @@ const CreateBienPage = () => {
   // Afficher un loader pendant le chargement des données en mode édition
   if (loadingData) {
     return (
-      <PageLayout>
+      <AgenceLayout>
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4, display: "flex", justifyContent: "center", alignItems: "center", minHeight: "400px" }}>
           <Box textAlign="center">
             <CircularProgress size={60} />
@@ -585,32 +607,21 @@ const CreateBienPage = () => {
             </Typography>
           </Box>
         </Container>
-      </PageLayout>
+      </AgenceLayout>
     );
   }
 
   return (
-    <PageLayout>
+    <AgenceLayout>
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
         {/* En-tête */}
-        <Box sx={{ mb: 4 }}>
-          <Box display="flex" alignItems="center" gap={2} mb={1}>
-            <Avatar sx={{ bgcolor: "success.main", width: 56, height: 56 }}>
-              <Home fontSize="large" />
-            </Avatar>
-            <Box>
-              <Typography variant="h4" fontWeight="bold">
-                {isEditMode ? "Modifier un Bien Immobilier" : "Créer un Bien Immobilier"}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {isEditMode 
-                  ? "Modifiez les informations de votre bien immobilier"
-                  : "Ajoutez des maisons, jardins, terrains et plus à votre catalogue"
-                }
-              </Typography>
-            </Box>
-          </Box>
-        </Box>
+        <AgencePageHeader
+          icon={Home}
+          title={isEditMode ? "Modifier un Bien Immobilier" : "Créer un Bien Immobilier"}
+          subtitle={isEditMode
+            ? "Modifiez les informations de votre bien immobilier"
+            : "Ajoutez des maisons, jardins, terrains et plus à votre catalogue"}
+        />
 
         {/* Alertes */}
         {success && (
@@ -628,10 +639,19 @@ const CreateBienPage = () => {
           </Fade>
         )}
 
-        <Card elevation={3}>
-          <CardContent sx={{ p: 4 }}>
+        <Card elevation={0} sx={{ bgcolor: "transparent", border: "none", boxShadow: "none" }}>
+          <CardContent sx={{ p: 0, "&:last-child": { pb: 0 }, "& .MuiOutlinedInput-root": { borderRadius: 2 }, "& legend": { display: "none" } }}>
             {/* Stepper */}
-            <Stepper activeStep={currentStep} sx={{ mb: 4 }}>
+            <Stepper
+              activeStep={currentStep}
+              sx={{
+                mb: 4,
+                "& .MuiStepLabel-label": { fontWeight: 600 },
+                "& .MuiStepLabel-label.Mui-active": { color: "#3030F9" },
+                "& .MuiStepIcon-root.Mui-active": { color: "#3030F9" },
+                "& .MuiStepIcon-root.Mui-completed": { color: "#0A7C4F" },
+              }}
+            >
               {steps.map((label) => (
                 <Step key={label}>
                   <StepLabel>{label}</StepLabel>
@@ -645,10 +665,8 @@ const CreateBienPage = () => {
             }}>
               {/* ÉTAPE 1 : Type de bien */}
               {currentStep === 0 && (
-                <Box>
-                  <Typography variant="h6" fontWeight="bold" gutterBottom mb={3}>
-                    Sélectionnez le type de bien
-                  </Typography>
+                <SectionCard title="Type de bien" color="#3030F9" icon="inventory" sx={{ mb: 0 }}>
+                  <Typography variant="body2" color="text.secondary" sx={{ mt: -1.5, mb: 3 }}>Sélectionnez la catégorie du bien à publier</Typography>
                   <Grid container spacing={2}>
                     {Object.keys(typesLabels).map((type) => {
                       const TypeIcon = typesLabels[type].icon;
@@ -658,10 +676,12 @@ const CreateBienPage = () => {
                             variant="outlined"
                             sx={{
                               cursor: "pointer",
+                              borderRadius: 3,
                               border: formData.type === type ? 2 : 1,
-                              borderColor: formData.type === type ? typesLabels[type].color : "divider",
-                              transition: "all 0.3s",
-                              "&:hover": { boxShadow: 3, transform: "translateY(-4px)" },
+                              borderColor: formData.type === type ? typesLabels[type].color : "#e3e8ef",
+                              bgcolor: formData.type === type ? `${typesLabels[type].color}0a` : "transparent",
+                              transition: "all 0.25s",
+                              "&:hover": { boxShadow: "0 8px 24px rgba(13,43,78,0.10)", transform: "translateY(-4px)" },
                             }}
                             onClick={() => setFormData({ ...formData, type })}
                           >
@@ -689,31 +709,37 @@ const CreateBienPage = () => {
                       );
                     })}
                   </Grid>
-                </Box>
+                </SectionCard>
               )}
 
               {/* ÉTAPE 2 : Informations générales */}
               {currentStep === 1 && (
-                <Box>
-                  <Typography variant="h6" fontWeight="bold" gutterBottom mb={3}>
-                    Informations générales
-                  </Typography>
+                <SectionCard title="Informations générales" color="#0A7C4F" icon="description" sx={{ mb: 0 }}>
+                  <Typography variant="body2" color="text.secondary" sx={{ mt: -1.5, mb: 3 }}>Titre, prix, description et atouts du bien</Typography>
                   <Grid container spacing={3}>
                     <Grid item xs={12}>
                       <TextField
-                        label="Titre de l'annonce"
+                        inputProps={{ "aria-label": "Titre de l'annonce", title: "Titre de l'annonce" }}
+                        placeholder="Titre de l'annonce *"
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <FITitle color="action" />
+                            </InputAdornment>
+                          ),
+                        }}
                         name="titre"
                         value={formData.titre}
                         onChange={handleChange}
                         fullWidth
                         required
-                        placeholder="Ex: Belle villa moderne avec piscine"
                       />
                     </Grid>
 
                     <Grid item xs={12} md={6}>
                       <TextField
-                        label="Prix"
+                        inputProps={{ "aria-label": "Prix", title: "Prix" }}
+                        placeholder="Prix *"
                         name="prix"
                         type="number"
                         value={formData.prix}
@@ -732,7 +758,8 @@ const CreateBienPage = () => {
 
                     <Grid item xs={12} md={6}>
                       <TextField
-                        label="Superficie"
+                        inputProps={{ "aria-label": "Superficie", title: "Superficie" }}
+                        placeholder="Superficie"
                         name="superficie"
                         type="number"
                         value={formData.superficie}
@@ -747,7 +774,15 @@ const CreateBienPage = () => {
                     <Grid item xs={12} md={6}>
                       <TextField
                         select
-                        label="Statut"
+                        inputProps={{ "aria-label": "Statut", title: "Statut" }}
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <FIFlag color="action" />
+                              <Typography variant="body2" color="text.secondary" sx={{ ml: 1 }}>Statut</Typography>
+                            </InputAdornment>
+                          ),
+                        }}
                         name="statut"
                         value={formData.statut}
                         onChange={handleChange}
@@ -769,7 +804,7 @@ const CreateBienPage = () => {
                               onChange={handleChange}
                             />
                           }
-                          label="En vedette ⭐"
+                          label="En vedette"
                         />
                         <FormControlLabel
                           control={
@@ -779,35 +814,49 @@ const CreateBienPage = () => {
                               onChange={handleChange}
                             />
                           }
-                          label="Urgent 🔥"
+                          label="Urgent"
                         />
                       </Stack>
                     </Grid>
 
                     <Grid item xs={12}>
                       <TextField
-                        label="Description"
+                        inputProps={{ "aria-label": "Description", title: "Description" }}
+                        placeholder="Description"
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start" sx={{ alignSelf: "flex-start", mt: 1.5 }}>
+                              <FINotes color="action" />
+                            </InputAdornment>
+                          ),
+                        }}
                         name="description"
                         value={formData.description}
                         onChange={handleChange}
                         fullWidth
                         multiline
                         rows={5}
-                        placeholder="Décrivez le bien en détail..."
                       />
                     </Grid>
 
                     {/* Situation géographique du Terrain */}
                     <Grid item xs={12}>
                       <TextField
-                        label="Situation géographique du Terrain"
+                        inputProps={{ "aria-label": "Situation géographique du Terrain", title: "Situation géographique du Terrain" }}
+                        placeholder="Situation géographique"
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start" sx={{ alignSelf: "flex-start", mt: 1.5 }}>
+                              <FIMap color="action" />
+                            </InputAdornment>
+                          ),
+                        }}
                         name="situationGeographique"
                         value={formData.situationGeographique}
                         onChange={handleChange}
                         fullWidth
                         multiline
                         rows={3}
-                        placeholder="Décrivez la situation géographique du terrain (proximité routes, commerces, écoles, etc.)"
                         helperText="Optionnel - Décrivez l'environnement et la localisation du terrain"
                       />
                     </Grid>
@@ -815,14 +864,21 @@ const CreateBienPage = () => {
                     {/* Description physique */}
                     <Grid item xs={12}>
                       <TextField
-                        label="Description physique"
+                        inputProps={{ "aria-label": "Description physique", title: "Description physique" }}
+                        placeholder="Description physique"
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start" sx={{ alignSelf: "flex-start", mt: 1.5 }}>
+                              <FINotes color="action" />
+                            </InputAdornment>
+                          ),
+                        }}
                         name="descriptionPhysique"
                         value={formData.descriptionPhysique}
                         onChange={handleChange}
                         fullWidth
                         multiline
                         rows={4}
-                        placeholder="Décrivez les caractéristiques physiques du bien (matériaux, état, aménagements, etc.)"
                         helperText="Optionnel - Décrivez les aspects physiques et matériels du bien"
                       />
                     </Grid>
@@ -830,8 +886,9 @@ const CreateBienPage = () => {
                     {/* Atouts majeurs */}
                     <Grid item xs={12}>
                       <Box display="flex" alignItems="center" gap={1} mb={1}>
+                        <Star fontSize="small" color="warning" />
                         <Typography variant="subtitle1" fontWeight="bold">
-                          ⭐ Atouts majeurs
+                          Atouts majeurs
                         </Typography>
                         <Chip 
                           label={`${atoutsMajeurs.filter(a => a.trim() !== "").length}`}
@@ -876,31 +933,43 @@ const CreateBienPage = () => {
                       )}
                     </Grid>
                   </Grid>
-                </Box>
+                </SectionCard>
               )}
 
               {/* ÉTAPE 3 : Localisation */}
               {currentStep === 2 && (
-                <Box>
-                  <Typography variant="h6" fontWeight="bold" gutterBottom mb={3}>
-                    <LocationOn sx={{ verticalAlign: "middle", mr: 1 }} />
-                    Localisation du bien
-                  </Typography>
+                <SectionCard title="Localisation du bien" color="#0e1133" icon="location" sx={{ mb: 0 }}>
+                  <Typography variant="body2" color="text.secondary" sx={{ mt: -1.5, mb: 3 }}>Adresse et coordonnées GPS</Typography>
                   <Grid container spacing={3}>
                     <Grid item xs={12}>
                       <TextField
-                        label="Adresse complète"
+                        inputProps={{ "aria-label": "Adresse complète", title: "Adresse complète" }}
+                        placeholder="Adresse complète"
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <FILocationOn color="action" />
+                            </InputAdornment>
+                          ),
+                        }}
                         name="adresse"
                         value={localisation.adresse}
                         onChange={handleLocalisationChange}
                         fullWidth
-                        placeholder="Ex: Rue 123, Zone Industrielle"
                       />
                     </Grid>
 
                     <Grid item xs={12} md={6}>
                       <TextField
-                        label="Ville"
+                        inputProps={{ "aria-label": "Ville", title: "Ville" }}
+                        placeholder="Ville"
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <FILocationCity color="action" />
+                            </InputAdornment>
+                          ),
+                        }}
                         name="ville"
                         value={localisation.ville}
                         onChange={handleLocalisationChange}
@@ -910,7 +979,15 @@ const CreateBienPage = () => {
 
                     <Grid item xs={12} md={6}>
                       <TextField
-                        label="Quartier"
+                        inputProps={{ "aria-label": "Quartier", title: "Quartier" }}
+                        placeholder="Quartier"
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <FIPlace color="action" />
+                            </InputAdornment>
+                          ),
+                        }}
                         name="quartier"
                         value={localisation.quartier}
                         onChange={handleLocalisationChange}
@@ -921,60 +998,84 @@ const CreateBienPage = () => {
                     {/* Coordonnées GPS - Format DMS ou Décimal */}
                     <Grid item xs={12}>
                       <TextField
-                        label="Coordonnées GPS (Format DMS ou Décimal)"
+                        inputProps={{ "aria-label": "Coordonnées GPS (Format DMS ou Décimal)", title: "Coordonnées GPS (Format DMS ou Décimal)" }}
+                        placeholder="Coordonnées GPS (DMS ou décimal)"
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <FIMyLocation color="action" />
+                            </InputAdornment>
+                          ),
+                        }}
                         value={coordonneesDMS}
                         onChange={handleCoordonneesDMSChange}
                         fullWidth
-                        placeholder="Format DMS: N 13°34'02.2 / E 2°04'59.3  ou  Format décimal: 13.567, 2.083"
                         helperText="Vous pouvez saisir au format DMS (N 13°34'02.2 / E 2°04'59.3) ou utiliser les champs décimaux ci-dessous"
                       />
                     </Grid>
 
                     <Grid item xs={12} md={6}>
                       <TextField
-                        label="Latitude (Décimal)"
+                        inputProps={{ "aria-label": "Latitude (Décimal)", title: "Latitude (Décimal)" }}
+                        placeholder="Latitude (ex. 13.567)"
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <FIMyLocation color="action" />
+                            </InputAdornment>
+                          ),
+                        }}
                         name="latitude"
                         type="number"
                         value={localisation.latitude}
                         onChange={handleLocalisationChange}
                         fullWidth
-                        placeholder="13.567"
                         helperText="Ou saisissez directement en décimal"
                       />
                     </Grid>
 
                     <Grid item xs={12} md={6}>
                       <TextField
-                        label="Longitude (Décimal)"
+                        inputProps={{ "aria-label": "Longitude (Décimal)", title: "Longitude (Décimal)" }}
+                        placeholder="Longitude (ex. 2.083)"
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <FIExplore color="action" />
+                            </InputAdornment>
+                          ),
+                        }}
                         name="longitude"
                         type="number"
                         value={localisation.longitude}
                         onChange={handleLocalisationChange}
                         fullWidth
-                        placeholder="2.083"
                         helperText="Ou saisissez directement en décimal"
                       />
                     </Grid>
                   </Grid>
-                </Box>
+                </SectionCard>
               )}
 
               {/* ÉTAPE 4 : Caractéristiques */}
               {currentStep === 3 && (
-                <Box>
-                  <Typography variant="h6" fontWeight="bold" gutterBottom mb={1}>
-                    Caractéristiques du bien
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                    (Optionnel - Renseignez uniquement les caractéristiques pertinentes pour votre bien)
-                  </Typography>
+                <SectionCard title="Caractéristiques du bien" color="#3030F9" icon="tune" sx={{ mb: 0 }}>
+                  <Typography variant="body2" color="text.secondary" sx={{ mt: -1.5, mb: 3 }}>Optionnel — renseignez les caractéristiques pertinentes pour votre bien</Typography>
                   <Grid container spacing={3}>
                     {/* Champs pour Maison/Villa/Duplex/Appartement */}
                     {showHouseFields && (
                       <>
                         <Grid item xs={6} md={4}>
                           <TextField
-                            label="Nombre de chambres"
+                            inputProps={{ "aria-label": "Nombre de chambres", title: "Nombre de chambres" }}
+                            placeholder="Nbre de chambres"
+                            InputProps={{
+                              startAdornment: (
+                                <InputAdornment position="start">
+                                  <FIBed color="action" />
+                                </InputAdornment>
+                              ),
+                            }}
                             name="nbChambres"
                             type="number"
                             value={caracteristiques.nbChambres}
@@ -984,7 +1085,15 @@ const CreateBienPage = () => {
                         </Grid>
                         <Grid item xs={6} md={4}>
                           <TextField
-                            label="Salles de bain"
+                            inputProps={{ "aria-label": "Salles de bain", title: "Salles de bain" }}
+                            placeholder="Salles de bain"
+                            InputProps={{
+                              startAdornment: (
+                                <InputAdornment position="start">
+                                  <FIBathtub color="action" />
+                                </InputAdornment>
+                              ),
+                            }}
                             name="nbSallesBain"
                             type="number"
                             value={caracteristiques.nbSallesBain}
@@ -994,7 +1103,15 @@ const CreateBienPage = () => {
                         </Grid>
                         <Grid item xs={6} md={4}>
                           <TextField
-                            label="Salons"
+                            inputProps={{ "aria-label": "Salons", title: "Salons" }}
+                            placeholder="Salons"
+                            InputProps={{
+                              startAdornment: (
+                                <InputAdornment position="start">
+                                  <FIChair color="action" />
+                                </InputAdornment>
+                              ),
+                            }}
                             name="nbSalons"
                             type="number"
                             value={caracteristiques.nbSalons}
@@ -1027,7 +1144,15 @@ const CreateBienPage = () => {
                         <Grid item xs={12} md={6}>
                           <TextField
                             select
-                            label="Cuisine"
+                            inputProps={{ "aria-label": "Cuisine", title: "Cuisine" }}
+                            InputProps={{
+                              startAdornment: (
+                                <InputAdornment position="start">
+                                  <FIKitchen color="action" />
+                                  <Typography variant="body2" color="text.secondary" sx={{ ml: 1 }}>Cuisine</Typography>
+                                </InputAdornment>
+                              ),
+                            }}
                             name="cuisine"
                             value={caracteristiques.cuisine}
                             onChange={handleCaracteristiquesChange}
@@ -1048,7 +1173,15 @@ const CreateBienPage = () => {
                       <>
                         <Grid item xs={6} md={4}>
                           <TextField
-                            label="Étage"
+                            inputProps={{ "aria-label": "Étage", title: "Étage" }}
+                            placeholder="Étage"
+                            InputProps={{
+                              startAdornment: (
+                                <InputAdornment position="start">
+                                  <FIStairs color="action" />
+                                </InputAdornment>
+                              ),
+                            }}
                             name="etage"
                             type="number"
                             value={caracteristiques.etage}
@@ -1103,9 +1236,12 @@ const CreateBienPage = () => {
 
                         {/* Types d'arbres et leur nombre */}
                         <Grid item xs={12}>
-                          <Typography variant="subtitle1" fontWeight="bold" gutterBottom sx={{ mt: 2, mb: 1 }}>
-                            🌳 Types d'arbres présents
-                          </Typography>
+                          <Box display="flex" alignItems="center" gap={1} sx={{ mt: 2, mb: 1 }}>
+                            <Park fontSize="small" color="success" />
+                            <Typography variant="subtitle1" fontWeight="bold">
+                              Types d'arbres présents
+                            </Typography>
+                          </Box>
                           <Paper variant="outlined" sx={{ p: 2, bgcolor: "grey.50" }}>
                             {(caracteristiques.typesArbres || []).length > 0 ? (
                               <Stack spacing={2}>
@@ -1124,19 +1260,26 @@ const CreateBienPage = () => {
                                     }}
                                   >
                                     <TextField
-                                      label="Type d'arbre"
+                                      inputProps={{ "aria-label": "Type d'arbre", title: "Type d'arbre" }}
+                                      placeholder="Type d'arbre"
+                                      InputProps={{
+                                        startAdornment: (
+                                          <InputAdornment position="start">
+                                            <FIPark color="action" />
+                                          </InputAdornment>
+                                        ),
+                                      }}
                                       value={arbre.type || ""}
                                       onChange={(e) => handleArbreChange(index, "type", e.target.value)}
-                                      placeholder="Ex: Manguier, Oranger, Citronnier..."
                                       fullWidth
                                       size="small"
                                     />
                                     <TextField
-                                      label="Nombre"
+                                      inputProps={{ "aria-label": "Nombre", title: "Nombre" }}
+                                      placeholder="Nombre"
                                       type="number"
                                       value={arbre.nombre || ""}
                                       onChange={(e) => handleArbreChange(index, "nombre", e.target.value)}
-                                      placeholder="Quantité"
                                       InputProps={{
                                         inputProps: { min: 0 },
                                       }}
@@ -1173,14 +1316,21 @@ const CreateBienPage = () => {
                         {/* Éléments présents dans le jardin */}
                         <Grid item xs={12}>
                           <TextField
-                            label="Éléments présents dans le jardin"
+                            inputProps={{ "aria-label": "Éléments présents dans le jardin", title: "Éléments présents dans le jardin" }}
+                            placeholder="Éléments du jardin"
+                            InputProps={{
+                              startAdornment: (
+                                <InputAdornment position="start" sx={{ alignSelf: "flex-start", mt: 1.5 }}>
+                                  <FIPark color="action" />
+                                </InputAdornment>
+                              ),
+                            }}
                             name="elementsJardin"
                             value={caracteristiques.elementsJardin || ""}
                             onChange={handleCaracteristiquesChange}
                             fullWidth
                             multiline
                             rows={4}
-                            placeholder="Décrivez ce qu'il y a dans le jardin (ex: piscine, cabane, allées, pergola, fontaine, barbecue, espace de jeux, etc.)"
                             helperText="Décrivez tous les éléments, aménagements et installations présents dans le jardin"
                           />
                         </Grid>
@@ -1191,7 +1341,15 @@ const CreateBienPage = () => {
                     <Grid item xs={12}><Divider /></Grid>
                     <Grid item xs={12} md={6}>
                       <TextField
-                        label="Année de construction"
+                        inputProps={{ "aria-label": "Année de construction", title: "Année de construction" }}
+                        placeholder="Année de construction"
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <FICalendarMonth color="action" />
+                            </InputAdornment>
+                          ),
+                        }}
                         name="anneeConstruction"
                         type="number"
                         value={caracteristiques.anneeConstruction}
@@ -1203,7 +1361,15 @@ const CreateBienPage = () => {
                     <Grid item xs={12} md={6}>
                       <TextField
                         select
-                        label="État général"
+                        inputProps={{ "aria-label": "État général", title: "État général" }}
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <FIInfo color="action" />
+                              <Typography variant="body2" color="text.secondary" sx={{ ml: 1 }}>État général</Typography>
+                            </InputAdornment>
+                          ),
+                        }}
                         name="etatGeneral"
                         value={caracteristiques.etatGeneral}
                         onChange={handleCaracteristiquesChange}
@@ -1220,7 +1386,15 @@ const CreateBienPage = () => {
                     <Grid item xs={12} md={6}>
                       <TextField
                         select
-                        label="Type d'accès"
+                        inputProps={{ "aria-label": "Type d'accès", title: "Type d'accès" }}
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <FIAddRoad color="action" />
+                              <Typography variant="body2" color="text.secondary" sx={{ ml: 1 }}>Type d'accès</Typography>
+                            </InputAdornment>
+                          ),
+                        }}
                         name="acces"
                         value={caracteristiques.acces}
                         onChange={handleCaracteristiquesChange}
@@ -1251,21 +1425,19 @@ const CreateBienPage = () => {
                       </Stack>
                     </Grid>
                   </Grid>
-                </Box>
+                </SectionCard>
               )}
 
               {/* ÉTAPE 5 : Médias */}
               {currentStep === 4 && (
-                <Box>
-                  <Typography variant="h6" fontWeight="bold" gutterBottom mb={3}>
-                    Médias et documents
-                  </Typography>
+                <SectionCard title="Médias et documents" color="#0A7C4F" icon="photo" sx={{ mb: 0 }}>
+                  <Typography variant="body2" color="text.secondary" sx={{ mt: -1.5, mb: 3 }}>Photos, vidéos et documents du bien</Typography>
                   <Grid container spacing={4}>
                     {/* Images */}
                     <Grid item xs={12}>
                       <Box display="flex" alignItems="center" gap={1} mb={1}>
                         <Typography variant="subtitle1" fontWeight="bold">
-                          📸 Images
+                          Images
                         </Typography>
                         <Chip 
                           label={`${imageFiles.length}/5`}
@@ -1350,8 +1522,9 @@ const CreateBienPage = () => {
                     {/* Vidéos */}
                     <Grid item xs={12}>
                       <Box display="flex" alignItems="center" gap={1} mb={1}>
+                        <VideoLibrary fontSize="small" color="action" />
                         <Typography variant="subtitle1" fontWeight="bold">
-                          🎥 Vidéos (URLs Vimeo, YouTube...)
+                          Vidéos (URLs Vimeo, YouTube...)
                         </Typography>
                         <Chip 
                           label={`${videos.filter(v => v.trim() !== "").length}/5`}
@@ -1405,7 +1578,15 @@ const CreateBienPage = () => {
                     <Grid item xs={12}>
                       <TextField
                         fullWidth
-                        label="Visite virtuelle 360° (URL)"
+                        inputProps={{ "aria-label": "Visite virtuelle 360° (URL)", title: "Visite virtuelle 360° (URL)" }}
+                        placeholder="Visite virtuelle 360° (URL)"
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <FILanguage color="action" />
+                            </InputAdornment>
+                          ),
+                        }}
                         value={visite360}
                         onChange={(e) => setVisite360(e.target.value)}
                         onKeyDown={(e) => {
@@ -1414,15 +1595,15 @@ const CreateBienPage = () => {
                             e.preventDefault();
                           }
                         }}
-                        placeholder="https://..."
                       />
                     </Grid>
 
                     {/* Documents */}
                     <Grid item xs={12}>
                       <Box display="flex" alignItems="center" gap={1} mb={1}>
+                        <Description fontSize="small" color="action" />
                         <Typography variant="subtitle1" fontWeight="bold">
-                          📄 Documents
+                          Documents
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
                           (Optionnel)
@@ -1455,7 +1636,7 @@ const CreateBienPage = () => {
                       )}
                     </Grid>
                   </Grid>
-                </Box>
+                </SectionCard>
               )}
 
               {/* Boutons de navigation */}
@@ -1507,7 +1688,7 @@ const CreateBienPage = () => {
           </CardContent>
         </Card>
       </Container>
-    </PageLayout>
+    </AgenceLayout>
   );
 };
 
