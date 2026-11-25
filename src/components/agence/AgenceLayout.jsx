@@ -16,6 +16,7 @@ import {
 import {
   Dashboard,
   Layers,
+  Landscape,
   AddLocationAlt,
   LibraryAdd,
   Apartment,
@@ -47,6 +48,7 @@ const NAV_SECTIONS = [
   {
     title: "Patrimoine foncier",
     items: [
+      { label: "Créer un lotissement", route: "/agence/create-lotissement", icon: Landscape, color: "#1b5e20" },
       { label: "Créer un îlot", route: "/agence/create-ilot", icon: Layers, color: "#2e7d32" },
       { label: "Ajouter une parcelle", route: "/agence/create-parcelle", icon: AddLocationAlt, color: "#4caf50" },
       { label: "Parcelles multiples", route: "/agence/create-parcelle-multiple", icon: LibraryAdd, color: "#66bb6a" },

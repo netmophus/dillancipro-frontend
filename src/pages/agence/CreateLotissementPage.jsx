@@ -5,24 +5,15 @@ import {
   Typography,
   TextField,
   Button,
-  Grid,
+  GridLegacy as Grid,
   Card,
-  CardContent,
   Alert,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
   IconButton,
   Tooltip,
   Chip,
   InputAdornment,
   CircularProgress,
   Stack,
-  Divider,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -38,14 +29,23 @@ import {
   CloudUpload,
   VideoLibrary,
   Close,
-  PhotoCamera,
   Landscape,
   Square,
   MyLocation,
+  LocationCity,
+  Place,
+  PhotoLibrary,
+  Clear,
 } from "@mui/icons-material";
 import AgenceLayout from "../../components/agence/AgenceLayout";
 import AgencePageHeader from "../../components/agence/AgencePageHeader";
+import SectionCard from "../../components/admin/SectionCard";
 import api from "../../services/api";
+
+const BLUE = "#3030F9";
+const BLUE_HOVER = "#2020C8";
+const GREEN = "#0A7C4F";
+const NIGHT = "#0e1133";
 
 const EMPTY_FORM = {
   nom: "",
@@ -65,6 +65,142 @@ const isValidUrl = (value) => {
   }
 };
 
+const fmt = (n) => Number(n || 0).toLocaleString("fr-FR");
+
+// Tuile de statistique en tête de page
+const StatTile = ({ icon: Icon, label, value, color }) => (
+  <Box
+    sx={{
+      display: "flex",
+      alignItems: "center",
+      gap: 2,
+      p: 2.5,
+      bgcolor: "#fff",
+      borderRadius: 4,
+      border: "1px solid rgba(15,23,42,0.08)",
+      boxShadow: "0 2px 8px rgba(15,23,42,0.05)",
+    }}
+  >
+    <Box
+      sx={{
+        width: 46,
+        height: 46,
+        borderRadius: "50%",
+        bgcolor: `${color}14`,
+        color,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flexShrink: 0,
+      }}
+    >
+      <Icon />
+    </Box>
+    <Box sx={{ minWidth: 0 }}>
+      <Typography variant="h5" fontWeight="bold" sx={{ color: NIGHT, lineHeight: 1.1 }}>
+        {value}
+      </Typography>
+      <Typography variant="body2" color="text.secondary" noWrap>
+        {label}
+      </Typography>
+    </Box>
+  </Box>
+);
+
+// Carte d'un lotissement dans la liste
+const LotissementCard = ({ lot, onEdit, onDelete }) => {
+  const cover = lot.images?.[0];
+  const hasGps = lot.localisation?.lat !== undefined && lot.localisation?.lng !== undefined;
+  return (
+    <Card
+      elevation={0}
+      sx={{
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        borderRadius: 4,
+        overflow: "hidden",
+        bgcolor: "#fff",
+        border: "1px solid rgba(15,23,42,0.08)",
+        boxShadow: "0 2px 8px rgba(15,23,42,0.05)",
+        transition: "transform .2s ease, box-shadow .2s ease",
+        "&:hover": { transform: "translateY(-3px)", boxShadow: "0 8px 20px rgba(15,23,42,0.10)" },
+      }}
+    >
+      <Box sx={{ position: "relative", height: 150, bgcolor: "rgba(48,48,249,0.07)" }}>
+        {cover ? (
+          <Box component="img" src={cover} alt={lot.nom} sx={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        ) : (
+          <Box sx={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: BLUE }}>
+            <Landscape sx={{ fontSize: 56, opacity: 0.55 }} />
+          </Box>
+        )}
+        {lot.images?.length > 1 && (
+          <Chip
+            size="small"
+            icon={<PhotoLibrary sx={{ color: "#fff !important" }} />}
+            label={lot.images.length}
+            sx={{ position: "absolute", bottom: 8, right: 8, bgcolor: "rgba(14,17,51,0.75)", color: "#fff", fontWeight: 600 }}
+          />
+        )}
+      </Box>
+
+      <Box sx={{ p: 2.5, display: "flex", flexDirection: "column", gap: 1.25, flex: 1 }}>
+        <Typography variant="h6" fontWeight="bold" sx={{ color: NIGHT, lineHeight: 1.25 }}>
+          {lot.nom}
+        </Typography>
+
+        <Stack direction="row" flexWrap="wrap" gap={0.75}>
+          {lot.zone?.nom && (
+            <Chip size="small" icon={<Apartment sx={{ color: `${BLUE} !important` }} />} label={lot.zone.nom} sx={{ bgcolor: "rgba(48,48,249,0.08)", color: BLUE, fontWeight: 600 }} />
+          )}
+          {lot.quartier?.nom && (
+            <Chip size="small" icon={<Place sx={{ color: `${NIGHT} !important` }} />} label={lot.quartier.nom} sx={{ bgcolor: "rgba(14,17,51,0.06)", color: NIGHT, fontWeight: 600 }} />
+          )}
+          {lot.surfaceTotale > 0 && (
+            <Chip size="small" icon={<Square sx={{ color: `${GREEN} !important` }} />} label={`${fmt(lot.surfaceTotale)} m²`} sx={{ bgcolor: "rgba(10,124,79,0.08)", color: GREEN, fontWeight: 600 }} />
+          )}
+        </Stack>
+
+        {lot.description ? (
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}
+          >
+            {lot.description}
+          </Typography>
+        ) : null}
+
+        <Box sx={{ flexGrow: 1 }} />
+
+        <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ pt: 1, borderTop: "1px solid rgba(15,23,42,0.06)" }}>
+          <Stack direction="row" spacing={1.5} alignItems="center" sx={{ color: "text.secondary" }}>
+            <Tooltip title={hasGps ? "Position renseignée" : "Position non renseignée"}>
+              <MyLocation fontSize="small" sx={{ color: hasGps ? GREEN : "rgba(15,23,42,0.25)" }} />
+            </Tooltip>
+            <Tooltip title={`${lot.videos?.length || 0} vidéo(s)`}>
+              <VideoLibrary fontSize="small" sx={{ color: lot.videos?.length ? BLUE : "rgba(15,23,42,0.25)" }} />
+            </Tooltip>
+          </Stack>
+          <Box>
+            <Tooltip title="Modifier">
+              <IconButton size="small" aria-label="Modifier" onClick={() => onEdit(lot)} sx={{ color: BLUE }}>
+                <Edit fontSize="small" />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Supprimer">
+              <IconButton size="small" aria-label="Supprimer" onClick={() => onDelete(lot)} sx={{ color: "#d32f2f" }}>
+                <Delete fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        </Stack>
+      </Box>
+    </Card>
+  );
+};
+
 const CreateLotissementPage = () => {
   const [formData, setFormData] = useState(EMPTY_FORM);
   const [imageFiles, setImageFiles] = useState([]);
@@ -75,6 +211,7 @@ const CreateLotissementPage = () => {
   const [lotissements, setLotissements] = useState([]);
   const [zones, setZones] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [zoneFilter, setZoneFilter] = useState("");
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -94,11 +231,22 @@ const CreateLotissementPage = () => {
     const q = searchTerm.toLowerCase();
     return lotissements.filter(
       (l) =>
-        l.nom?.toLowerCase().includes(q) ||
-        l.zone?.nom?.toLowerCase().includes(q) ||
-        l.quartier?.nom?.toLowerCase().includes(q)
+        (!zoneFilter || l.zone?._id === zoneFilter) &&
+        (l.nom?.toLowerCase().includes(q) ||
+          l.zone?.nom?.toLowerCase().includes(q) ||
+          l.quartier?.nom?.toLowerCase().includes(q))
     );
-  }, [lotissements, searchTerm]);
+  }, [lotissements, searchTerm, zoneFilter]);
+
+  const stats = useMemo(
+    () => ({
+      total: lotissements.length,
+      zones: new Set(lotissements.map((l) => l.zone?._id).filter(Boolean)).size,
+      surface: lotissements.reduce((s, l) => s + (Number(l.surfaceTotale) || 0), 0),
+      photos: lotissements.reduce((s, l) => s + (l.images?.length || 0), 0),
+    }),
+    [lotissements]
+  );
 
   const fetchLotissements = async () => {
     setLoading(true);
@@ -125,6 +273,21 @@ const CreateLotissementPage = () => {
     const ville = zone.quartier?.ville?.nom;
     return ville ? `${zone.nom} (${ville})` : zone.nom;
   };
+
+  // Libellé dans le champ (placeholder), accessible via aria-label et title
+  const ph = (text, extra = {}) => ({
+    placeholder: text,
+    inputProps: { "aria-label": text, title: text, ...extra },
+  });
+
+  // Sélecteur de zone : le libellé s'affiche dans le champ tant que rien n'est choisi
+  const zoneSelectProps = (text) => ({
+    displayEmpty: true,
+    renderValue: (v) => {
+      const z = zones.find((x) => x._id === v);
+      return z ? zoneLabel(z) : <span style={{ color: "rgba(0, 0, 0, 0.6)" }}>{text}</span>;
+    },
+  });
 
   const handleChange = (e) => setFormData((p) => ({ ...p, [e.target.name]: e.target.value }));
   const handleEditChange = (e) => setEditForm((p) => ({ ...p, [e.target.name]: e.target.value }));
@@ -250,6 +413,12 @@ const CreateLotissementPage = () => {
     }
   };
 
+  const iconAdornment = (Icon) => (
+    <InputAdornment position="start">
+      <Icon fontSize="small" color="action" />
+    </InputAdornment>
+  );
+
   return (
     <AgenceLayout>
       <Container maxWidth="xl" sx={{ mb: 4 }}>
@@ -260,316 +429,320 @@ const CreateLotissementPage = () => {
         />
 
         {success && (
-          <Alert severity="success" sx={{ mb: 3 }} onClose={() => setSuccess("")}>
+          <Alert severity="success" sx={{ mb: 3, borderRadius: 3 }} onClose={() => setSuccess("")}>
             {success}
           </Alert>
         )}
         {error && (
-          <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError("")}>
+          <Alert severity="error" sx={{ mb: 3, borderRadius: 3 }} onClose={() => setError("")}>
             {error}
           </Alert>
         )}
 
-        <Grid container spacing={3}>
-          {/* Formulaire de création */}
-          <Grid item xs={12} lg={4}>
-            <Card elevation={0} sx={{ position: "sticky", top: 20, borderRadius: 3, border: "1px solid #e3e8ef" }}>
-              <CardContent sx={{ p: 3 }}>
-                <Box display="flex" alignItems="center" gap={1} mb={3}>
-                  <Add sx={{ color: "#3030F9" }} />
-                  <Typography variant="h6" fontWeight="bold" sx={{ color: "#0e1133" }}>
-                    Nouveau lotissement
-                  </Typography>
-                </Box>
-                <Divider sx={{ mb: 3 }} />
+        {/* Statistiques */}
+        <Grid container spacing={2} sx={{ mb: 3 }}>
+          <Grid item xs={6} md={3}>
+            <StatTile icon={Landscape} label="Lotissements" value={stats.total} color={BLUE} />
+          </Grid>
+          <Grid item xs={6} md={3}>
+            <StatTile icon={Apartment} label="Zones couvertes" value={stats.zones} color={NIGHT} />
+          </Grid>
+          <Grid item xs={6} md={3}>
+            <StatTile icon={Square} label="Surface totale (m²)" value={fmt(stats.surface)} color={GREEN} />
+          </Grid>
+          <Grid item xs={6} md={3}>
+            <StatTile icon={PhotoLibrary} label="Photos" value={stats.photos} color={BLUE} />
+          </Grid>
+        </Grid>
 
-                <Box component="form" onSubmit={handleSubmit}>
-                  <Stack spacing={2.5}>
-                    <TextField
-                      label="Nom du lotissement"
-                      name="nom"
-                      value={formData.nom}
-                      onChange={handleChange}
-                      fullWidth
-                      required
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <Landscape color="action" />
-                          </InputAdornment>
-                        ),
-                      }}
-                    />
+        <Grid container spacing={3} alignItems="flex-start">
+          {/* Formulaire */}
+          <Grid item xs={12} lg={5}>
+            <Box component="form" onSubmit={handleSubmit}>
+              <SectionCard title="Nouveau lotissement" color={BLUE} icon="info" sx={{ "& legend": { display: "none" } }}>
+                <Stack spacing={2.5}>
+                  <TextField
+                    {...ph("Nom du lotissement *")}
+                    name="nom"
+                    value={formData.nom}
+                    onChange={handleChange}
+                    fullWidth
+                    required
+                    InputProps={{ startAdornment: iconAdornment(Landscape) }}
+                  />
+                  <TextField
+                    select
+                    name="zone"
+                    value={formData.zone}
+                    onChange={handleChange}
+                    fullWidth
+                    required
+                    inputProps={{ "aria-label": "Zone", title: "Zone" }}
+                    SelectProps={zoneSelectProps("Zone *")}
+                    InputProps={{ startAdornment: iconAdornment(Apartment) }}
+                  >
+                    {zones.length === 0 ? (
+                      <MenuItem disabled>Aucune zone disponible</MenuItem>
+                    ) : (
+                      zones.map((z) => (
+                        <MenuItem key={z._id} value={z._id}>
+                          {zoneLabel(z)}
+                        </MenuItem>
+                      ))
+                    )}
+                  </TextField>
+                  <TextField
+                    {...ph("Surface totale", { min: 0 })}
+                    name="surfaceTotale"
+                    type="number"
+                    value={formData.surfaceTotale}
+                    onChange={handleChange}
+                    fullWidth
+                    InputProps={{
+                      startAdornment: iconAdornment(Square),
+                      endAdornment: <InputAdornment position="end">m²</InputAdornment>,
+                    }}
+                  />
+                  <TextField
+                    {...ph("Description (facultatif)")}
+                    name="description"
+                    value={formData.description}
+                    onChange={handleChange}
+                    fullWidth
+                    multiline
+                    minRows={2}
+                  />
+                </Stack>
+              </SectionCard>
 
-                    <TextField
-                      select
-                      label="Zone"
-                      name="zone"
-                      value={formData.zone}
-                      onChange={handleChange}
-                      fullWidth
-                      required
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <Apartment color="action" />
-                          </InputAdornment>
-                        ),
-                      }}
-                    >
-                      {zones.length === 0 ? (
-                        <MenuItem disabled>Aucune zone disponible</MenuItem>
-                      ) : (
-                        zones.map((z) => (
-                          <MenuItem key={z._id} value={z._id}>
-                            {zoneLabel(z)}
-                          </MenuItem>
-                        ))
-                      )}
-                    </TextField>
+              <SectionCard title="Localisation" color={GREEN} icon="location" sx={{ "& legend": { display: "none" } }}>
+                <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
+                  <TextField
+                    {...ph("Latitude", { step: "any", min: -90, max: 90 })}
+                    name="lat"
+                    type="number"
+                    value={formData.lat}
+                    onChange={handleChange}
+                    fullWidth
+                    InputProps={{ startAdornment: iconAdornment(MyLocation) }}
+                  />
+                  <TextField
+                    {...ph("Longitude", { step: "any", min: -180, max: 180 })}
+                    name="lng"
+                    type="number"
+                    value={formData.lng}
+                    onChange={handleChange}
+                    fullWidth
+                  />
+                </Stack>
+                <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 1 }}>
+                  Facultatif. Renseignez la latitude et la longitude ensemble.
+                </Typography>
+              </SectionCard>
 
-                    <TextField
-                      label="Surface totale"
-                      name="surfaceTotale"
-                      type="number"
-                      value={formData.surfaceTotale}
-                      onChange={handleChange}
-                      fullWidth
-                      inputProps={{ min: 0 }}
-                      InputProps={{
-                        endAdornment: <InputAdornment position="end">m²</InputAdornment>,
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <Square color="action" />
-                          </InputAdornment>
-                        ),
-                      }}
-                    />
-
-                    <TextField
-                      label="Description"
-                      name="description"
-                      value={formData.description}
-                      onChange={handleChange}
-                      fullWidth
-                      multiline
-                      minRows={2}
-                    />
-
-                    <Stack direction="row" spacing={1.5}>
-                      <TextField
-                        label="Latitude"
-                        name="lat"
-                        type="number"
-                        value={formData.lat}
-                        onChange={handleChange}
-                        fullWidth
-                        inputProps={{ step: "any", min: -90, max: 90 }}
-                        InputProps={{
-                          startAdornment: (
-                            <InputAdornment position="start">
-                              <MyLocation color="action" fontSize="small" />
-                            </InputAdornment>
-                          ),
-                        }}
-                      />
-                      <TextField
-                        label="Longitude"
-                        name="lng"
-                        type="number"
-                        value={formData.lng}
-                        onChange={handleChange}
-                        fullWidth
-                        inputProps={{ step: "any", min: -180, max: 180 }}
-                      />
-                    </Stack>
-
-                    <Divider />
-
-                    <Stack direction="row" alignItems="center" spacing={1}>
-                      <PhotoCamera fontSize="small" color="action" />
-                      <Typography variant="subtitle2" fontWeight="bold" color="text.secondary">
-                        Photos et vidéos (facultatif)
-                      </Typography>
-                    </Stack>
-
-                    <Box>
-                      <input
-                        accept="image/jpeg,image/png,image/webp"
-                        id="lotissement-image-upload"
-                        type="file"
-                        multiple
-                        style={{ display: "none" }}
-                        onChange={handleImageUpload}
-                      />
-                      <label htmlFor="lotissement-image-upload">
-                        <Button variant="outlined" component="span" startIcon={<CloudUpload />} fullWidth>
-                          Ajouter des photos
-                        </Button>
-                      </label>
-                      {imagePreviews.length > 0 && (
-                        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mt: 2 }}>
-                          {imagePreviews.map((preview, index) => (
-                            <Box key={index} sx={{ position: "relative", width: 72, height: 72 }}>
-                              <Box
-                                component="img"
-                                src={preview}
-                                alt={`Photo ${index + 1}`}
-                                sx={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 1.5 }}
-                              />
-                              <IconButton
-                                size="small"
-                                aria-label="Retirer la photo"
-                                onClick={() => removeImage(index)}
-                                sx={{ position: "absolute", top: -8, right: -8, bgcolor: "#fff", boxShadow: 1, p: 0.25 }}
-                              >
-                                <Close fontSize="small" />
-                              </IconButton>
-                            </Box>
-                          ))}
-                        </Box>
-                      )}
-                    </Box>
-
-                    <Box>
-                      <Stack direction="row" spacing={1}>
-                        <TextField
+              <SectionCard title="Photos et vidéos" color={NIGHT} icon="photo">
+                <input
+                  accept="image/jpeg,image/png,image/webp"
+                  id="lotissement-image-upload"
+                  type="file"
+                  multiple
+                  style={{ display: "none" }}
+                  onChange={handleImageUpload}
+                />
+                <label htmlFor="lotissement-image-upload">
+                  <Button
+                    variant="outlined"
+                    component="span"
+                    startIcon={<CloudUpload />}
+                    fullWidth
+                    sx={{ bgcolor: "#fff", borderColor: NIGHT, color: NIGHT, borderRadius: "10px", textTransform: "none", fontWeight: 600, "&:hover": { borderColor: NIGHT, bgcolor: "rgba(14,17,51,0.04)" } }}
+                  >
+                    Ajouter des photos (JPEG, PNG, WebP)
+                  </Button>
+                </label>
+                {imagePreviews.length > 0 && (
+                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1.25, mt: 2 }}>
+                    {imagePreviews.map((preview, index) => (
+                      <Box key={index} sx={{ position: "relative", width: 76, height: 76 }}>
+                        <Box component="img" src={preview} alt={`Photo ${index + 1}`} sx={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 2 }} />
+                        <IconButton
                           size="small"
-                          placeholder="URL de vidéo (YouTube, Vimeo...)"
-                          value={videoInput}
-                          onChange={(e) => setVideoInput(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              e.preventDefault();
-                              addVideo();
-                            }
-                          }}
-                          fullWidth
-                          InputProps={{
-                            startAdornment: (
-                              <InputAdornment position="start">
-                                <VideoLibrary fontSize="small" color="action" />
-                              </InputAdornment>
-                            ),
-                          }}
-                        />
-                        <Button variant="outlined" onClick={addVideo}>
-                          Ajouter
-                        </Button>
-                      </Stack>
-                      {videos.length > 0 && (
-                        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mt: 1.5 }}>
-                          {videos.map((v, i) => (
-                            <Chip
-                              key={i}
-                              size="small"
-                              label={v.length > 30 ? `${v.substring(0, 30)}...` : v}
-                              onDelete={() => setVideos((prev) => prev.filter((_, idx) => idx !== i))}
-                            />
-                          ))}
-                        </Box>
-                      )}
-                    </Box>
+                          aria-label="Retirer la photo"
+                          onClick={() => removeImage(index)}
+                          sx={{ position: "absolute", top: -8, right: -8, bgcolor: "#fff", boxShadow: 1, p: 0.25, "&:hover": { bgcolor: "#fff" } }}
+                        >
+                          <Close fontSize="small" />
+                        </IconButton>
+                      </Box>
+                    ))}
+                  </Box>
+                )}
 
-                    <Button
-                      type="submit"
-                      variant="contained"
-                      size="large"
-                      disabled={submitting}
-                      sx={{ bgcolor: "#3030F9", fontWeight: 700, textTransform: "none", "&:hover": { bgcolor: "#2020C8" } }}
-                    >
-                      {submitting ? <CircularProgress size={22} color="inherit" /> : "Créer le lotissement"}
-                    </Button>
-                  </Stack>
-                </Box>
-              </CardContent>
-            </Card>
+                <Stack direction="row" spacing={1} sx={{ mt: 2.5 }}>
+                  <TextField
+                    size="small"
+                    placeholder="URL de vidéo (YouTube, Vimeo...)"
+                    value={videoInput}
+                    onChange={(e) => setVideoInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        addVideo();
+                      }
+                    }}
+                    inputProps={{ "aria-label": "URL de vidéo", title: "URL de vidéo" }}
+                    fullWidth
+                    InputProps={{ startAdornment: iconAdornment(VideoLibrary) }}
+                  />
+                  <Button
+                    variant="outlined"
+                    onClick={addVideo}
+                    sx={{ bgcolor: "#fff", borderColor: NIGHT, color: NIGHT, borderRadius: "10px", textTransform: "none", fontWeight: 600, "&:hover": { borderColor: NIGHT, bgcolor: "rgba(14,17,51,0.04)" } }}
+                  >
+                    Ajouter
+                  </Button>
+                </Stack>
+                {videos.length > 0 && (
+                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mt: 1.5 }}>
+                    {videos.map((v, i) => (
+                      <Chip
+                        key={i}
+                        size="small"
+                        label={v.length > 32 ? `${v.substring(0, 32)}...` : v}
+                        onDelete={() => setVideos((prev) => prev.filter((_, idx) => idx !== i))}
+                        sx={{ bgcolor: "#fff", fontWeight: 600 }}
+                      />
+                    ))}
+                  </Box>
+                )}
+              </SectionCard>
+
+              <Button
+                type="submit"
+                variant="contained"
+                size="large"
+                fullWidth
+                startIcon={!submitting && <Add />}
+                disabled={submitting}
+                sx={{ bgcolor: BLUE, borderRadius: "10px", py: 1.4, fontWeight: 700, textTransform: "none", "&:hover": { bgcolor: BLUE_HOVER } }}
+              >
+                {submitting ? <CircularProgress size={22} color="inherit" /> : "Créer le lotissement"}
+              </Button>
+            </Box>
           </Grid>
 
           {/* Liste */}
-          <Grid item xs={12} lg={8}>
-            <Card elevation={0} sx={{ borderRadius: 3, border: "1px solid #e3e8ef" }}>
-              <CardContent sx={{ p: 3 }}>
-                <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" alignItems={{ sm: "center" }} spacing={2} mb={2}>
-                  <Typography variant="h6" fontWeight="bold" sx={{ color: "#0e1133" }}>
-                    Mes lotissements ({lotissements.length})
-                  </Typography>
-                  <TextField
-                    size="small"
-                    placeholder="Rechercher..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Search fontSize="small" color="action" />
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
-                </Stack>
+          <Grid item xs={12} lg={7}>
+            <Box
+              sx={{
+                display: "flex",
+                flexWrap: "wrap",
+                alignItems: "center",
+                gap: 1.5,
+                p: 2,
+                mb: 3,
+                bgcolor: "#fff",
+                borderRadius: 4,
+                border: "1px solid rgba(15,23,42,0.08)",
+                boxShadow: "0 2px 8px rgba(15,23,42,0.05)",
+                "& .MuiOutlinedInput-root": { borderRadius: "10px" },
+                "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: BLUE },
+              }}
+            >
+              <Typography variant="h6" fontWeight="bold" sx={{ color: NIGHT, mr: "auto" }}>
+                Mes lotissements ({filtered.length})
+              </Typography>
+              <TextField
+                size="small"
+                placeholder="Rechercher..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                inputProps={{ "aria-label": "Rechercher un lotissement", title: "Rechercher un lotissement" }}
+                sx={{ flex: "1 1 180px", minWidth: 160 }}
+                InputProps={{ startAdornment: iconAdornment(Search) }}
+              />
+              <TextField
+                select
+                size="small"
+                value={zoneFilter}
+                onChange={(e) => setZoneFilter(e.target.value)}
+                SelectProps={{
+                  displayEmpty: true,
+                  renderValue: (v) => (v ? zones.find((z) => z._id === v)?.nom || "" : <span style={{ color: "rgba(0,0,0,0.6)" }}>Toutes les zones</span>),
+                }}
+                inputProps={{ "aria-label": "Filtrer par zone", title: "Filtrer par zone" }}
+                sx={{ flex: "1 1 180px", minWidth: 160 }}
+                InputProps={{ startAdornment: iconAdornment(LocationCity) }}
+              >
+                <MenuItem value="">
+                  <em>Toutes les zones</em>
+                </MenuItem>
+                {zones.map((z) => (
+                  <MenuItem key={z._id} value={z._id}>
+                    {zoneLabel(z)}
+                  </MenuItem>
+                ))}
+              </TextField>
+              {(searchTerm || zoneFilter) && (
+                <Button
+                  size="small"
+                  variant="outlined"
+                  startIcon={<Clear />}
+                  onClick={() => {
+                    setSearchTerm("");
+                    setZoneFilter("");
+                  }}
+                  sx={{ borderColor: BLUE, color: BLUE, borderRadius: "10px", textTransform: "none", fontWeight: 600, "&:hover": { borderColor: BLUE_HOVER, bgcolor: "rgba(48,48,249,0.06)" } }}
+                >
+                  Réinitialiser
+                </Button>
+              )}
+            </Box>
 
-                {loading ? (
-                  <Box display="flex" justifyContent="center" py={6}>
-                    <CircularProgress />
-                  </Box>
-                ) : filtered.length === 0 ? (
-                  <Typography color="text.secondary" textAlign="center" py={6}>
-                    Aucun lotissement.
-                  </Typography>
-                ) : (
-                  <TableContainer component={Paper} elevation={0} sx={{ border: "1px solid rgba(15,23,42,0.08)", borderRadius: 2 }}>
-                    <Table size="small">
-                      <TableHead>
-                        <TableRow sx={{ "& .MuiTableCell-root": { bgcolor: "#f5f7fa", fontWeight: 700, color: "#0e1133" } }}>
-                          <TableCell>Nom</TableCell>
-                          <TableCell>Zone</TableCell>
-                          <TableCell>Quartier</TableCell>
-                          <TableCell align="right">Surface (m²)</TableCell>
-                          <TableCell align="center">Médias</TableCell>
-                          <TableCell align="right">Actions</TableCell>
-                        </TableRow>
-                      </TableHead>
-                      <TableBody>
-                        {filtered.map((lot) => (
-                          <TableRow key={lot._id} hover>
-                            <TableCell sx={{ fontWeight: 600 }}>{lot.nom}</TableCell>
-                            <TableCell>{lot.zone?.nom || "-"}</TableCell>
-                            <TableCell>{lot.quartier?.nom || "-"}</TableCell>
-                            <TableCell align="right">{lot.surfaceTotale ? Number(lot.surfaceTotale).toLocaleString("fr-FR") : "-"}</TableCell>
-                            <TableCell align="center">
-                              <Chip size="small" label={`${lot.images?.length || 0} photo(s)`} sx={{ bgcolor: "rgba(48,48,249,0.08)", color: "#3030F9", fontWeight: 600 }} />
-                            </TableCell>
-                            <TableCell align="right">
-                              <Tooltip title="Modifier">
-                                <IconButton size="small" aria-label="Modifier" onClick={() => openEdit(lot)}>
-                                  <Edit fontSize="small" />
-                                </IconButton>
-                              </Tooltip>
-                              <Tooltip title="Supprimer">
-                                <IconButton size="small" aria-label="Supprimer" onClick={() => handleDelete(lot)}>
-                                  <Delete fontSize="small" color="error" />
-                                </IconButton>
-                              </Tooltip>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </TableContainer>
-                )}
-              </CardContent>
-            </Card>
+            {loading ? (
+              <Box display="flex" justifyContent="center" py={8}>
+                <CircularProgress sx={{ color: BLUE }} />
+              </Box>
+            ) : filtered.length === 0 ? (
+              <Box
+                sx={{
+                  textAlign: "center",
+                  py: 8,
+                  px: 3,
+                  bgcolor: "#fff",
+                  borderRadius: 4,
+                  border: "1px dashed rgba(15,23,42,0.18)",
+                }}
+              >
+                <Landscape sx={{ fontSize: 56, color: BLUE, opacity: 0.4 }} />
+                <Typography variant="h6" fontWeight="bold" sx={{ color: NIGHT, mt: 1 }}>
+                  {lotissements.length === 0 ? "Aucun lotissement pour le moment" : "Aucun résultat"}
+                </Typography>
+                <Typography color="text.secondary">
+                  {lotissements.length === 0
+                    ? "Créez votre premier lotissement avec le formulaire."
+                    : "Modifiez votre recherche ou réinitialisez les filtres."}
+                </Typography>
+              </Box>
+            ) : (
+              <Grid container spacing={2.5}>
+                {filtered.map((lot) => (
+                  <Grid item xs={12} sm={6} key={lot._id}>
+                    <LotissementCard lot={lot} onEdit={openEdit} onDelete={handleDelete} />
+                  </Grid>
+                ))}
+              </Grid>
+            )}
           </Grid>
         </Grid>
 
         {/* Modale d'édition */}
-        <Dialog open={!!editing} onClose={() => setEditing(null)} maxWidth="sm" fullWidth>
-          <DialogTitle>Modifier le lotissement</DialogTitle>
+        <Dialog open={!!editing} onClose={() => setEditing(null)} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 4, "& legend": { display: "none" } } }}>
+          <DialogTitle sx={{ fontWeight: "bold", color: NIGHT }}>Modifier le lotissement</DialogTitle>
           <DialogContent>
             <Stack spacing={2.5} sx={{ mt: 1 }}>
-              <TextField label="Nom du lotissement" name="nom" value={editForm.nom} onChange={handleEditChange} fullWidth required />
-              <TextField select label="Zone" name="zone" value={editForm.zone} onChange={handleEditChange} fullWidth>
+              <TextField {...ph("Nom du lotissement *")} name="nom" value={editForm.nom} onChange={handleEditChange} fullWidth required />
+              <TextField select name="zone" value={editForm.zone} onChange={handleEditChange} fullWidth inputProps={{ "aria-label": "Zone", title: "Zone" }} SelectProps={zoneSelectProps("Zone *")}>
                 {zones.map((z) => (
                   <MenuItem key={z._id} value={z._id}>
                     {zoneLabel(z)}
@@ -577,28 +750,29 @@ const CreateLotissementPage = () => {
                 ))}
               </TextField>
               <TextField
-                label="Surface totale (m²)"
+                {...ph("Surface totale (m²)", { min: 0 })}
                 name="surfaceTotale"
                 type="number"
                 value={editForm.surfaceTotale}
                 onChange={handleEditChange}
                 fullWidth
-                inputProps={{ min: 0 }}
               />
-              <TextField label="Description" name="description" value={editForm.description} onChange={handleEditChange} fullWidth multiline minRows={2} />
+              <TextField {...ph("Description (facultatif)")} name="description" value={editForm.description} onChange={handleEditChange} fullWidth multiline minRows={2} />
               <Stack direction="row" spacing={1.5}>
-                <TextField label="Latitude" name="lat" type="number" value={editForm.lat} onChange={handleEditChange} fullWidth inputProps={{ step: "any" }} />
-                <TextField label="Longitude" name="lng" type="number" value={editForm.lng} onChange={handleEditChange} fullWidth inputProps={{ step: "any" }} />
+                <TextField {...ph("Latitude", { step: "any" })} name="lat" type="number" value={editForm.lat} onChange={handleEditChange} fullWidth />
+                <TextField {...ph("Longitude", { step: "any" })} name="lng" type="number" value={editForm.lng} onChange={handleEditChange} fullWidth />
               </Stack>
             </Stack>
           </DialogContent>
-          <DialogActions sx={{ px: 3, pb: 2 }}>
-            <Button onClick={() => setEditing(null)}>Annuler</Button>
+          <DialogActions sx={{ px: 3, pb: 2.5 }}>
+            <Button onClick={() => setEditing(null)} sx={{ textTransform: "none", color: NIGHT }}>
+              Annuler
+            </Button>
             <Button
               variant="contained"
               onClick={handleSaveEdit}
               disabled={savingEdit}
-              sx={{ bgcolor: "#3030F9", textTransform: "none", "&:hover": { bgcolor: "#2020C8" } }}
+              sx={{ bgcolor: BLUE, borderRadius: "10px", textTransform: "none", fontWeight: 700, "&:hover": { bgcolor: BLUE_HOVER } }}
             >
               Enregistrer
             </Button>
