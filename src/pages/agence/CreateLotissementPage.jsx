@@ -14,6 +14,8 @@ import {
   InputAdornment,
   CircularProgress,
   Stack,
+  Tabs,
+  Tab,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -36,6 +38,8 @@ import {
   Place,
   PhotoLibrary,
   Clear,
+  ViewList,
+  AddCircle,
 } from "@mui/icons-material";
 import AgenceLayout from "../../components/agence/AgenceLayout";
 import SectionCard from "../../components/admin/SectionCard";
@@ -173,34 +177,51 @@ const LotissementCard = ({ lot, onEdit, onDelete }) => {
 
         <Box sx={{ flexGrow: 1 }} />
 
-        <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ pt: 1, borderTop: "1px solid rgba(15,23,42,0.06)" }}>
-          <Stack direction="row" spacing={1.5} alignItems="center" sx={{ color: "text.secondary" }}>
-            <Tooltip title={hasGps ? "Position renseignée" : "Position non renseignée"}>
-              <MyLocation fontSize="small" sx={{ color: hasGps ? GREEN : "rgba(15,23,42,0.25)" }} />
-            </Tooltip>
-            <Tooltip title={`${lot.videos?.length || 0} vidéo(s)`}>
-              <VideoLibrary fontSize="small" sx={{ color: lot.videos?.length ? BLUE : "rgba(15,23,42,0.25)" }} />
-            </Tooltip>
-          </Stack>
-          <Stack direction="row" spacing={1}>
-            <Button
-              size="small"
-              startIcon={<Edit fontSize="small" />}
-              onClick={() => onEdit(lot)}
-              sx={{ bgcolor: "rgba(48,48,249,0.08)", color: BLUE, borderRadius: "8px", textTransform: "none", fontWeight: 600, px: 1.5, "&:hover": { bgcolor: "rgba(48,48,249,0.16)" } }}
-            >
-              Modifier
-            </Button>
-            <Button
-              size="small"
-              startIcon={<Delete fontSize="small" />}
-              onClick={() => onDelete(lot)}
-              sx={{ bgcolor: "rgba(211,47,47,0.08)", color: "#d32f2f", borderRadius: "8px", textTransform: "none", fontWeight: 600, px: 1.5, "&:hover": { bgcolor: "rgba(211,47,47,0.16)" } }}
-            >
-              Supprimer
-            </Button>
-          </Stack>
+        {/* Indicateurs (information seulement) */}
+        <Stack direction="row" spacing={1.5} alignItems="center">
+          <Tooltip title={hasGps ? "Position renseignée" : "Position non renseignée"}>
+            <MyLocation
+              role="img"
+              aria-label={hasGps ? "Position renseignée" : "Position non renseignée"}
+              fontSize="small"
+              sx={{ color: hasGps ? GREEN : "rgba(15,23,42,0.25)" }}
+            />
+          </Tooltip>
+          <Tooltip title={`${lot.videos?.length || 0} vidéo(s)`}>
+            <VideoLibrary
+              role="img"
+              aria-label={`${lot.videos?.length || 0} vidéo(s)`}
+              fontSize="small"
+              sx={{ color: lot.videos?.length ? BLUE : "rgba(15,23,42,0.25)" }}
+            />
+          </Tooltip>
         </Stack>
+
+        {/* Barre d'actions en bas de carte */}
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
+            gap: 1,
+            pt: 1.5,
+            borderTop: "1px solid #e5e7eb",
+          }}
+        >
+          <Button
+            startIcon={<Edit fontSize="small" />}
+            onClick={() => onEdit(lot)}
+            sx={{ flex: 1, minWidth: 0, px: 1, bgcolor: "rgba(48,48,249,0.08)", color: BLUE, borderRadius: "8px", textTransform: "none", fontWeight: 600, "&:hover": { bgcolor: "rgba(48,48,249,0.16)" } }}
+          >
+            Modifier
+          </Button>
+          <Button
+            startIcon={<Delete fontSize="small" />}
+            onClick={() => onDelete(lot)}
+            sx={{ flex: 1, minWidth: 0, px: 1, bgcolor: "rgba(211,47,47,0.08)", color: "#d32f2f", borderRadius: "8px", textTransform: "none", fontWeight: 600, "&:hover": { bgcolor: "rgba(211,47,47,0.16)" } }}
+          >
+            Supprimer
+          </Button>
+        </Box>
       </Box>
     </Card>
   );
@@ -221,6 +242,7 @@ const CreateLotissementPage = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [tab, setTab] = useState(0); // 0 = Mes lotissements, 1 = Créer
 
   // Modale d'édition
   const [editing, setEditing] = useState(null);
@@ -353,6 +375,7 @@ const CreateLotissementPage = () => {
         headers: { "Content-Type": "multipart/form-data" },
       });
       setSuccess("Lotissement créé avec succès !");
+      setTab(0);
       setFormData(EMPTY_FORM);
       setImageFiles([]);
       setImagePreviews([]);
@@ -491,9 +514,49 @@ const CreateLotissementPage = () => {
           </Grid>
         </Grid>
 
-        <Grid container spacing={3} alignItems="flex-start">
-          {/* Formulaire */}
-          <Grid item xs={12} lg={5}>
+        {/* Onglets */}
+        <Box
+          sx={{
+            mb: 3,
+            bgcolor: "#fff",
+            borderRadius: 4,
+            border: "1px solid rgba(15,23,42,0.08)",
+            boxShadow: "0 2px 8px rgba(15,23,42,0.05)",
+            px: 1,
+          }}
+        >
+          <Tabs
+            value={tab}
+            onChange={(_, v) => setTab(v)}
+            variant="scrollable"
+            scrollButtons="auto"
+            aria-label="Gestion des lotissements"
+            TabIndicatorProps={{ sx: { bgcolor: BLUE, height: 3, borderRadius: 2 } }}
+            sx={{
+              "& .MuiTab-root": { textTransform: "none", fontWeight: 600, color: "rgba(15,23,42,0.6)", minHeight: 52 },
+              "& .MuiTab-root.Mui-selected": { color: BLUE },
+            }}
+          >
+            <Tab
+              icon={<ViewList />}
+              iconPosition="start"
+              label={`Mes lotissements (${lotissements.length})`}
+              id="lot-tab-0"
+              aria-controls="lot-panel-0"
+            />
+            <Tab
+              icon={<AddCircle />}
+              iconPosition="start"
+              label="Créer un lotissement"
+              id="lot-tab-1"
+              aria-controls="lot-panel-1"
+            />
+          </Tabs>
+        </Box>
+
+        {/* Panneau 1 : formulaire (reste monté pour conserver la saisie) */}
+        <Box role="tabpanel" hidden={tab !== 1} id="lot-panel-1" aria-labelledby="lot-tab-1" sx={{ maxWidth: 820, mx: "auto" }}>
+          <Box>
             <Box component="form" onSubmit={handleSubmit}>
               <SectionCard title="Nouveau lotissement" color={BLUE} icon="info" sx={{ "& legend": { display: "none" } }}>
                 <Stack spacing={2.5}>
@@ -665,10 +728,12 @@ const CreateLotissementPage = () => {
                 {submitting ? <CircularProgress size={22} color="inherit" /> : "Créer le lotissement"}
               </Button>
             </Box>
-          </Grid>
+          </Box>
+        </Box>
 
-          {/* Liste */}
-          <Grid item xs={12} lg={7}>
+        {/* Panneau 0 : liste */}
+        <Box role="tabpanel" hidden={tab !== 0} id="lot-panel-0" aria-labelledby="lot-tab-0">
+          <Box>
             <Box
               sx={{
                 display: "flex",
@@ -763,14 +828,14 @@ const CreateLotissementPage = () => {
             ) : (
               <Grid container spacing={2.5}>
                 {filtered.map((lot) => (
-                  <Grid item xs={12} sm={6} key={lot._id}>
+                  <Grid item xs={12} sm={6} lg={4} key={lot._id}>
                     <LotissementCard lot={lot} onEdit={openEdit} onDelete={handleDelete} />
                   </Grid>
                 ))}
               </Grid>
             )}
-          </Grid>
-        </Grid>
+          </Box>
+        </Box>
 
         {/* Modale d'édition */}
         <Dialog open={!!editing} onClose={() => setEditing(null)} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 4, "& legend": { display: "none" } } }}>
