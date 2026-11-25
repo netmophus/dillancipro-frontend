@@ -184,7 +184,7 @@ const AgenceLayout = ({ children }) => {
   );
 
   return (
-    <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column", bgcolor: "#eef2f7" }}>
+    <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column", bgcolor: "#e8ebf0" }}>
       {/* Toolbar de recherche conservée en haut */}
       <Navbar />
 

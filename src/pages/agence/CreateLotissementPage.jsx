@@ -38,7 +38,6 @@ import {
   Clear,
 } from "@mui/icons-material";
 import AgenceLayout from "../../components/agence/AgenceLayout";
-import AgencePageHeader from "../../components/agence/AgencePageHeader";
 import SectionCard from "../../components/admin/SectionCard";
 import api from "../../services/api";
 
@@ -183,18 +182,24 @@ const LotissementCard = ({ lot, onEdit, onDelete }) => {
               <VideoLibrary fontSize="small" sx={{ color: lot.videos?.length ? BLUE : "rgba(15,23,42,0.25)" }} />
             </Tooltip>
           </Stack>
-          <Box>
-            <Tooltip title="Modifier">
-              <IconButton size="small" aria-label="Modifier" onClick={() => onEdit(lot)} sx={{ color: BLUE }}>
-                <Edit fontSize="small" />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Supprimer">
-              <IconButton size="small" aria-label="Supprimer" onClick={() => onDelete(lot)} sx={{ color: "#d32f2f" }}>
-                <Delete fontSize="small" />
-              </IconButton>
-            </Tooltip>
-          </Box>
+          <Stack direction="row" spacing={1}>
+            <Button
+              size="small"
+              startIcon={<Edit fontSize="small" />}
+              onClick={() => onEdit(lot)}
+              sx={{ bgcolor: "rgba(48,48,249,0.08)", color: BLUE, borderRadius: "8px", textTransform: "none", fontWeight: 600, px: 1.5, "&:hover": { bgcolor: "rgba(48,48,249,0.16)" } }}
+            >
+              Modifier
+            </Button>
+            <Button
+              size="small"
+              startIcon={<Delete fontSize="small" />}
+              onClick={() => onDelete(lot)}
+              sx={{ bgcolor: "rgba(211,47,47,0.08)", color: "#d32f2f", borderRadius: "8px", textTransform: "none", fontWeight: 600, px: 1.5, "&:hover": { bgcolor: "rgba(211,47,47,0.16)" } }}
+            >
+              Supprimer
+            </Button>
+          </Stack>
         </Stack>
       </Box>
     </Card>
@@ -422,11 +427,42 @@ const CreateLotissementPage = () => {
   return (
     <AgenceLayout>
       <Container maxWidth="xl" sx={{ mb: 4 }}>
-        <AgencePageHeader
-          icon={Landscape}
-          title="Gestion des Lotissements"
-          subtitle="Regroupez vos îlots par lotissement au sein d'une zone"
-        />
+        {/* Bandeau local en aplat bleu nuit */}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 2.5,
+            mb: 3.5,
+            p: { xs: 2.5, md: 3.5 },
+            bgcolor: NIGHT,
+            color: "#fff",
+            borderRadius: 4,
+          }}
+        >
+          <Box
+            sx={{
+              width: 56,
+              height: 56,
+              borderRadius: "50%",
+              bgcolor: "rgba(255,255,255,0.15)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}
+          >
+            <Landscape fontSize="large" />
+          </Box>
+          <Box sx={{ minWidth: 0 }}>
+            <Typography variant="h4" fontWeight="bold">
+              Gestion des Lotissements
+            </Typography>
+            <Typography variant="body1" sx={{ color: "rgba(255,255,255,0.85)", mt: 0.5 }}>
+              Regroupez vos îlots par lotissement au sein d'une zone
+            </Typography>
+          </Box>
+        </Box>
 
         {success && (
           <Alert severity="success" sx={{ mb: 3, borderRadius: 3 }} onClose={() => setSuccess("")}>
