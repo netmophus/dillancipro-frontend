@@ -233,7 +233,7 @@ const CreateBienPage = () => {
     const files = Array.from(e.target.files);
     
     // Vérifier qu'on ne dépasse pas 5 photos
-    if (imageFiles.length + files.length > 5) {
+    if (imagePreviews.length + files.length > 5) {
       setError("Vous ne pouvez ajouter que 5 photos maximum");
       return;
     }
@@ -250,7 +250,15 @@ const CreateBienPage = () => {
   };
 
   const removeImage = (index) => {
-    setImageFiles((prev) => prev.filter((_, i) => i !== index));
+    // Les nouvelles photos ont un aperçu "data:" (FileReader), les existantes une URL.
+    // Seules les nouvelles ont un fichier correspondant dans imageFiles.
+    const isNew = imagePreviews[index]?.startsWith("data:");
+    if (isNew) {
+      const fileIndex = imagePreviews
+        .slice(0, index)
+        .filter((p) => p.startsWith("data:")).length;
+      setImageFiles((prev) => prev.filter((_, i) => i !== fileIndex));
+    }
     setImagePreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
@@ -310,7 +318,7 @@ const CreateBienPage = () => {
     );
 
     // Vérifier qu'on ne dépasse pas 5 photos
-    if (imageFiles.length + files.length > 5) {
+    if (imagePreviews.length + files.length > 5) {
       setError("Vous ne pouvez ajouter que 5 photos maximum");
       return;
     }
@@ -347,8 +355,8 @@ const CreateBienPage = () => {
         }
       }
       
-      // Vérifier le total des photos (existantes + nouvelles)
-      const totalImages = imagePreviews.length + imageFiles.length;
+      // Vérifier le total des photos (aperçus = total réel en création comme en édition)
+      const totalImages = imagePreviews.length;
       if (totalImages > 5) {
         setError("Vous ne pouvez avoir que 5 photos maximum au total");
         setLoading(false);
@@ -1440,8 +1448,8 @@ const CreateBienPage = () => {
                           Images
                         </Typography>
                         <Chip 
-                          label={`${imageFiles.length}/5`}
-                          color={imageFiles.length >= 2 ? "success" : "error"}
+                          label={`${imagePreviews.length}/5`}
+                          color={imagePreviews.length >= 2 ? "success" : "error"}
                           size="small"
                         />
                         <Typography variant="caption" color="error">
@@ -1457,10 +1465,10 @@ const CreateBienPage = () => {
                           textAlign: "center",
                           borderStyle: "dashed",
                           borderWidth: 2,
-                          borderColor: imageFiles.length >= 2 ? "success.main" : "primary.main",
+                          borderColor: imagePreviews.length >= 2 ? "success.main" : "primary.main",
                           cursor: "pointer",
                           mb: 2,
-                          bgcolor: imageFiles.length >= 5 ? "grey.100" : "transparent",
+                          bgcolor: imagePreviews.length >= 5 ? "grey.100" : "transparent",
                         }}
                       >
                         <input
@@ -1470,13 +1478,13 @@ const CreateBienPage = () => {
                           type="file"
                           multiple
                           onChange={handleImageUpload}
-                          disabled={imageFiles.length >= 5}
+                          disabled={imagePreviews.length >= 5}
                         />
                         <label htmlFor="image-upload">
-                          <Box sx={{ cursor: imageFiles.length >= 5 ? "not-allowed" : "pointer" }}>
-                            <CloudUpload fontSize="large" color={imageFiles.length >= 5 ? "disabled" : "primary"} />
+                          <Box sx={{ cursor: imagePreviews.length >= 5 ? "not-allowed" : "pointer" }}>
+                            <CloudUpload fontSize="large" color={imagePreviews.length >= 5 ? "disabled" : "primary"} />
                             <Typography>
-                              {imageFiles.length >= 5 
+                              {imagePreviews.length >= 5 
                                 ? "Limite de 5 photos atteinte" 
                                 : "Glissez vos images ou cliquez ici"}
                             </Typography>
