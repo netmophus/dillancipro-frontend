@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import LogoCSS from "./LogoCSS";
+import LogoDillanci from "./LogoDillanci";
 import {
   AppBar,
   Toolbar,
@@ -37,16 +37,39 @@ import {
   Instagram,
   Gavel,
 } from "@mui/icons-material";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import AgenceMenu from "../agence/AgenceMenu";
 import NotificationPanel from "./NotificationPanel";
 
+// Identité visuelle de l'en-tête
+const NIGHT = "#101C36";
+const BLUE = "#1859E8";
+const BLUE_DARK = "#1346BE";
+// Verts de la barre supérieure : identiques à ceux du ruban SVG de la courbe du hero (#07966B -> #2FD39B)
+const TOPBAR_GREEN = "#07966B";
+const TOPBAR_GREEN_LIGHT = "#2FD39B";
+const GREY_LIGHT = "#F3F6FA";
+const NAV_FONT = '"Plus Jakarta Sans", "Manrope", "DM Sans", system-ui, Arial, sans-serif';
+
+// Liens de navigation : texte sobre, fond clair au survol
+const navLinkSx = {
+  fontFamily: NAV_FONT,
+  textTransform: "none",
+  fontWeight: 600,
+  fontSize: 15,
+  color: NIGHT,
+  px: 1.5,
+  py: 0.9,
+  borderRadius: "10px",
+  minWidth: 0,
+  "& .MuiButton-startIcon": { mr: 0.75, "& > *:nth-of-type(1)": { fontSize: 18 } },
+  "&:hover": { bgcolor: GREY_LIGHT, color: BLUE },
+};
+
 const Navbar = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  // Le logo ne déborde sous la barre que sur la page d'accueil (hero bleu)
-  const isHome = useLocation().pathname === "/";
   const [anchorEl, setAnchorEl] = useState(null);
   const [mobileMenuAnchor, setMobileMenuAnchor] = useState(null);
   const [notificationPanelOpen, setNotificationPanelOpen] = useState(false);
@@ -183,139 +206,140 @@ const Navbar = () => {
 
   return (
     <>
-      {/* Top Bar - Contact & Social */}
+      {/* Barre supérieure : coordonnées sur bleu nuit, réseaux sociaux sur vert avec transition en S */}
       <Box
         sx={{
-          bgcolor: "#0D2B4E",
-          py: 1,
-          px: 3,
-          display: { xs: "none", md: "flex" },
-          justifyContent: "space-between",
-          alignItems: "center",
-          borderBottom: "2px solid #27AE60",
+          position: "relative",
+          width: "100%",
+          boxSizing: "border-box",
+          height: { xs: 46, sm: 54, md: 64 },
+          bgcolor: NIGHT,
+          borderBottom: `3px solid ${TOPBAR_GREEN}`,
+          overflow: "hidden",
         }}
       >
-        <Box display="flex" alignItems="center" gap={4}>
-          <Box display="flex" alignItems="center" gap={1.5}>
-            <Box
-              sx={{
-                bgcolor: "#1B5285",
-                borderRadius: "50%",
-                width: 32,
-                height: 32,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                boxShadow: "0 2px 8px rgba(27,82,133,0.4)",
-                transition: "all 0.3s ease",
-                "&:hover": {
-                  bgcolor: "#27AE60",
-                  transform: "scale(1.1)"
-                }
-              }}
-            >
-              <Phone fontSize="small" sx={{ color: "white" }} />
-            </Box>
-            <Typography variant="body2" sx={{ fontWeight: "600", color: "white", fontSize: "0.82rem" }}>
-              +22780648383
-            </Typography>
-          </Box>
-          <Box display="flex" alignItems="center" gap={1.5}>
-            <Box
-              sx={{
-                bgcolor: "#1B5285",
-                borderRadius: "50%",
-                width: 32,
-                height: 32,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                boxShadow: "0 2px 8px rgba(27,82,133,0.4)",
-                transition: "all 0.3s ease",
-                "&:hover": {
-                  bgcolor: "#27AE60",
-                  transform: "scale(1.1)"
-                }
-              }}
-            >
-              <Email fontSize="small" sx={{ color: "white" }} />
-            </Box>
-            <Typography variant="body2" sx={{ color: "white", opacity: 0.9, fontSize: "0.82rem" }}>
-              contact@miznas-patrimoine.ne
-            </Typography>
+        {/* Partie verte (droite) : courbe en S en SVG, mêmes verts que le ruban du hero */}
+        <Box
+          sx={{
+            position: "absolute",
+            top: 0,
+            right: 0,
+            bottom: 0,
+            width: { xs: "50%", sm: "44%", md: "40%" },
+            pointerEvents: "none",
+          }}
+        >
+          <Box
+            component="svg"
+            viewBox="0 0 100 64"
+            preserveAspectRatio="none"
+            aria-hidden="true"
+            sx={{ position: "absolute", inset: 0, width: "100%", height: "100%", display: "block" }}
+          >
+            <defs>
+              <linearGradient id="topbarGreen" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stopColor={TOPBAR_GREEN} />
+                <stop offset="100%" stopColor={TOPBAR_GREEN_LIGHT} />
+              </linearGradient>
+            </defs>
+            <path d="M26 0 H100 V64 H8 C 30 44, 2 20, 26 0 Z" fill="url(#topbarGreen)" />
           </Box>
         </Box>
 
-        <Box display="flex" alignItems="center" gap={1}>
-          <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.7)", mr: 1, fontSize: "0.78rem" }}>
-            Suivez-nous :
-          </Typography>
-          {[Facebook, Twitter, LinkedIn, Instagram].map((Icon, idx) => (
-            <IconButton
-              key={idx}
-              size="small"
-              sx={{
-                color: "white",
-                bgcolor: "#1B5285",
-                borderRadius: "50%",
-                width: 32,
-                height: 32,
-                "&:hover": {
-                  bgcolor: "#27AE60",
-                  transform: "scale(1.1)"
-                },
-                transition: "all 0.3s ease",
-                boxShadow: "0 2px 6px rgba(27,82,133,0.3)"
-              }}
-            >
-              <Icon sx={{ fontSize: 16 }} />
-            </IconButton>
-          ))}
+        {/* Contenu : 60 % coordonnées, 40 % réseaux sociaux */}
+        <Box
+          sx={{
+            position: "relative",
+            zIndex: 1,
+            height: "100%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            pl: { xs: 2, sm: 3, md: 5 },
+            pr: { xs: 1.5, sm: 3, md: 5 },
+            gap: 1,
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", minWidth: 0, flexShrink: 1 }}>
+            <Box component="a" href="tel:+22780648383" sx={{ display: "flex", alignItems: "center", gap: { xs: 0.75, md: 1.25 }, color: "#fff", textDecoration: "none" }}>
+              <Phone sx={{ fontSize: { xs: 16, md: 22 }, color: "#fff" }} />
+              <Typography sx={{ fontFamily: NAV_FONT, fontWeight: 600, color: "#fff", fontSize: { xs: 13, sm: 14, md: 16 }, whiteSpace: "nowrap" }}>
+                +22780648383
+              </Typography>
+            </Box>
+            <Box
+              aria-hidden="true"
+              sx={{ display: { xs: "none", sm: "block" }, width: "1px", height: { sm: 22, md: 28 }, bgcolor: "rgba(255,255,255,0.35)", mx: { sm: 2, md: 3 } }}
+            />
+            <Box component="a" href="mailto:contact@miznas-patrimoine.ne" sx={{ display: { xs: "none", sm: "flex" }, alignItems: "center", gap: { sm: 0.75, md: 1.25 }, color: "#fff", textDecoration: "none", minWidth: 0 }}>
+              <Email sx={{ fontSize: { sm: 18, md: 22 }, color: "#fff" }} />
+              <Typography sx={{ fontFamily: NAV_FONT, color: "#fff", fontSize: { sm: 14, md: 16 }, whiteSpace: "nowrap" }}>
+                contact@miznas-patrimoine.ne
+              </Typography>
+            </Box>
+          </Box>
+
+          <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 0.75, sm: 1, md: 2 }, flexShrink: 0 }}>
+            <Typography sx={{ display: { xs: "none", lg: "block" }, fontFamily: NAV_FONT, color: "#fff", fontWeight: 600, fontSize: 16, mr: 0.5, whiteSpace: "nowrap" }}>
+              Suivez-nous :
+            </Typography>
+            {[
+              { Icon: Facebook, label: "Facebook" },
+              { Icon: Twitter, label: "Twitter" },
+              { Icon: LinkedIn, label: "LinkedIn" },
+              { Icon: Instagram, label: "Instagram" },
+            ].map(({ Icon, label }) => (
+              <IconButton
+                key={label}
+                aria-label={label}
+                sx={{
+                  width: { xs: 30, sm: 34, md: 42 },
+                  height: { xs: 30, sm: 34, md: 42 },
+                  p: 0,
+                  bgcolor: "#fff",
+                  color: TOPBAR_GREEN,
+                  boxShadow: "0 2px 6px rgba(16,28,54,0.18)",
+                  transition: "transform 0.2s ease, box-shadow 0.2s ease",
+                  "&:hover": {
+                    bgcolor: "#fff",
+                    transform: "translateY(-2px) scale(1.07)",
+                    boxShadow: "0 6px 14px rgba(16,28,54,0.28)",
+                  },
+                }}
+              >
+                <Icon sx={{ fontSize: { xs: 17, sm: 20, md: 24 } }} />
+              </IconButton>
+            ))}
+          </Box>
         </Box>
       </Box>
 
       <AppBar
         position="sticky"
+        color="inherit"
+        elevation={0}
         sx={{
-          background: "#0e1133",
-          boxShadow: "0 4px 20px rgba(13,43,78,0.35)",
-          overflow: "visible",
+          bgcolor: "#fff",
+          color: NIGHT,
+          borderBottom: "1px solid #E6EAF0",
+          boxShadow: "0 2px 10px rgba(16,28,54,0.05)",
         }}
       >
         <Toolbar
+          disableGutters
           sx={{
-            minHeight: { xs: 60, md: 72 },
-            px: { xs: 1.5, sm: 3 },
-            overflow: "visible",
+            minHeight: { xs: 64, md: 80 },
+            boxSizing: "border-box",
+            maxWidth: 1440,
+            width: "100%",
+            mx: "auto",
+            px: { xs: 1.5, sm: 3, lg: 5 },
           }}
         >
-        {isHome ? (
-          /* Accueil : le logo déborde sous la barre sans modifier le flux (position absolute) */
-          <Box
-            sx={{
-              flexGrow: 1,
-              position: "relative",
-              height: { xs: 60, md: 72 },
-              overflow: "visible",
-            }}
-          >
-            <Box
-              sx={{
-                position: "absolute",
-                top: { xs: 2, sm: 4, md: 6 },
-                left: 0,
-                zIndex: (theme) => theme.zIndex.appBar + 1,
-              }}
-            >
-              <LogoCSS size="float" />
-            </Box>
-          </Box>
-        ) : (
-          /* Autres pages : logo de taille normale, contenu dans la barre */
-          <Box sx={{ flexGrow: 1, display: "flex", alignItems: "center" }}>
-            <LogoCSS size="md" />
-          </Box>
-        )}
+        {/* Logo à gauche */}
+        <Box sx={{ flexGrow: 1, display: "flex", alignItems: "center" }}>
+          <LogoDillanci />
+        </Box>
 
         {user ? (
           <Box
@@ -334,10 +358,7 @@ const Navbar = () => {
                 startIcon={<Landscape />}
                 sx={{
                   display: { xs: "none", md: "flex" },
-                  bgcolor: "rgba(255,255,255,0.15)",
-                  "&:hover": { bgcolor: "rgba(255,255,255,0.25)" },
-                  borderRadius: 2,
-                  px: 2,
+                  ...navLinkSx,
                 }}
               >
                 Parcelles à vendre
@@ -353,10 +374,7 @@ const Navbar = () => {
                 startIcon={<Home />}
                 sx={{
                   display: { xs: "none", md: "flex" },
-                  bgcolor: "rgba(255,255,255,0.15)",
-                  "&:hover": { bgcolor: "rgba(255,255,255,0.25)" },
-                  borderRadius: 2,
-                  px: 2,
+                  ...navLinkSx,
                 }}
               >
                 Locations
@@ -372,10 +390,7 @@ const Navbar = () => {
                 startIcon={<Business />}
                 sx={{
                   display: { xs: "none", md: "flex" },
-                  bgcolor: "rgba(255,255,255,0.15)",
-                  "&:hover": { bgcolor: "rgba(255,255,255,0.25)" },
-                  borderRadius: 2,
-                  px: 2,
+                  ...navLinkSx,
                 }}
               >
                 Biens à vendre
@@ -390,10 +405,7 @@ const Navbar = () => {
               startIcon={<Dashboard />}
               sx={{
                 display: { xs: "none", md: "flex" },
-                bgcolor: "rgba(255,255,255,0.15)",
-                "&:hover": { bgcolor: "rgba(255,255,255,0.25)" },
-                borderRadius: 2,
-                px: 2,
+                ...navLinkSx,
               }}
             >
               Dashboard
@@ -441,7 +453,7 @@ const Navbar = () => {
               onClick={handleMenu}
                 sx={{
                   ml: 1,
-                  border: "2px solid rgba(255,255,255,0.3)",
+                  border: "2px solid #E6EAF0",
                 }}
               >
                 <Avatar
@@ -598,10 +610,7 @@ const Navbar = () => {
               to="/parcelles"
               startIcon={<Landscape />}
               sx={{
-                bgcolor: "rgba(255,255,255,0.15)",
-                "&:hover": { bgcolor: "rgba(255,255,255,0.25)" },
-                borderRadius: 2,
-                px: 2,
+                ...navLinkSx,
               }}
             >
               Parcelles à vendre
@@ -613,10 +622,7 @@ const Navbar = () => {
               to="/locations"
               startIcon={<Home />}
               sx={{
-                bgcolor: "rgba(255,255,255,0.15)",
-                "&:hover": { bgcolor: "rgba(255,255,255,0.25)" },
-                borderRadius: 2,
-                px: 2,
+                ...navLinkSx,
               }}
             >
               Locations
@@ -628,10 +634,7 @@ const Navbar = () => {
               to="/biens"
               startIcon={<Business />}
               sx={{
-                bgcolor: "rgba(255,255,255,0.15)",
-                "&:hover": { bgcolor: "rgba(255,255,255,0.25)" },
-                borderRadius: 2,
-                px: 2,
+                ...navLinkSx,
               }}
             >
               Biens à vendre
@@ -641,9 +644,13 @@ const Navbar = () => {
               component={Link}
               to="/login"
               sx={{
-                bgcolor: "rgba(255,255,255,0.15)",
-                "&:hover": { bgcolor: "rgba(255,255,255,0.25)" },
-                borderRadius: 2,
+                ...navLinkSx,
+                color: BLUE,
+                bgcolor: "#fff",
+                border: `1.5px solid ${BLUE}`,
+                px: 2.25,
+                ml: 1,
+                "&:hover": { bgcolor: "#EAF1FF", color: BLUE_DARK, borderColor: BLUE_DARK },
               }}
             >
               Connexion
@@ -652,11 +659,14 @@ const Navbar = () => {
               variant="contained"
               component={Link}
               to="/register"
+              disableElevation
               sx={{
-                bgcolor: "white",
-                color: "primary.main",
-                "&:hover": { bgcolor: "rgba(255,255,255,0.9)" },
-                borderRadius: 2,
+                ...navLinkSx,
+                bgcolor: BLUE,
+                color: "#fff",
+                px: 2.25,
+                boxShadow: "0 4px 12px rgba(24,89,232,0.25)",
+                "&:hover": { bgcolor: BLUE_DARK, color: "#fff" },
               }}
             >
               Inscription
@@ -686,7 +696,7 @@ const Navbar = () => {
                 edge="end"
                 onClick={handleMenu}
                 sx={{
-                  border: "2px solid rgba(255,255,255,0.3)",
+                  border: "2px solid #E6EAF0",
                 }}
               >
                 <Avatar

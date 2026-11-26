@@ -35,11 +35,19 @@ import {
 } from "@mui/material";
 import {
   Business,
+  PersonAddAlt1,
+  Balance,
+  HomeWork,
+  VerifiedUser,
+  Bolt,
+  HeadsetMic,
+  HomeOutlined,
+  BusinessOutlined,
+  LandscapeOutlined,
+  GroupsOutlined,
   AccountBalance,
   Landscape,
   TrendingUp,
-  Security,
-  Speed,
   Groups,
   CheckCircle,
   ArrowForward,
@@ -53,7 +61,6 @@ import {
   Login,
   AppRegistration,
   KeyboardArrowRight,
-  Support,
   Dashboard,
   Notifications,
   Person,
@@ -109,7 +116,6 @@ const HomePage = () => {
   const [agencesCarouselIndex, setAgencesCarouselIndex] = useState(0);
   
   // État pour l'affichage progressif des features (initialement 3)
-  const [featuresDisplayed, setFeaturesDisplayed] = useState(3);
   
   // État pour l'affichage progressif des agences (initialement 3)
   const [agencesDisplayed, setAgencesDisplayed] = useState(3);
@@ -286,44 +292,138 @@ const HomePage = () => {
 
 
 
+  // Couleurs des cartes "Pourquoi choisir Dillanci" (principale -> secondaire)
+  const CARD_TONES = {
+    "Transactions sécurisées": { main: "#008577", dark: "#005C53" },
+    "Biens géolocalisés": { main: "#1455D9", dark: "#12369C" },
+    "Parcours simplifié": { main: "#F57C00", dark: "#B84B00" },
+    "Écosystème connecté": { main: "#8B25CC", dark: "#551499" },
+    "Suivi en temps réel": { main: "#008FC5", dark: "#00568C" },
+    "Accompagnement professionnel": { main: "#254AB5", dark: "#172D78" },
+  };
+
+  // Cartes d'entrée vers les listes de partenaires (ancres des sections existantes)
+  const PARTNER_CARDS = [
+    {
+      key: "banques",
+      title: "Banques partenaires",
+      description: "Découvrez les biens immobiliers issus des immobilisations hors exploitation des banques partenaires : terrains, villas, immeubles et autres actifs immobiliers.",
+      cta: "Voir les biens bancaires",
+      main: "#006B48",
+      dark: "#00543A",
+      photo: "/images/partenaire-banque.webp",
+      Icon: AccountBalance,
+      target: "section-banques",
+    },
+    {
+      key: "notaires",
+      title: "Notaires partenaires",
+      description: "Bénéficiez d'un accompagnement juridique pour sécuriser vos ventes immobilières, vérifier les documents et formaliser les actes de vente.",
+      cta: "Nos notaires",
+      main: "#0754B8",
+      dark: "#073681",
+      photo: "/images/partenaire-notaire.webp",
+      Icon: Balance,
+      target: "section-notaires",
+    },
+    {
+      key: "agences",
+      title: "Agences immobilières",
+      description: "Découvrez les biens proposés par nos agences partenaires : villas, maisons, appartements, jardins, parcelles, immeubles et locaux commerciaux.",
+      cta: "Découvrir les biens",
+      main: "#A31550",
+      dark: "#800B3B",
+      photo: "/images/partenaire-agence.webp",
+      Icon: HomeWork,
+      target: "section-agences",
+    },
+  ];
+
+  // Profils de la section "Rejoignez l'écosystème" : les flèches utilisent les parcours existants
+  const ECO_PROFILES = [
+    {
+      key: "agences",
+      title: "Agences immobilières",
+      description: "Publiez et commercialisez vos biens immobiliers : villas, maisons, appartements, jardins, parcelles et locaux commerciaux.",
+      main: "#A31550",
+      light: "#FDF2F6",
+      Icon: HomeWork,
+      action: () => setOpenPartenaireDialog(true),
+    },
+    {
+      key: "banques",
+      title: "Banques partenaires",
+      description: "Commercialisez vos immobilisations hors exploitation : immeubles, villas, terrains et autres actifs immobiliers.",
+      main: "#008557",
+      light: "#EFF8F3",
+      Icon: AccountBalance,
+      action: () => setOpenPartenaireDialog(true),
+    },
+    {
+      key: "notaires",
+      title: "Notaires et services compétents",
+      description: "Sécurisez et accompagnez les transactions immobilières : vérification des documents, actes de vente et formalités.",
+      main: "#1859E8",
+      light: "#EFF5FF",
+      Icon: Balance,
+      action: () => setOpenPartenaireDialog(true),
+    },
+    {
+      key: "particuliers",
+      title: "Particuliers et clients",
+      description: "Recherchez, achetez, vendez ou louez un bien immobilier en toute confiance.",
+      main: "#E87500",
+      light: "#FFF5E9",
+      Icon: Groups,
+      action: () => navigate("/register"),
+    },
+  ];
+
+  const SHOW_PARTNER_LISTS = false;
+
+  const scrollToSection = (id) => {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   const features = [
     {
-      icon: <Security fontSize="large" />,
+      icon: <VerifiedUser fontSize="inherit" />,
       title: "Transactions sécurisées",
       description: "Vérification renforcée des biens et meilleure sécurisation des opérations immobilières.",
       color: "#0A7C4F",
       gradient: ["#0A7C4F", "#065F3D"],
     },
     {
-      icon: <LocationOn fontSize="large" />,
+      icon: <LocationOn fontSize="inherit" />,
       title: "Biens géolocalisés",
       description: "Localisez les biens avec précision pour mieux apprécier leur emplacement et leur environnement.",
       color: "#3030F9",
       gradient: ["#3030F9", "#2020C8"],
     },
     {
-      icon: <Speed fontSize="large" />,
+      icon: <Bolt fontSize="inherit" />,
       title: "Parcours simplifié",
       description: "Publication, consultation et mise en relation facilitées pour accélérer vos démarches immobilières.",
       color: "#0A7C4F",
       gradient: ["#0A7C4F", "#065F3D"],
     },
     {
-      icon: <Groups fontSize="large" />,
+      icon: <Groups fontSize="inherit" />,
       title: "Écosystème connecté",
       description: "Agences, banques, notaires, services compétents et particuliers réunis sur une même plateforme.",
       color: "#3030F9",
       gradient: ["#3030F9", "#2020C8"],
     },
     {
-      icon: <TrendingUp fontSize="large" />,
+      icon: <TrendingUp fontSize="inherit" />,
       title: "Suivi en temps réel",
       description: "Accédez à l'historique complet des transactions et suivez l'évolution de vos biens instantanément.",
       color: "#0A7C4F",
       gradient: ["#0A7C4F", "#065F3D"],
     },
     {
-      icon: <Support fontSize="large" />,
+      icon: <HeadsetMic fontSize="inherit" />,
       title: "Accompagnement professionnel",
       description: "Bénéficiez d'un support dédié et de conseils d'experts pour toutes vos démarches immobilières.",
       color: "#0A7C4F",
@@ -503,11 +603,6 @@ const HomePage = () => {
 
   // Fonctions de navigation du carrousel des features
   // Fonctions de navigation du carrousel des features avec scroll-snap
-  // Fonction pour afficher 3 cartes supplémentaires
-  const handleShowMoreFeatures = () => {
-    setFeaturesDisplayed((prev) => Math.min(prev + 3, features.length));
-  };
-
   const handleShowMoreAgences = () => {
     setAgencesDisplayed((prev) => Math.min(prev + 3, homepageAgences.length));
   };
@@ -520,661 +615,457 @@ const HomePage = () => {
   return (
     <Box sx={{ width: "100%", minHeight: "100vh", display: "flex", flexDirection: "column", bgcolor: "#f5f7fa" }}>
       <Navbar />
-      {/* Hero Section - Design Moderne */}
+      {/* Hero Section : photo plein cadre, voile bleu lumineux à gauche, courbe en bas */}
       <Box
+        component="section"
         sx={{
-          background: "#3030F9",
-          backgroundImage: "url(/images/hero-immo.jpg)",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          color: "white",
-          pt: 0,
-          pb: { xs: 8, md: 12 },
           position: "relative",
-          overflow: "hidden",
           width: "100%",
+          overflow: "hidden",
+          color: "#fff",
+          // Bleu de repli si la photo n'est pas encore disponible
+          backgroundColor: "#1F6FD1",
+          backgroundImage: "url(/images/hero-villa.webp)",
+          backgroundSize: "cover",
+          backgroundPosition: "center right",
+          backgroundRepeat: "no-repeat",
           "&::before": {
             content: '""',
             position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: "rgba(48,48,249,0.82)",
+            inset: 0,
+            background:
+              "linear-gradient(180deg, rgba(3,65,145,0.92) 0%, rgba(4,84,178,0.82) 100%)",
             pointerEvents: "none",
           },
-        }}
-      >
-      <Container
-  maxWidth="xl"
-  sx={{
-    px: { xs: 1.5, sm: 3, md: 4 },
-    position: "relative",
-    zIndex: 1,
-    pt: { xs: 2, sm: 3, md: 4 },
-    pb: { xs: 4, sm: 6, md: 8 },
-    width: "100%",
-  }}
->
-  <Grid
-    container
-    spacing={{ xs: 4, md: 6 }}
-    alignItems="center"
-    justifyContent="space-between"
-    // Sur mobile, on affiche d'abord le texte puis la carte stats
-    direction={{ xs: "column", md: "row" }}
-  >
-    {/* Colonne texte */}
-    <Grid
-      item
-      xs={12}
-      md={6}
-      sx={{
-        textAlign: { xs: "center", md: "left" },
-      }}
-    >
-      <Typography
-        variant="h2"
-        component="h1"
-        fontWeight={800}
-        sx={{
-          // h1 conservé pour le SEO / l'accessibilité, masqué visuellement (aucun espace occupé)
-          position: "absolute",
-          width: "1px",
-          height: "1px",
-          m: "-1px",
-          p: 0,
-          overflow: "hidden",
-          clip: "rect(0 0 0 0)",
-          whiteSpace: "nowrap",
-          border: 0,
-        }}
-      >
-        Dillanci
-      </Typography>
-
-      {/* Espaceur invisible : garde la hauteur de l'ancien titre pour ne pas remonter le hero (le logo déborde dessous) */}
-      <Typography
-        variant="h2"
-        component="div"
-        aria-hidden="true"
-        fontWeight={800}
-        gutterBottom
-        sx={{
-          visibility: "hidden",
-          fontSize: {
-            xs: "2rem",
-            sm: "2.3rem",
-            md: "2.8rem",
-            lg: "3.1rem",
-          },
-          lineHeight: { xs: 1.15, md: 1.2 },
-          letterSpacing: { xs: 0.5, md: 1 },
-        }}
-      >
-        &nbsp;
-      </Typography>
-
-      <Typography
-        variant="h5"
-        sx={{
-          mb: 1.5,
-          opacity: 0.95,
-          fontWeight: 600,
-          fontSize: {
-            xs: "1rem",
-            sm: "1.15rem",
-            md: "1.25rem",
-          },
-          lineHeight: 1.4,
-        }}
-      >
-        La plateforme des acteurs de l'immobilier au Niger
-      </Typography>
-
-      <Typography
-        variant="subtitle1"
-        sx={{
-          mb: 2.5,
-          opacity: 0.85,
-          fontSize: {
-            xs: "0.9rem",
-            sm: "1rem",
-          },
-          fontStyle: "italic",
-        }}
-      >
-        Gérez, achetez et vendez vos biens en toute confiance
-      </Typography>
-
-      <Typography
-        variant="body1"
-        sx={{
-          mb: 4,
-          fontSize: {
-            xs: "0.9rem",
-            sm: "1rem",
-          },
-          opacity: 0.88,
-          maxWidth: { xs: "100%", md: 520 },
-          mx: { xs: "auto", md: 0 },
-          lineHeight: 1.7,
-        }}
-      >
-        Une plateforme intégrée reliant agences immobilières, banques partenaires, notaires, services compétents et particuliers pour sécuriser, vérifier et faciliter les transactions immobilières.
-      </Typography>
-
-      <Stack
-        direction={{ xs: "column", sm: "row" }}
-        spacing={2}
-        sx={{
-          width: { xs: "100%", sm: "auto" },
-          alignItems: { xs: "stretch", sm: "center" },
-          justifyContent: { sm: "flex-start" },
-        }}
-      >
-      <Button
-  variant="contained"
-  size="large"
-  onClick={() => navigate("/register")}
-  sx={{
-    bgcolor: "white",
-    color: "#3030F9",
-    fontWeight: "bold",
-    px: { xs: 2.4, md: 4 },
-    py: { xs: 1.15, md: 1.4 },
-    width: { xs: "100%", sm: "auto" },
-    fontSize: {
-      xs: "0.85rem",
-      md: "0.95rem",
-    },
-    borderRadius: 2,
-    boxShadow: "0 8px 24px rgba(15,23,42,0.45)",
-    textTransform: "uppercase",
-    "&:hover": {
-      bgcolor: "#f9fafb",
-      transform: { xs: "none", md: "translateY(-2px)" },
-      boxShadow: "0 12px 32px rgba(15,23,42,0.55)",
-    },
-    transition: "all 0.25s ease",
-    // 🔽 Spécial très petits écrans (< 350px)
-    "@media (max-width:350px)": {
-      fontSize: "0.7rem",
-      px: 1.8,
-      py: 0.9,
-    },
-  }}
-  endIcon={<Dashboard sx={{ fontSize: "1.1rem" }} />}
->
-  S&apos;INSCRIRE GRATUITEMENT
-</Button>
-
-<Button
-  variant="outlined"
-  size="large"
-  onClick={() => navigate("/login")}
-  sx={{
-    borderColor: "rgba(255,255,255,0.8)",
-    borderWidth: 2,
-    color: "white",
-    fontWeight: "bold",
-    px: { xs: 2.4, md: 4 },
-    py: { xs: 1.15, md: 1.4 },
-    width: { xs: "100%", sm: "auto" },
-    fontSize: {
-      xs: "0.85rem",
-      md: "0.95rem",
-    },
-    borderRadius: 2,
-    bgcolor: "rgba(15,23,42,0.35)",
-    backdropFilter: "blur(10px)",
-    textTransform: "uppercase",
-    "&:hover": {
-      borderColor: "white",
-      bgcolor: "rgba(15,23,42,0.6)",
-      transform: { xs: "none", md: "translateY(-2px)" },
-      boxShadow: "0 10px 30px rgba(15,23,42,0.55)",
-    },
-    transition: "all 0.25s ease",
-    // 🔽 Spécial très petits écrans (< 350px)
-    "@media (max-width:350px)": {
-      fontSize: "0.7rem",
-      px: 1.8,
-      py: 0.9,
-    },
-  }}
-  endIcon={<ArrowForward sx={{ fontSize: "1.1rem" }} />}
->
-  SE CONNECTER
-</Button>
-
-      </Stack>
-    </Grid>
-
-    {/* Colonne stats / carte droite */}
-    <Grid item xs={12} md={6}>
-      <Paper
-        elevation={0}
-        sx={{
-          p: { xs: 2.5, sm: 3, md: 4 },
-          borderRadius: { xs: 3, md: 4 },
-          bgcolor: "rgba(15,23,42,0.7)",
-          backdropFilter: "blur(22px)",
-          border: "1px solid rgba(148,163,184,0.5)",
-          boxShadow: "0 18px 45px rgba(15,23,42,0.65)",
-          maxWidth: { xs: "100%", md: 480 },
-          mx: { xs: "auto", md: "unset" },
-          transition: "all 0.3s ease",
-          "&:hover": {
-            transform: { xs: "none", md: "translateY(-4px)" },
-            boxShadow: "0 22px 55px rgba(15,23,42,0.75)",
+          "@media (min-width:1024px)": {
+            minHeight: 600,
+            "&::before": {
+              background:
+                "linear-gradient(90deg, rgba(3,65,145,0.98) 0%, rgba(4,84,178,0.88) 25%, rgba(5,91,180,0.45) 47%, rgba(5,91,180,0) 72%)",
+            },
           },
         }}
       >
-        <Typography
-          variant="subtitle2"
+        {/* Conteneur interne : 1440 px max, marges latérales de 5 % */}
+        <Box
           sx={{
-            textTransform: "uppercase",
-            letterSpacing: 1.2,
-            fontSize: "0.75rem",
-            mb: 1.5,
-            color: "white",
-            fontWeight: 600,
+            position: "relative",
+            zIndex: 1,
+            boxSizing: "border-box",
+            maxWidth: 1440,
+            mx: "auto",
+            px: { xs: 2.5, sm: 4, lg: "5%" },
+            pt: { xs: 5, sm: 6, lg: 8 },
+            pb: { xs: 11, sm: 13, lg: 15 },
+            display: "grid",
+            gridTemplateColumns: "1fr",
+            gap: { xs: 4, lg: 3 },
+            alignItems: "stretch",
+            "@media (min-width:1024px)": {
+              gridTemplateColumns: "48fr 52fr",
+              minHeight: 600,
+            },
           }}
         >
-          EN UN COUP D&apos;ŒIL
-        </Typography>
-        <Typography
-          variant="h6"
-          sx={{
-            mb: 3,
-            fontSize: { xs: "1rem", sm: "1.1rem" },
-            color: "white",
-            opacity: 0.95,
-          }}
-        >
-          Un écosystème complet pour structurer la gestion foncière et immobilière.
-        </Typography>
+          {/* Colonne gauche */}
+          <Box sx={{ textAlign: { xs: "center", lg: "left" }, alignSelf: "center" }}>
+            <Box
+              sx={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 1,
+                px: 1.75,
+                py: 0.75,
+                mb: 2.5,
+                borderRadius: "999px",
+                bgcolor: "rgba(80,150,255,0.35)",
+                border: "1px solid rgba(255,255,255,0.28)",
+              }}
+            >
+              <HomeOutlined sx={{ fontSize: 18, color: "#fff" }} />
+              <Typography sx={{ fontFamily: "'Plus Jakarta Sans', 'Manrope', 'DM Sans', system-ui, Arial, sans-serif", fontSize: 14, fontWeight: 600, color: "#fff", lineHeight: 1 }}>
+                Immobilier au Niger
+              </Typography>
+            </Box>
 
-        <Grid container spacing={2}>
-          {[
-            { label: "Agences", value: stats.agences, color: "#3030F9" },
-            { label: "Parcelles", value: stats.parcelles, color: "#0A7C4F" },
-            { label: "Biens", value: stats.biens, color: "#0A7C4F" },
-            { label: "Clients", value: stats.clients, color: "#ef4444" },
-          ].map((item) => (
-            <Grid key={item.label} item xs={6}>
-              <Box
+            <Typography
+              variant="h1"
+              sx={{
+                fontFamily: "'Plus Jakarta Sans', 'Manrope', 'DM Sans', system-ui, Arial, sans-serif",
+                fontWeight: 800,
+                color: "#fff",
+                fontSize: "clamp(32px, 3.2vw, 54px)",
+                lineHeight: 1.12,
+                letterSpacing: "-0.02em",
+                maxWidth: 650,
+                mx: { xs: "auto", lg: 0 },
+                whiteSpace: "normal",
+              }}
+            >
+              <Box component="span" sx={{ display: { xs: "inline", lg: "block" } }}>La plateforme des </Box>
+              <Box component="span" sx={{ display: { xs: "inline", lg: "block" } }}>acteurs de l’immobilier </Box>
+              <Box component="span" sx={{ display: { xs: "inline", lg: "block" } }}>au Niger</Box>
+            </Typography>
+
+            {/* Courbe verte décorative */}
+            <Box
+              component="svg"
+              viewBox="0 0 96 14"
+              aria-hidden="true"
+              sx={{ display: "block", width: 96, height: 14, mt: 1.75, mb: 2.5, mx: { xs: "auto", lg: 0 } }}
+            >
+              <path
+                d="M3 9 C 18 2, 32 2, 46 8 S 76 14, 93 5"
+                fill="none"
+                stroke="#2FD39B"
+                strokeWidth="4"
+                strokeLinecap="round"
+              />
+            </Box>
+
+            <Typography
+              sx={{
+                fontSize: { xs: 16, md: 17 },
+                lineHeight: 1.6,
+                color: "#fff",
+                maxWidth: 580,
+                mx: { xs: "auto", lg: 0 },
+                mb: 4,
+              }}
+            >
+              Connectez les agences, banques, notaires et particuliers pour un marché immobilier plus simple, sécurisé et accessible.
+            </Typography>
+
+            <Stack
+              direction={{ xs: "column", sm: "row" }}
+              spacing={2}
+              sx={{
+                alignItems: { xs: "stretch", sm: "center" },
+                justifyContent: { xs: "center", lg: "flex-start" },
+              }}
+            >
+              <Button
+                variant="contained"
+                disableElevation
+                onClick={() => navigate("/register")}
+                endIcon={<ArrowForward sx={{ fontSize: 20 }} />}
                 sx={{
-                  textAlign: "left",
-                  p: { xs: 1.5, sm: 1.75 },
-                  borderRadius: 2,
-                  bgcolor: "rgba(15,23,42,0.9)",
-                  border: "1px solid rgba(51,65,85,0.9)",
+                  bgcolor: "#fff",
+                  color: "#1859E8",
+                  fontWeight: 700,
+                  height: 52,
+                  px: 3.5,
+                  borderRadius: "12px",
+                  textTransform: "none",
+                  fontSize: 16,
+                  boxShadow: "0 6px 18px rgba(3,40,100,0.25)",
+                  "&:hover": { bgcolor: "#F3F6FA" },
                 }}
               >
-                <Typography
-                  variant="h4"
-                  fontWeight="bold"
-                  sx={{
-                    fontSize: { xs: "1.5rem", sm: "1.8rem", md: "2rem" },
-                    color: item.color,
-                    mb: 0.5,
-                  }}
-                >
-                  {item.value}+
-                </Typography>
-                <Typography
-                  variant="body2"
-                  sx={{
-                    fontSize: { xs: "0.75rem", sm: "0.85rem" },
-                    letterSpacing: 0.4,
-                    fontWeight: 500,
-                    color: item.color,
-                  }}
-                >
-                  {item.label}
-                </Typography>
-              </Box>
-            </Grid>
-          ))}
-        </Grid>
-      </Paper>
-    </Grid>
-  </Grid>
-</Container>
+                S&apos;inscrire gratuitement
+              </Button>
 
+              <Button
+                variant="outlined"
+                onClick={() => navigate("/login")}
+                sx={{
+                  borderColor: "#fff",
+                  borderWidth: 1.5,
+                  color: "#fff",
+                  fontWeight: 700,
+                  height: 52,
+                  px: 3.5,
+                  borderRadius: "12px",
+                  textTransform: "none",
+                  fontSize: 16,
+                  "&:hover": { borderColor: "#fff", borderWidth: 1.5, bgcolor: "rgba(255,255,255,0.14)" },
+                }}
+              >
+                Se connecter
+              </Button>
+            </Stack>
+          </Box>
 
-  {/* Forme décorative entre le hero et la section suivante */}
-<Box
-  sx={{
-    position: "absolute",
-    bottom: { xs: -30, sm: -50 },
-    left: 0,
-    right: 0,
-    height: { xs: 70, sm: 100 },
-    bgcolor: "#f5f7fa",
-    clipPath: "polygon(0 50%, 100% 0, 100% 100%, 0 100%)",
-    pointerEvents: "none",
-  }}
-/>
-</Box>
-
-{/* Features Section */}
-<Container
-  maxWidth="xl"
-  sx={{
-    py: { xs: 5, sm: 6, md: 8 },
-    px: { xs: 1.5, sm: 3 },
-  }}
->
-  {/* Section moderne "Pourquoi choisir Dillanci" */}
-  <Box
-    sx={{
-      position: "relative",
-      mb: { xs: 4, md: 6 },
-      textAlign: "center",
-    }}
-  >
-    {/* Badge moderne au-dessus du titre */}
-    <Box
-      sx={{
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 1,
-        px: { xs: 2, sm: 2.5 },
-        py: { xs: 0.8, sm: 1 },
-        mb: { xs: 2, md: 3 },
-        borderRadius: "50px",
-        background: "rgba(48, 48, 249, 0.08)",
-        border: "1px solid rgba(48, 48, 249, 0.2)",
-        backdropFilter: "blur(10px)",
-      }}
-    >
-      <Star sx={{ fontSize: { xs: 18, md: 20 }, color: "#0A7C4F" }} />
-      <Typography
-        variant="caption"
-        sx={{
-          fontWeight: 600,
-          fontSize: { xs: "0.75rem", sm: "0.85rem" },
-          color: "#3030F9",
-        }}
-      >
-        Pourquoi nous choisir ?
-      </Typography>
-    </Box>
-
-    {/* Titre principal avec effet de gradient */}
-    <Typography
-      variant="h3"
-      fontWeight="bold"
-      sx={{
-        fontSize: {
-          xs: "clamp(1.8rem, 5vw, 2.5rem)",
-          sm: "clamp(2.2rem, 4.5vw, 3rem)",
-          md: "clamp(2.5rem, 3.5vw, 3.5rem)",
-        },
-        mb: { xs: 2, md: 3 },
-        color: "#0e1133",
-        lineHeight: 1.2,
-        letterSpacing: "-0.02em",
-      }}
-    >
-      Pourquoi choisir Dillanci ?
-    </Typography>
-
-    {/* Sous-titre moderne */}
-    <Typography
-      variant="h6"
-      sx={{
-        mb: { xs: 5, md: 7 },
-        maxWidth: 800,
-        mx: "auto",
-        fontSize: {
-          xs: "clamp(1rem, 3vw, 1.15rem)",
-          sm: "clamp(1.1rem, 2.5vw, 1.25rem)",
-          md: "1.3rem",
-        },
-        color: "text.secondary",
-        lineHeight: { xs: 1.6, md: 1.7 },
-        px: { xs: 2, sm: 3 },
-        fontWeight: 400,
-      }}
-    >
-      La solution pensée pour rendre l'immobilier plus fiable, plus accessible et mieux organisé au Niger.
-    </Typography>
-
-    {/* Grille moderne des features */}
-    <Box
-      sx={{
-        mx: "auto",
-        maxWidth: 1400,
-        width: "100%",
-        position: "relative",
-      }}
-    >
-      <Grid 
-        container 
-        spacing={{ xs: 3, sm: 4, md: 5 }}
-        sx={{
-          width: "100%",
-          margin: 0,
-        }}
-      >
-        {features.slice(0, featuresDisplayed).map((feature, index) => (
-          <Grid 
-            item 
-            xs={12} 
-            sm={6} 
-            md={4}
-            key={index}
-            sx={{
-              display: "flex",
-              flexBasis: { xs: "100%", sm: "calc(50% - 16px)", md: "calc(33.333% - 27px)" },
-              maxWidth: { xs: "100%", sm: "calc(50% - 16px)", md: "calc(33.333% - 27px)" },
-              flexGrow: 0,
-              flexShrink: 0,
-            }}
-          >
-            <Card
-              elevation={0}
+          {/* Colonne droite : carte des indicateurs, en bas, au-dessus du jardin */}
+          <Box sx={{ display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
+            <Box
               sx={{
                 width: "100%",
-                height: "100%",
+                bgcolor: "rgba(255,255,255,0.95)",
+                borderRadius: "20px",
+                boxShadow: "0 10px 30px rgba(3,40,100,0.18)",
+                display: "grid",
+                gridTemplateColumns: { xs: "repeat(2, 1fr)", sm: "repeat(4, 1fr)" },
+                overflow: "hidden",
+              }}
+            >
+              {[
+                { label: "Agences", value: stats.agences, color: "#1859E8", Icon: BusinessOutlined },
+                { label: "Parcelles", value: stats.parcelles, color: "#07966B", Icon: LandscapeOutlined },
+                { label: "Biens", value: stats.biens, color: "#1859E8", Icon: HomeOutlined },
+                { label: "Clients", value: stats.clients, color: "#07966B", Icon: GroupsOutlined },
+              ].map((item, idx) => (
+                <Box
+                  key={item.label}
+                  sx={{
+                    px: 1.5,
+                    py: { xs: 2, sm: 2.25 },
+                    minHeight: { sm: 135 },
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    textAlign: "center",
+                    // Séparateurs verticaux gris clair
+                    borderLeft: {
+                      xs: idx % 2 === 1 ? "1px solid #E3E8EF" : "none",
+                      sm: idx > 0 ? "1px solid #E3E8EF" : "none",
+                    },
+                    borderTop: { xs: idx > 1 ? "1px solid #E3E8EF" : "none", sm: "none" },
+                  }}
+                >
+                  <item.Icon sx={{ fontSize: 30, color: item.color, mb: 0.75 }} />
+                  <Typography
+                    sx={{
+                      fontFamily: "'Plus Jakarta Sans', 'Manrope', 'DM Sans', system-ui, Arial, sans-serif",
+                      fontWeight: 800,
+                      fontSize: { xs: 28, md: 32 },
+                      lineHeight: 1.1,
+                      color: "#101C36",
+                    }}
+                  >
+                    {item.value}+
+                  </Typography>
+                  <Typography sx={{ fontSize: { xs: 13, md: 14 }, fontWeight: 500, color: "#4A5568", mt: 0.5 }}>
+                    {item.label}
+                  </Typography>
+                </Box>
+              ))}
+            </Box>
+          </Box>
+        </Box>
+
+        {/* Courbe inférieure : ruban vert, touche bleu clair, grande courbe aux couleurs de la page */}
+        <Box
+          component="svg"
+          viewBox="0 0 1440 120"
+          preserveAspectRatio="none"
+          aria-hidden="true"
+          sx={{
+            position: "absolute",
+            left: 0,
+            bottom: -1,
+            width: "100%",
+            height: { xs: 56, sm: 80, lg: 120 },
+            display: "block",
+            pointerEvents: "none",
+            zIndex: 2,
+          }}
+        >
+          <defs>
+            <linearGradient id="heroRibbon" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="#07966B" />
+              <stop offset="55%" stopColor="#2FD39B" />
+              <stop offset="100%" stopColor="#07966B" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          <path d="M0 62 C 360 120, 760 30, 1440 70 L1440 84 C 760 48, 360 138, 0 80 Z" fill="url(#heroRibbon)" />
+          <path d="M0 88 C 420 130, 900 40, 1440 76 L1440 96 C 900 62, 420 150, 0 100 Z" fill="#7DB4F5" fillOpacity="0.35" />
+          <path d="M0 84 C 420 126, 900 36, 1440 72 L1440 120 L0 120 Z" fill="#EDF0F4" />
+        </Box>
+      </Box>
+
+{/* Section "Pourquoi choisir Dillanci" */}
+<Box component="section" sx={{ bgcolor: "#EDF0F4", width: "100%", overflow: "hidden" }}>
+  <Box
+    sx={{
+      boxSizing: "border-box",
+      maxWidth: 1440,
+      mx: "auto",
+      px: { xs: 2.5, sm: 4, md: 5, lg: 7.5 },
+      py: { xs: 5, md: 7.5 },
+    }}
+  >
+    {/* En-tête : badge, titre sur deux lignes, courbe verte */}
+    <Box sx={{ textAlign: "center", mb: { xs: 4, md: 6 } }}>
+      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: { xs: 1.5, sm: 3 }, mb: 3 }}>
+        <Box aria-hidden="true" sx={{ width: { xs: 28, sm: 80 }, height: 3, borderRadius: "2px", background: "linear-gradient(90deg, rgba(24,89,232,0) 0%, #1859E8 100%)" }} />
+        <Typography
+          component="p"
+          sx={{
+            m: 0,
+            fontFamily: "'Manrope', 'Plus Jakarta Sans', 'DM Sans', system-ui, Arial, sans-serif",
+            fontSize: { xs: 22, sm: 28, md: 34 },
+            fontWeight: 800,
+            letterSpacing: "0.01em",
+            lineHeight: 1.2,
+            color: "#1859E8",
+          }}
+        >
+          Pourquoi choisir Dillanci ?
+        </Typography>
+        <Box aria-hidden="true" sx={{ width: { xs: 28, sm: 80 }, height: 3, borderRadius: "2px", background: "linear-gradient(90deg, #1859E8 0%, rgba(24,89,232,0) 100%)" }} />
+      </Box>
+
+      <Typography
+        variant="h2"
+        sx={{
+          fontFamily: "'Manrope', 'Plus Jakarta Sans', 'DM Sans', system-ui, Arial, sans-serif",
+          fontWeight: 800,
+          fontSize: { xs: "clamp(24px, 6.5vw, 30px)", sm: "clamp(28px, 4.5vw, 36px)", lg: "clamp(38px, 2.9vw, 42px)" },
+          lineHeight: 1.2,
+          letterSpacing: "-0.02em",
+        }}
+      >
+        <Box component="span" sx={{ display: "block", color: "#101C36" }}>Une plateforme complète et fiable</Box>
+        <Box component="span" sx={{ display: "block", color: "#07966B" }}>pour tous les acteurs de l’immobilier</Box>
+      </Typography>
+
+      <Box
+        component="svg"
+        viewBox="0 0 96 14"
+        aria-hidden="true"
+        sx={{ display: "block", width: 96, height: 14, mt: 1.75, mx: "auto" }}
+      >
+        <path d="M3 9 C 18 2, 32 2, 46 8 S 76 14, 93 5" fill="none" stroke="#2FD39B" strokeWidth="4" strokeLinecap="round" />
+      </Box>
+    </Box>
+
+    {/* Deux colonnes : cartes 65 % / photographie 35 % */}
+    <Box
+      sx={{
+        display: "grid",
+        gridTemplateColumns: { xs: "1fr", lg: "65fr 35fr" },
+        gap: { xs: 4, lg: 4 },
+        alignItems: "stretch",
+      }}
+    >
+      {/* Six cartes : 3 colonnes x 2 lignes sur desktop */}
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)", lg: "repeat(3, 1fr)" },
+          gridAutoRows: "1fr",
+          gap: "20px",
+        }}
+      >
+        {features.map((feature) => {
+          const tone = CARD_TONES[feature.title] || { main: "#1455D9", dark: "#12369C" };
+          return (
+            <Box
+              key={feature.title}
+              sx={{
+                position: "relative",
                 display: "flex",
                 flexDirection: "column",
-                textAlign: "center",
-                borderRadius: { xs: 3, md: 4 },
-                background: feature.color,
-                border: "none",
-                boxShadow: "0 2px 8px rgba(15,23,42,0.08)",
-                position: "relative",
+                alignItems: "flex-start",
+                textAlign: "left",
+                background: `linear-gradient(145deg, ${tone.main} 0%, ${tone.dark} 100%)`,
+                borderRadius: "18px",
+                boxShadow: "0 4px 14px rgba(16,28,54,0.10)",
+                p: "24px",
                 overflow: "hidden",
-                transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-                "&::before": {
-                  content: '""',
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: "5px",
-                  background: "rgba(255,255,255,0.5)",
-                  transform: "scaleX(0)",
-                  transformOrigin: "left",
-                  transition: "transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-                  zIndex: 1,
-                },
+                transition: "transform 0.25s ease, box-shadow 0.25s ease",
                 "&:hover": {
-                  transform: { xs: "none", md: "translateY(-12px) scale(1.02)" },
-                  boxShadow: "0 2px 8px rgba(15,23,42,0.08)",
-                  background: feature.color === "#3030F9" ? "#2020C8" : "#065F3D",
-                  "&::before": {
-                    transform: "scaleX(1)",
-                  },
+                  transform: { xs: "none", md: "translateY(-4px)" },
+                  boxShadow: "0 10px 24px rgba(16,28,54,0.16)",
                 },
               }}
             >
-              <CardContent
+              {/* Forme décorative incurvée, translucide, coin supérieur droit */}
+              <Box
+                component="svg"
+                viewBox="0 0 120 120"
+                aria-hidden="true"
+                sx={{ position: "absolute", top: 0, right: 0, width: 120, height: 120, pointerEvents: "none" }}
+              >
+                <path d="M120 0 V86 C 96 82, 70 66, 56 42 C 48 28, 52 12, 60 0 Z" fill="#fff" fillOpacity="0.12" />
+                <path d="M120 0 V50 C 106 48, 92 38, 86 24 C 83 15, 85 6, 88 0 Z" fill="#fff" fillOpacity="0.10" />
+              </Box>
+              <Box
                 sx={{
-                  p: { xs: 3, sm: 3.5, md: 4 },
-                  flex: 1,
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "flex-start",
-                  alignItems: "center",
-                  gap: { xs: 2, md: 2.5 },
-                  width: "100%",
-                  boxSizing: "border-box",
                   position: "relative",
-                  zIndex: 1,
+                  width: 56,
+                  height: 56,
+                  borderRadius: "14px",
+                  bgcolor: "#fff",
+                  color: tone.main,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 32,
+                  mb: 2.5,
+                  flexShrink: 0,
                 }}
               >
-                {/* Icône avec effet de glow */}
-                <Box
-                  sx={{
-                    width: { xs: 64, sm: 72, md: 80 },
-                    height: { xs: 64, sm: 72, md: 80 },
-                    borderRadius: "50%",
-                    background: "rgba(255,255,255,0.2)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    mb: 1,
-                    position: "relative",
-                    transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-                    "&:hover": {
-                      transform: "scale(1.1) rotate(5deg)",
-                    },
-                  }}
-                >
-                  <Box
-                    sx={{
-                      color: "white",
-                      fontSize: { xs: "2rem", sm: "2.4rem", md: "2.8rem" },
-                      position: "relative",
-                      zIndex: 1,
-                      transition: "transform 0.4s ease",
-                      "&:hover": {
-                        transform: "scale(1.1)",
-                      },
-                    }}
-                  >
-                    {feature.icon}
-                  </Box>
-                </Box>
+                {feature.icon}
+              </Box>
+              <Typography
+                sx={{ position: "relative", fontFamily: "'Manrope', 'Plus Jakarta Sans', 'DM Sans', system-ui, Arial, sans-serif", fontSize: { xs: 20, lg: 21 }, fontWeight: 700, color: "#FFFFFF", lineHeight: 1.25, mb: 1.25 }}
+              >
+                {feature.title}
+              </Typography>
+              <Typography
+                sx={{ position: "relative", fontFamily: "'Manrope', 'Plus Jakarta Sans', 'DM Sans', system-ui, Arial, sans-serif", fontSize: { xs: 15, lg: 15 }, fontWeight: 400, color: "#F5F7FA", lineHeight: 1.5 }}
+              >
+                {feature.description}
+              </Typography>
+            </Box>
+          );
+        })}
+      </Box>
 
-                {/* Titre avec effet moderne */}
-                <Typography
-                  variant="h5"
-                  fontWeight="bold"
-                  sx={{
-                    fontSize: {
-                      xs: "clamp(1.15rem, 3vw, 1.3rem)",
-                      sm: "clamp(1.25rem, 2.5vw, 1.4rem)",
-                      md: "1.5rem",
-                    },
-                    mb: 0.5,
-                    color: "#fff",
-                    letterSpacing: "-0.01em",
-                  }}
-                >
-                  {feature.title}
-                </Typography>
-
-                {/* Description moderne */}
-                <Typography
-                  variant="body1"
-                  sx={{
-                    fontSize: {
-                      xs: "clamp(0.9rem, 2.5vw, 1rem)",
-                      sm: "clamp(0.95rem, 2vw, 1.05rem)",
-                      md: "1.1rem",
-                    },
-                    color: "rgba(255,255,255,0.85)",
-                    lineHeight: { xs: 1.6, md: 1.7 },
-                    maxWidth: "90%",
-                    fontWeight: 500,
-                  }}
-                >
-                  {feature.description}
-                </Typography>
-
-                {/* Ligne décorative en bas */}
-                <Box
-                  sx={{
-                    width: 60,
-                    height: 3,
-                    borderRadius: "2px",
-                    background: "rgba(255,255,255,0.5)",
-                    mt: "auto",
-                    transition: "all 0.4s ease",
-                    "&:hover": {
-                      width: 80,
-                      opacity: 1,
-                    },
-                  }}
-                />
-              </CardContent>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
-    </Box>
-
-    {/* Bouton "Afficher la suite" moderne */}
-    {featuresDisplayed < features.length && (
+      {/* Photographie : contour incurvé, ruban vert sous l'image */}
       <Box
         sx={{
-          display: "flex",
-          justifyContent: "center",
-          mt: { xs: 5, md: 6 },
+          position: "relative",
+          minHeight: { xs: 320, sm: 400, lg: 0 },
+          mb: { xs: 2, lg: 0 },
         }}
       >
-        <Button
-          variant="outlined"
-          onClick={handleShowMoreFeatures}
+        <Box
+          component="svg"
+          viewBox="0 0 400 40"
+          preserveAspectRatio="none"
+          aria-hidden="true"
+          sx={{ position: "absolute", left: "6%", right: "6%", bottom: -16, width: "88%", height: 40, display: "block" }}
+        >
+          <defs>
+            <linearGradient id="whyRibbon" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="#07966B" />
+              <stop offset="100%" stopColor="#2FD39B" />
+            </linearGradient>
+          </defs>
+          <path d="M0 8 C 110 40, 290 -4, 400 22 L400 32 C 290 6, 110 50, 0 20 Z" fill="url(#whyRibbon)" />
+        </Box>
+        <Box
           sx={{
-            px: { xs: 4, md: 5 },
-            py: { xs: 1.2, md: 1.5 },
-            fontSize: { xs: "0.95rem", md: "1.05rem" },
-            fontWeight: 600,
-            borderRadius: "50px",
-            textTransform: "none",
-            borderWidth: 2,
-            borderColor: "primary.main",
-            color: "primary.main",
-            background: "rgba(102, 126, 234, 0.05)",
-            backdropFilter: "blur(10px)",
-            position: "relative",
+            position: "absolute",
+            inset: 0,
+            zIndex: 1,
             overflow: "hidden",
-            "&::before": {
-              content: '""',
-              position: "absolute",
-              top: 0,
-              left: "-100%",
-              width: "100%",
-              height: "100%",
-              background: "none",
-              transition: "left 0.5s ease",
-            },
-            "&:hover": {
-              borderWidth: 2,
-              transform: { xs: "none", md: "translateY(-3px)" },
-              boxShadow: "0 8px 24px rgba(102, 126, 234, 0.25)",
-              background: "rgba(102, 126, 234, 0.1)",
-              "&::before": {
-                left: "100%",
-              },
-            },
-            transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+            borderRadius: { xs: "24px", lg: "96px 24px 96px 24px" },
+            bgcolor: "#d9e2ec",
+            boxShadow: "0 12px 30px rgba(16,28,54,0.15)",
           }}
         >
-          Afficher la suite
-        </Button>
+          <Box
+            component="img"
+            src="/images/pourquoi-dillanci.webp"
+            alt="Conseillère immobilière présentant la maquette d’une villa"
+            sx={{
+              display: "block",
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              objectPosition: { xs: "70% 30%", lg: "78% 50%" },
+            }}
+          />
+        </Box>
       </Box>
-    )}
+    </Box>
   </Box>
-</Container>
+</Box>
 
      
 
@@ -1200,7 +1091,171 @@ const HomePage = () => {
 
 
 
-<Box sx={{ 
+{/* Section "Nos partenaires de confiance" : points d'entrée vers les listes de partenaires */}
+<Box component="section" sx={{ bgcolor: "#E9EDF2", width: "100%", overflow: "hidden" }}>
+  <Box
+    sx={{
+      boxSizing: "border-box",
+      maxWidth: 1440,
+      mx: "auto",
+      px: { xs: 2.5, sm: 4, md: 5, lg: 7.5 },
+      py: { xs: 5, md: 7.5 },
+    }}
+  >
+    <Box sx={{ textAlign: "center", mb: { xs: 4, md: 6 } }}>
+      <Typography
+        variant="h2"
+        sx={{
+          fontFamily: "'Manrope', 'Plus Jakarta Sans', 'DM Sans', system-ui, Arial, sans-serif",
+          fontWeight: 700,
+          fontSize: { xs: "clamp(26px, 7vw, 32px)", sm: "clamp(30px, 5vw, 38px)", lg: "clamp(38px, 2.9vw, 42px)" },
+          lineHeight: 1.2,
+          letterSpacing: "-0.02em",
+          color: "#101C36",
+        }}
+      >
+        Nos partenaires de <Box component="span" sx={{ color: "#07966B" }}>confiance</Box>
+      </Typography>
+      <Typography
+        sx={{
+          fontFamily: "'Manrope', 'Plus Jakarta Sans', 'DM Sans', system-ui, Arial, sans-serif",
+          mt: 1.5,
+          mx: "auto",
+          maxWidth: 760,
+          fontSize: { xs: 16, md: 18 },
+          lineHeight: 1.5,
+          color: "#475569",
+        }}
+      >
+        Un réseau solide pour vous proposer, sécuriser et finaliser vos projets immobiliers.
+      </Typography>
+    </Box>
+
+    <Box
+      sx={{
+        display: "grid",
+        gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)", lg: "repeat(3, 1fr)" },
+        gap: "24px",
+        alignItems: "stretch",
+      }}
+    >
+      {PARTNER_CARDS.map((c, idx) => (
+        <Box
+          key={c.key}
+          sx={{
+            position: "relative",
+            display: "flex",
+            flexDirection: "column",
+            minHeight: { xs: 480, lg: 520 },
+            borderRadius: "20px",
+            overflow: "hidden",
+            bgcolor: c.main,
+            boxShadow: "0 8px 24px rgba(16,28,54,0.14)",
+            // Dernière carte seule sur la 2e ligne en tablette : centrée sur toute la largeur
+            gridColumn: { sm: idx === 2 ? "1 / -1" : "auto", lg: "auto" },
+            justifySelf: { sm: idx === 2 ? "center" : "stretch", lg: "stretch" },
+            width: { sm: idx === 2 ? "calc(50% - 12px)" : "auto", lg: "auto" },
+          }}
+        >
+          {/* Photographie (≈ 45 % de la hauteur) ; couleur de repli tant que la photo n'est pas fournie */}
+          <Box
+            sx={{
+              position: "relative",
+              flex: "0 0 45%",
+              minHeight: 200,
+              backgroundColor: c.dark,
+              backgroundImage: `url(${c.photo})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }}
+          />
+
+          {/* Partie colorée, séparée de la photo par une courbe */}
+          <Box
+            sx={{
+              position: "relative",
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              textAlign: "center",
+              background: `linear-gradient(180deg, ${c.main} 0%, ${c.dark} 100%)`,
+              px: 3,
+              pt: 6,
+              pb: 3,
+            }}
+          >
+            {/* Courbe + fine séparation blanche */}
+            <Box
+              component="svg"
+              viewBox="0 0 400 40"
+              preserveAspectRatio="none"
+              aria-hidden="true"
+              sx={{ position: "absolute", left: 0, top: -39, width: "100%", height: 40, display: "block" }}
+            >
+              <path d="M0 40 V22 C 90 -2, 310 -2, 400 22 V40 Z" fill={c.main} />
+              <path d="M0 22 C 90 -2, 310 -2, 400 22" fill="none" stroke="#fff" strokeWidth="3" />
+            </Box>
+
+            {/* Icône à cheval entre la photo et la partie colorée */}
+            <Box
+              sx={{
+                position: "absolute",
+                top: -32,
+                left: "50%",
+                transform: "translateX(-50%)",
+                width: 64,
+                height: 64,
+                borderRadius: "16px",
+                bgcolor: "#fff",
+                color: c.main,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                boxShadow: "0 6px 16px rgba(16,28,54,0.2)",
+                zIndex: 2,
+              }}
+            >
+              <c.Icon sx={{ fontSize: 36 }} />
+            </Box>
+
+            <Typography sx={{ fontFamily: "'Manrope', 'Plus Jakarta Sans', 'DM Sans', system-ui, Arial, sans-serif", fontSize: 24, fontWeight: 700, color: "#fff", lineHeight: 1.25, mb: 1.25 }}>
+              {c.title}
+            </Typography>
+            <Typography sx={{ fontFamily: "'Manrope', 'Plus Jakarta Sans', 'DM Sans', system-ui, Arial, sans-serif", fontSize: { xs: 15, lg: 15.5 }, color: "#fff", lineHeight: 1.55, mb: 3, minHeight: { sm: 100 } }}>
+              {c.description}
+            </Typography>
+            <Button
+              onClick={() => scrollToSection(c.target)}
+              endIcon={<ArrowForward sx={{ fontSize: 20 }} />}
+              disableElevation
+              sx={{
+                mt: "auto",
+                height: 48,
+                px: 3,
+                borderRadius: "12px",
+                bgcolor: "#fff",
+                color: c.main,
+                fontFamily: "'Manrope', 'Plus Jakarta Sans', 'DM Sans', system-ui, Arial, sans-serif",
+                fontWeight: 700,
+                fontSize: 15.5,
+                textTransform: "none",
+                "&:hover": { bgcolor: "#F3F6FA" },
+              }}
+            >
+              {c.cta}
+            </Button>
+          </Box>
+        </Box>
+      ))}
+    </Box>
+  </Box>
+</Box>
+
+{/* Listes Agences / Banques / Notaires partenaires : masquées de l'accueil (code conservé). Passer à true pour les réafficher. */}
+{SHOW_PARTNER_LISTS && (
+<>
+<Box id="section-agences" sx={{ 
   background: "#ffffff",
   py: { xs: 6, md: 8 },
   position: "relative",
@@ -1461,7 +1516,7 @@ const HomePage = () => {
                     display: "flex",
                     flexDirection: "column",
                     p: { xs: 3, sm: 3.5, md: 4 },
-                    gap: { xs: 2, md: 2.5 },
+                    gap: "20px",
                     width: "100%",
                     maxWidth: "100%",
                     minWidth: 0,
@@ -1872,6 +1927,7 @@ const HomePage = () => {
 
 {/* Banques Partenaires Section - Moderne */}
 <Box
+  id="section-banques"
   component="section"
   sx={{
     background: "#f5f7fa",
@@ -2071,7 +2127,7 @@ const HomePage = () => {
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
-                gap: { xs: 2, md: 2.5 },
+                gap: "20px",
                 position: "relative",
                 zIndex: 1,
               }}
@@ -2211,6 +2267,7 @@ const HomePage = () => {
 
 {/* Notaires Partenaires Section - Moderne */}
 <Box
+  id="section-notaires"
   component="section"
   sx={{
     background: "#ffffff",
@@ -2460,7 +2517,7 @@ const HomePage = () => {
                     p: { xs: 3, sm: 3.5, md: 4 },
                     display: "flex",
                     flexDirection: "column",
-                    gap: { xs: 2, md: 2.5 },
+                    gap: "20px",
                     position: "relative",
                     zIndex: 1,
                   }}
@@ -2664,644 +2721,355 @@ const HomePage = () => {
     </Box>
   </Container>
 </Box>
+</>
+)}
 
-
-
-
-
-      {/* Qui peut s'inscrire Section – DESIGN MODERNE */}
-      <Box 
-        component="section"
-        sx={{ 
-          position: "relative",
-          py: { xs: 6, md: 8 },
-          px: { xs: 2, sm: 3 },
-          background: "#ffffff",
-          overflow: "hidden",
-          "&::before": {
-            content: '""',
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: "none",
-            pointerEvents: "none",
-            zIndex: 0,
-          }
-        }}
-      >
-        <Container maxWidth="xl" sx={{ position: "relative", zIndex: 1, width: "100%" }}>
-          {/* En-tête moderne */}
-          <Box sx={{ textAlign: "center", mb: { xs: 4, md: 6 } }}>
-            {/* Badge moderne */}
+      {/* Section "Rejoignez l'écosystème Dillanci" */}
+      <Box component="section" sx={{ bgcolor: "#fff", width: "100%", overflow: "hidden" }}>
+        <Box
+          sx={{
+            boxSizing: "border-box",
+            maxWidth: 1440,
+            mx: "auto",
+            px: { xs: 2.5, sm: 4, md: 5 },
+            py: { xs: 5, md: 7 },
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr", lg: "35fr 65fr" },
+            columnGap: { lg: 8 },
+            rowGap: { xs: 4, lg: 0 },
+            alignItems: "start",
+          }}
+        >
+          {/* Colonne gauche : titre, description, photographie */}
+          <Box sx={{ textAlign: "left" }}>
+            <Box aria-hidden="true" sx={{ display: "flex", gap: 0.75, mb: 2 }}>
+              <Box sx={{ width: 36, height: 5, borderRadius: "3px", bgcolor: "#07966B" }} />
+              <Box sx={{ width: 12, height: 5, borderRadius: "3px", bgcolor: "#2FD39B" }} />
+            </Box>
+            <Typography
+              variant="h2"
+              sx={{
+                fontFamily: "'Manrope', 'Plus Jakarta Sans', 'DM Sans', system-ui, Arial, sans-serif",
+                fontWeight: 800,
+                fontSize: { xs: "clamp(32px, 9vw, 40px)", md: "clamp(40px, 5vw, 48px)", lg: "clamp(44px, 3.4vw, 52px)" },
+                lineHeight: 1.1,
+                letterSpacing: "-0.02em",
+                color: "#101C36",
+              }}
+            >
+              <Box component="span" sx={{ display: "block" }}>Rejoignez</Box>
+              <Box component="span" sx={{ display: "block" }}>l’écosystème</Box>
+              <Box component="span" sx={{ display: "block", color: "#07966B" }}>Dillanci</Box>
+            </Typography>
+            <Box component="svg" viewBox="0 0 96 14" aria-hidden="true" sx={{ display: "block", width: 96, height: 14, mt: 1.5, mb: 2.5 }}>
+              <path d="M3 9 C 18 2, 32 2, 46 8 S 76 14, 93 5" fill="none" stroke="#2FD39B" strokeWidth="4" strokeLinecap="round" />
+            </Box>
+            <Typography sx={{ fontFamily: "'Manrope', 'Plus Jakarta Sans', 'DM Sans', system-ui, Arial, sans-serif", fontSize: { xs: 17, md: 19 }, lineHeight: 1.5, color: "#334155", maxWidth: 460, mb: 3 }}>
+              Quatre profils, un même objectif : valoriser et sécuriser l’immobilier au Niger.
+            </Typography>
             <Box
               sx={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 1,
-                px: { xs: 2, sm: 2.5 },
-                py: { xs: 0.8, sm: 1 },
-                mb: { xs: 2, md: 3 },
-                borderRadius: "50px",
-                background: "rgba(48, 48, 249, 0.1)",
-                border: "1px solid rgba(99, 102, 241, 0.2)",
-                backdropFilter: "blur(10px)",
+                display: { xs: "none", sm: "block" },
+                height: { sm: 260, lg: 240 },
+                borderRadius: "24px",
+                overflow: "hidden",
+                backgroundColor: "#E9EDF2",
+                backgroundImage: "url(/images/ecosysteme-dillanci.webp)",
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                boxShadow: "0 8px 24px rgba(16,28,54,0.12)",
               }}
+            />
+          </Box>
+
+          {/* Colonne droite : quatre blocs horizontaux reliés par une courbe */}
+          <Box sx={{ position: "relative" }}>
+            {/* Ligne incurvée de liaison avec quatre points colorés (desktop) */}
+            <Box
+              component="svg"
+              viewBox="0 0 40 600"
+              preserveAspectRatio="none"
+              aria-hidden="true"
+              sx={{ display: { xs: "none", lg: "block" }, position: "absolute", left: -44, top: 0, width: 32, height: "100%", pointerEvents: "none" }}
             >
-              <Box
-                component="span"
-                sx={{
-                  fontSize: { xs: 18, md: 20 },
-                }}
-              >
-                <Groups fontSize="inherit" />
-              </Box>
-              <Typography
-                variant="caption"
-                sx={{
-                  fontWeight: 600,
-                  fontSize: { xs: "0.75rem", sm: "0.85rem" },
-                  color: "#3030F9",
-                }}
-              >
-                Acteurs du secteur
-              </Typography>
+              <path d="M20 12 C 4 120, 36 180, 20 210 S 4 330, 20 400 S 36 500, 20 588" fill="none" stroke="#C9D3E0" strokeWidth="2" strokeDasharray="5 6" vectorEffect="non-scaling-stroke" />
+            </Box>
+            <Box sx={{ display: { xs: "none", lg: "flex" }, flexDirection: "column", justifyContent: "space-around", position: "absolute", left: -56, top: 0, bottom: 0, width: 24, pointerEvents: "none" }}>
+              {ECO_PROFILES.map((pf) => (
+                <Box key={pf.key} sx={{ width: 14, height: 14, borderRadius: "50%", bgcolor: pf.main, border: "3px solid #fff", boxShadow: "0 0 0 1px #E0E6EE", alignSelf: "center" }} />
+              ))}
             </Box>
 
-            {/* Titre principal avec effet de gradient */}
-            <Typography 
-              variant="h3" 
-              fontWeight="bold" 
-              sx={{
-                fontSize: {
-                  xs: "clamp(1.8rem, 5vw, 2.5rem)",
-                  sm: "clamp(2.2rem, 4.5vw, 3rem)",
-                  md: "clamp(2.5rem, 3.5vw, 3.5rem)",
-                },
-                mb: { xs: 2, md: 3 },
-                color: "#0e1133",
-                lineHeight: 1.2,
-                letterSpacing: "-0.02em",
-              }}
-            >
-              Qui peut rejoindre la plateforme ?
-            </Typography>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+              {ECO_PROFILES.map((pf) => (
+                <Box
+                  key={pf.key}
+                  role="button"
+                  tabIndex={0}
+                  onClick={pf.action}
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pf.action(); } }}
+                  sx={{
+                    display: "flex",
+                    alignItems: "stretch",
+                    minHeight: { xs: 120, md: 125 },
+                    borderRadius: "24px",
+                    overflow: "hidden",
+                    bgcolor: pf.light,
+                    border: `1px solid ${pf.main}33`,
+                    boxShadow: "0 4px 14px rgba(16,28,54,0.07)",
+                    cursor: "pointer",
+                    transition: "transform 0.25s ease, box-shadow 0.25s ease",
+                    "&:hover": { transform: { md: "translateY(-3px)" }, boxShadow: "0 10px 24px rgba(16,28,54,0.12)" },
+                    "&:focus-visible": { outline: `3px solid ${pf.main}`, outlineOffset: 2 },
+                  }}
+                >
+                  {/* Zone colorée de l'icône, bord droit incurvé */}
+                  <Box sx={{ position: "relative", flex: { xs: "0 0 84px", sm: "0 0 120px", md: "0 0 140px" }, color: "#fff" }}>
+                    <Box
+                      component="svg"
+                      viewBox="0 0 140 100"
+                      preserveAspectRatio="none"
+                      aria-hidden="true"
+                      sx={{ position: "absolute", inset: 0, width: "100%", height: "100%", display: "block" }}
+                    >
+                      <path d="M0 0 H122 C 144 30, 144 70, 122 100 H0 Z" fill={pf.main} />
+                    </Box>
+                    <Box sx={{ position: "relative", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", pr: 1.5 }}>
+                      <pf.Icon sx={{ fontSize: { xs: 36, md: 52 }, color: "#fff" }} />
+                    </Box>
+                  </Box>
 
-            {/* Sous-titre moderne */}
-            <Typography 
-              variant="h6" 
-              sx={{ 
-                mb: { xs: 3, md: 4 },
-                maxWidth: 900,
-                mx: "auto",
-                fontSize: {
-                  xs: "clamp(1rem, 3vw, 1.15rem)",
-                  sm: "clamp(1.1rem, 2.5vw, 1.25rem)",
-                  md: "1.3rem",
-                },
-                color: "text.secondary",
-                lineHeight: { xs: 1.6, md: 1.7 },
-                px: { xs: 2, sm: 3 },
-                fontWeight: 400,
-              }}
-            >
-              Dillanci est ouvert à tous les acteurs du secteur foncier et immobilier
-            </Typography>
+                  <Box sx={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", justifyContent: "center", px: { xs: 2, md: 3 }, py: 1.75 }}>
+                    <Typography sx={{ fontFamily: "'Manrope', 'Plus Jakarta Sans', 'DM Sans', system-ui, Arial, sans-serif", fontSize: { xs: 18, md: 23 }, fontWeight: 700, color: pf.main, lineHeight: 1.25, mb: 0.5 }}>
+                      {pf.title}
+                    </Typography>
+                    <Typography sx={{ fontFamily: "'Manrope', 'Plus Jakarta Sans', 'DM Sans', system-ui, Arial, sans-serif", fontSize: { xs: 14, md: 15.5 }, color: "#334155", lineHeight: 1.5 }}>
+                      {pf.description}
+                    </Typography>
+                  </Box>
+
+                  <Box sx={{ display: "flex", alignItems: "center", pr: { xs: 1.5, md: 3 } }}>
+                    <Box
+                      aria-hidden="true"
+                      sx={{
+                        width: { xs: 36, md: 42 },
+                        height: { xs: 36, md: 42 },
+                        borderRadius: "50%",
+                        bgcolor: pf.main,
+                        color: "#fff",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                      }}
+                    >
+                      <ArrowForward sx={{ fontSize: 22 }} />
+                    </Box>
+                  </Box>
+                </Box>
+              ))}
+            </Box>
           </Box>
+        </Box>
+      </Box>
 
+      {/* Section "Prêt à commencer ?" */}
+      <Box component="section" sx={{ bgcolor: "#E9EDF2", width: "100%", overflow: "hidden" }}>
+        <Box sx={{ boxSizing: "border-box", maxWidth: 1440, mx: "auto", px: { xs: 2, sm: 4, md: 5 }, py: "50px" }}>
           <Box
             sx={{
+              position: "relative",
               display: "grid",
-              gridTemplateColumns: {
-                xs: "1fr",
-                sm: "repeat(2, 1fr)",
-                lg: "repeat(2, 1fr)",
-              },
-              columnGap: { xs: 4, md: 6 },
-              rowGap: { xs: 6, md: 10 },
-              maxWidth: 1200,
-              mx: "auto",
+              gridTemplateColumns: { xs: "1fr", lg: "40fr 60fr" },
+              minHeight: { lg: 350 },
+              borderRadius: "24px",
+              overflow: "hidden",
+              background: "linear-gradient(135deg, #005C42 0%, #004D38 100%)",
+              boxShadow: "0 12px 32px rgba(0,60,40,0.22)",
             }}
           >
-            {/* Agences */}
-            <Card 
-              elevation={0}
-              sx={{ 
-                p: { xs: 1.5, md: 2 },
-                mb: { xs: 6, md: 8 },
-                height: "100%",
-                display: "flex",
-                flexDirection: "column",
-                background: "#ffffff",
-                border: "2px solid transparent",
-                borderRadius: 3,
+            {/* Photographie (40 %), fondue dans le vert vers la droite */}
+            <Box
+              sx={{
                 position: "relative",
-                overflow: "hidden",
-                transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-                "&::before": {
+                minHeight: { xs: 200, sm: 260, lg: 0 },
+                backgroundImage: "url(/images/pret-a-commencer.webp)",
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                "&::after": {
                   content: '""',
                   position: "absolute",
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: 4,
-                  background: "#3030F9",
+                  inset: 0,
+                  background: {
+                    xs: "linear-gradient(180deg, rgba(0,77,56,0) 40%, #004D38 100%)",
+                    lg: "linear-gradient(90deg, rgba(0,92,66,0) 55%, #005C42 100%)",
+                  },
                 },
-                "&:hover": {
-                  transform: "translateY(-8px)",
-                  boxShadow: "0 20px 40px rgba(102, 126, 234, 0.15)",
-                  borderColor: "primary.main",
-                }
               }}
-            >
-              <Box display="flex" alignItems="flex-start" gap={1.5} mb={1.5}>
-                <Box
-                  sx={{
-                    width: { xs: 48, md: 56 },
-                    height: { xs: 48, md: 56 },
-                    borderRadius: 2,
-                    background: "#3030F9",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    boxShadow: "0 8px 24px rgba(102, 126, 234, 0.3)",
-                    flexShrink: 0,
-                  }}
-                >
-                  <Business sx={{ fontSize: { xs: 24, md: 30 }, color: "white" }} />
-                </Box>
-                <Box flex={1}>
-                  <Typography variant="h5" fontWeight="bold" gutterBottom sx={{ fontSize: { xs: "1.05rem", md: "1.25rem" } }}>
-                    Agences Immobilières
-                  </Typography>
-                  <Typography variant="body1" color="text.secondary" sx={{ lineHeight: 1.5, fontSize: { xs: "0.8rem", md: "0.9rem" } }}>
-                    Créez et gérez vos annonces, valorisez vos biens et suivez vos opportunités commerciales sur une plateforme dédiée aux professionnels de l'immobilier.
-                  </Typography>
-                </Box>
-              </Box>
-              <Divider sx={{ my: 0.25 }} />
-              <Stack spacing={0.5} mt={0.75}>
-                <Box display="flex" alignItems="center" gap={1.5}>
-                  <CheckCircle sx={{ color: "success.main", fontSize: { xs: 20, md: 24 } }} />
-                  <Typography variant="body1" sx={{ fontWeight: 500, fontSize: { xs: "0.875rem", md: "1rem" } }}>
-                    Gestion de vos annonces et biens
-                  </Typography>
-                </Box>
-                <Box display="flex" alignItems="center" gap={1.5}>
-                  <CheckCircle sx={{ color: "success.main", fontSize: { xs: 20, md: 24 } }} />
-                  <Typography variant="body1" sx={{ fontWeight: 500, fontSize: { xs: "0.875rem", md: "1rem" } }}>
-                    Suivi des prospects et transactions
-                  </Typography>
-                </Box>
-                <Box display="flex" alignItems="center" gap={1.5}>
-                  <CheckCircle sx={{ color: "success.main", fontSize: { xs: 20, md: 24 } }} />
-                  <Typography variant="body1" sx={{ fontWeight: 500, fontSize: { xs: "0.875rem", md: "1rem" } }}>
-                    Valorisation de votre portefeuille immobilier
-                  </Typography>
-                </Box>
-              </Stack>
-            </Card>
+            />
 
-            {/* Banques */}
-            <Card 
-              elevation={0}
-              sx={{ 
-                p: { xs: 1.5, md: 2 },
-                mb: { xs: 6, md: 8 },
-                height: "100%",
-                display: "flex",
-                flexDirection: "column",
-                background: "#ffffff",
-                border: "2px solid transparent",
-                borderRadius: 3,
-                position: "relative",
-                overflow: "hidden",
-                transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-                "&::before": {
-                  content: '""',
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: 4,
-                  background: "#0A7C4F",
-                },
-                "&:hover": {
-                  transform: "translateY(-8px)",
-                  boxShadow: "0 20px 40px rgba(16, 185, 129, 0.15)",
-                  borderColor: "success.main",
-                }
-              }}
+            {/* Courbe décorative : coin supérieur gauche */}
+            <Box
+              component="svg"
+              viewBox="0 0 200 200"
+              aria-hidden="true"
+              sx={{ position: "absolute", top: 0, left: 0, width: { xs: 110, lg: 190 }, height: { xs: 110, lg: 190 }, pointerEvents: "none", zIndex: 2 }}
             >
-              <Box display="flex" alignItems="flex-start" gap={1.5} mb={1.5}>
-                <Box
-                  sx={{
-                    width: { xs: 48, md: 56 },
-                    height: { xs: 48, md: 56 },
-                    borderRadius: 2,
-                    background: "#0A7C4F",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    boxShadow: "0 8px 24px rgba(16, 185, 129, 0.3)",
-                    flexShrink: 0,
-                  }}
-                >
-                  <AccountBalance sx={{ fontSize: { xs: 24, md: 30 }, color: "white" }} />
-                </Box>
-                <Box flex={1}>
-                  <Typography variant="h5" fontWeight="bold" gutterBottom sx={{ fontSize: { xs: "1.05rem", md: "1.25rem" } }}>
-                    Banques Partenaires
-                  </Typography>
-                  <Typography variant="body1" color="text.secondary" sx={{ lineHeight: 1.5, fontSize: { xs: "0.8rem", md: "0.9rem" } }}>
-                    Accédez à des informations utiles pour le financement immobilier et utilisez la plateforme pour mieux exposer à la vente les biens immobiliers hors exploitation ou reçus en réalisation de garanties.
-                  </Typography>
-                </Box>
-              </Box>
-              <Divider sx={{ my: 0.25 }} />
-              <Stack spacing={0.5} mt={0.75}>
-                <Box display="flex" alignItems="center" gap={1.5}>
-                  <CheckCircle sx={{ color: "success.main", fontSize: { xs: 20, md: 24 } }} />
-                  <Typography variant="body1" sx={{ fontWeight: 500, fontSize: { xs: "0.875rem", md: "1rem" } }}>
-                    Analyse des garanties immobilières
-                  </Typography>
-                </Box>
-                <Box display="flex" alignItems="center" gap={1.5}>
-                  <CheckCircle sx={{ color: "success.main", fontSize: { xs: 20, md: 24 } }} />
-                  <Typography variant="body1" sx={{ fontWeight: 500, fontSize: { xs: "0.875rem", md: "1rem" } }}>
-                    Mise en vente des biens hors exploitation
-                  </Typography>
-                </Box>
-                <Box display="flex" alignItems="center" gap={1.5}>
-                  <CheckCircle sx={{ color: "success.main", fontSize: { xs: 20, md: 24 } }} />
-                  <Typography variant="body1" sx={{ fontWeight: 500, fontSize: { xs: "0.875rem", md: "1rem" } }}>
-                    Appui à la cession des immeubles reçus en garantie
-                  </Typography>
-                </Box>
-              </Stack>
-            </Card>
+              <path d="M0 0 H200 C 120 10, 40 70, 0 200 Z" fill="#84CC16" fillOpacity="0.85" />
+              <path d="M0 0 H130 C 80 10, 30 50, 0 130 Z" fill="#FACC15" fillOpacity="0.9" />
+            </Box>
 
-            {/* État/Ministère */}
-            <Card 
-              elevation={0}
-              sx={{ 
-                p: { xs: 1.5, md: 2 },
-                mb: { xs: 6, md: 8 },
-                height: "100%",
-                display: "flex",
-                flexDirection: "column",
-                background: "#ffffff",
-                border: "2px solid transparent",
-                borderRadius: 3,
-                position: "relative",
-                overflow: "hidden",
-                transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-                "&::before": {
-                  content: '""',
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: 4,
-                  background: "#0A7C4F",
-                },
-                "&:hover": {
-                  transform: "translateY(-8px)",
-                  boxShadow: "0 20px 40px rgba(10, 124, 79, 0.15)",
-                  borderColor: "#0A7C4F",
-                }
-              }}
+            {/* Courbe décorative : coin inférieur droit */}
+            <Box
+              component="svg"
+              viewBox="0 0 300 220"
+              aria-hidden="true"
+              sx={{ position: "absolute", right: 0, bottom: 0, width: { xs: 150, lg: 300 }, height: { xs: 110, lg: 220 }, pointerEvents: "none", zIndex: 1 }}
             >
-              <Box display="flex" alignItems="flex-start" gap={1.5} mb={1.5}>
-                <Box
-                  sx={{
-                    width: { xs: 48, md: 56 },
-                    height: { xs: 48, md: 56 },
-                    borderRadius: 2,
-                    background: "#0A7C4F",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    boxShadow: "0 8px 24px rgba(10, 124, 79, 0.3)",
-                    flexShrink: 0,
-                  }}
-                >
-                  <Landscape sx={{ fontSize: { xs: 24, md: 30 }, color: "white" }} />
-                </Box>
-                <Box flex={1}>
-                  <Typography variant="h5" fontWeight="bold" gutterBottom sx={{ fontSize: { xs: "1.05rem", md: "1.25rem" } }}>
-                    Notaires et services compétents
-                  </Typography>
-                  <Typography variant="body1" color="text.secondary" sx={{ lineHeight: 1.5, fontSize: { xs: "0.8rem", md: "0.9rem" } }}>
-                    Intervenez dans le processus de sécurisation des opérations immobilières à travers la vérification, l'authentification et l'accompagnement des transactions.
-                  </Typography>
-                </Box>
-              </Box>
-              <Divider sx={{ my: 0.25 }} />
-              <Stack spacing={0.5} mt={0.75}>
-                <Box display="flex" alignItems="center" gap={1.5}>
-                  <CheckCircle sx={{ color: "success.main", fontSize: { xs: 20, md: 24 } }} />
-                  <Typography variant="body1" sx={{ fontWeight: 500, fontSize: { xs: "0.875rem", md: "1rem" } }}>
-                    Vérification de certaines informations
-                  </Typography>
-                </Box>
-                <Box display="flex" alignItems="center" gap={1.5}>
-                  <CheckCircle sx={{ color: "success.main", fontSize: { xs: 20, md: 24 } }} />
-                  <Typography variant="body1" sx={{ fontWeight: 500, fontSize: { xs: "0.875rem", md: "1rem" } }}>
-                    Appui à la sécurisation des transactions
-                  </Typography>
-                </Box>
-                <Box display="flex" alignItems="center" gap={1.5}>
-                  <CheckCircle sx={{ color: "success.main", fontSize: { xs: 20, md: 24 } }} />
-                  <Typography variant="body1" sx={{ fontWeight: 500, fontSize: { xs: "0.875rem", md: "1rem" } }}>
-                    Accompagnement des opérations de vente
-                  </Typography>
-                </Box>
-              </Stack>
-            </Card>
+              <path d="M300 0 C 290 110, 180 210, 40 220 H300 Z" fill="#84CC16" fillOpacity="0.28" />
+              <path d="M300 70 C 285 150, 220 205, 130 220 H300 Z" fill="#FACC15" fillOpacity="0.22" />
+            </Box>
 
-            {/* Particuliers */}
-            <Card 
-              elevation={0}
-              sx={{ 
-                p: { xs: 1.5, md: 2 },
-                mb: { xs: 6, md: 8 },
-                height: "100%",
+            {/* Contenu (60 %) */}
+            <Box
+              sx={{
+                position: "relative",
+                zIndex: 3,
                 display: "flex",
                 flexDirection: "column",
-                background: "#ffffff",
-                border: "2px solid transparent",
-                borderRadius: 3,
-                position: "relative",
-                overflow: "hidden",
-                transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-                "&::before": {
-                  content: '""',
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: 4,
-                  background: "#3030F9",
-                },
-                "&:hover": {
-                  transform: "translateY(-8px)",
-                  boxShadow: "0 20px 40px rgba(14, 165, 233, 0.15)",
-                  borderColor: "info.main",
-                }
+                alignItems: "center",
+                justifyContent: "center",
+                textAlign: "center",
+                px: { xs: 2.5, md: 6 },
+                pt: { xs: 4, lg: 5 },
+                pb: { xs: 8, lg: 11 },
               }}
             >
-              <Box display="flex" alignItems="flex-start" gap={1.5} mb={1.5}>
-                <Box
+              <Typography
+                variant="h2"
+                sx={{
+                  fontFamily: "'Manrope', 'Plus Jakarta Sans', 'DM Sans', system-ui, Arial, sans-serif",
+                  fontWeight: 800,
+                  fontSize: { xs: "clamp(30px, 8vw, 36px)", md: "clamp(36px, 4vw, 42px)", lg: 46 },
+                  lineHeight: 1.15,
+                  color: "#fff",
+                }}
+              >
+                Prêt à{" "}
+                <Box component="span" sx={{ color: "#FACC15", position: "relative", display: "inline-block" }}>
+                  commencer ?
+                  <Box
+                    component="svg"
+                    viewBox="0 0 160 12"
+                    preserveAspectRatio="none"
+                    aria-hidden="true"
+                    sx={{ position: "absolute", left: 0, right: 0, bottom: -10, width: "100%", height: 12 }}
+                  >
+                    <path d="M3 8 C 40 1, 80 1, 120 6 S 150 9, 157 4" fill="none" stroke="#FACC15" strokeWidth="3.5" strokeLinecap="round" />
+                  </Box>
+                </Box>
+              </Typography>
+
+              <Typography
+                sx={{
+                  fontFamily: "'Manrope', 'Plus Jakarta Sans', 'DM Sans', system-ui, Arial, sans-serif",
+                  mt: 3.5,
+                  mb: 4,
+                  maxWidth: 700,
+                  fontSize: { xs: 16, md: 18 },
+                  lineHeight: 1.6,
+                  color: "#fff",
+                }}
+              >
+                Créez votre compte dès maintenant et accédez à toutes les opportunités immobilières sur Dillanci.
+              </Typography>
+
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={0} sx={{ gap: "20px", alignItems: "center", justifyContent: "center", width: { xs: "100%", sm: "auto" } }}>
+                <Button
+                  onClick={() => navigate("/register")}
+                  startIcon={<PersonAddAlt1 />}
+                  endIcon={<ArrowForward />}
+                  disableElevation
                   sx={{
-                    width: { xs: 48, md: 56 },
-                    height: { xs: 48, md: 56 },
-                    borderRadius: 2,
-                    background: "#3030F9",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    boxShadow: "0 8px 24px rgba(14, 165, 233, 0.3)",
-                    flexShrink: 0,
+                    height: 52,
+                    px: 3.5,
+                    borderRadius: "999px",
+                    bgcolor: "#fff",
+                    color: "#005C42",
+                    fontFamily: "'Manrope', 'Plus Jakarta Sans', 'DM Sans', system-ui, Arial, sans-serif",
+                    fontWeight: 700,
+                    fontSize: 16,
+                    textTransform: "none",
+                    width: { xs: "100%", sm: "auto" },
+                    maxWidth: 320,
+                    transition: "transform 0.2s ease, box-shadow 0.2s ease",
+                    "&:hover": { bgcolor: "#F3F6FA", transform: "translateY(-2px)", boxShadow: "0 8px 18px rgba(0,0,0,0.22)" },
                   }}
                 >
-                  <Groups sx={{ fontSize: { xs: 24, md: 30 }, color: "white" }} />
-                </Box>
-                <Box flex={1}>
-                  <Typography variant="h5" fontWeight="bold" gutterBottom sx={{ fontSize: { xs: "1.05rem", md: "1.25rem" } }}>
-                    Particuliers / Clients
-                  </Typography>
-                  <Typography variant="body1" color="text.secondary" sx={{ lineHeight: 1.5, fontSize: { xs: "0.8rem", md: "0.9rem" } }}>
-                    Consultez les offres, mettez en valeur vos biens et entrez en relation avec les acteurs de confiance pour vos projets immobiliers.
-                  </Typography>
-                </Box>
-              </Box>
-              <Divider sx={{ my: 0.25 }} />
-              <Stack spacing={0.5} mt={0.75}>
-                <Box display="flex" alignItems="center" gap={1.5}>
-                  <CheckCircle sx={{ color: "success.main", fontSize: { xs: 20, md: 24 } }} />
-                  <Typography variant="body1" sx={{ fontWeight: 500, fontSize: { xs: "0.875rem", md: "1rem" } }}>
-                    Publication de vos biens
-                  </Typography>
-                </Box>
-                <Box display="flex" alignItems="center" gap={1.5}>
-                  <CheckCircle sx={{ color: "success.main", fontSize: { xs: 20, md: 24 } }} />
-                  <Typography variant="body1" sx={{ fontWeight: 500, fontSize: { xs: "0.875rem", md: "1rem" } }}>
-                    Consultation des offres disponibles
-                  </Typography>
-                </Box>
-                <Box display="flex" alignItems="center" gap={1.5}>
-                  <CheckCircle sx={{ color: "success.main", fontSize: { xs: 20, md: 24 } }} />
-                  <Typography variant="body1" sx={{ fontWeight: 500, fontSize: { xs: "0.875rem", md: "1rem" } }}>
-                    Mise en relation avec les professionnels
-                  </Typography>
-                </Box>
+                  Créer un compte
+                </Button>
+                <Button
+                  onClick={() => navigate("/login")}
+                  startIcon={<Login />}
+                  endIcon={<ArrowForward />}
+                  sx={{
+                    height: 52,
+                    px: 3.5,
+                    borderRadius: "999px",
+                    border: "2px solid #fff",
+                    color: "#fff",
+                    fontFamily: "'Manrope', 'Plus Jakarta Sans', 'DM Sans', system-ui, Arial, sans-serif",
+                    fontWeight: 700,
+                    fontSize: 16,
+                    textTransform: "none",
+                    width: { xs: "100%", sm: "auto" },
+                    maxWidth: 320,
+                    transition: "transform 0.2s ease, background-color 0.2s ease",
+                    "&:hover": { bgcolor: "rgba(255,255,255,0.14)", transform: "translateY(-2px)", border: "2px solid #fff" },
+                  }}
+                >
+                  Se connecter
+                </Button>
               </Stack>
-            </Card>
+            </Box>
+
+            {/* Silhouette de Niamey (contours blancs, discrète) : zone droite, sous le contenu */}
+            <Box
+              component="svg"
+              viewBox="0 0 600 70"
+              preserveAspectRatio="xMidYMax meet"
+              aria-hidden="true"
+              sx={{
+                display: { xs: "none", md: "block" },
+                position: "absolute",
+                right: { md: "4%", lg: "6%" },
+                bottom: 0,
+                width: { md: "56%", lg: "50%" },
+                height: 62,
+                pointerEvents: "none",
+                zIndex: 1,
+                opacity: 0.2,
+              }}
+            >
+              <g fill="none" stroke="#fff" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round">
+                <path d="M0 70 V54 H28 V40 H52 V54 H70 V70" />
+                <path d="M90 70 V30 L110 14 L130 30 V70" />
+                <path d="M150 70 V44 H190 V70" />
+                {/* Grande mosquée : minaret + coupoles */}
+                <path d="M215 70 V20 M215 20 L222 8 L229 20 V70" />
+                <path d="M229 70 V46 C 240 30, 270 30, 281 46 V70" />
+                <path d="M290 70 V36 H320 V70" />
+                <path d="M340 70 V24 L352 10 L364 24 V70" />
+                <path d="M380 70 V48 H418 V70" />
+                <path d="M432 70 V28 H452 V70 M437 28 V18 H447 V28" />
+                <path d="M470 70 V50 C 478 38, 498 38, 506 50 V70" />
+                <path d="M520 70 V36 H552 V70 M528 36 V24 H544 V36" />
+                <path d="M565 70 V56 H600 V70" />
+              </g>
+            </Box>
           </Box>
-        </Container>
+        </Box>
       </Box>
-
-      {/* CTA Section */}
-    {/* CTA Section – modernisée & ultra responsive */}
-<Container
-  maxWidth="xl"
-  sx={{
-    py: { xs: 6, sm: 8, md: 10 },
-    px: { xs: 1.5, sm: 2.5, md: 3 }, // 🔽 moins de padding sur les côtés en mobile
-    width: "100%",
-  }}
->
-  <Paper
-    elevation={10}
-    sx={{
-      mx: "auto",
-      maxWidth: 800,
-      p: { xs: 3, sm: 4, md: 5 },
-      borderRadius: { xs: 3, md: 4 },
-      background:
-        "#0e1133",
-      color: "white",
-      textAlign: "center",
-      position: "relative",
-      overflow: "hidden",
-      "&::before": {
-        content: '""',
-        position: "absolute",
-        inset: 0,
-        background:
-          "none",
-        pointerEvents: "none",
-      },
-    }}
-  >
-    {/* Contenu interne pour éviter que le ::before ne gêne */}
-    <Box sx={{ position: "relative", zIndex: 1 }}>
-      {/* Petit badge au-dessus du titre */}
-      <Box
-        sx={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 1,
-          px: 1.8,
-          py: 0.6,
-          mb: { xs: 2.5, md: 3 },
-          borderRadius: 999,
-          bgcolor: "rgba(15,23,42,0.7)",
-          border: "1px solid rgba(148,163,184,0.7)",
-          mx: "auto",
-        }}
-      >
-        <Typography
-          variant="body2"
-          sx={{
-            fontSize: {
-              xs: "0.7rem",
-              sm: "0.8rem",
-            },
-            letterSpacing: 0.8,
-            textTransform: "uppercase",
-            color: "rgb(209,213,219)",
-          }}
-        >
-          Plateforme sécurisée Dillanci
-        </Typography>
-      </Box>
-
-      <Typography
-        variant="h3"
-        fontWeight="bold"
-        gutterBottom
-        sx={{
-          fontSize: {
-            xs: "clamp(1.6rem, 6vw, 2.2rem)",
-            sm: "clamp(1.9rem, 5.5vw, 2.6rem)",
-            md: "clamp(2.2rem, 4vw, 2.8rem)",
-          },
-          mb: { xs: 1.8, md: 2.2 },
-        }}
-      >
-        Prêt à commencer ?
-      </Typography>
-
-      <Typography
-        variant="h6"
-        sx={{
-          mb: { xs: 3, md: 4 },
-          opacity: 0.9,
-          fontSize: {
-            xs: "clamp(0.95rem, 3.5vw, 1.05rem)",
-            sm: "clamp(1.05rem, 3vw, 1.15rem)",
-            md: "clamp(1.1rem, 2.2vw, 1.2rem)",
-          },
-          lineHeight: { xs: 1.5, md: 1.6 },
-          maxWidth: 620,
-          mx: "auto",
-          px: { xs: 1, sm: 1.5, md: 0 },
-        }}
-      >
-        Rejoignez Dillanci dès aujourd&apos;hui et digitalisez votre
-        activité foncière et immobilière en toute confiance.
-      </Typography>
-
-      <Stack
-        direction={{ xs: "column", sm: "row" }}
-        spacing={{ xs: 1.5, sm: 2 }}
-        justifyContent="center"
-        alignItems={{ xs: "stretch", sm: "center" }}
-        sx={{
-          width: "100%",
-          maxWidth: 520,
-          mx: "auto",
-        }}
-      >
-        {/* Bouton créer compte */}
-        <Button
-          variant="contained"
-          size={isMobile ? "medium" : "large"}
-          onClick={() => navigate("/register")}
-          sx={{
-            bgcolor: "white",
-            color: "#0D2B4E",
-            fontWeight: "bold",
-            px: { xs: 2.8, sm: 3.5, md: 4 },
-            py: { xs: 1.1, sm: 1.3, md: 1.4 },
-            width: { xs: "100%", sm: "auto" },
-            fontSize: {
-              xs: "clamp(0.85rem, 2.8vw, 0.95rem)",
-              sm: "clamp(0.9rem, 2.2vw, 1rem)",
-              md: "clamp(0.95rem, 1.8vw, 1.05rem)",
-            },
-            borderRadius: 999,
-            boxShadow: "0 10px 30px rgba(15,23,42,0.6)",
-            "&:hover": {
-              bgcolor: "#f9fafb",
-              transform: { xs: "none", md: "translateY(-2px)" },
-              boxShadow: "0 14px 40px rgba(15,23,42,0.75)",
-            },
-            transition: "all 0.25s ease",
-            "& .MuiButton-endIcon": {
-              ml: { xs: 0.6, md: 1 },
-            },
-            // 🔽 Extra petit écran
-            "@media (max-width:350px)": {
-              fontSize: "0.75rem",
-              px: 2.2,
-              py: 0.9,
-            },
-          }}
-          endIcon={<AppRegistration />}
-        >
-          Créer mon compte
-        </Button>
-
-        {/* Bouton se connecter */}
-        <Button
-          variant="outlined"
-          size={isMobile ? "medium" : "large"}
-          onClick={() => navigate("/login")}
-          sx={{
-            borderColor: "rgba(255,255,255,0.9)",
-            color: "white",
-            borderWidth: { xs: 1.5, md: 2 },
-            fontWeight: "bold",
-            px: { xs: 2.8, sm: 3.5, md: 4 },
-            py: { xs: 1.1, sm: 1.3, md: 1.4 },
-            width: { xs: "100%", sm: "auto" },
-            fontSize: {
-              xs: "clamp(0.85rem, 2.8vw, 0.95rem)",
-              sm: "clamp(0.9rem, 2.2vw, 1rem)",
-              md: "clamp(0.95rem, 1.8vw, 1.05rem)",
-            },
-            borderRadius: 999,
-            bgcolor: "rgba(15,23,42,0.35)",
-            backdropFilter: "blur(10px)",
-            "&:hover": {
-              borderColor: "white",
-              bgcolor: "rgba(15,23,42,0.7)",
-              transform: { xs: "none", md: "translateY(-2px)" },
-              boxShadow: "0 10px 30px rgba(15,23,42,0.7)",
-            },
-            transition: "all 0.25s ease",
-            "& .MuiButton-endIcon": {
-              ml: { xs: 0.6, md: 1 },
-            },
-            "@media (max-width:350px)": {
-              fontSize: "0.75rem",
-              px: 2.2,
-              py: 0.9,
-            },
-          }}
-          endIcon={<Login />}
-        >
-          Se connecter
-        </Button>
-      </Stack>
-    </Box>
-  </Paper>
-</Container>
-
 
       {/* Dialogue Devenir Partenaire - Moderne et Responsive */}
       <Dialog

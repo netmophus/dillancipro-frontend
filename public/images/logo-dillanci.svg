@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 56" width="240" height="56" role="img" aria-label="Dillanci, plateforme immobilière du Niger">
+  <g transform="translate(2 3)" fill="none" stroke="#1859E8" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="44" y="6" width="5.5" height="12" rx="1" fill="#1859E8" stroke="none"/>
+    <path d="M4 25 32 4 60 25" stroke-width="5.5"/>
+    <path d="M11 24v21a3 3 0 0 0 3 3h36a3 3 0 0 0 3-3V24" stroke-width="4.5"/>
+    <g fill="#1859E8" stroke="none">
+      <rect x="17" y="27" width="7" height="7" rx="1.2"/>
+      <rect x="26" y="27" width="7" height="7" rx="1.2"/>
+      <rect x="17" y="36" width="7" height="7" rx="1.2"/>
+      <rect x="26" y="36" width="7" height="7" rx="1.2"/>
+      <rect x="39" y="29" width="9" height="19" rx="1.8"/>
+    </g>
+  </g>
+  <text x="76" y="33" font-family="'Plus Jakarta Sans','Manrope','Segoe UI',Arial,sans-serif" font-size="34" font-weight="800" font-style="italic" letter-spacing="-1" fill="#1859E8">Dillanci</text>
+  <text x="77" y="49" font-family="'Plus Jakarta Sans','Manrope','Segoe UI',Arial,sans-serif" font-size="11" font-weight="600" fill="#1859E8">Plateforme immobilière du Niger</text>
+</svg>
