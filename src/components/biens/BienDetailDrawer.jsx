@@ -20,6 +20,18 @@ import {
   AcUnit,
   Kitchen,
   VideoLibrary,
+  PhotoCamera,
+  Videocam,
+  Map as MapIcon,
+  Description,
+  Star,
+  Check,
+  Bed,
+  Bathtub,
+  Weekend,
+  Info,
+  Payments,
+  Phone,
 } from "@mui/icons-material";
 import { decimalToDMS } from "../../utils/coordinateUtils";
 import { BASE_SERVER_URL } from "../../config/config";
@@ -109,8 +121,9 @@ const BienDetailDrawer = ({ open, onClose, selectedBien, onBienUpdate }) => {
         {/* En-tête du drawer */}
         <Box display="flex" alignItems="center" justifyContent="space-between" mb={3}>
           <Box>
-            <Typography variant="h4" fontWeight="bold" gutterBottom>
-              {localBien ? `🏠 ${localBien.titre}` : "🏠 Détails du Bien Immobilier"}
+            <Typography variant="h4" fontWeight="bold" gutterBottom sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+              <Home fontSize="inherit" />
+              {localBien ? localBien.titre : "Détails du Bien Immobilier"}
             </Typography>
             <Typography variant="body1" color="text.secondary">
               {localBien ? `${localBien.type} à ${localBien.ville}` : "Informations complètes"}
@@ -133,8 +146,8 @@ const BienDetailDrawer = ({ open, onClose, selectedBien, onBienUpdate }) => {
             <Grid container spacing={3}>
               {/* Photos du bien */}
               <Grid item xs={12}>
-                <Typography variant="h6" fontWeight="bold" mb={2}>
-                  📸 Photos du bien
+                <Typography variant="h6" fontWeight="bold" mb={2} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <PhotoCamera fontSize="small" />Photos du bien
                 </Typography>
                 <Box sx={{ p: 2, bgcolor: "grey.50", borderRadius: 2 }}>
                   {/* Photo principale */}
@@ -198,8 +211,8 @@ const BienDetailDrawer = ({ open, onClose, selectedBien, onBienUpdate }) => {
               {/* Vidéos du bien */}
               {localBien.videos && localBien.videos.length > 0 && (
                 <Grid item xs={12}>
-                  <Typography variant="h6" fontWeight="bold" mb={2}>
-                    🎥 Vidéos du bien
+                  <Typography variant="h6" fontWeight="bold" mb={2} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <Videocam fontSize="small" />Vidéos du bien
                   </Typography>
                   <Box sx={{ p: 2, bgcolor: "grey.50", borderRadius: 2 }}>
                     <Grid container spacing={3}>
@@ -283,17 +296,17 @@ const BienDetailDrawer = ({ open, onClose, selectedBien, onBienUpdate }) => {
               {/* Situation géographique du Terrain */}
               {localBien.situationGeographique && (
                 <Grid item xs={12}>
-                  <Typography variant="h6" fontWeight="bold" mb={2}>
-                    🗺️ Situation géographique du Terrain
+                  <Typography variant="h6" fontWeight="bold" mb={2} sx={{ display: "flex", alignItems: "center", gap: 1, color: "#065F3D" }}>
+                    <MapIcon fontSize="small" />Situation géographique du Terrain
                   </Typography>
-                  <Paper sx={{ 
-                    p: 3, 
-                    background: "linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%)",
+                  <Paper sx={{
+                    p: 3,
+                    bgcolor: "#E3F5EC",
                     borderRadius: 3,
-                    boxShadow: "0 4px 20px rgba(76, 175, 80, 0.1)",
-                    border: "1px solid rgba(76, 175, 80, 0.2)"
+                    boxShadow: "0 2px 8px rgba(15,23,42,0.05)",
+                    border: "1px solid #e5e7eb"
                   }}>
-                    <Typography variant="body1" sx={{ lineHeight: 1.8, color: "text.primary" }}>
+                    <Typography variant="body1" sx={{ lineHeight: 1.8, color: "#065F3D" }}>
                       {localBien.situationGeographique}
                     </Typography>
                   </Paper>
@@ -303,17 +316,17 @@ const BienDetailDrawer = ({ open, onClose, selectedBien, onBienUpdate }) => {
               {/* Description physique */}
               {localBien.descriptionPhysique && (
                 <Grid item xs={12}>
-                  <Typography variant="h6" fontWeight="bold" mb={2}>
-                    📋 Description physique
+                  <Typography variant="h6" fontWeight="bold" mb={2} sx={{ display: "flex", alignItems: "center", gap: 1, color: "#2020C8" }}>
+                    <Description fontSize="small" />Description physique
                   </Typography>
-                  <Paper sx={{ 
-                    p: 3, 
-                    background: "linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%)",
+                  <Paper sx={{
+                    p: 3,
+                    bgcolor: "#EAF0FF",
                     borderRadius: 3,
-                    boxShadow: "0 4px 20px rgba(255, 152, 0, 0.1)",
-                    border: "1px solid rgba(255, 152, 0, 0.2)"
+                    boxShadow: "0 2px 8px rgba(15,23,42,0.05)",
+                    border: "1px solid #e5e7eb"
                   }}>
-                    <Typography variant="body1" sx={{ lineHeight: 1.8, color: "text.primary" }}>
+                    <Typography variant="body1" sx={{ lineHeight: 1.8, color: "#2020C8" }}>
                       {localBien.descriptionPhysique}
                     </Typography>
                   </Paper>
@@ -323,15 +336,15 @@ const BienDetailDrawer = ({ open, onClose, selectedBien, onBienUpdate }) => {
               {/* Atouts majeurs */}
               {localBien.atoutsMajeurs && localBien.atoutsMajeurs.length > 0 && (
                 <Grid item xs={12}>
-                  <Typography variant="h6" fontWeight="bold" mb={2}>
-                    ⭐ Atouts majeurs
+                  <Typography variant="h6" fontWeight="bold" mb={2} sx={{ display: "flex", alignItems: "center", gap: 1, color: "#2020C8" }}>
+                    <Star fontSize="small" />Atouts majeurs
                   </Typography>
-                  <Paper sx={{ 
-                    p: 3, 
-                    background: "linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%)",
+                  <Paper sx={{
+                    p: 3,
+                    bgcolor: "#EAF0FF",
                     borderRadius: 3,
-                    boxShadow: "0 4px 20px rgba(156, 39, 176, 0.1)",
-                    border: "1px solid rgba(156, 39, 176, 0.2)"
+                    boxShadow: "0 2px 8px rgba(15,23,42,0.05)",
+                    border: "1px solid #e5e7eb"
                   }}>
                     <Grid container spacing={2}>
                       {localBien.atoutsMajeurs.map((atout, index) => (
@@ -339,21 +352,22 @@ const BienDetailDrawer = ({ open, onClose, selectedBien, onBienUpdate }) => {
                           <Box sx={{ 
                             p: 2,
                             borderRadius: 2,
-                            background: "rgba(255, 255, 255, 0.8)",
-                            border: "1px solid rgba(156, 39, 176, 0.3)",
+                            bgcolor: "#fff",
+                            color: "#2020C8",
+                            border: "1px solid #e5e7eb",
                             display: "flex",
                             alignItems: "center",
                             gap: 1.5,
                             transition: "all 0.3s ease",
                             "&:hover": {
                               transform: "translateY(-2px)",
-                              boxShadow: "0 4px 12px rgba(156, 39, 176, 0.2)"
+                              boxShadow: "0 4px 12px rgba(15,23,42,0.08)"
                             }
                           }}>
                             <Box sx={{ 
-                              bgcolor: "secondary.main", 
-                              color: "white", 
-                              borderRadius: "50%", 
+                              bgcolor: "#0A7C4F",
+                              color: "white",
+                              borderRadius: "50%",
                               p: 0.8,
                               display: "flex",
                               alignItems: "center",
@@ -361,9 +375,7 @@ const BienDetailDrawer = ({ open, onClose, selectedBien, onBienUpdate }) => {
                               minWidth: 32,
                               height: 32
                             }}>
-                              <Typography variant="body2" fontWeight="bold">
-                                ✓
-                              </Typography>
+                              <Check sx={{ fontSize: 18 }} />
                             </Box>
                             <Typography variant="body1" fontWeight={500} sx={{ flex: 1 }}>
                               {typeof atout === "string" ? atout : atout.nom || atout}
@@ -379,15 +391,15 @@ const BienDetailDrawer = ({ open, onClose, selectedBien, onBienUpdate }) => {
               {/* Caractéristiques du bien */}
               {localBien.caracteristiques && Object.keys(localBien.caracteristiques).length > 0 && (
                 <Grid item xs={12}>
-                  <Typography variant="h6" fontWeight="bold" mb={2}>
-                    🏠 Caractéristiques du bien
+                  <Typography variant="h6" fontWeight="bold" mb={2} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <Home fontSize="small" />Caractéristiques du bien
                   </Typography>
-                  <Paper sx={{ 
-                    p: 3, 
-                    background: "linear-gradient(135deg, #f8f9ff 0%, #e8f2ff 100%)",
+                  <Paper sx={{
+                    p: 3,
+                    bgcolor: "#f5f7fa",
                     borderRadius: 3,
-                    boxShadow: "0 8px 32px rgba(102, 126, 234, 0.1)",
-                    border: "1px solid rgba(102, 126, 234, 0.1)"
+                    boxShadow: "0 2px 8px rgba(15,23,42,0.05)",
+                    border: "1px solid #e5e7eb"
                   }}>
                     <Grid container spacing={2}>
                       {/* Chambres */}
@@ -397,14 +409,14 @@ const BienDetailDrawer = ({ open, onClose, selectedBien, onBienUpdate }) => {
                             textAlign: "center",
                             p: 2,
                             borderRadius: 2,
-                            background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
-                            color: "white"
+                            bgcolor: "#3030F9",
+                            color: "#fff"
                           }}>
                             <Typography variant="h4" fontWeight="bold">
                               {localBien.caracteristiques.nbChambres}
                             </Typography>
-                            <Typography variant="body2" sx={{ opacity: 0.9, mt: 0.5 }}>
-                              🛏️ Chambres
+                            <Typography variant="body2" sx={{ opacity: 0.9, mt: 0.5, display: "flex", alignItems: "center", justifyContent: "center", gap: 0.75 }}>
+                              <Bed fontSize="small" />Chambres
                             </Typography>
                           </Box>
                         </Grid>
@@ -417,14 +429,14 @@ const BienDetailDrawer = ({ open, onClose, selectedBien, onBienUpdate }) => {
                             textAlign: "center",
                             p: 2,
                             borderRadius: 2,
-                            background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
-                            color: "white"
+                            bgcolor: "#0A7C4F",
+                            color: "#fff"
                           }}>
                             <Typography variant="h4" fontWeight="bold">
                               {localBien.caracteristiques.nbSallesBain}
                             </Typography>
-                            <Typography variant="body2" sx={{ opacity: 0.9, mt: 0.5 }}>
-                              🚿 Salles de bain
+                            <Typography variant="body2" sx={{ opacity: 0.9, mt: 0.5, display: "flex", alignItems: "center", justifyContent: "center", gap: 0.75 }}>
+                              <Bathtub fontSize="small" />Salles de bain
                             </Typography>
                           </Box>
                         </Grid>
@@ -437,14 +449,14 @@ const BienDetailDrawer = ({ open, onClose, selectedBien, onBienUpdate }) => {
                             textAlign: "center",
                             p: 2,
                             borderRadius: 2,
-                            background: "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
-                            color: "white"
+                            bgcolor: "#0e1133",
+                            color: "#fff"
                           }}>
                             <Typography variant="h4" fontWeight="bold">
                               {localBien.caracteristiques.nbSalons}
                             </Typography>
-                            <Typography variant="body2" sx={{ opacity: 0.9, mt: 0.5 }}>
-                              🛋️ Salons
+                            <Typography variant="body2" sx={{ opacity: 0.9, mt: 0.5, display: "flex", alignItems: "center", justifyContent: "center", gap: 0.75 }}>
+                              <Weekend fontSize="small" />Salons
                             </Typography>
                           </Box>
                         </Grid>
@@ -468,7 +480,7 @@ const BienDetailDrawer = ({ open, onClose, selectedBien, onBienUpdate }) => {
                                 label="Garage" 
                                 size="small" 
                                 sx={{ 
-                                  background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
+                                  background: "#3030F9",
                                   color: "white",
                                   fontWeight: "bold",
                                 }} 
@@ -480,7 +492,7 @@ const BienDetailDrawer = ({ open, onClose, selectedBien, onBienUpdate }) => {
                                 label="Piscine" 
                                 size="small" 
                                 sx={{ 
-                                  background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
+                                  background: "#3030F9",
                                   color: "white",
                                   fontWeight: "bold",
                                 }} 
@@ -492,7 +504,7 @@ const BienDetailDrawer = ({ open, onClose, selectedBien, onBienUpdate }) => {
                                 label="Jardin" 
                                 size="small" 
                                 sx={{ 
-                                  background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
+                                  background: "#3030F9",
                                   color: "white",
                                   fontWeight: "bold",
                                 }} 
@@ -504,7 +516,7 @@ const BienDetailDrawer = ({ open, onClose, selectedBien, onBienUpdate }) => {
                                 label="Climatisation" 
                                 size="small" 
                                 sx={{ 
-                                  background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
+                                  background: "#3030F9",
                                   color: "white",
                                   fontWeight: "bold",
                                 }} 
@@ -516,7 +528,7 @@ const BienDetailDrawer = ({ open, onClose, selectedBien, onBienUpdate }) => {
                                 label={`Cuisine: ${localBien.caracteristiques.cuisine}`} 
                                 size="small" 
                                 sx={{ 
-                                  background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
+                                  background: "#3030F9",
                                   color: "white",
                                   fontWeight: "bold",
                                 }} 
@@ -527,7 +539,7 @@ const BienDetailDrawer = ({ open, onClose, selectedBien, onBienUpdate }) => {
                                 label="Ascenseur" 
                                 size="small" 
                                 sx={{ 
-                                  background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
+                                  background: "#3030F9",
                                   color: "white",
                                   fontWeight: "bold",
                                 }} 
@@ -538,7 +550,7 @@ const BienDetailDrawer = ({ open, onClose, selectedBien, onBienUpdate }) => {
                                 label="Balcon" 
                                 size="small" 
                                 sx={{ 
-                                  background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
+                                  background: "#3030F9",
                                   color: "white",
                                   fontWeight: "bold",
                                 }} 
@@ -549,7 +561,7 @@ const BienDetailDrawer = ({ open, onClose, selectedBien, onBienUpdate }) => {
                                 label="Électricité" 
                                 size="small" 
                                 sx={{ 
-                                  background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
+                                  background: "#3030F9",
                                   color: "white",
                                   fontWeight: "bold",
                                 }} 
@@ -560,7 +572,7 @@ const BienDetailDrawer = ({ open, onClose, selectedBien, onBienUpdate }) => {
                                 label="Eau courante" 
                                 size="small" 
                                 sx={{ 
-                                  background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
+                                  background: "#3030F9",
                                   color: "white",
                                   fontWeight: "bold",
                                 }} 
@@ -571,7 +583,7 @@ const BienDetailDrawer = ({ open, onClose, selectedBien, onBienUpdate }) => {
                                 label="Sécurité" 
                                 size="small" 
                                 sx={{ 
-                                  background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
+                                  background: "#3030F9",
                                   color: "white",
                                   fontWeight: "bold",
                                 }} 
@@ -582,7 +594,7 @@ const BienDetailDrawer = ({ open, onClose, selectedBien, onBienUpdate }) => {
                                 label="Irrigation" 
                                 size="small" 
                                 sx={{ 
-                                  background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
+                                  background: "#3030F9",
                                   color: "white",
                                   fontWeight: "bold",
                                 }} 
@@ -593,7 +605,7 @@ const BienDetailDrawer = ({ open, onClose, selectedBien, onBienUpdate }) => {
                                 label="Clôture" 
                                 size="small" 
                                 sx={{ 
-                                  background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
+                                  background: "#3030F9",
                                   color: "white",
                                   fontWeight: "bold",
                                 }} 
@@ -604,7 +616,7 @@ const BienDetailDrawer = ({ open, onClose, selectedBien, onBienUpdate }) => {
                                 label="Arboré" 
                                 size="small" 
                                 sx={{ 
-                                  background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
+                                  background: "#3030F9",
                                   color: "white",
                                   fontWeight: "bold",
                                 }} 
@@ -615,7 +627,7 @@ const BienDetailDrawer = ({ open, onClose, selectedBien, onBienUpdate }) => {
                                 label="Potager" 
                                 size="small" 
                                 sx={{ 
-                                  background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
+                                  background: "#3030F9",
                                   color: "white",
                                   fontWeight: "bold",
                                 }} 
@@ -684,9 +696,9 @@ const BienDetailDrawer = ({ open, onClose, selectedBien, onBienUpdate }) => {
                                       label={`${arbre.type || arbre}: ${arbre.nombre || ""}`} 
                                       size="small" 
                                       sx={{ 
-                                        background: "rgba(76, 175, 80, 0.1)",
-                                        color: "success.main",
-                                        border: "1px solid rgba(76, 175, 80, 0.3)",
+                                        background: "#E3F5EC",
+                                        color: "#0A7C4F",
+                                        border: "1px solid rgba(10,124,79,0.3)",
                                         fontWeight: "bold",
                                       }} 
                                     />
@@ -716,21 +728,22 @@ const BienDetailDrawer = ({ open, onClose, selectedBien, onBienUpdate }) => {
 
               {/* Informations principales */}
               <Grid item xs={12} md={6}>
-                <Typography variant="h6" fontWeight="bold" mb={3} sx={{ 
-                  background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
-                  backgroundClip: "text",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  fontSize: "1.5rem"
+                <Typography variant="h6" fontWeight="bold" mb={3} sx={{
+                  color: "#0e1133",
+                  fontSize: "1.5rem",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1
                 }}>
-                  ℹ️ Informations principales
+                  <Info fontSize="inherit" />
+                  Informations principales
                 </Typography>
-                <Paper sx={{ 
-                  p: 3, 
-                  background: "linear-gradient(135deg, #fff5f8 0%, #ffeef2 100%)",
+                <Paper sx={{
+                  p: 3,
+                  bgcolor: "#EAF0FF",
                   borderRadius: 3,
-                  boxShadow: "0 8px 32px rgba(240, 147, 251, 0.1)",
-                  border: "1px solid rgba(240, 147, 251, 0.1)"
+                  boxShadow: "0 2px 8px rgba(15,23,42,0.05)",
+                  border: "1px solid #e5e7eb"
                 }}>
                   <Grid container spacing={3}>
                     {/* Type de bien */}
@@ -738,8 +751,9 @@ const BienDetailDrawer = ({ open, onClose, selectedBien, onBienUpdate }) => {
                       <Box sx={{ 
                         p: 2,
                         borderRadius: 2,
-                        background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
-                        color: "white",
+                        bgcolor: "#EAF0FF",
+                        color: "#2020C8",
+                        border: "1px solid rgba(32,32,200,0.25)",
                         textAlign: "center"
                       }}>
                         <Typography variant="subtitle2" sx={{ opacity: 0.9, fontSize: "0.8rem", fontWeight: 600 }}>
@@ -756,13 +770,13 @@ const BienDetailDrawer = ({ open, onClose, selectedBien, onBienUpdate }) => {
                       <Box sx={{ 
                         p: 2,
                         borderRadius: 2,
-                        background: "rgba(76, 175, 80, 0.1)",
-                        border: "1px solid rgba(76, 175, 80, 0.2)"
+                        bgcolor: "#E3F5EC",
+                        border: "1px solid rgba(10,124,79,0.2)"
                       }}>
                         <Typography variant="subtitle2" color="text.secondary" sx={{ fontSize: "0.8rem", fontWeight: 600 }}>
                           VILLE
                         </Typography>
-                        <Typography variant="h6" fontWeight="bold" color="success.main" sx={{ mt: 1 }}>
+                        <Typography variant="h6" fontWeight="bold" sx={{ mt: 1, color: "#0A7C4F" }}>
                           {localBien.ville}
                         </Typography>
                       </Box>
@@ -773,13 +787,13 @@ const BienDetailDrawer = ({ open, onClose, selectedBien, onBienUpdate }) => {
                       <Box sx={{ 
                         p: 2,
                         borderRadius: 2,
-                        background: "rgba(255, 152, 0, 0.1)",
-                        border: "1px solid rgba(255, 152, 0, 0.2)"
+                        bgcolor: "#fff",
+                        border: "1px solid #e5e7eb"
                       }}>
                         <Typography variant="subtitle2" color="text.secondary" sx={{ fontSize: "0.8rem", fontWeight: 600 }}>
                           SUPERFICIE
                         </Typography>
-                        <Typography variant="h6" fontWeight="bold" color="warning.main" sx={{ mt: 1 }}>
+                        <Typography variant="h6" fontWeight="bold" sx={{ mt: 1, color: "#3030F9" }}>
                           {localBien.superficie} m²
                         </Typography>
                       </Box>
@@ -807,26 +821,27 @@ const BienDetailDrawer = ({ open, onClose, selectedBien, onBienUpdate }) => {
 
               {/* Informations financières */}
               <Grid item xs={12} md={6}>
-                <Typography variant="h6" fontWeight="bold" mb={3} sx={{ 
-                  background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
-                  backgroundClip: "text",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  fontSize: "1.5rem"
+                <Typography variant="h6" fontWeight="bold" mb={3} sx={{
+                  color: "#0e1133",
+                  fontSize: "1.5rem",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1
                 }}>
-                  💰 Informations financières
+                  <Payments fontSize="inherit" />
+                  Informations financières
                 </Typography>
-                <Paper sx={{ 
-                  p: 3, 
-                  background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
-                  color: "white",
+                <Paper sx={{
+                  p: 3,
+                  bgcolor: "#0e1133",
+                  color: "#fff",
                   borderRadius: 3,
-                  boxShadow: "0 8px 32px rgba(102, 126, 234, 0.1)"
+                  boxShadow: "0 2px 8px rgba(15,23,42,0.08)"
                 }}>
                   <Grid container spacing={3}>
                     <Grid item xs={12}>
                       <Box textAlign="center">
-                        <Typography variant="h3" fontWeight="bold" sx={{ color: "white" }}>
+                        <Typography variant="h3" fontWeight="bold" sx={{ color: "#fff" }}>
                           {formatMoney(localBien.prix)}
                         </Typography>
                         <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.8)" }}>
@@ -839,6 +854,7 @@ const BienDetailDrawer = ({ open, onClose, selectedBien, onBienUpdate }) => {
                     <Button
                       variant="contained"
                       size="large"
+                      startIcon={<Phone />}
                       onClick={() => {
                         const whatsappUrl = `https://wa.me/22780648383`;
                         window.open(whatsappUrl, "_blank");
@@ -854,11 +870,12 @@ const BienDetailDrawer = ({ open, onClose, selectedBien, onBienUpdate }) => {
                         }
                       }}
                     >
-                      📞 Contacter le propriétaire
+                      Contacter le propriétaire
                     </Button>
                     <Button
                       variant="outlined"
                       size="large"
+                      startIcon={<Home />}
                       onClick={() => {
                         const whatsappUrl = `https://wa.me/22780648383`;
                         window.open(whatsappUrl, "_blank");
@@ -874,7 +891,7 @@ const BienDetailDrawer = ({ open, onClose, selectedBien, onBienUpdate }) => {
                         }
                       }}
                     >
-                      🏠 Demander une visite
+                      Demander une visite
                     </Button>
                   </Box>
                 </Paper>
@@ -882,10 +899,10 @@ const BienDetailDrawer = ({ open, onClose, selectedBien, onBienUpdate }) => {
 
               {/* Localisation */}
               <Grid item xs={12}>
-                <Typography variant="h6" fontWeight="bold" mb={2}>
-                  📍 Localisation et géolocalisation
+                <Typography variant="h6" fontWeight="bold" mb={2} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <LocationOn fontSize="small" />Localisation et géolocalisation
                 </Typography>
-                <Paper sx={{ p: 3, background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)" }}>
+                <Paper sx={{ p: 3, bgcolor: "#f5f7fa", border: "1px solid #e5e7eb", boxShadow: "0 2px 8px rgba(15,23,42,0.05)", borderRadius: 3 }}>
                   <Grid container spacing={3}>
                     <Grid item xs={12} md={6}>
                       <Stack spacing={3}>
@@ -938,7 +955,7 @@ const BienDetailDrawer = ({ open, onClose, selectedBien, onBienUpdate }) => {
                         {localBien.adresse && (
                           <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
                             <Box sx={{ 
-                              bgcolor: "success.main", 
+                              bgcolor: "#0A7C4F",
                               color: "white", 
                               borderRadius: "50%", 
                               p: 1.5,
@@ -957,8 +974,8 @@ const BienDetailDrawer = ({ open, onClose, selectedBien, onBienUpdate }) => {
                               <Typography 
                                 variant="h6" 
                                 fontWeight="bold" 
-                                color="success.main"
                                 sx={{
+                                  color: "#0A7C4F",
                                   wordBreak: "break-word",
                                   overflowWrap: "break-word",
                                   whiteSpace: "normal",
@@ -975,7 +992,7 @@ const BienDetailDrawer = ({ open, onClose, selectedBien, onBienUpdate }) => {
                         {localBien.latitude && localBien.longitude && (
                           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                             <Box sx={{ 
-                              bgcolor: "warning.main", 
+                              bgcolor: "#0e1133",
                               color: "white", 
                               borderRadius: "50%", 
                               p: 1.5,
@@ -989,13 +1006,13 @@ const BienDetailDrawer = ({ open, onClose, selectedBien, onBienUpdate }) => {
                               <Typography variant="subtitle2" color="text.secondary" sx={{ fontSize: "0.8rem", fontWeight: 600 }}>
                                 COORDONNÉES GPS
                               </Typography>
-                              <Typography variant="body2" fontWeight="bold" color="warning.main" sx={{ mb: 1 }}>
+                              <Typography variant="body2" fontWeight="bold" sx={{ mb: 1, color: "#0e1133" }}>
                                 Format décimal:<br/>
                                 Lat: {localBien.latitude}<br/>
                                 Lng: {localBien.longitude}
                               </Typography>
                               {decimalToDMS(localBien.latitude, "lat") && decimalToDMS(localBien.longitude, "lon") && (
-                                <Typography variant="body2" fontWeight="bold" color="warning.dark" sx={{ mt: 1, fontSize: "0.85rem" }}>
+                                <Typography variant="body2" fontWeight="bold" sx={{ mt: 1, fontSize: "0.85rem", color: "#5b6573" }}>
                                   Format DMS:<br/>
                                   {decimalToDMS(localBien.latitude, "lat")} / {decimalToDMS(localBien.longitude, "lon")}
                                 </Typography>
@@ -1055,20 +1072,18 @@ const BienDetailDrawer = ({ open, onClose, selectedBien, onBienUpdate }) => {
                         borderRadius: 3, 
                         overflow: "hidden",
                         position: "relative",
-                        background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
+                        bgcolor: "#0e1133",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center"
                       }}>
-                        {/* Overlay avec effet de verre */}
+                        {/* Contenu centré */}
                         <Box sx={{
                           position: "absolute",
                           top: 0,
                           left: 0,
                           right: 0,
                           bottom: 0,
-                          background: "rgba(255, 255, 255, 0.1)",
-                          backdropFilter: "blur(10px)",
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
@@ -1083,8 +1098,9 @@ const BienDetailDrawer = ({ open, onClose, selectedBien, onBienUpdate }) => {
                           }}>
                             <LocationOn sx={{ fontSize: 40, color: "primary.main" }} />
                           </Box>
-                          <Typography variant="h6" fontWeight="bold" color="white" mb={1}>
-                            🗺️ Géolocalisation Interactive
+                          <Typography variant="h6" fontWeight="bold" color="white" mb={1} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                            <MapIcon fontSize="small" />
+                            Géolocalisation Interactive
                           </Typography>
                           <Typography variant="body2" color="rgba(255,255,255,0.8)" mb={2} textAlign="center">
                             Visualisez l'emplacement exact sur la carte
