@@ -708,11 +708,12 @@ const SearchBiensPage = () => {
             <Box
               sx={{
                 display: "flex",
-                flexWrap: "wrap",
+                flexWrap: { xs: "wrap", md: "nowrap" },
+                flexDirection: "row",
                 alignItems: "center",
                 gap: "12px",
                 width: { xs: "100%", md: "auto" },
-                "& .MuiOutlinedInput-root": { height: 46, borderRadius: "10px", bgcolor: "#fff", fontFamily: FONT, fontSize: 14.5, color: NIGHT, boxShadow: "0 1px 2px rgba(16,28,54,0.05)", "& fieldset": { borderColor: "#D5DCE3" }, "&:hover fieldset": { borderColor: "#B7C2CD" }, "&.Mui-focused fieldset": { borderColor: GREEN } },
+                "& .MuiOutlinedInput-root": { height: 44, borderRadius: "10px", bgcolor: "#fff", fontFamily: FONT, fontSize: 14, color: NIGHT, boxShadow: "0 1px 2px rgba(16,28,54,0.05)", "& fieldset": { borderColor: "#D5DCE3" }, "&:hover fieldset": { borderColor: "#B7C2CD" }, "&.Mui-focused fieldset": { borderColor: GREEN } },
                 "& legend": { display: "none" },
               }}
             >
@@ -744,7 +745,7 @@ const SearchBiensPage = () => {
                 disableElevation
                 startIcon={<MapIcon sx={{ fontSize: "22px !important" }} />}
                 onClick={() => setShowMap(!showMap)}
-                sx={{ flex: { xs: "1 1 100%", sm: "0 0 auto" }, height: 46, px: 2.25, borderRadius: "10px", textTransform: "none", fontFamily: FONT, fontWeight: 700, fontSize: 14.5, border: `1px solid ${GREEN}`, bgcolor: showMap ? GREEN : "#fff", color: showMap ? "#fff" : GREEN, boxShadow: "0 1px 2px rgba(16,28,54,0.05)", "&:hover": { border: `1px solid ${GREEN_DEEP}`, bgcolor: showMap ? GREEN_DEEP : "rgba(0,133,87,0.06)" } }}
+                sx={{ flex: { xs: "1 1 100%", md: "0 0 auto" }, whiteSpace: "nowrap", height: 44, px: 2.25, borderRadius: "10px", textTransform: "none", fontFamily: FONT, fontWeight: 700, fontSize: 14, border: `1px solid ${GREEN}`, bgcolor: showMap ? GREEN : "#fff", color: showMap ? "#fff" : GREEN, boxShadow: "0 1px 2px rgba(16,28,54,0.05)", "&:hover": { border: `1px solid ${GREEN_DEEP}`, bgcolor: showMap ? GREEN_DEEP : "rgba(0,133,87,0.06)" } }}
               >
                 {showMap ? "Masquer la carte" : "Afficher sur la carte"}
               </Button>
@@ -1023,40 +1024,36 @@ const SearchBiensPage = () => {
                 const nbSallesBain = carac.nbSallesBain;
                 const sup = Number(bien.superficie);
                 const nbSalons = carac.nbSalons;
-                const GOLD_BG = "#F5E6BA";
-                const GOLD = "#C59A45";
-                const GOLD_TXT = "#704B12";
                 const features = [
-                  nbChambres > 0 && { key: "ch", Icon: Bed, value: nbChambres, label: nbChambres > 1 ? "Chambres" : "Chambre" },
-                  nbSallesBain > 0 && { key: "sdb", Icon: Bathtub, value: nbSallesBain, label: nbSallesBain > 1 ? "Salles de bain" : "Salle de bain" },
-                  nbSalons > 0 && { key: "sal", Icon: Weekend, value: nbSalons, label: nbSalons > 1 ? "Salons" : "Salon" },
-                  sup > 0 && { key: "sup", Icon: FISquareFoot, value: `${fmtN(sup)} m²`, label: "Superficie" },
-                  carac.jardin && { key: "jar", Icon: Nature, value: "Jardin", label: "Oui" },
-                  carac.garage && { key: "gar", Icon: Garage, value: "Garage", label: "Oui" },
-                  carac.piscine && { key: "pis", Icon: Pool, value: "Piscine", label: "Oui" },
+                  nbChambres > 0 && { key: "ch", Icon: Bed, text: `${nbChambres} ${nbChambres > 1 ? "chambres" : "chambre"}` },
+                  nbSallesBain > 0 && { key: "sdb", Icon: Bathtub, text: `${nbSallesBain} ${nbSallesBain > 1 ? "salles de bain" : "salle de bain"}` },
+                  nbSalons > 0 && { key: "sal", Icon: Weekend, text: `${nbSalons} ${nbSalons > 1 ? "salons" : "salon"}` },
+                  sup > 0 && { key: "sup", Icon: FISquareFoot, text: `${fmtN(sup)} m²` },
+                  carac.jardin && { key: "jar", Icon: Nature, text: "Jardin" },
+                  carac.garage && { key: "gar", Icon: Garage, text: "Garage" },
+                  carac.piscine && { key: "pis", Icon: Pool, text: "Piscine" },
                 ].filter(Boolean).slice(0, 6);
                 return (
-                  <Box key={bien._id} sx={{ containerType: "inline-size", display: "flex", minWidth: 0 }}>
                   <Card
+                    key={bien._id}
                     elevation={0}
                     onClick={() => handleOpenBienDetails(bien)}
                     sx={{
-                      position: "relative",
-                      width: "100%",
                       display: "flex",
                       flexDirection: "column",
+                      minWidth: 0,
                       cursor: "pointer",
-                      borderRadius: "20px",
+                      borderRadius: "16px",
                       overflow: "hidden",
                       bgcolor: "#fff",
-                      border: "1px solid #E4EAF0",
-                      boxShadow: "0 4px 14px rgba(16,28,54,0.07)",
+                      border: "1px solid #E2E8F0",
+                      boxShadow: "0 2px 8px rgba(16,28,54,0.06)",
                       transition: "transform 0.2s ease, box-shadow 0.2s ease",
-                      "&:hover": { transform: "translateY(-3px)", boxShadow: "0 12px 26px rgba(16,28,54,0.13)" },
+                      "&:hover": { transform: "translateY(-2px)", boxShadow: "0 8px 20px rgba(16,28,54,0.10)" },
                     }}
                   >
                     {/* Photographie (réelle ou image illustrative) */}
-                    <Box sx={{ height: 210, position: "relative", overflow: "hidden", background: `linear-gradient(135deg, ${GREEN} 0%, ${GREEN_DARK} 100%)` }}>
+                    <Box sx={{ height: 200, position: "relative", overflow: "hidden", bgcolor: GREEN_DEEP }}>
                       <Box sx={{ position: "absolute", inset: 0, backgroundImage: "url(/images/bien-placeholder.webp)", backgroundSize: "cover", backgroundPosition: "center" }} />
                       {photoUrl ? (
                         <Box
@@ -1067,7 +1064,7 @@ const SearchBiensPage = () => {
                           sx={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }}
                         />
                       ) : (
-                        <Box sx={{ position: "absolute", left: 12, bottom: 26, px: 1, py: 0.25, borderRadius: "6px", bgcolor: "rgba(16,28,54,0.55)", color: "#fff", fontSize: 11, fontFamily: FONT }}>
+                        <Box sx={{ position: "absolute", left: 12, bottom: 10, px: 1, py: 0.25, borderRadius: "6px", bgcolor: "rgba(16,28,54,0.6)", color: "#fff", fontSize: 11, fontFamily: FONT }}>
                           Image illustrative
                         </Box>
                       )}
@@ -1084,7 +1081,7 @@ const SearchBiensPage = () => {
                         </Box>
                         <Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 0.75, flexShrink: 0 }}>
                           {bienStatut && (
-                            <Box sx={{ bgcolor: dispoOk ? "#E3F5EC" : "#fff", color: dispoOk ? GREEN_DEEP : bienStatut.color, px: 1.5, py: 0.5, borderRadius: "8px", fontSize: 12, fontWeight: 700, fontFamily: FONT, whiteSpace: "nowrap" }}>
+                            <Box sx={{ bgcolor: dispoOk ? "#E5F3EC" : "#fff", color: dispoOk ? GREEN_DEEP : bienStatut.color, px: 1.5, py: 0.5, borderRadius: "8px", fontSize: 12, fontWeight: 700, fontFamily: FONT, whiteSpace: "nowrap" }}>
                               {bienStatut.label}
                             </Box>
                           )}
@@ -1097,102 +1094,79 @@ const SearchBiensPage = () => {
                         </Box>
                       </Box>
                       {nbPhotos > 0 && (
-                        <Box sx={{ position: "absolute", bottom: 24, right: 10, display: "flex", alignItems: "center", gap: 0.5, bgcolor: NIGHT, color: "#fff", px: 1.1, py: 0.3, borderRadius: "999px", fontSize: 12, fontWeight: 600, fontFamily: FONT }}>
+                        <Box sx={{ position: "absolute", bottom: 10, right: 10, display: "flex", alignItems: "center", gap: 0.5, bgcolor: NIGHT, color: "#fff", px: 1.1, py: 0.3, borderRadius: "999px", fontSize: 12, fontWeight: 600, fontFamily: FONT }}>
                           <PhotoCamera sx={{ fontSize: 15 }} />
                           {nbPhotos}
                         </Box>
                       )}
-                      {/* Transition incurvée photo -> contenu */}
-                      <Box aria-hidden="true" sx={{ position: "absolute", left: 0, right: 0, bottom: -1, height: 18, bgcolor: "#fff", borderRadius: "20px 20px 0 0" }} />
                     </Box>
 
-                    {/* Courbes décoratives (arrière-plan, sans effet sur les textes) */}
-                    <Box
-                      component="svg"
-                      aria-hidden="true"
-                      viewBox="0 0 400 120"
-                      preserveAspectRatio="none"
-                      sx={{ position: "absolute", left: 0, bottom: 0, width: "100%", height: 110, zIndex: 0, pointerEvents: "none" }}
-                    >
-                      <path d="M0 70 C 90 20, 200 110, 400 40 L400 120 L0 120 Z" fill="#D8F0E5" opacity="0.55" />
-                      <path d="M0 95 C 120 55, 240 125, 400 75 L400 120 L0 120 Z" fill="#008557" opacity="0.10" />
-                      <path d="M0 112 C 140 85, 260 125, 400 100 L400 120 L0 120 Z" fill="#005C48" opacity="0.10" />
-                    </Box>
+                    <CardContent sx={{ p: "16px", "&:last-child": { pb: "16px" }, display: "flex", flexDirection: "column", gap: "12px", flex: 1 }}>
+                      {/* Titre (deux lignes réservées) */}
+                      <Typography
+                        title={bien.titre}
+                        sx={{
+                          fontFamily: FONT, fontSize: 19, fontWeight: 700, color: NIGHT, lineHeight: 1.3, overflowWrap: "anywhere",
+                          minHeight: "calc(2 * 1.3em)", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden",
+                        }}
+                      >
+                        {bien.titre}
+                      </Typography>
 
-                    <CardContent sx={{ position: "relative", zIndex: 1, p: "6px 18px 18px", "&:last-child": { pb: "18px" }, display: "flex", flexDirection: "column", gap: 1.5, flex: 1 }}>
-                      {/* Titre + prix (côte à côte si la carte est assez large) */}
-                      <Box sx={{ display: "flex", flexDirection: "column", gap: 1.25, "@container (min-width: 540px)": { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 1.5 } }}>
-                        <Box sx={{ minWidth: 0, flex: 1 }}>
-                          <Typography
-                            title={bien.titre}
-                            sx={{
-                              fontFamily: FONT, fontSize: 19, fontWeight: 700, color: NIGHT, lineHeight: 1.3, overflowWrap: "anywhere",
-                              borderLeft: `4px solid ${GREEN}`, pl: 1.25, minHeight: "calc(2 * 1.3em)",
-                              display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden",
-                            }}
-                          >
-                            {bien.titre}
-                          </Typography>
-                          {(localite || bien.type) && (
-                            <Box sx={{ display: "flex", flexWrap: "wrap", alignItems: "center", columnGap: 1.25, rowGap: 0.25, mt: 0.75, fontFamily: FONT, fontSize: 13.5, fontWeight: 600, color: NIGHT }}>
-                              {localite && (
-                                <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 0.5, minWidth: 0 }}>
-                                  <LocationOn sx={{ fontSize: 18, color: GREEN, flexShrink: 0 }} />
-                                  <Box component="span" sx={{ overflowWrap: "anywhere" }}>{localite}</Box>
-                                </Box>
-                              )}
-                              {bien.type && (
-                                <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 0.5, textTransform: "capitalize", whiteSpace: "nowrap" }}>
-                                  {localite && <Box component="span" aria-hidden="true" sx={{ color: "#B7C2CD", mr: 0.75 }}>|</Box>}
-                                  <Home sx={{ fontSize: 18, color: GREEN, flexShrink: 0 }} />
-                                  {bien.type}
-                                </Box>
-                              )}
+                      {/* Localisation | type */}
+                      {(localite || bien.type) && (
+                        <Box sx={{ display: "flex", flexWrap: "wrap", alignItems: "center", columnGap: 1.25, rowGap: 0.25, mt: "-4px", fontFamily: FONT, fontSize: 13.5, fontWeight: 600, color: NIGHT }}>
+                          {localite && (
+                            <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 0.5, minWidth: 0 }}>
+                              <LocationOn sx={{ fontSize: 17, color: GREEN, flexShrink: 0 }} />
+                              <Box component="span" sx={{ overflowWrap: "anywhere" }}>{localite}</Box>
+                            </Box>
+                          )}
+                          {bien.type && (
+                            <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 0.5, textTransform: "capitalize", whiteSpace: "nowrap" }}>
+                              {localite && <Box component="span" aria-hidden="true" sx={{ color: "#CBD5E1", mr: 0.75 }}>|</Box>}
+                              <Home sx={{ fontSize: 17, color: GREEN, flexShrink: 0 }} />
+                              {bien.type}
                             </Box>
                           )}
                         </Box>
+                      )}
 
-                        {/* Bloc prix doré */}
-                        <Box sx={{ flexShrink: 0, bgcolor: GOLD_BG, borderLeft: `4px solid ${GOLD}`, borderRadius: "6px 16px 16px 16px", px: 1.75, py: 1, color: GOLD_TXT, maxWidth: "100%", boxSizing: "border-box" }}>
-                          <Typography sx={{ fontFamily: FONT, fontSize: 12, fontWeight: 700, color: GOLD_TXT, lineHeight: 1.2 }}>Prix de vente</Typography>
-                          {bien.prix > 0 ? (
-                            <Typography sx={{ fontFamily: FONT, fontSize: 19, "@container (min-width: 300px)": { fontSize: 25 }, fontWeight: 800, color: GOLD_TXT, lineHeight: 1.2, overflowWrap: "anywhere" }}>
-                              <Box component="span" sx={{ whiteSpace: "nowrap" }}>{fmtN(bien.prix).replace(/ /g, " ")}</Box>{" "}
-                              <Box component="span" sx={{ fontSize: 13, fontWeight: 700, whiteSpace: "nowrap" }}>FCFA</Box>
-                            </Typography>
-                          ) : (
-                            <Typography sx={{ fontFamily: FONT, fontSize: 16, fontWeight: 700, color: GOLD_TXT, lineHeight: 1.4 }}>Prix sur demande</Typography>
-                          )}
-                        </Box>
+                      {/* Prix de vente */}
+                      <Box sx={{ display: "flex", flexWrap: "wrap", alignItems: "baseline", justifyContent: "space-between", columnGap: 1.5, rowGap: 0.25, bgcolor: "#F1F4F7", borderRadius: "8px", p: "10px 12px" }}>
+                        <Typography sx={{ fontFamily: FONT, fontSize: 13, fontWeight: 600, color: MUTED }}>Prix de vente</Typography>
+                        {bien.prix > 0 ? (
+                          <Typography sx={{ fontFamily: FONT, fontSize: 23, fontWeight: 800, color: GREEN_DEEP, lineHeight: 1.2, overflowWrap: "anywhere" }}>
+                            <Box component="span" sx={{ whiteSpace: "nowrap" }}>{fmtN(bien.prix).replace(/ /g, " ")}</Box>{" "}
+                            <Box component="span" sx={{ fontSize: 13, fontWeight: 700, whiteSpace: "nowrap" }}>FCFA</Box>
+                          </Typography>
+                        ) : (
+                          <Typography sx={{ fontFamily: FONT, fontSize: 16, fontWeight: 700, color: GREEN_DEEP }}>Prix sur demande</Typography>
+                        )}
                       </Box>
 
-                      {/* Caractéristiques */}
+                      {/* Caractéristiques : grille 2 colonnes */}
                       {features.length > 0 && (
-                        <Box sx={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "10px 12px", "@container (min-width: 400px)": { gridTemplateColumns: "repeat(3, minmax(0, 1fr))" } }}>
-                          {features.map(({ key, Icon, value, label }) => (
-                            <Box key={key} sx={{ display: "flex", alignItems: "center", gap: 1, minWidth: 0 }}>
-                              <Box sx={{ width: 34, height: 34, borderRadius: "10px", bgcolor: "#E5F3EC", color: GREEN, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                                <Icon sx={{ fontSize: 21 }} />
-                              </Box>
-                              <Box sx={{ minWidth: 0, fontFamily: FONT, color: NIGHT, lineHeight: 1.2 }}>
-                                <Box sx={{ fontSize: 14, fontWeight: 700, overflowWrap: "anywhere" }}>{value}</Box>
-                                <Box sx={{ fontSize: 12.5, color: MUTED, overflowWrap: "anywhere" }}>{label}</Box>
-                              </Box>
+                        <Box sx={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "8px" }}>
+                          {features.map(({ key, Icon, text }) => (
+                            <Box key={key} sx={{ display: "flex", alignItems: "center", gap: 1, minHeight: 38, px: 1.25, py: 0.5, borderRadius: "8px", bgcolor: "#E5F3EC", minWidth: 0 }}>
+                              <Icon sx={{ fontSize: 20, color: GREEN, flexShrink: 0 }} />
+                              <Box sx={{ fontFamily: FONT, fontSize: 13.5, fontWeight: 600, color: NIGHT, lineHeight: 1.2, overflowWrap: "anywhere", minWidth: 0 }}>{text}</Box>
                             </Box>
                           ))}
                         </Box>
                       )}
 
                       {/* Agence + référence + bouton (alignés en bas de carte) */}
-                      <Box sx={{ mt: "auto", display: "flex", flexDirection: "column", gap: 1.25 }}>
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, pt: 1.5, borderTop: "1px solid #E8EDF3", minHeight: 52 }}>
-                          {bien.agenceId && bien.agenceId.nom ? (
-                            <>
-                              <Box sx={{ width: 40, height: 40, borderRadius: "50%", bgcolor: "#E5F3EC", color: GREEN_DEEP, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <Box sx={{ mt: "auto", display: "flex", flexDirection: "column", gap: "12px" }}>
+                        <Box sx={{ display: "flex", flexWrap: "wrap", alignItems: "center", columnGap: 1.5, rowGap: 0.5, pt: "12px", borderTop: "1px solid #E2E8F0", minHeight: 52 }}>
+                          {bien.agenceId && bien.agenceId.nom && (
+                            <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, flex: "1 1 150px", minWidth: 0 }}>
+                              <Box sx={{ width: 38, height: 38, borderRadius: "10px", bgcolor: "#E5F3EC", color: GREEN_DEEP, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                                 <Business sx={{ fontSize: 21 }} />
                               </Box>
-                              <Box sx={{ minWidth: 0, flex: 1 }}>
-                                <Typography sx={{ fontFamily: FONT, fontSize: 14.5, fontWeight: 800, color: NIGHT, lineHeight: 1.3, overflowWrap: "anywhere" }}>{bien.agenceId.nom}</Typography>
+                              <Box sx={{ minWidth: 0 }}>
+                                <Typography sx={{ fontFamily: FONT, fontSize: 14, fontWeight: 800, color: NIGHT, lineHeight: 1.3, overflowWrap: "anywhere" }}>{bien.agenceId.nom}</Typography>
                                 {bien.agenceId.telephone && (
                                   <Box
                                     component="a"
@@ -1204,17 +1178,11 @@ const SearchBiensPage = () => {
                                     {bien.agenceId.telephone}
                                   </Box>
                                 )}
-                                {bien.reference && (
-                                  <Typography sx={{ fontFamily: FONT, fontSize: 11.5, color: MUTED, overflowWrap: "anywhere", lineHeight: 1.3 }}>Réf : {bien.reference}</Typography>
-                                )}
                               </Box>
-                            </>
-                          ) : (
-                            <Box sx={{ minWidth: 0, flex: 1 }}>
-                              {bien.reference && (
-                                <Typography sx={{ fontFamily: FONT, fontSize: 11.5, color: MUTED, overflowWrap: "anywhere" }}>Réf : {bien.reference}</Typography>
-                              )}
                             </Box>
+                          )}
+                          {bien.reference && (
+                            <Typography sx={{ fontFamily: FONT, fontSize: 11.5, color: MUTED, overflowWrap: "anywhere", flex: "0 1 auto", ml: "auto", maxWidth: "100%", textAlign: "right" }}>Réf : {bien.reference}</Typography>
                           )}
                         </Box>
 
@@ -1223,14 +1191,13 @@ const SearchBiensPage = () => {
                           variant="contained"
                           disableElevation
                           endIcon={<ArrowForward />}
-                          sx={{ height: 46, borderRadius: "12px", textTransform: "none", fontFamily: FONT, fontWeight: 700, fontSize: 15.5, bgcolor: GREEN, color: "#fff", "&:hover": { bgcolor: GREEN_DEEP } }}
+                          sx={{ height: 44, borderRadius: "10px", textTransform: "none", fontFamily: FONT, fontWeight: 700, fontSize: 15, bgcolor: GREEN, color: "#fff", "&:hover": { bgcolor: GREEN_DEEP } }}
                         >
                           Voir le bien
                         </Button>
                       </Box>
                     </CardContent>
                   </Card>
-                  </Box>
                 );
               })}
             </Box>
