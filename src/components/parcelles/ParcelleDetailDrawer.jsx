@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -24,29 +24,61 @@ import {
   OpenInNew,
   Notes,
   Videocam,
+  LocalOffer,
+  SquareFoot,
+  InsertDriveFileOutlined,
+  ImageOutlined,
+  TableChartOutlined,
 } from "@mui/icons-material";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { BASE_SERVER_URL } from "../../config/config";
 
-// Charte
-const BLUE = "#3030F9";
-const BLUE_DARK = "#2020C8";
-const GREEN = "#0A7C4F";
-const GREEN_DARK = "#065F3D";
-const GREEN_LIGHT = "#E3F5EC";
-const NIGHT = "#0e1133";
-const SKY = "#EAF0FF";
-const GREY_BG = "#f5f7fa";
-const BORDER = "#e5e7eb";
+// Charte verte de la page /parcelles
+const GREEN = "#008557";
+const GREEN_DEEP = "#005C48";
+const LIME = "#84CC16";
+const GREEN_LIGHT = "#DCF5E5";
+const GREEN_SOFT = "#E5F5EB";
+const NIGHT = "#101C36";
+const GREY_BG = "#F1F4F7";
+const GREY_BLOCK = "#E9EEF3";
+const MUTED = "#475569";
+const BORDER = "#E2E8F0";
+const FONT = "'Manrope', 'Plus Jakarta Sans', 'DM Sans', system-ui, Arial, sans-serif";
+const PLACEHOLDER = "/images/parcelle-placeholder.webp";
 
-// Statut de la parcelle : vert charte si à vendre, couleurs fonctionnelles sinon
+// Statut de la parcelle : vert si à vendre, couleurs fonctionnelles sinon
 const STATUTS = {
-  avendre: { label: "À vendre", color: GREEN },
-  vendue: { label: "Vendue", color: "#d32f2f" },
-  reserved: { label: "Réservée", color: "#B45309" },
-  reservee: { label: "Réservée", color: "#B45309" },
+  avendre: { label: "À vendre", bg: GREEN_LIGHT, color: GREEN_DEEP },
+  vendue: { label: "Vendue", bg: "#fff", color: "#d32f2f" },
+  reserved: { label: "Réservée", bg: "#fff", color: "#B45309" },
+  reservee: { label: "Réservée", bg: "#fff", color: "#B45309" },
+};
+
+// Marqueur vert (SVG, sans image externe)
+const greenPin = L.divIcon({
+  className: "",
+  html: `<svg xmlns="http://www.w3.org/2000/svg" width="34" height="44" viewBox="0 0 34 44"><path d="M17 1C8.7 1 2 7.6 2 15.8 2 27 17 43 17 43s15-16 15-27.2C32 7.6 25.3 1 17 1z" fill="#008557" stroke="#fff" stroke-width="2"/><circle cx="17" cy="16" r="6" fill="#fff"/></svg>`,
+  iconSize: [34, 44],
+  iconAnchor: [17, 43],
+  popupAnchor: [0, -40],
+});
+
+// Recalcule la taille de la carte après l'ouverture / l'animation du Drawer (évite zones grises et tuiles manquantes)
+const MapResizer = () => {
+  const map = useMap();
+  useEffect(() => {
+    const timers = [100, 400, 900].map((ms) => setTimeout(() => map.invalidateSize(), ms));
+    const onResize = () => map.invalidateSize();
+    window.addEventListener("resize", onResize);
+    return () => {
+      timers.forEach(clearTimeout);
+      window.removeEventListener("resize", onResize);
+    };
+  }, [map]);
+  return null;
 };
 
 // Fix pour les icônes Leaflet par défaut
@@ -173,18 +205,9 @@ const getFileNameFromUrl = (url) => {
   }
 };
 
-// Titre de section (hors cartes à en-tête coloré)
-const SectionTitle = ({ icon: Icon, children, color = NIGHT }) => (
-  <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5, color }}>
-    <Icon sx={{ fontSize: 20 }} />
-    <Typography component="h3" sx={{ fontSize: 15, fontWeight: 700, color }}>
-      {children}
-    </Typography>
-  </Box>
-);
-
 const ParcelleDetailDrawer = ({ open, onClose, selectedParcelle, onParcelleUpdate }) => {
   const [localParcelle, setLocalParcelle] = useState(selectedParcelle);
+  const [photoBroken, setPhotoBroken] = useState(false);
 
   // Normaliser les données de la parcelle pour gérer les deux structures
   const normalizeParcelle = (parcelle) => {
@@ -222,6 +245,7 @@ const ParcelleDetailDrawer = ({ open, onClose, selectedParcelle, onParcelleUpdat
   // Mettre à jour la parcelle locale quand selectedParcelle change
   React.useEffect(() => {
     setLocalParcelle(normalizeParcelle(selectedParcelle));
+    setPhotoBroken(false);
   }, [selectedParcelle]);
 
   const handleImageClick = (index) => {
@@ -317,6 +341,29 @@ const ParcelleDetailDrawer = ({ open, onClose, selectedParcelle, onParcelleUpdat
     window.open(googleMapsUrl, "_blank");
   };
 
+  const realPhoto = localParcelle?.images?.length > 0 && !photoBroken;
+  const fmt = (n) => new Intl.NumberFormat("fr-FR").format(n).replace(/[  ]/g, " ");
+
+  // Icône selon le type de fichier
+  const docIcon = (name) => {
+    const ext = (name.split(".").pop() || "").toLowerCase();
+    if (ext === "pdf") return <PictureAsPdf sx={{ fontSize: 26, color: "#d32f2f", flexShrink: 0 }} />;
+    if (["jpg", "jpeg", "png", "webp", "gif"].includes(ext)) return <ImageOutlined sx={{ fontSize: 26, color: GREEN, flexShrink: 0 }} />;
+    if (["xls", "xlsx", "csv"].includes(ext)) return <TableChartOutlined sx={{ fontSize: 26, color: GREEN, flexShrink: 0 }} />;
+    if (["doc", "docx", "txt"].includes(ext)) return <Description sx={{ fontSize: 26, color: "#1859E8", flexShrink: 0 }} />;
+    return <InsertDriveFileOutlined sx={{ fontSize: 26, color: MUTED, flexShrink: 0 }} />;
+  };
+
+  const sectionTitle = (Icon, text, color = NIGHT, extra = null) => (
+    <Box sx={{ display: "flex", alignItems: "center", gap: 1, color, mb: 1.5 }}>
+      <Icon sx={{ fontSize: 24, color: color === NIGHT ? GREEN : color }} />
+      <Typography component="h3" sx={{ fontFamily: FONT, fontSize: 19, fontWeight: 700, color, flex: 1 }}>
+        {text}
+      </Typography>
+      {extra}
+    </Box>
+  );
+
   return (
     <Drawer
       anchor="right"
@@ -324,190 +371,144 @@ const ParcelleDetailDrawer = ({ open, onClose, selectedParcelle, onParcelleUpdat
       onClose={onClose}
       PaperProps={{
         sx: {
-          width: { xs: "100%", sm: "90%", md: 600, lg: 700 },
+          width: "100%",
+          "@media (min-width:768px)": { width: "min(92vw, 640px)" },
+          "@media (min-width:1024px)": { width: 720 },
+          height: "100dvh",
+          maxHeight: "100dvh",
+          display: "flex",
+          flexDirection: "column",
           bgcolor: GREY_BG,
+          fontFamily: FONT,
         },
       }}
     >
-      {/* Tout défile d'un seul bloc : en-tête, contenu et documents */}
-      <Box sx={{ minHeight: "100%", bgcolor: GREY_BG }}>
-        {/* 1. En-tête bleu nuit */}
-        <Box sx={{ bgcolor: NIGHT, color: "#fff", p: { xs: 2, sm: 3 } }}>
-          <Box sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 2 }}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, minWidth: 0 }}>
-              <Box
-                sx={{
-                  width: 44,
-                  height: 44,
-                  borderRadius: "12px",
-                  bgcolor: BLUE,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flexShrink: 0,
-                }}
-              >
-                <MapIcon sx={{ fontSize: 24, color: "#fff" }} />
-              </Box>
-              <Typography
-                component="h2"
-                sx={{ fontSize: 19, fontWeight: 800, color: "#fff", lineHeight: 1.25, wordBreak: "break-word" }}
-              >
+      {/* 1. En-tête fixe : reste visible pendant le défilement */}
+      <Box
+        sx={{
+          position: "relative",
+          flexShrink: 0,
+          overflow: "hidden",
+          bgcolor: GREEN_DEEP,
+          color: "#fff",
+          px: { xs: 2, sm: 2.5 },
+          py: { xs: 1.75, sm: 2.25 },
+        }}
+      >
+        <Box component="svg" viewBox="0 0 220 140" aria-hidden="true" sx={{ position: "absolute", top: 0, right: 0, width: { xs: 130, sm: 200 }, height: { xs: 84, sm: 128 }, pointerEvents: "none" }}>
+          <path d="M220 0 V100 C 175 92, 130 50, 120 0 Z" fill={LIME} fillOpacity="0.5" />
+          <path d="M220 0 V56 C 195 50, 170 28, 164 0 Z" fill="#fff" fillOpacity="0.16" />
+        </Box>
+        <Box sx={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1.5 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, minWidth: 0 }}>
+            <Box sx={{ width: 48, height: 48, borderRadius: "12px", bgcolor: "rgba(255,255,255,0.14)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <MapIcon sx={{ fontSize: 28, color: "#fff" }} />
+            </Box>
+            <Box sx={{ minWidth: 0 }}>
+              <Typography component="h2" sx={{ fontFamily: FONT, fontSize: "clamp(21px, 5.6vw, 28px)", fontWeight: 800, color: "#fff", lineHeight: 1.2, wordBreak: "break-word" }}>
                 {localParcelle ? `Parcelle ${localParcelle.ref}` : "Détails de la parcelle"}
               </Typography>
+              {localParcelle && (
+                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mt: 0.75 }}>
+                  <Box sx={{ bgcolor: GREEN, color: "#fff", px: 1.4, py: 0.35, borderRadius: "999px", fontSize: 12, fontWeight: 700, letterSpacing: 0.4 }}>PARCELLE</Box>
+                  {statut && (
+                    <Box sx={{ bgcolor: statut.bg, color: statut.color, px: 1.4, py: 0.35, borderRadius: "999px", fontSize: 12, fontWeight: 700 }}>{statut.label}</Box>
+                  )}
+                </Box>
+              )}
             </Box>
-            <IconButton
-              onClick={onClose}
-              aria-label="Fermer"
-              sx={{
-                bgcolor: "rgba(255,255,255,0.12)",
-                color: "#fff",
-                flexShrink: 0,
-                "&:hover": { bgcolor: "rgba(255,255,255,0.22)" },
-              }}
-            >
-              <Close />
-            </IconButton>
           </Box>
-
-          {localParcelle && (
-            <>
-              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mt: 2 }}>
-                <Box
-                  sx={{
-                    bgcolor: BLUE,
-                    color: "#fff",
-                    px: 1.4,
-                    py: 0.5,
-                    borderRadius: "999px",
-                    fontSize: "0.72rem",
-                    fontWeight: 700,
-                    textTransform: "uppercase",
-                    letterSpacing: 0.4,
-                  }}
-                >
-                  Parcelle
-                </Box>
-                {statut && (
-                  <Box
-                    sx={{
-                      bgcolor: "#fff",
-                      color: statut.color,
-                      px: 1.4,
-                      py: 0.5,
-                      borderRadius: "999px",
-                      fontSize: "0.72rem",
-                      fontWeight: 700,
-                    }}
-                  >
-                    {statut.label}
-                  </Box>
-                )}
-              </Box>
-
-              <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1.5, mt: 2 }}>
-                <Box sx={{ bgcolor: BLUE, borderRadius: "12px", p: 1.75 }}>
-                  <Typography sx={{ fontSize: 10, color: "#fff", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>
-                    Prix
-                  </Typography>
-                  <Typography sx={{ fontSize: 17, fontWeight: 800, color: "#fff", lineHeight: 1.3, mt: 0.25 }}>
-                    {localParcelle.prix > 0 ? (
-                      <>
-                        {new Intl.NumberFormat("fr-FR").format(localParcelle.prix)}{" "}
-                        <Box component="span" sx={{ fontSize: 12, fontWeight: 600, color: "#fff" }}>
-                          FCFA
-                        </Box>
-                      </>
-                    ) : (
-                      "Sur demande"
-                    )}
-                  </Typography>
-                </Box>
-                <Box sx={{ bgcolor: GREEN, borderRadius: "12px", p: 1.75 }}>
-                  <Typography sx={{ fontSize: 10, color: "#fff", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>
-                    Surface
-                  </Typography>
-                  <Typography sx={{ fontSize: 17, fontWeight: 800, color: "#fff", lineHeight: 1.3, mt: 0.25 }}>
-                    {localParcelle.superficie > 0 ? (
-                      <>
-                        {localParcelle.superficie}{" "}
-                        <Box component="span" sx={{ fontSize: 12, fontWeight: 600, color: "#fff" }}>
-                          m²
-                        </Box>
-                      </>
-                    ) : (
-                      "Non renseignée"
-                    )}
-                  </Typography>
-                </Box>
-              </Box>
-            </>
-          )}
+          <IconButton
+            onClick={onClose}
+            aria-label="Fermer"
+            sx={{ width: 40, height: 40, bgcolor: "#fff", color: GREEN_DEEP, flexShrink: 0, "&:hover": { bgcolor: GREEN_LIGHT } }}
+          >
+            <Close />
+          </IconButton>
         </Box>
+      </Box>
 
+      {/* Contenu défilant */}
+      <Box sx={{ flex: 1, minHeight: 0, overflowY: "auto", overflowX: "hidden" }}>
         {localParcelle ? (
-          <Box sx={{ p: 1.5, display: "flex", flexDirection: "column", gap: 1.25 }}>
-            {/* 2. Photos */}
-            {localParcelle.images && localParcelle.images.length > 0 && (
-              <Box sx={{ bgcolor: "#fff", border: `1px solid ${BORDER}`, borderRadius: "14px", p: 1.5 }}>
-                <SectionTitle icon={MapIcon}>Photos de la parcelle</SectionTitle>
-                <Box sx={{ height: { xs: 220, sm: 260 }, borderRadius: "12px", overflow: "hidden", bgcolor: "#d9e2ec", mb: 1.5 }}>
+          <Box sx={{ p: { xs: 2, sm: 2.5 }, display: "flex", flexDirection: "column", gap: "14px" }}>
+            {/* 2. Photographie */}
+            <Box>
+              <Box sx={{ position: "relative", height: { xs: 175, sm: 210 }, borderRadius: "14px", overflow: "hidden", bgcolor: GREEN_DEEP }}>
+                {realPhoto ? (
                   <Box
                     component="img"
                     src={fixImageUrl(localParcelle.images[0])}
-                    alt={localParcelle.ref}
-                    onError={(e) => {
-                      e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect width='400' height='300' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999' font-size='16'%3EImage%20non%20disponible%3C/text%3E%3C/svg%3E";
-                      e.target.onerror = null;
-                    }}
-                    sx={{ width: "100%", height: "100%", objectFit: "cover" }}
+                    alt={`Parcelle ${localParcelle.ref}`}
+                    onError={() => setPhotoBroken(true)}
+                    sx={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
                   />
-                </Box>
-                {localParcelle.images.length > 1 && (
-                  <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
-                    {localParcelle.images.slice(1).map((img, idx) => (
-                      <Box
-                        key={idx}
-                        component="img"
-                        src={fixImageUrl(img)}
-                        alt={`${localParcelle.ref} - Image ${idx + 2}`}
-                        onError={(e) => {
-                          e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect width='80' height='80' fill='%23f0f0f0'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999' font-size='10'%3EN/A%3C/text%3E%3C/svg%3E";
-                          e.target.onerror = null;
-                        }}
-                        onClick={() => handleImageClick(idx)}
-                        sx={{
-                          width: 66,
-                          height: 66,
-                          objectFit: "cover",
-                          borderRadius: "10px",
-                          cursor: "pointer",
-                          border: "2px solid transparent",
-                          bgcolor: "#d9e2ec",
-                          "&:hover": { borderColor: BLUE },
-                        }}
-                      />
-                    ))}
-                  </Box>
+                ) : (
+                  <>
+                    <Box component="img" src={PLACEHOLDER} alt="Image illustrative de parcelle" sx={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                    <Box sx={{ position: "absolute", left: 12, bottom: 10, px: 1, py: 0.25, borderRadius: "6px", bgcolor: "rgba(16,28,54,0.6)", color: "#fff", fontSize: 11.5, fontFamily: FONT }}>
+                      Image illustrative
+                    </Box>
+                  </>
                 )}
               </Box>
-            )}
+              {realPhoto && localParcelle.images.length > 1 && (
+                <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mt: 1 }}>
+                  {localParcelle.images.slice(1).map((img, idx) => (
+                    <Box
+                      key={idx}
+                      component="img"
+                      src={fixImageUrl(img)}
+                      alt={`Parcelle ${localParcelle.ref} - image ${idx + 2}`}
+                      onError={(e) => { e.target.style.display = "none"; }}
+                      onClick={() => handleImageClick(idx)}
+                      sx={{ width: 64, height: 64, objectFit: "cover", borderRadius: "10px", cursor: "pointer", border: "2px solid transparent", bgcolor: "#d9e2ec", "&:hover": { borderColor: GREEN } }}
+                    />
+                  ))}
+                </Box>
+              )}
+            </Box>
 
-            {/* 3. Localisation : cartes blanches en grille sur fond bleu ciel */}
-            <Box sx={{ bgcolor: SKY, borderRadius: "14px", p: 1.5 }}>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1, color: BLUE_DARK, mb: 1.25 }}>
-                <LocationOn sx={{ fontSize: 20 }} />
-                <Typography component="h3" sx={{ fontSize: 15, fontWeight: 700, color: BLUE_DARK }}>
-                  Localisation
-                </Typography>
+            {/* 3. Prix et superficie */}
+            <Box sx={{ display: "grid", gap: "12px", gridTemplateColumns: "1fr", "@media (min-width:420px)": { gridTemplateColumns: "1fr 1fr" } }}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, bgcolor: GREEN_DEEP, borderRadius: "14px", p: "14px 16px", minWidth: 0, minHeight: 84 }}>
+                <LocalOffer sx={{ fontSize: 40, color: "#fff", flexShrink: 0 }} />
+                <Box sx={{ minWidth: 0 }}>
+                  <Typography sx={{ fontFamily: FONT, fontSize: 13, fontWeight: 600, color: "#fff" }}>Prix</Typography>
+                  <Typography sx={{ fontFamily: FONT, fontSize: { xs: 21, sm: 26 }, fontWeight: 800, color: "#fff", lineHeight: 1.2 }}>
+                    {localParcelle.prix > 0 ? (
+                      <>
+                        {fmt(localParcelle.prix)}{" "}
+                        <Box component="span" sx={{ fontSize: 13, fontWeight: 700 }}>FCFA</Box>
+                      </>
+                    ) : (
+                      <Box component="span" sx={{ fontSize: 16 }}>Sur demande</Box>
+                    )}
+                  </Typography>
+                </Box>
               </Box>
-              <Box
-                sx={{
-                  display: "grid",
-                  gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
-                  gap: "8px",
-                }}
-              >
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, bgcolor: GREEN_LIGHT, borderRadius: "14px", p: "14px 16px", minWidth: 0, minHeight: 84 }}>
+                <SquareFoot sx={{ fontSize: 40, color: GREEN, flexShrink: 0 }} />
+                <Box sx={{ minWidth: 0 }}>
+                  <Typography sx={{ fontFamily: FONT, fontSize: 13, fontWeight: 600, color: NIGHT }}>Surface</Typography>
+                  <Typography sx={{ fontFamily: FONT, fontSize: { xs: 21, sm: 26 }, fontWeight: 800, color: NIGHT, lineHeight: 1.2 }}>
+                    {localParcelle.superficie > 0 ? (
+                      <>
+                        {fmt(localParcelle.superficie)}{" "}
+                        <Box component="span" sx={{ fontSize: 13, fontWeight: 700 }}>m²</Box>
+                      </>
+                    ) : (
+                      <Box component="span" sx={{ fontSize: 16 }}>Non renseignée</Box>
+                    )}
+                  </Typography>
+                </Box>
+              </Box>
+            </Box>
+
+            {/* 4. Localisation */}
+            <Box sx={{ bgcolor: GREY_BLOCK, borderRadius: "14px", p: "14px" }}>
+              {sectionTitle(LocationOn, "Localisation")}
+              <Box sx={{ display: "grid", gap: "10px", gridTemplateColumns: "1fr", "@media (min-width:420px)": { gridTemplateColumns: "1fr 1fr" } }}>
                 {[
                   localParcelle.lotissementNom && { key: "lot", icon: DashboardIcon, label: "Lotissement", value: localParcelle.lotissementNom },
                   ilotConnu && { key: "ilot", icon: GridOn, label: "Îlot", value: localParcelle.ilot },
@@ -520,10 +521,10 @@ const ParcelleDetailDrawer = ({ open, onClose, selectedParcelle, onParcelleUpdat
                     value: (
                       <>
                         <Box component="span" sx={{ display: "block" }}>
-                          Lat: {localParcelle.latitude} / Lng: {localParcelle.longitude}
+                          {localParcelle.latitude}, {localParcelle.longitude}
                         </Box>
                         {decimalToDMS(localParcelle.latitude, "lat") && decimalToDMS(localParcelle.longitude, "lon") && (
-                          <Box component="span" sx={{ display: "block", fontSize: 11.5, fontWeight: 500, color: "#5b6573", mt: 0.25 }}>
+                          <Box component="span" sx={{ display: "block", fontSize: 12, fontWeight: 500, color: MUTED, mt: 0.25 }}>
                             {decimalToDMS(localParcelle.latitude, "lat")} / {decimalToDMS(localParcelle.longitude, "lon")}
                           </Box>
                         )}
@@ -532,46 +533,36 @@ const ParcelleDetailDrawer = ({ open, onClose, selectedParcelle, onParcelleUpdat
                   },
                 ]
                   .filter(Boolean)
-                  .map((info, idx, arr) => (
-                    <Box
-                      key={info.key}
-                      sx={{
-                        bgcolor: "#fff",
-                        borderRadius: "9px",
-                        p: "9px 11px",
-                        minWidth: 0,
-                        // Une info seule, ou la dernière d'un nombre impair : pleine largeur
-                        gridColumn: arr.length % 2 === 1 && idx === arr.length - 1 ? { xs: "auto", sm: "1 / -1" } : "auto",
-                      }}
-                    >
-                      <Typography sx={{ display: "flex", alignItems: "center", gap: 0.5, fontSize: 10, fontWeight: 600, color: "#5b6573", textTransform: "uppercase", letterSpacing: 0.5 }}>
-                        <info.icon sx={{ fontSize: 14, color: BLUE }} />
-                        {info.label}
-                      </Typography>
-                      <Typography component="div" sx={{ fontSize: 13.5, fontWeight: 700, color: NIGHT, mt: 0.25, wordBreak: "break-word" }}>
-                        {info.value}
-                      </Typography>
+                  .map((info) => (
+                    <Box key={info.key} sx={{ bgcolor: "#fff", borderRadius: "12px", p: "12px", minWidth: 0, display: "flex", alignItems: "flex-start", gap: 1.25 }}>
+                      <info.icon sx={{ fontSize: 24, color: GREEN, flexShrink: 0 }} />
+                      <Box sx={{ minWidth: 0 }}>
+                        <Typography sx={{ fontFamily: FONT, fontSize: 12.5, color: MUTED, lineHeight: 1.3 }}>{info.label}</Typography>
+                        <Typography component="div" sx={{ fontFamily: FONT, fontSize: 14.5, fontWeight: 700, color: NIGHT, mt: 0.25, overflowWrap: "anywhere" }}>
+                          {info.value}
+                        </Typography>
+                      </Box>
                     </Box>
                   ))}
               </Box>
-              <Box sx={{ display: "flex", gap: 1, mt: 1.25 }}>
+
+              {/* 5. Boutons Carte et Itinéraire */}
+              <Box sx={{ display: "flex", gap: 1.25, mt: 1.5, flexWrap: "wrap" }}>
                 <Button
-                  fullWidth
                   disableElevation
                   startIcon={<MapIcon />}
                   onClick={handleVoirCarte}
-                  sx={{ textTransform: "none", fontWeight: 700, bgcolor: "#fff", color: BLUE_DARK, "&:hover": { bgcolor: "#f5f7fa" } }}
+                  sx={{ flex: "1 1 140px", height: 46, borderRadius: "10px", textTransform: "none", fontFamily: FONT, fontWeight: 700, fontSize: 15, bgcolor: "#fff", color: GREEN, border: `1.5px solid ${GREEN}`, "&:hover": { bgcolor: GREEN_SOFT } }}
                 >
                   Carte
                 </Button>
                 {hasGps && (
                   <Button
-                    fullWidth
                     variant="contained"
                     disableElevation
                     startIcon={<Directions />}
                     onClick={handleItineraire}
-                    sx={{ textTransform: "none", fontWeight: 700, bgcolor: BLUE, color: "#fff", "&:hover": { bgcolor: BLUE_DARK } }}
+                    sx={{ flex: "1 1 140px", height: 46, borderRadius: "10px", textTransform: "none", fontFamily: FONT, fontWeight: 700, fontSize: 15, bgcolor: GREEN, color: "#fff", "&:hover": { bgcolor: GREEN_DEEP } }}
                   >
                     Itinéraire
                   </Button>
@@ -579,66 +570,48 @@ const ParcelleDetailDrawer = ({ open, onClose, selectedParcelle, onParcelleUpdat
               </Box>
             </Box>
 
-            {/* 4. Carte interactive */}
+            {/* 6. Carte interactive (marqueur seul : aucune limite de parcelle n'est enregistrée) */}
             {hasGps && (
-              <Box sx={{ border: `1px solid ${BORDER}`, borderRadius: "14px", overflow: "hidden", bgcolor: "#fff" }}>
-                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1, px: 2, py: 1.25, bgcolor: NIGHT }}>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1, color: "#fff" }}>
-                    <MapIcon sx={{ fontSize: 20 }} />
-                    <Typography component="h3" sx={{ fontSize: 15, fontWeight: 700, color: "#fff" }}>
-                      Sur la carte
-                    </Typography>
+              <Box sx={{ border: `1px solid ${BORDER}`, borderRadius: "14px", overflow: "hidden", bgcolor: "#fff", boxShadow: "0 2px 8px rgba(16,28,54,0.06)" }}>
+                <Box sx={{ display: "flex", alignItems: "center", flexWrap: "wrap", justifyContent: "space-between", gap: 1, px: 2, py: 1.25, bgcolor: GREY_BLOCK }}>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <MapIcon sx={{ fontSize: 24, color: GREEN }} />
+                    <Typography component="h3" sx={{ fontFamily: FONT, fontSize: 17, fontWeight: 700, color: NIGHT }}>Sur la carte</Typography>
                   </Box>
                   <Button
                     size="small"
                     endIcon={<OpenInNew sx={{ fontSize: 16 }} />}
                     onClick={openGoogleMaps}
-                    sx={{ textTransform: "none", fontWeight: 700, color: "#B5D4F4", "&:hover": { bgcolor: "rgba(255,255,255,0.1)" } }}
+                    sx={{ textTransform: "none", fontFamily: FONT, fontWeight: 700, color: GREEN, "&:hover": { bgcolor: GREEN_SOFT } }}
                   >
-                    Google Maps
+                    Ouvrir dans Google Maps
                   </Button>
                 </Box>
-                <Box sx={{ height: 360 }}>
+                <Box sx={{ height: { xs: 240, sm: 280 }, p: 1 }}>
                   <MapContainer
                     center={[localParcelle.latitude, localParcelle.longitude]}
                     zoom={18}
-                    style={{ height: "100%", width: "100%" }}
+                    style={{ height: "100%", width: "100%", borderRadius: 12 }}
                     scrollWheelZoom={true}
                     minZoom={10}
                     maxZoom={19}
                   >
+                    <MapResizer />
                     <TileLayer
                       attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                       url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                       maxZoom={19}
                     />
-                    <Marker
-                      position={[localParcelle.latitude, localParcelle.longitude]}
-                      icon={L.icon({
-                        iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png",
-                        iconSize: [25, 41],
-                        iconAnchor: [12, 41],
-                        popupAnchor: [1, -34],
-                        shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-                        shadowSize: [41, 41],
-                        shadowAnchor: [12, 41]
-                      })}
-                    >
+                    <Marker position={[localParcelle.latitude, localParcelle.longitude]} icon={greenPin}>
                       <Popup>
-                        <Typography variant="subtitle2" fontWeight="bold">
-                          Parcelle {localParcelle.ref}
-                        </Typography>
-                        <Typography variant="body2">
-                          Îlot {localParcelle.ilot}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {localParcelle.latitude}, {localParcelle.longitude}
-                        </Typography>
+                        <Typography variant="subtitle2" fontWeight="bold">Parcelle {localParcelle.ref}</Typography>
+                        <Typography variant="body2">Îlot {localParcelle.ilot}</Typography>
+                        <Typography variant="caption" color="text.secondary">{localParcelle.latitude}, {localParcelle.longitude}</Typography>
                         <Button
                           size="small"
                           variant="contained"
                           disableElevation
-                          sx={{ mt: 1, display: "flex", textTransform: "none", bgcolor: BLUE, "&:hover": { bgcolor: BLUE_DARK } }}
+                          sx={{ mt: 1, display: "flex", textTransform: "none", bgcolor: GREEN, "&:hover": { bgcolor: GREEN_DEEP } }}
                           onClick={openGoogleMaps}
                         >
                           Voir sur Google Maps
@@ -650,51 +623,36 @@ const ParcelleDetailDrawer = ({ open, onClose, selectedParcelle, onParcelleUpdat
               </Box>
             )}
 
-            {/* 5. Description */}
+            {/* 7. Description */}
             {localParcelle.description && (
-              <Box sx={{ bgcolor: GREEN_LIGHT, borderRadius: "14px", p: 1.5 }}>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1, color: GREEN_DARK, mb: 1 }}>
-                  <Notes sx={{ fontSize: 20 }} />
-                  <Typography component="h3" sx={{ fontSize: 15, fontWeight: 700, color: GREEN_DARK }}>
-                    Description
-                  </Typography>
+              <Box sx={{ bgcolor: GREEN_SOFT, borderRadius: "12px", p: "14px 16px" }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+                  <Notes sx={{ fontSize: 24, color: GREEN }} />
+                  <Typography component="h3" sx={{ fontFamily: FONT, fontSize: 18, fontWeight: 700, color: GREEN_DEEP }}>Description</Typography>
                 </Box>
-                <Typography sx={{ fontSize: 14, lineHeight: 1.65, color: NIGHT }}>
+                <Typography sx={{ fontFamily: FONT, fontSize: 14.5, lineHeight: 1.65, color: NIGHT, overflowWrap: "anywhere" }}>
                   {localParcelle.description}
                 </Typography>
               </Box>
             )}
 
-            {/* 6. Agence */}
+            {/* 8. Agence immobilière */}
             {localParcelle.agenceNom && (
-              <Box sx={{ bgcolor: NIGHT, borderRadius: "14px", p: 1.5, display: "flex", alignItems: "center", gap: 1.5 }}>
-                <Box
-                  sx={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: "10px",
-                    bgcolor: "rgba(255,255,255,0.15)",
-                    color: "#fff",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexShrink: 0,
-                  }}
-                >
-                  <Business sx={{ fontSize: 22 }} />
-                </Box>
-                <Box sx={{ minWidth: 0, flex: 1 }}>
-                  <Typography sx={{ fontSize: 10, fontWeight: 600, color: "#fff", opacity: 0.7, textTransform: "uppercase", letterSpacing: 0.5 }}>
-                    Agence
-                  </Typography>
-                  <Typography sx={{ fontSize: 15, fontWeight: 700, color: "#fff", wordBreak: "break-word" }}>
-                    {localParcelle.agenceNom}
-                  </Typography>
-                  {localParcelle.agenceTelephone && (
-                    <Typography sx={{ fontSize: 12.5, color: "#fff", opacity: 0.85 }}>
-                      {localParcelle.agenceTelephone}
-                    </Typography>
-                  )}
+              <Box sx={{ bgcolor: "#fff", border: `1px solid ${BORDER}`, boxShadow: "0 2px 8px rgba(16,28,54,0.06)", borderRadius: "14px", p: "14px", display: "flex", alignItems: "center", flexWrap: "wrap", gap: 1.5 }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, minWidth: 0, flex: "1 1 180px" }}>
+                  <Box sx={{ width: 48, height: 48, borderRadius: "12px", bgcolor: GREEN_LIGHT, color: GREEN, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <Business sx={{ fontSize: 26 }} />
+                  </Box>
+                  <Box sx={{ minWidth: 0 }}>
+                    <Typography sx={{ fontFamily: FONT, fontSize: 12.5, color: MUTED }}>Agence</Typography>
+                    <Typography sx={{ fontFamily: FONT, fontSize: 16, fontWeight: 700, color: NIGHT, overflowWrap: "anywhere" }}>{localParcelle.agenceNom}</Typography>
+                    {localParcelle.agenceTelephone && (
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, color: GREEN }}>
+                        <Phone sx={{ fontSize: 16 }} />
+                        <Typography sx={{ fontFamily: FONT, fontSize: 13.5, fontWeight: 600, color: NIGHT }}>{localParcelle.agenceTelephone}</Typography>
+                      </Box>
+                    )}
+                  </Box>
                 </Box>
                 {localParcelle.agenceTelephone && (
                   <Button
@@ -703,7 +661,7 @@ const ParcelleDetailDrawer = ({ open, onClose, selectedParcelle, onParcelleUpdat
                     variant="contained"
                     disableElevation
                     startIcon={<Phone />}
-                    sx={{ flexShrink: 0, textTransform: "none", fontWeight: 700, bgcolor: GREEN, color: "#fff", "&:hover": { bgcolor: GREEN_DARK } }}
+                    sx={{ flex: { xs: "1 1 100%", sm: "0 0 auto" }, height: 44, borderRadius: "10px", px: 2.5, textTransform: "none", fontFamily: FONT, fontWeight: 700, bgcolor: GREEN, color: "#fff", "&:hover": { bgcolor: GREEN_DEEP } }}
                   >
                     Appeler
                   </Button>
@@ -711,81 +669,58 @@ const ParcelleDetailDrawer = ({ open, onClose, selectedParcelle, onParcelleUpdat
               </Box>
             )}
 
-            {/* 7. Documents et médias */}
+            {/* 9. Vidéos */}
             {hasVideos && (
-              <Box sx={{ bgcolor: SKY, borderRadius: "14px", p: 1.5 }}>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1, color: BLUE_DARK, mb: 1.25 }}>
-                  <Videocam sx={{ fontSize: 20 }} />
-                  <Typography component="h3" sx={{ fontSize: 15, fontWeight: 700, color: BLUE_DARK }}>
-                    Vidéos ({localParcelle.videos.length})
-                  </Typography>
-                </Box>
-                    <Stack spacing={2}>
-                      {localParcelle.videos.map((videoUrl, idx) => {
-                        const embedUrl = getVideoEmbedUrl(videoUrl);
-                        return (
-                          <Box key={idx}>
-                            {embedUrl && embedUrl.startsWith('http') ? (
-                              <Box
-                                sx={{
-                                  position: "relative",
-                                  width: "100%",
-                                  paddingTop: "56.25%", // 16:9 aspect ratio
-                                  borderRadius: "12px",
-                                  overflow: "hidden",
-                                  bgcolor: "#000",
-                                }}
-                              >
-                                <iframe
-                                  src={embedUrl}
-                                  title={`Vidéo ${idx + 1}`}
-                                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                  allowFullScreen
-                                  style={{
-                                    position: "absolute",
-                                    top: 0,
-                                    left: 0,
-                                    width: "100%",
-                                    height: "100%",
-                                    border: "none",
-                                  }}
-                                />
-                              </Box>
-                            ) : (
-                              <Button
-                                component="a"
-                                href={videoUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                startIcon={<VideoLibrary />}
-                                fullWidth
-                                disableElevation
-                                sx={{ py: 1.25, textTransform: "none", fontWeight: 700, bgcolor: SKY, color: BLUE_DARK, "&:hover": { bgcolor: "#D9E4FF" } }}
-                              >
-                                Voir la vidéo {idx + 1}
-                              </Button>
-                            )}
+              <Box sx={{ bgcolor: GREEN_SOFT, borderRadius: "12px", p: "14px 16px" }}>
+                {sectionTitle(Videocam, `Vidéos (${localParcelle.videos.length})`, GREEN_DEEP)}
+                <Stack spacing={2}>
+                  {localParcelle.videos.map((videoUrl, idx) => {
+                    const embedUrl = getVideoEmbedUrl(videoUrl);
+                    return (
+                      <Box key={idx}>
+                        {embedUrl && embedUrl.startsWith("http") ? (
+                          <Box sx={{ position: "relative", width: "100%", paddingTop: "56.25%", borderRadius: "12px", overflow: "hidden", bgcolor: "#000" }}>
+                            <iframe
+                              src={embedUrl}
+                              title={`Vidéo ${idx + 1}`}
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                              allowFullScreen
+                              style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", border: "none" }}
+                            />
                           </Box>
-                        );
-                      })}
-                    </Stack>
-                  </Box>
-                )}
+                        ) : (
+                          <Button
+                            component="a"
+                            href={videoUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            startIcon={<VideoLibrary />}
+                            fullWidth
+                            disableElevation
+                            sx={{ height: 46, borderRadius: "10px", textTransform: "none", fontFamily: FONT, fontWeight: 700, bgcolor: "#fff", color: GREEN, "&:hover": { bgcolor: GREEN_LIGHT } }}
+                          >
+                            Voir la vidéo {idx + 1}
+                          </Button>
+                        )}
+                      </Box>
+                    );
+                  })}
+                </Stack>
+              </Box>
+            )}
 
-
+            {/* 10. Documents */}
             {hasDocs && (
-              <Box sx={{ bgcolor: SKY, borderRadius: "14px", p: 1.5 }}>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1, color: BLUE_DARK, mb: 1.25 }}>
-                  <Description sx={{ fontSize: 20 }} />
-                  <Typography component="h3" sx={{ fontSize: 15, fontWeight: 700, color: BLUE_DARK }}>
-                    Documents ({localParcelle.documents.length})
-                  </Typography>
-                </Box>
-                <Stack spacing={0.75}>
+              <Box sx={{ bgcolor: GREY_BLOCK, borderRadius: "14px", p: "14px" }}>
+                {sectionTitle(Description, "Documents", NIGHT, (
+                  <Box sx={{ bgcolor: GREEN_LIGHT, color: GREEN_DEEP, fontFamily: FONT, fontSize: 13, fontWeight: 700, px: 1.25, py: 0.25, borderRadius: "999px" }}>
+                    {localParcelle.documents.length}
+                  </Box>
+                ))}
+                <Stack spacing={1}>
                   {localParcelle.documents.map((docUrl, idx) => {
                     const fileName = getFileNameFromUrl(docUrl);
                     const fullUrl = fixImageUrl(docUrl);
-
                     return (
                       <Box
                         key={idx}
@@ -794,24 +729,14 @@ const ParcelleDetailDrawer = ({ open, onClose, selectedParcelle, onParcelleUpdat
                         target="_blank"
                         rel="noopener noreferrer"
                         download={fileName}
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 1.25,
-                          px: 1.5,
-                          py: 1.1,
-                          bgcolor: "#fff",
-                          borderRadius: "8px",
-                          textDecoration: "none",
-                          color: NIGHT,
-                          "&:hover": { bgcolor: "#f5f7fa" },
-                        }}
+                        title={fileName}
+                        sx={{ display: "flex", alignItems: "center", gap: 1.25, px: 1.5, py: 1.25, bgcolor: "#fff", borderRadius: "10px", textDecoration: "none", color: NIGHT, transition: "background-color 0.2s ease", "&:hover": { bgcolor: GREEN_SOFT } }}
                       >
-                        <PictureAsPdf sx={{ fontSize: 22, color: "#d32f2f", flexShrink: 0 }} />
-                        <Typography sx={{ fontSize: 13.5, fontWeight: 600, color: NIGHT, wordBreak: "break-word", flex: 1, minWidth: 0 }}>
+                        {docIcon(fileName)}
+                        <Typography sx={{ fontFamily: FONT, fontSize: 14, fontWeight: 600, color: NIGHT, overflowWrap: "anywhere", flex: 1, minWidth: 0 }}>
                           {fileName}
                         </Typography>
-                        <OpenInNew sx={{ fontSize: 18, color: BLUE_DARK, flexShrink: 0 }} />
+                        <OpenInNew sx={{ fontSize: 20, color: GREEN, flexShrink: 0 }} />
                       </Box>
                     );
                   })}
