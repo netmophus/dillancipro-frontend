@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   TextField,
   Button,
@@ -12,18 +12,27 @@ import {
   Step,
   StepLabel,
   Link,
-  Stack,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { BASE_URL } from "../../config/config";
-import registerImg from "../../assets/register.png";
+import LogoDillanci from "../../components/shared/LogoDillanci";
+import AuthSidePanel from "../../components/shared/AuthSidePanel";
 import {
   Visibility,
   VisibilityOff,
   Phone as PhoneIcon,
   Email as EmailIcon,
   ArrowBack,
+  PersonOutline,
+  EmailOutlined,
+  PhoneOutlined,
+  LockOutlined,
+  PersonAddAltOutlined,
+  LayersOutlined,
+  TrendingUp,
+  VerifiedUser,
+  InfoOutlined,
 } from "@mui/icons-material";
 
 const formatPhone = (rawPhone) => {
@@ -50,6 +59,15 @@ const RegisterPage = () => {
   const navigate = useNavigate();
 
   const [showPassword, setShowPassword] = useState(false);
+  // Page plein écran : retire la marge par défaut du navigateur le temps de l'affichage
+  useEffect(() => {
+    const previous = document.body.style.margin;
+    document.body.style.margin = "0";
+    return () => {
+      document.body.style.margin = previous;
+    };
+  }, []);
+
   const togglePasswordVisibility = () => setShowPassword((prev) => !prev);
 
   const handleVerifyCode = async () => {
@@ -183,174 +201,142 @@ const RegisterPage = () => {
     }
   };
 
-  const primaryBtnSx = {
-    py: 1.5,
-    fontWeight: 700,
-    fontSize: "1rem",
-    borderRadius: 2.5,
-    textTransform: "none",
-    background: "linear-gradient(135deg, #0D2B4E 0%, #27AE60 160%)",
-    boxShadow: "0 8px 22px rgba(13,43,78,0.28)",
-    "&:hover": {
-      background: "linear-gradient(135deg, #0a2240 0%, #229152 160%)",
-      boxShadow: "0 10px 26px rgba(13,43,78,0.36)",
-    },
-    "&:disabled": { background: "#c7cfdb", color: "#fff" },
-    transition: "all 0.25s ease",
-  };
+  const GREEN = "#008557";
+  const GREEN_DEEP = "#005C48";
+  const NIGHT = "#101C36";
+  const MUTED = "#64748B";
+  const BORDER = "#D5DCE3";
+  const FONT = "'Manrope', 'Plus Jakarta Sans', 'DM Sans', system-ui, Arial, sans-serif";
 
-  const year = new Date().getFullYear();
+  const avantages = [
+    { Icon: LayersOutlined, titre: "Gérez vos biens", texte: "Parcelles, locations et biens à vendre." },
+    { Icon: TrendingUp, titre: "Suivez vos transactions", texte: "En temps réel et en toute transparence." },
+    { Icon: VerifiedUser, titre: "Accédez à des services sécurisés", texte: "Des démarches simplifiées et fiables." },
+  ];
+
+  const primaryBtnSx = {
+    height: 54, "@media (min-width:768px) and (max-height:800px)": { height: 48 }, "@media (min-width:768px) and (max-height:700px)": { height: 44 },
+    fontFamily: FONT,
+    fontWeight: 700,
+    fontSize: 16,
+    borderRadius: "10px",
+    textTransform: "none",
+    bgcolor: GREEN,
+    color: "#fff",
+    "&:hover": { bgcolor: GREEN_DEEP },
+    "&.Mui-disabled": { bgcolor: GREEN, color: "#fff", opacity: 0.6 },
+  };
+  const labelSx = { display: "block", mb: 0.75, fontFamily: FONT, fontSize: 14, fontWeight: 600, color: NIGHT };
+  const fieldSx = {
+    "& .MuiOutlinedInput-root": {
+      fontFamily: FONT,
+      fontSize: 16,
+      minHeight: 52, "@media (min-width:768px) and (max-height:800px)": { height: 48, minHeight: 48, "& input": { py: "12px" } }, "@media (min-width:768px) and (max-height:700px)": { height: 44, minHeight: 44, "& input": { py: "9px" } },
+      borderRadius: "10px",
+      bgcolor: "#fff",
+      "& fieldset": { borderColor: BORDER },
+      "&:hover fieldset": { borderColor: "#B7C2CD" },
+      "&.Mui-focused fieldset": { borderColor: GREEN, borderWidth: 1.5 },
+    },
+    "& .MuiFormHelperText-root": { fontFamily: FONT, ml: 0.25, color: MUTED },
+  };
+  const iconAdornment = (Icon) => (
+    <InputAdornment position="start">
+      <Icon sx={{ fontSize: 22, color: MUTED }} />
+    </InputAdornment>
+  );
 
   return (
-    <Box sx={{ height: "100vh", overflow: "hidden", display: "flex", bgcolor: "#fff" }}>
-      {/* Panneau visuel */}
-      <Box sx={{ position: "relative", flex: 1.15, display: { xs: "none", md: "block" } }}>
-        <Box
-          component="img"
-          src={registerImg}
-          alt="Géofoncier"
-          sx={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }}
-        />
-        <Box
-          sx={{
-            position: "absolute",
-            inset: 0,
-            background:
-              "linear-gradient(150deg, rgba(13,43,78,0.84) 0%, rgba(27,82,133,0.60) 55%, rgba(39,174,96,0.48) 100%)",
-          }}
-        />
-        <Box
-          sx={{
-            position: "relative",
-            height: "100%",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "space-between",
-            p: { md: 6, lg: 9 },
-            color: "white",
-          }}
-        >
-          <Box display="flex" alignItems="center" gap={1.5}>
-            <Box
-              sx={{
-                width: 46,
-                height: 46,
-                borderRadius: 2.5,
-                bgcolor: "rgba(255,255,255,0.18)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontWeight: 800,
-                fontSize: "1.25rem",
-              }}
-            >
-              G
-            </Box>
-            <Typography variant="h6" fontWeight={800} letterSpacing={0.5}>
-              Géofoncier
-            </Typography>
-          </Box>
-
-          <Box>
-            <Typography variant="h3" fontWeight={800} lineHeight={1.12} sx={{ maxWidth: 500 }}>
-              Rejoignez la plateforme foncière de référence
-            </Typography>
-            <Typography variant="body1" sx={{ opacity: 0.9, mt: 2.5, maxWidth: 440 }}>
-              Créez votre compte pour gérer vos biens, suivre vos transactions et
-              accéder à tous nos services en toute sécurité.
-            </Typography>
-          </Box>
-
-          <Typography variant="caption" sx={{ opacity: 0.65 }}>
-            © {year} Géofoncier — Tous droits réservés
-          </Typography>
-        </Box>
-      </Box>
+    <Box sx={{ minHeight: "100dvh", "@media (min-width:768px)": { height: "100dvh" }, display: "flex", bgcolor: "#EEF1F4", fontFamily: FONT }}>
+      <AuthSidePanel
+        badge="Plateforme immobilière du Niger"
+        lines={["Rejoignez la", "plateforme immobilière"]}
+        mintLine="de référence"
+        description="Créez votre compte pour gérer vos biens, suivre vos transactions et accéder à tous nos services en toute sécurité."
+        items={avantages}
+      />
 
       {/* Panneau formulaire */}
       <Box
         sx={{
           flex: 1,
-          height: "100vh",
-          overflowY: "auto",
+          minWidth: 0,
           display: "flex",
-          px: { xs: 3, sm: 6 },
-          py: 4,
+            flexDirection: "column",
+            overflowY: "auto",
+          boxSizing: "border-box",
+          px: { xs: 2, sm: 4 },
+          "@media (min-width:375px)": { px: 2.5 },
+          "@media (min-width:600px)": { px: 4 },
+          py: { xs: 3, sm: 4 },
+            "@media (min-width:768px) and (max-height:800px)": { py: 2 },
+            "@media (min-width:768px) and (max-height:700px)": { py: 1 },
         }}
       >
-        <Box component="form" onSubmit={handleSubmit} sx={{ width: "100%", maxWidth: 440, m: "auto" }}>
-          <Stack spacing={3}>
+        <Box
+          component="form"
+          onSubmit={handleSubmit}
+          sx={{
+            width: "100%",
+            maxWidth: { xs: "100%", sm: 580 },
+              m: "auto",
+            boxSizing: "border-box",
+            bgcolor: "#fff",
+            border: "1px solid #E2E8F0",
+            borderRadius: "20px",
+            boxShadow: "0 2px 10px rgba(16,28,54,0.05)",
+            p: { xs: 2, sm: 4.5 },
+              "@media (min-width:768px) and (max-height:900px)": { p: 4 },
+              "@media (min-width:768px) and (max-height:800px)": { p: 3 },
+              "@media (min-width:768px) and (max-height:700px)": { p: 2.5 },
+            "@media (min-width:375px) and (max-width:599px)": { p: 2.5 },
+            "@media (max-width:374px)": { "& .MuiOutlinedInput-input": { fontSize: 14.5 }, "& .MuiOutlinedInput-root": { pl: 1.25 } },
+          }}
+        >
+          <Box sx={{ display: "flex", flexDirection: "column", gap: { xs: "20px", sm: "24px" }, "@media (min-width:768px) and (max-height:900px)": { gap: "20px" }, "@media (min-width:768px) and (max-height:800px)": { gap: "16px" }, "@media (min-width:768px) and (max-height:700px)": { gap: "12px" } }}>
+            <Box sx={{ display: "block", "@media (min-width:768px)": { display: "none" } }}>
+              <LogoDillanci scale={0.9} />
+            </Box>
+
             <Button
               onClick={() => navigate("/")}
-              startIcon={<ArrowBack />}
-              variant="outlined"
-              sx={{
-                alignSelf: "flex-start",
-                textTransform: "none",
-                fontWeight: 700,
-                borderRadius: 2,
-                borderColor: "#0D2B4E",
-                borderWidth: 1.5,
-                color: "#0D2B4E",
-                px: 2.5,
-                py: 0.9,
-                "&:hover": {
-                  bgcolor: "#0D2B4E",
-                  color: "#fff",
-                  borderColor: "#0D2B4E",
-                  borderWidth: 1.5,
-                },
-              }}
+              startIcon={<ArrowBack sx={{ fontSize: 18 }} />}
+              sx={{ alignSelf: "flex-start", px: 0.5, minWidth: 0, textTransform: "none", fontFamily: FONT, fontWeight: 600, fontSize: 14.5, color: NIGHT, "&:hover": { bgcolor: "transparent", color: GREEN } }}
             >
               Retour à l'accueil
             </Button>
-            <Box
-              sx={{ display: { xs: "flex", md: "none" }, alignItems: "center", gap: 1.25, mb: 1 }}
-            >
-              <Box
-                sx={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: 2,
-                  bgcolor: "#0D2B4E",
-                  color: "white",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontWeight: 800,
-                }}
-              >
-                G
-              </Box>
-              <Typography variant="h6" fontWeight={800} color="#0D2B4E">
-                Géofoncier
-              </Typography>
-            </Box>
 
             <Box>
-              <Typography variant="h4" fontWeight={800} sx={{ color: "#0D2B4E" }}>
+              <Typography component="h2" sx={{ fontFamily: FONT, fontSize: { xs: 30, sm: 34 }, "@media (min-width:768px) and (max-height:800px)": { fontSize: 28 }, fontWeight: 700, color: NIGHT, lineHeight: 1.2 }}>
                 {activeStep === 0 ? "Créer un compte" : "Vérification"}
               </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.75 }}>
+              <Typography sx={{ fontFamily: FONT, fontSize: 15.5, color: MUTED, mt: 0.75 }}>
                 {activeStep === 0
-                  ? "Remplissez le formulaire pour rejoindre Géofoncier."
+                  ? "Remplissez le formulaire pour rejoindre Dillanci."
                   : "Entrez le code de vérification reçu pour activer votre compte."}
               </Typography>
             </Box>
 
             {errorMessage && (
-              <Alert severity="error" sx={{ borderRadius: 2 }}>
+              <Alert severity="error" sx={{ borderRadius: "10px", fontFamily: FONT }}>
                 {errorMessage}
               </Alert>
             )}
             {successMessage && (
-              <Alert severity="success" sx={{ borderRadius: 2 }}>
+              <Alert severity="success" sx={{ borderRadius: "10px", fontFamily: FONT }}>
                 {successMessage}
               </Alert>
             )}
 
             {activeStep === 1 && (
-              <Stepper activeStep={1} alternativeLabel>
+              <Stepper
+                activeStep={1}
+                alternativeLabel
+                sx={{
+                  "& .MuiStepIcon-root.Mui-active, & .MuiStepIcon-root.Mui-completed": { color: GREEN },
+                  "& .MuiStepLabel-label": { fontFamily: FONT },
+                }}
+              >
                 <Step>
                   <StepLabel>Inscription</StepLabel>
                 </Step>
@@ -363,69 +349,104 @@ const RegisterPage = () => {
             {/* Étape 1 : Inscription */}
             {activeStep === 0 && (
               <>
-                <TextField
-                  fullWidth
-                  label="Nom complet"
-                  name="fullName"
-                  value={formData.fullName}
-                  onChange={handleChange}
-                  required
-                  placeholder="Ex: KANE ML"
-                  InputProps={{ sx: { borderRadius: 2 } }}
-                />
-                <TextField
-                  fullWidth
-                  label="Email"
-                  name="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  helperText="Au moins un email ou un téléphone est requis"
-                  InputProps={{ sx: { borderRadius: 2 } }}
-                />
-                <TextField
-                  fullWidth
-                  label="Téléphone"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  helperText="Au moins un email ou un téléphone est requis"
-                  InputProps={{
-                    startAdornment: <InputAdornment position="start">+227</InputAdornment>,
-                    sx: { borderRadius: 2 },
-                  }}
-                />
-                <TextField
-                  fullWidth
-                  label="Mot de passe"
-                  name="password"
-                  type={showPassword ? "text" : "password"}
-                  value={formData.password}
-                  onChange={handleChange}
-                  required
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton onClick={togglePasswordVisibility} edge="end">
-                          {showPassword ? <VisibilityOff /> : <Visibility />}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                    sx: { borderRadius: 2 },
-                  }}
-                />
+                <Box>
+                  <Typography component="label" htmlFor="reg-fullname" sx={labelSx}>Nom complet *</Typography>
+                  <TextField
+                    id="reg-fullname"
+                    fullWidth
+                    name="fullName"
+                    value={formData.fullName}
+                    onChange={handleChange}
+                    required
+                    placeholder="Entrez votre nom complet"
+                    InputProps={{ startAdornment: iconAdornment(PersonOutline) }}
+                    sx={fieldSx}
+                  />
+                </Box>
+                <Box>
+                  <Typography component="label" htmlFor="reg-email" sx={labelSx}>Email</Typography>
+                  <TextField
+                    id="reg-email"
+                    fullWidth
+                    name="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="Entrez votre adresse email"
+                    InputProps={{ startAdornment: iconAdornment(EmailOutlined) }}
+                    sx={fieldSx}
+                  />
+                </Box>
+                <Box>
+                  <Typography component="label" htmlFor="reg-phone" sx={labelSx}>Téléphone</Typography>
+                  <TextField
+                    id="reg-phone"
+                    fullWidth
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    placeholder="90 12 34 56"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <PhoneOutlined sx={{ fontSize: 22, color: MUTED, mr: 1 }} />
+                          <Box component="span" sx={{ fontFamily: FONT, fontWeight: 600, color: NIGHT }}>+227</Box>
+                        </InputAdornment>
+                      ),
+                    }}
+                    sx={fieldSx}
+                  />
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, mt: 1, color: MUTED }}>
+                    <InfoOutlined sx={{ fontSize: 17 }} />
+                    <Typography sx={{ fontFamily: FONT, fontSize: 13, lineHeight: 1.4, color: MUTED }}>
+                      Au moins un email ou un téléphone est requis.
+                    </Typography>
+                  </Box>
+                </Box>
+                <Box>
+                  <Typography component="label" htmlFor="reg-password" sx={labelSx}>Mot de passe *</Typography>
+                  <TextField
+                    id="reg-password"
+                    fullWidth
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    value={formData.password}
+                    onChange={handleChange}
+                    required
+                    placeholder="Entrez votre mot de passe"
+                    InputProps={{
+                      startAdornment: iconAdornment(LockOutlined),
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton onClick={togglePasswordVisibility} edge="end" aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}>
+                            {showPassword ? <VisibilityOff /> : <Visibility />}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }}
+                    sx={fieldSx}
+                  />
+                </Box>
 
-                <Button type="submit" variant="contained" fullWidth disabled={submitting} sx={primaryBtnSx}>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  disableElevation
+                  fullWidth
+                  disabled={submitting}
+                  startIcon={submitting ? null : <PersonAddAltOutlined />}
+                  sx={primaryBtnSx}
+                >
                   {submitting ? <CircularProgress size={24} color="inherit" /> : "S'inscrire"}
                 </Button>
 
-                <Typography variant="body2" color="text.secondary" textAlign="center">
+                <Typography sx={{ fontFamily: FONT, fontSize: 15, color: MUTED, textAlign: "center" }}>
                   Vous avez déjà un compte ?{" "}
                   <Link
                     component="button"
                     type="button"
                     onClick={() => navigate("/login")}
-                    sx={{ fontWeight: 700, color: "#27AE60", textDecoration: "none" }}
+                    sx={{ fontFamily: FONT, fontSize: 15, fontWeight: 600, color: GREEN, textDecoration: "none", verticalAlign: "baseline", "&:hover": { textDecoration: "underline" } }}
                   >
                     Se connecter
                   </Link>
@@ -436,7 +457,7 @@ const RegisterPage = () => {
             {/* Étape 2 : Vérification OTP */}
             {activeStep === 1 && verificationData && (
               <>
-                <Alert severity="info" sx={{ borderRadius: 2 }}>
+                <Alert severity="info" sx={{ borderRadius: "10px", fontFamily: FONT }}>
                   Un code de vérification a été envoyé par{" "}
                   {verificationData.method === "SMS" ? "SMS" : "email"}{" "}
                   {verificationData.method === "SMS"
@@ -444,38 +465,42 @@ const RegisterPage = () => {
                     : `à l'adresse ${verificationData.email}`}
                 </Alert>
 
-                <TextField
-                  fullWidth
-                  label="Code de vérification"
-                  value={verificationCode}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/\D/g, "").slice(0, 6);
-                    setVerificationCode(value);
-                    setErrorMessage("");
-                  }}
-                  required
-                  placeholder="123456"
-                  inputProps={{ maxLength: 6, style: { letterSpacing: "0.5em", textAlign: "center", fontSize: "1.3rem" } }}
-                  helperText="Entrez le code à 6 chiffres reçu"
-                  InputProps={{ sx: { borderRadius: 2 } }}
-                />
+                <Box>
+                  <Typography component="label" htmlFor="reg-code" sx={labelSx}>Code de vérification</Typography>
+                  <TextField
+                    id="reg-code"
+                    fullWidth
+                    value={verificationCode}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, "").slice(0, 6);
+                      setVerificationCode(value);
+                      setErrorMessage("");
+                    }}
+                    required
+                    placeholder="123456"
+                    inputProps={{ maxLength: 6, style: { letterSpacing: "0.5em", textAlign: "center", fontSize: "1.3rem" } }}
+                    helperText="Entrez le code à 6 chiffres reçu"
+                    sx={fieldSx}
+                  />
+                </Box>
 
-                <Box sx={{ display: "flex", gap: 1.5 }}>
+                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1.5 }}>
                   <Button
                     variant="outlined"
                     onClick={handleResendCode}
                     disabled={resending}
                     startIcon={verificationData.method === "SMS" ? <PhoneIcon /> : <EmailIcon />}
-                    sx={{ borderRadius: 2.5, textTransform: "none", fontWeight: 600 }}
+                    sx={{ height: 54, "@media (min-width:768px) and (max-height:800px)": { height: 48 }, "@media (min-width:768px) and (max-height:700px)": { height: 44 }, flex: "0 0 auto", borderRadius: "10px", textTransform: "none", fontFamily: FONT, fontWeight: 600, borderColor: GREEN, color: GREEN, "&:hover": { borderColor: GREEN_DEEP, bgcolor: "rgba(0,133,87,0.06)" } }}
                   >
                     {resending ? <CircularProgress size={20} /> : "Renvoyer"}
                   </Button>
 
                   <Button
                     variant="contained"
+                    disableElevation
                     onClick={handleVerifyCode}
                     disabled={verifying || verificationCode.length !== 6}
-                    sx={{ ...primaryBtnSx, flexGrow: 1 }}
+                    sx={{ ...primaryBtnSx, flex: "1 1 140px" }}
                   >
                     {verifying ? <CircularProgress size={24} color="inherit" /> : "Vérifier"}
                   </Button>
@@ -485,7 +510,6 @@ const RegisterPage = () => {
                   <Link
                     component="button"
                     type="button"
-                    variant="body2"
                     onClick={() => {
                       setActiveStep(0);
                       setVerificationData(null);
@@ -493,14 +517,14 @@ const RegisterPage = () => {
                       setErrorMessage("");
                       setSuccessMessage("");
                     }}
-                    sx={{ fontWeight: 600, color: "#0D2B4E", textDecoration: "none" }}
+                    sx={{ fontFamily: FONT, fontSize: 14, fontWeight: 600, color: GREEN, textDecoration: "none", "&:hover": { textDecoration: "underline" } }}
                   >
                     Retour à l'inscription
                   </Link>
                 </Box>
               </>
             )}
-          </Stack>
+          </Box>
         </Box>
       </Box>
     </Box>

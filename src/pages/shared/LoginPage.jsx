@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   TextField,
@@ -9,10 +9,19 @@ import {
   Link,
   CircularProgress,
   Alert,
-  Stack,
 } from "@mui/material";
 
-import { Visibility, VisibilityOff, ArrowBack } from "@mui/icons-material";
+import {
+  Visibility,
+  VisibilityOff,
+  ArrowBack,
+  Login as LoginIcon,
+  PhoneOutlined,
+  EmailOutlined,
+  Landscape,
+  Home as HomeIcon,
+  Apartment,
+} from "@mui/icons-material";
 
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -20,6 +29,8 @@ import { BASE_URL } from "../../config/config";
 
 import { useAuth } from "../../contexts/AuthContext";
 import ForgotPasswordModal from "../../components/shared/ForgotPasswordModal";
+import LogoDillanci from "../../components/shared/LogoDillanci";
+import AuthSidePanel from "../../components/shared/AuthSidePanel";
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({ phone: "", email: "", password: "" });
@@ -30,6 +41,15 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+
+  // Page plein écran : retire la marge par défaut du navigateur le temps de l'affichage
+  useEffect(() => {
+    const previous = document.body.style.margin;
+    document.body.style.margin = "0";
+    return () => {
+      document.body.style.margin = previous;
+    };
+  }, []);
 
   const togglePasswordVisibility = () => setShowPassword((prev) => !prev);
 
@@ -122,242 +142,246 @@ const LoginPage = () => {
     }
   };
 
-  const year = new Date().getFullYear();
+  const GREEN = "#008557";
+  const GREEN_DEEP = "#005C48";
+  const NIGHT = "#101C36";
+  const MUTED = "#64748B";
+  const BORDER = "#D5DCE3";
+  const FONT = "'Manrope', 'Plus Jakarta Sans', 'DM Sans', system-ui, Arial, sans-serif";
+
+  const services = [
+    { Icon: Landscape, titre: "Parcelles", texte: "Recherchez et gérez vos parcelles." },
+    { Icon: HomeIcon, titre: "Locations", texte: "Trouvez un logement adapté." },
+    { Icon: Apartment, titre: "Biens à vendre", texte: "Découvrez des biens immobiliers." },
+  ];
+
+  const labelSx = { display: "block", mb: 0.75, fontFamily: FONT, fontSize: 14, fontWeight: 600, color: NIGHT };
+  const fieldSx = {
+    "& .MuiOutlinedInput-root": {
+      fontFamily: FONT,
+      fontSize: 16,
+      height: 54, "@media (min-width:768px) and (max-height:800px)": { height: 48 }, "@media (min-width:768px) and (max-height:700px)": { height: 44 },
+      borderRadius: "10px",
+      bgcolor: "#fff",
+      "& fieldset": { borderColor: BORDER },
+      "&:hover fieldset": { borderColor: "#B7C2CD" },
+      "&.Mui-focused fieldset": { borderColor: GREEN, borderWidth: 1.5 },
+    },
+    "& .MuiFormHelperText-root": { fontFamily: FONT, ml: 0.25, color: MUTED },
+  };
 
   return (
     <>
-      <Box sx={{ height: "100vh", overflow: "hidden", display: "flex", bgcolor: "#fff" }}>
-        {/* Panneau visuel */}
-        <Box
-          sx={{
-            position: "relative",
-            flex: 1.15,
-            display: { xs: "none", md: "block" },
-            background:
-              "linear-gradient(150deg, #0D2B4E 0%, #1B5285 55%, #27AE60 130%)",
-          }}
-        >
-          <Box
-            sx={{
-              position: "relative",
-              height: "100%",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "space-between",
-              p: { md: 6, lg: 9 },
-              color: "white",
-            }}
-          >
-            <Box display="flex" alignItems="center" gap={1.5}>
-              <Typography variant="h6" fontWeight={800} letterSpacing={0.5}>
-                DILLANCI
-              </Typography>
-            </Box>
-
-            <Box>
-              <Typography variant="h3" fontWeight={800} lineHeight={1.12} sx={{ maxWidth: 500 }}>
-                Gérez votre patrimoine foncier en toute sérénité
-              </Typography>
-              <Typography variant="body1" sx={{ opacity: 0.9, mt: 2.5, maxWidth: 440 }}>
-                Suivez vos démarches, vos transactions et vos documents fonciers
-                depuis une plateforme moderne et sécurisée.
-              </Typography>
-            </Box>
-
-            <Typography variant="caption" sx={{ opacity: 0.65 }}>
-              © {year} DILLANCI — Tous droits réservés
-            </Typography>
-          </Box>
-        </Box>
+      <Box sx={{ minHeight: "100dvh", "@media (min-width:768px)": { height: "100dvh" }, display: "flex", bgcolor: "#EEF1F4", fontFamily: FONT }}>
+        <AuthSidePanel
+          badge="Plateforme sécurisée"
+          badgeFilled
+          lines={["Gérez votre", "patrimoine foncier"]}
+          mintLine="en toute sérénité"
+          description="Suivez vos démarches, vos transactions et vos documents fonciers depuis une plateforme moderne et sécurisée."
+          items={services}
+        />
 
         {/* Panneau formulaire */}
         <Box
           sx={{
             flex: 1,
-            height: "100vh",
-            overflowY: "auto",
+            minWidth: 0,
             display: "flex",
-            px: { xs: 3, sm: 6 },
-            py: 4,
-          }}
+            flexDirection: "column",
+            overflowY: "auto",
+            boxSizing: "border-box",
+            px: { xs: 2.5, sm: 4 },
+            py: { xs: 3, sm: 4 },
+            "@media (min-width:768px) and (max-height:800px)": { py: 2 },
+            "@media (min-width:768px) and (max-height:700px)": { py: 1 },
+            }}
         >
-          <Box component="form" onSubmit={handleSubmit} sx={{ width: "100%", maxWidth: 410, m: "auto" }}>
-            <Stack spacing={3.5}>
+          <Box
+            component="form"
+            onSubmit={handleSubmit}
+            sx={{
+              width: "100%",
+              maxWidth: { xs: "100%", sm: 540 },
+              m: "auto",
+              boxSizing: "border-box",
+              bgcolor: "#fff",
+              border: "1px solid #E2E8F0",
+              borderRadius: "20px",
+              boxShadow: "0 2px 10px rgba(16,28,54,0.05)",
+              p: { xs: 2.5, sm: 4.5 },
+              "@media (min-width:768px) and (max-height:900px)": { p: 4 },
+              "@media (min-width:768px) and (max-height:800px)": { p: 3 },
+              "@media (min-width:768px) and (max-height:700px)": { p: 2.5 },
+            }}
+          >
+            <Box sx={{ display: "flex", flexDirection: "column", gap: { xs: "20px", sm: "24px" }, "@media (min-width:768px) and (max-height:900px)": { gap: "20px" }, "@media (min-width:768px) and (max-height:800px)": { gap: "16px" }, "@media (min-width:768px) and (max-height:700px)": { gap: "12px" } }}>
+              <Box sx={{ display: "block", "@media (min-width:768px)": { display: "none" } }}>
+                <LogoDillanci scale={0.9} />
+              </Box>
+
               <Button
                 onClick={() => navigate("/")}
-                startIcon={<ArrowBack />}
-                variant="outlined"
-                sx={{
-                  alignSelf: "flex-start",
-                  textTransform: "none",
-                  fontWeight: 700,
-                  borderRadius: 2,
-                  borderColor: "#0D2B4E",
-                  borderWidth: 1.5,
-                  color: "#0D2B4E",
-                  px: 2.5,
-                  py: 0.9,
-                  "&:hover": {
-                    bgcolor: "#0D2B4E",
-                    color: "#fff",
-                    borderColor: "#0D2B4E",
-                    borderWidth: 1.5,
-                  },
-                }}
+                startIcon={<ArrowBack sx={{ fontSize: 18 }} />}
+                sx={{ alignSelf: "flex-start", px: 0.5, minWidth: 0, textTransform: "none", fontFamily: FONT, fontWeight: 600, fontSize: 14.5, color: NIGHT, "&:hover": { bgcolor: "transparent", color: GREEN } }}
               >
                 Retour à l'accueil
               </Button>
-              <Box
-                sx={{ display: { xs: "flex", md: "none" }, alignItems: "center", gap: 1.25, mb: 1 }}
-              >
-                <Typography variant="h6" fontWeight={800} color="#0D2B4E">
-                  DILLANCI
-                </Typography>
-              </Box>
 
               <Box>
-                <Typography variant="h4" fontWeight={800} sx={{ color: "#0D2B4E" }}>
+                <Typography component="h2" sx={{ fontFamily: FONT, fontSize: { xs: 30, sm: 34 }, "@media (min-width:768px) and (max-height:800px)": { fontSize: 28 }, fontWeight: 700, color: NIGHT, lineHeight: 1.2 }}>
                   Connexion
                 </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.75 }}>
+                <Typography sx={{ fontFamily: FONT, fontSize: 15, color: MUTED, mt: 0.75 }}>
                   Heureux de vous revoir. Entrez vos identifiants pour continuer.
                 </Typography>
               </Box>
 
               {error && (
-                <Alert severity="error" sx={{ borderRadius: 2 }}>
+                <Alert severity="error" sx={{ borderRadius: "10px", fontFamily: FONT }}>
                   {error}
                 </Alert>
               )}
 
               {/* Bascule téléphone / email */}
-              <Box sx={{ display: "flex", p: 0.5, borderRadius: 2.5, bgcolor: "#f1f4f9" }}>
-                {["phone", "email"].map((m) => (
-                  <Button
-                    key={m}
-                    fullWidth
-                    disableElevation
-                    onClick={() => {
-                      setLoginMethod(m);
-                      setFormData({ ...formData, [m === "phone" ? "email" : "phone"]: "" });
-                      setError("");
-                    }}
-                    sx={{
-                      py: 1,
-                      borderRadius: 2,
-                      fontWeight: 700,
-                      textTransform: "none",
-                      color: loginMethod === m ? "#0D2B4E" : "text.secondary",
-                      bgcolor: loginMethod === m ? "#fff" : "transparent",
-                      boxShadow: loginMethod === m ? "0 2px 8px rgba(13,43,78,0.10)" : "none",
-                      "&:hover": { bgcolor: loginMethod === m ? "#fff" : "rgba(0,0,0,0.03)" },
-                    }}
-                  >
-                    {m === "phone" ? "Téléphone" : "Email"}
-                  </Button>
-                ))}
+              <Box sx={{ display: "flex", p: "4px", borderRadius: "12px", bgcolor: "#E8EDF2", gap: "4px" }}>
+                {["phone", "email"].map((m) => {
+                  const actif = loginMethod === m;
+                  const Icone = m === "phone" ? PhoneOutlined : EmailOutlined;
+                  return (
+                    <Button
+                      key={m}
+                      fullWidth
+                      disableElevation
+                      startIcon={<Icone sx={{ fontSize: 20 }} />}
+                      onClick={() => {
+                        setLoginMethod(m);
+                        setFormData({ ...formData, [m === "phone" ? "email" : "phone"]: "" });
+                        setError("");
+                      }}
+                      sx={{
+                        height: 44,
+                        borderRadius: "9px",
+                        fontFamily: FONT,
+                        fontWeight: 700,
+                        fontSize: 15,
+                        textTransform: "none",
+                        color: actif ? "#fff" : "#334155",
+                        bgcolor: actif ? GREEN : "transparent",
+                        "&:hover": { bgcolor: actif ? GREEN_DEEP : "rgba(16,28,54,0.05)" },
+                      }}
+                    >
+                      {m === "phone" ? "Téléphone" : "Email"}
+                    </Button>
+                  );
+                })}
               </Box>
 
               {loginMethod === "phone" ? (
-                <TextField
-                  label="Téléphone"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  autoFocus
-                  required
-                  fullWidth
-                  placeholder="XXXXXXXX"
-                  InputProps={{
-                    startAdornment: <InputAdornment position="start">+227</InputAdornment>,
-                    sx: { borderRadius: 2 },
-                  }}
-                  inputProps={{ inputMode: "numeric", pattern: "[0-9]*", maxLength: 8 }}
-                  helperText="Numéro Niger, 8 chiffres"
-                />
+                <Box>
+                  <Typography component="label" htmlFor="login-phone" sx={labelSx}>Téléphone</Typography>
+                  <TextField
+                    id="login-phone"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    autoFocus
+                    required
+                    fullWidth
+                    placeholder="XXXXXXXX"
+                    InputProps={{ startAdornment: <InputAdornment position="start"><Box component="span" sx={{ fontFamily: FONT, fontWeight: 600, color: NIGHT }}>+227</Box></InputAdornment> }}
+                    inputProps={{ inputMode: "numeric", pattern: "[0-9]*", maxLength: 8 }}
+                    helperText="Numéro Niger, 8 chiffres"
+                    sx={fieldSx}
+                  />
+                </Box>
               ) : (
-                <TextField
-                  label="Email"
-                  name="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  autoFocus
-                  required
-                  fullWidth
-                  placeholder="exemple@email.com"
-                  InputProps={{ sx: { borderRadius: 2 } }}
-                />
+                <Box>
+                  <Typography component="label" htmlFor="login-email" sx={labelSx}>Email</Typography>
+                  <TextField
+                    id="login-email"
+                    name="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    autoFocus
+                    required
+                    fullWidth
+                    placeholder="exemple@email.com"
+                    sx={fieldSx}
+                  />
+                </Box>
               )}
 
-              <TextField
-                label="Mot de passe"
-                name="password"
-                type={showPassword ? "text" : "password"}
-                value={formData.password}
-                onChange={handleChange}
-                required
-                fullWidth
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton onClick={togglePasswordVisibility} edge="end">
-                        {showPassword ? <VisibilityOff /> : <Visibility />}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                  sx: { borderRadius: 2 },
-                }}
-              />
-
-              <Box sx={{ textAlign: "right", mt: -1.5 }}>
-                <Link
-                  component="button"
-                  type="button"
-                  variant="body2"
-                  onClick={() => setForgotPasswordOpen(true)}
-                  sx={{ cursor: "pointer", fontWeight: 600, color: "#0D2B4E", textDecoration: "none" }}
-                >
-                  Mot de passe oublié ?
-                </Link>
+              <Box>
+                <Typography component="label" htmlFor="login-password" sx={labelSx}>Mot de passe</Typography>
+                <TextField
+                  id="login-password"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                  fullWidth
+                  placeholder="Votre mot de passe"
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton onClick={togglePasswordVisibility} edge="end" aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}>
+                          {showPassword ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={fieldSx}
+                />
+                <Box sx={{ textAlign: "right", mt: 1 }}>
+                  <Link
+                    component="button"
+                    type="button"
+                    onClick={() => setForgotPasswordOpen(true)}
+                    sx={{ cursor: "pointer", fontFamily: FONT, fontSize: 14, fontWeight: 600, color: GREEN, textDecoration: "none", "&:hover": { textDecoration: "underline" } }}
+                  >
+                    Mot de passe oublié ?
+                  </Link>
+                </Box>
               </Box>
 
               <Button
                 type="submit"
                 variant="contained"
-                size="large"
+                disableElevation
                 fullWidth
                 disabled={loading}
+                startIcon={loading ? null : <LoginIcon />}
                 sx={{
-                  py: 1.6,
+                  height: 54, "@media (min-width:768px) and (max-height:800px)": { height: 48 }, "@media (min-width:768px) and (max-height:700px)": { height: 44 },
+                  fontFamily: FONT,
                   fontWeight: 700,
-                  fontSize: "1rem",
-                  borderRadius: 2.5,
+                  fontSize: 16,
+                  borderRadius: "10px",
                   textTransform: "none",
-                  background: "linear-gradient(135deg, #0D2B4E 0%, #27AE60 160%)",
-                  boxShadow: "0 8px 22px rgba(13,43,78,0.28)",
-                  "&:hover": {
-                    background: "linear-gradient(135deg, #0a2240 0%, #229152 160%)",
-                    boxShadow: "0 10px 26px rgba(13,43,78,0.36)",
-                  },
-                  transition: "all 0.25s ease",
+                  bgcolor: GREEN,
+                  color: "#fff",
+                  "&:hover": { bgcolor: GREEN_DEEP },
+                  "&.Mui-disabled": { bgcolor: GREEN, color: "#fff", opacity: 0.7 },
                 }}
               >
                 {loading ? <CircularProgress size={24} color="inherit" /> : "Se connecter"}
               </Button>
 
-              <Typography variant="body2" color="text.secondary" textAlign="center">
+              <Typography sx={{ fontFamily: FONT, fontSize: 15, color: MUTED, textAlign: "center" }}>
                 Pas encore de compte ?{" "}
                 <Link
                   component="button"
                   type="button"
                   onClick={() => navigate("/register")}
-                  sx={{ fontWeight: 700, color: "#27AE60", textDecoration: "none" }}
+                  sx={{ fontFamily: FONT, fontSize: 15, fontWeight: 600, color: GREEN, textDecoration: "none", verticalAlign: "baseline", "&:hover": { textDecoration: "underline" } }}
                 >
                   Créer un compte
                 </Link>
               </Typography>
-            </Stack>
+            </Box>
           </Box>
         </Box>
       </Box>

@@ -71,6 +71,8 @@ import {
   Tune as FITune,
   ExpandMore as FIExpandMore,
   Refresh as FIRefresh,
+  ErrorOutline,
+  SearchOff,
 } from "@mui/icons-material";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import { createRoot } from "react-dom/client";
@@ -127,6 +129,7 @@ const SearchBiensPage = () => {
     agences: [],
   });
   const [stats, setStats] = useState(null);
+  const [error, setError] = useState(false);
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 20,
@@ -223,6 +226,7 @@ const SearchBiensPage = () => {
   const searchBiens = async () => {
     try {
       setLoading(true);
+      setError(false);
       const params = {
         ...filters,
         page: pagination.page,
@@ -244,6 +248,7 @@ const SearchBiensPage = () => {
     } catch (error) {
       console.error("Erreur recherche biens:", error);
       setBiens([]);
+      setError(true);
     } finally {
       setLoading(false);
     }
@@ -384,336 +389,384 @@ const SearchBiensPage = () => {
 
   const activeFiltersCount = Object.values(filters).filter((v) => v !== "" && v !== false).length;
 
+  const GREEN = "#008557";
+  const GREEN_DEEP = "#005C48";
+  const GREEN_DARK = "#004D40";
+  const LIME = "#84CC16";
+  const NIGHT = "#101C36";
+  const MUTED = "#475569";
+  const FONT = "'Manrope', 'Plus Jakarta Sans', 'DM Sans', system-ui, Arial, sans-serif";
+  const fmtN = (n) => Number(n).toLocaleString("fr-FR").replace(/[  ]/g, " ");
+  const closeSeg = () => setSegMenu({ key: null, el: null });
+  const optNom = (list, id) => list.find((o) => o.id === id)?.nom || id;
+  const prixActif = Boolean(filters.prixMin || filters.prixMax);
+  const prixLabel = prixActif
+    ? `Prix : ${filters.prixMin ? fmtN(filters.prixMin) : "0"} - ${filters.prixMax ? fmtN(filters.prixMax) : "max"}`
+    : "Prix";
+  const segments = [
+    { key: "ville", Icon: FILocationCity, all: "Toutes les villes", options: filterOptions.villes.map((v) => ({ id: v.nom, nom: v.nom })) },
+    { key: "type", Icon: Home, all: "Tous les types", options: filterOptions.types.map((t) => ({ id: t.nom, nom: t.nom })) },
+  ];
+  const segSx = {
+    display: "flex",
+    alignItems: "center",
+    gap: 1,
+    px: 1.25,
+    height: 52,
+    minWidth: 0,
+    width: "100%",
+    boxSizing: "border-box",
+    cursor: "pointer",
+    border: "1px solid #E2E8F0",
+    borderRadius: "12px",
+    bgcolor: "#fff",
+    font: "inherit",
+    fontFamily: FONT,
+    textAlign: "left",
+    transition: "border-color 0.2s ease",
+    "&:hover": { borderColor: GREEN },
+    "&:focus-visible": { outline: `2px solid ${GREEN}`, outlineOffset: 2 },
+  };
+  const panelField = { flex: "1 1 200px", minWidth: { xs: "100%", sm: 180 } };
+  const chips = [
+    filters.ville && { key: "ville", label: filters.ville, Icon: FILocationCity },
+    filters.type && { key: "type", label: filters.type, Icon: Home },
+    filters.quartier && { key: "quartier", label: filters.quartier, Icon: FIPlace },
+    filters.agence && { key: "agence", label: `Agence: ${optNom(filterOptions.agences, filters.agence)}`, Icon: Business },
+    filters.prixMin && { key: "prixMin", label: `Prix > ${fmtN(filters.prixMin)}`, Icon: FIPayments },
+    filters.prixMax && { key: "prixMax", label: `Prix < ${fmtN(filters.prixMax)}`, Icon: FIPayments },
+    filters.superficieMin && { key: "superficieMin", label: `Sup > ${filters.superficieMin} m²`, Icon: FISquareFoot },
+    filters.superficieMax && { key: "superficieMax", label: `Sup < ${filters.superficieMax} m²`, Icon: FISquareFoot },
+  ].filter(Boolean);
+  const popSx = { borderRadius: 3, mt: 0.5, p: 2, width: 300, maxWidth: "calc(100vw - 32px)", "& .MuiOutlinedInput-root": { borderRadius: "10px" }, "& legend": { display: "none" } };
+  const totalDispo = stats?.totalBiens;
+
   return (
-    <Box sx={{ width: "100%", minHeight: "100vh", display: "flex", flexDirection: "column", bgcolor: "#e3f2fd" }}>
+    <Box sx={{ width: "100%", minHeight: "100vh", display: "flex", flexDirection: "column", bgcolor: "#F1F4F7", fontFamily: FONT }}>
       <Navbar />
+
+      {/* Bannière : photo à droite, voile vert profond à gauche */}
       <Box
+        component="section"
         sx={{
-          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-          py: 4,
-          mb: 4,
+          position: "relative",
           width: "100%",
+          overflow: "hidden",
+          bgcolor: GREEN_DEEP,
+          backgroundImage: "url(/images/hero-biens.webp)",
+          backgroundSize: "cover",
+          backgroundPosition: "center right",
+          "&::before": {
+            content: '""',
+            position: "absolute",
+            inset: 0,
+            background: {
+              xs: `linear-gradient(180deg, rgba(0,77,64,0.94) 0%, rgba(0,92,72,0.86) 100%)`,
+              md: `linear-gradient(90deg, rgba(0,77,64,0.98) 0%, rgba(0,92,72,0.92) 38%, rgba(0,92,72,0.45) 62%, rgba(0,92,72,0) 85%)`,
+            },
+          },
         }}
       >
-        <Container maxWidth="xl">
-          <Typography variant="h3" fontWeight="bold" color="white" gutterBottom>
-            Biens Immobiliers à Vendre
+        <Box component="svg" viewBox="0 0 300 200" aria-hidden="true" sx={{ display: { xs: "none", md: "block" }, position: "absolute", right: 0, top: 0, width: 280, height: 190, pointerEvents: "none", zIndex: 1 }}>
+          <path d="M300 0 V120 C 250 110, 190 60, 170 0 Z" fill={LIME} fillOpacity="0.55" />
+          <path d="M300 0 V70 C 270 62, 230 30, 220 0 Z" fill="#fff" fillOpacity="0.18" />
+        </Box>
+        <Box
+          sx={{
+            position: "relative",
+            zIndex: 2,
+            boxSizing: "border-box",
+            maxWidth: 1440,
+            mx: "auto",
+            px: { xs: 2, sm: 3, md: 5 },
+            pt: { xs: 4, md: 6 },
+            pb: { xs: 10, md: 13 },
+            minHeight: { md: 280 },
+          }}
+        >
+          <Box sx={{ display: "inline-flex", alignItems: "center", gap: 1, px: 1.75, py: 0.75, mb: 2, borderRadius: "999px", bgcolor: GREEN, border: "1px solid rgba(255,255,255,0.28)" }}>
+            <Home sx={{ fontSize: 18, color: "#fff" }} />
+            <Typography sx={{ fontFamily: FONT, fontSize: 14, fontWeight: 600, color: "#fff", lineHeight: 1 }}>Biens au Niger</Typography>
+          </Box>
+          <Typography
+            variant="h1"
+            sx={{ fontFamily: FONT, fontWeight: 800, fontSize: "clamp(28px, 3.2vw, 48px)", lineHeight: 1.15, letterSpacing: "-0.02em", color: "#fff" }}
+          >
+            Biens immobiliers <Box component="span" sx={{ color: LIME }}>à vendre</Box>
           </Typography>
-          <Typography variant="h6" color="rgba(255,255,255,0.9)">
-            Trouvez le bien idéal parmi {stats?.totalBiens || 0} biens disponibles
+          <Box component="svg" viewBox="0 0 96 14" aria-hidden="true" sx={{ display: "block", width: 96, height: 14, mt: 1, mb: 1.5 }}>
+            <path d="M3 9 C 18 2, 32 2, 46 8 S 76 14, 93 5" fill="none" stroke={LIME} strokeWidth="4" strokeLinecap="round" />
+          </Box>
+          <Typography sx={{ fontFamily: FONT, fontSize: { xs: 16, md: 18 }, color: "#fff", lineHeight: 1.5, maxWidth: 620 }}>
+            {typeof totalDispo === "number" ? (
+              <>
+                Trouvez le bien idéal parmi <Box component="strong" sx={{ color: LIME }}>{totalDispo}</Box> bien{totalDispo > 1 ? "s" : ""} disponible{totalDispo > 1 ? "s" : ""}.
+              </>
+            ) : (
+              "Trouvez le bien idéal parmi les biens disponibles."
+            )}
           </Typography>
-        </Container>
+        </Box>
       </Box>
 
-      <Container maxWidth="xl" sx={{ width: "100%", mb: 4 }}>
-        {/* Barre de filtres unifiée */}
-        {(() => {
-          const optNom = (list, id) => list.find((o) => o.id === id)?.nom || id;
-          const fmt = (n) => Number(n).toLocaleString("fr-FR");
-          const prixActif = Boolean(filters.prixMin || filters.prixMax);
-          const prixLabel = prixActif
-            ? `Prix : ${filters.prixMin ? fmt(filters.prixMin) : "0"} - ${filters.prixMax ? fmt(filters.prixMax) : "max"}`
-            : "Prix";
-          const segments = [
-            { key: "ville", Icon: FILocationCity, color: "#3030F9", all: "Toutes les villes", options: filterOptions.villes.map((v) => ({ id: v.nom, nom: v.nom })) },
-            { key: "type", Icon: Home, color: "#0A7C4F", all: "Tous les types", options: filterOptions.types.map((t) => ({ id: t.nom, nom: t.nom })) },
-          ];
-          const segSx = {
-            display: "flex",
-            alignItems: "center",
-            gap: 1,
-            px: 2,
-            py: 1.4,
-            flex: "1 1 170px",
-            minWidth: 0,
-            cursor: "pointer",
-            border: 0,
-            bgcolor: "transparent",
-            font: "inherit",
-            textAlign: "left",
-            borderRight: { xs: "none", sm: "1px solid rgba(48,48,249,0.15)" },
-            borderBottom: { xs: "1px solid rgba(48,48,249,0.15)", sm: "none" },
-            "&:hover": { bgcolor: "rgba(48,48,249,0.04)" },
-          };
-          const panelField = { flex: "1 1 200px", minWidth: { xs: "100%", sm: 180 } };
-          const chips = [
-            filters.ville && { key: "ville", label: filters.ville, Icon: FILocationCity, bg: "#3030F9" },
-            filters.type && { key: "type", label: filters.type, Icon: Home, bg: "#3030F9" },
-            filters.quartier && { key: "quartier", label: filters.quartier, Icon: FIPlace, bg: "#0A7C4F" },
-            filters.agence && { key: "agence", label: `Agence: ${optNom(filterOptions.agences, filters.agence)}`, Icon: Business, bg: "#0e1133" },
-            filters.prixMin && { key: "prixMin", label: `Prix > ${fmt(filters.prixMin)}`, Icon: FIPayments, bg: "#3030F9" },
-            filters.prixMax && { key: "prixMax", label: `Prix < ${fmt(filters.prixMax)}`, Icon: FIPayments, bg: "#3030F9" },
-            filters.superficieMin && { key: "superficieMin", label: `Sup > ${filters.superficieMin} m²`, Icon: FISquareFoot, bg: "#0A7C4F" },
-            filters.superficieMax && { key: "superficieMax", label: `Sup < ${filters.superficieMax} m²`, Icon: FISquareFoot, bg: "#0A7C4F" },
-          ].filter(Boolean);
-          return (
-            <Box sx={{ mb: 3 }}>
-              {/* Barre principale */}
-              <Box
-                sx={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  alignItems: "stretch",
-                  bgcolor: "#ffffff",
-                  border: "1.5px solid #3030F9",
-                  borderRadius: "16px",
-                  boxShadow: "0 2px 8px rgba(15,23,42,0.05)",
-                  overflow: "hidden",
-                }}
-              >
-                {segments.map(({ key, Icon, color, all, options }) => (
-                  <Box
-                    key={key}
-                    component="button"
-                    type="button"
-                    aria-label={all}
-                    title={all}
-                    onClick={(e) => setSegMenu({ key, el: e.currentTarget })}
-                    sx={segSx}
-                  >
-                    <Icon sx={{ color }} />
-                    <Typography noWrap sx={{ flex: 1, color: filters[key] ? "#0e1133" : "text.secondary", fontWeight: filters[key] ? 600 : 400 }}>
-                      {filters[key] ? optNom(options, filters[key]) : all}
-                    </Typography>
-                    <FIExpandMore sx={{ color: "text.secondary" }} />
-                  </Box>
-                ))}
-                <Box
-                  component="button"
-                  type="button"
-                  aria-label="Prix"
-                  title="Prix"
-                  onClick={(e) => setSegMenu({ key: "prix", el: e.currentTarget })}
-                  sx={segSx}
-                >
-                  <FIPayments sx={{ color: "#3030F9" }} />
-                  <Typography noWrap sx={{ flex: 1, color: prixActif ? "#0e1133" : "text.secondary", fontWeight: prixActif ? 600 : 400 }}>
-                    {prixLabel}
-                  </Typography>
-                  <FIExpandMore sx={{ color: "text.secondary" }} />
-                </Box>
-                <Button
-                  variant="contained"
-                  disableElevation
-                  startIcon={<FITune />}
-                  onClick={() => setShowAdvanced((v) => !v)}
-                  aria-expanded={showAdvanced}
-                  sx={{
-                    bgcolor: "#3030F9",
-                    color: "white",
-                    borderRadius: 0,
-                    px: 3,
-                    py: 1.4,
-                    textTransform: "none",
-                    fontWeight: 700,
-                    flex: { xs: "1 1 100%", sm: "0 0 auto" },
-                    "&:hover": { bgcolor: "#2020C8" },
-                  }}
-                >
-                  Filtres{activeFiltersCount > 0 ? ` (${activeFiltersCount})` : ""}
-                </Button>
+      <Box sx={{ boxSizing: "border-box", width: "100%", maxWidth: 1440, mx: "auto", px: { xs: 2, sm: 3, md: 5 }, pb: 6 }}>
+        {/* Barre de filtres, à cheval sur la bannière */}
+        <Box sx={{ position: "relative", zIndex: 3, mt: { xs: -7, md: -8 }, mb: 3 }}>
+          <Box
+            sx={{
+              bgcolor: "#fff",
+              borderRadius: "20px",
+              boxShadow: "0 10px 30px rgba(16,28,54,0.12)",
+              p: "16px",
+              display: "grid",
+              gap: "12px",
+              gridTemplateColumns: { xs: "1fr", sm: "repeat(2, minmax(0, 1fr))" },
+              "@media (min-width:1024px)": { gridTemplateColumns: "repeat(3, minmax(0, 1fr)) auto" },
+              alignItems: "center",
+            }}
+          >
+            {segments.map(({ key, Icon, all, options }) => (
+              <Box key={key} component="button" type="button" aria-label={all} title={all} onClick={(e) => setSegMenu({ key, el: e.currentTarget })} sx={segSx}>
+                <Icon sx={{ color: GREEN }} />
+                <Typography noWrap sx={{ flex: 1, fontFamily: FONT, fontSize: 15, color: filters[key] ? NIGHT : MUTED, fontWeight: filters[key] ? 600 : 500 }}>
+                  {filters[key] ? optNom(options, filters[key]) : all}
+                </Typography>
+                <FIExpandMore sx={{ color: MUTED }} />
               </Box>
-
-              {/* Menus des segments */}
-              {segments.map(({ key, options, all }) => (
-                <Menu
-                  key={key}
-                  anchorEl={segMenu.el}
-                  open={segMenu.key === key && Boolean(segMenu.el)}
-                  onClose={() => setSegMenu({ key: null, el: null })}
-                  slotProps={{ paper: { sx: { borderRadius: 3, mt: 0.5, minWidth: 220, maxHeight: 360 } } }}
-                >
-                  <MenuItem
-                    selected={!filters[key]}
-                    onClick={() => { handleFilterChange(key, ""); setSegMenu({ key: null, el: null }); }}
-                  >
-                    <em>{all}</em>
-                  </MenuItem>
-                  {options.map((o) => (
-                    <MenuItem
-                      key={o.id}
-                      selected={filters[key] === o.id}
-                      onClick={() => { handleFilterChange(key, o.id); setSegMenu({ key: null, el: null }); }}
-                    >
-                      {o.nom}
-                    </MenuItem>
-                  ))}
-                </Menu>
-              ))}
-              <Popover
-                anchorEl={segMenu.el}
-                open={segMenu.key === "prix" && Boolean(segMenu.el)}
-                onClose={() => setSegMenu({ key: null, el: null })}
-                anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-                slotProps={{ paper: { sx: { borderRadius: 3, mt: 0.5, p: 2, width: 300, "& .MuiOutlinedInput-root": { borderRadius: "10px" }, "& legend": { display: "none" } } } }}
-              >
-                <Stack spacing={1.5}>
-                  {[
-                    { key: "prixMin", ph: "Prix min (FCFA)" },
-                    { key: "prixMax", ph: "Prix max (FCFA)" },
-                  ].map(({ key, ph }) => (
-                    <TextField
-                      key={key}
-                      size="small"
-                      type="number"
-                      placeholder={ph}
-                      value={filters[key]}
-                      onChange={(e) => handleFilterChange(key, e.target.value)}
-                      inputProps={{ "aria-label": ph, title: ph }}
-                      InputProps={{ startAdornment: <InputAdornment position="start"><FIPayments fontSize="small" sx={{ color: "#3030F9" }} /></InputAdornment> }}
-                    />
-                  ))}
-                </Stack>
-              </Popover>
-
-              {/* Panneau avancé */}
-              {showAdvanced && (
-                <Box
-                  sx={{
-                    mt: 1.5,
-                    p: { xs: 2, md: 2.5 },
-                    borderRadius: "14px",
-                    bgcolor: "rgba(48,48,249,0.05)",
-                    border: "1.5px solid rgba(48,48,249,0.25)",
-                    display: "flex",
-                    flexWrap: "wrap",
-                    gap: 1.5,
-                    "& .MuiOutlinedInput-root": { borderRadius: "10px", bgcolor: "#ffffff" },
-                    "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: "#3030F9" },
-                    "& legend": { display: "none" },
-                  }}
-                >
-                  <FormControl size="small" sx={panelField}>
-                    <Select
-                      value={filters.quartier || ""}
-                      onChange={(e) => handleFilterChange("quartier", e.target.value)}
-                      displayEmpty
-                      inputProps={{ "aria-label": "Quartier", title: "Quartier" }}
-                      startAdornment={<InputAdornment position="start"><FIPlace fontSize="small" sx={{ color: "#0A7C4F" }} /></InputAdornment>}
-                      renderValue={(selected) => (!selected ? <span style={{ color: "rgba(0, 0, 0, 0.6)" }}>Tous les quartiers</span> : selected)}
-                    >
-                      <MenuItem value=""><em>Tous les quartiers</em></MenuItem>
-                      {filterOptions.quartiers.map((quartier) => (
-                        <MenuItem key={quartier.id} value={quartier.nom}>{quartier.nom}</MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-
-                  <FormControl size="small" sx={panelField}>
-                    <Select
-                      value={filters.agence || ""}
-                      onChange={(e) => handleFilterChange("agence", e.target.value)}
-                      displayEmpty
-                      inputProps={{ "aria-label": "Agence Immobilière", title: "Agence Immobilière" }}
-                      startAdornment={<InputAdornment position="start"><Business fontSize="small" sx={{ color: "#0e1133" }} /></InputAdornment>}
-                      renderValue={(selected) =>
-                        !selected ? <span style={{ color: "rgba(0, 0, 0, 0.6)" }}>Toutes les agences</span> : optNom(filterOptions.agences, selected)
-                      }
-                    >
-                      <MenuItem value=""><em>Toutes les agences</em></MenuItem>
-                      {filterOptions.agences.map((agence) => (
-                        <MenuItem key={agence.id} value={agence.id}>{agence.nom}</MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-
-                  {[
-                    { key: "superficieMin", ph: "Superficie min (m²)" },
-                    { key: "superficieMax", ph: "Superficie max (m²)" },
-                  ].map(({ key, ph }) => (
-                    <TextField
-                      key={key}
-                      size="small"
-                      type="number"
-                      placeholder={ph}
-                      value={filters[key]}
-                      onChange={(e) => handleFilterChange(key, e.target.value)}
-                      inputProps={{ "aria-label": ph, title: ph }}
-                      InputProps={{ startAdornment: <InputAdornment position="start"><FISquareFoot fontSize="small" sx={{ color: "#0A7C4F" }} /></InputAdornment> }}
-                      sx={panelField}
-                    />
-                  ))}
-
-                  <FormControl size="small" sx={panelField}>
-                    <Select
-                      value={sortBy}
-                      onChange={(e) => setSortBy(e.target.value)}
-                      inputProps={{ "aria-label": "Trier par", title: "Trier par" }}
-                      startAdornment={<InputAdornment position="start"><FISort fontSize="small" sx={{ color: "#3030F9" }} /></InputAdornment>}
-                    >
-                      <MenuItem value="createdAt">Date d'ajout</MenuItem>
-                      <MenuItem value="prix">Prix</MenuItem>
-                      <MenuItem value="superficie">Superficie</MenuItem>
-                    </Select>
-                  </FormControl>
-
-                  <FormControl size="small" sx={panelField}>
-                    <Select
-                      value={sortOrder}
-                      onChange={(e) => setSortOrder(e.target.value)}
-                      inputProps={{ "aria-label": "Ordre", title: "Ordre" }}
-                      startAdornment={<InputAdornment position="start"><FISwapVert fontSize="small" sx={{ color: "#3030F9" }} /></InputAdornment>}
-                    >
-                      <MenuItem value="asc">Croissant</MenuItem>
-                      <MenuItem value="desc">Décroissant</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Box>
-              )}
-
-              {/* Filtres actifs + réinitialisation */}
-              <Box sx={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 1, mt: 1.5 }}>
-                {chips.map(({ key, label, Icon, bg }) => (
-                  <Chip
-                    key={key}
-                    label={label}
-                    size="small"
-                    icon={<Icon sx={{ color: "white !important", fontSize: 16 }} />}
-                    deleteIcon={<Close sx={{ color: "white !important", fontSize: 16 }} />}
-                    onDelete={() => handleFilterChange(key, "")}
-                    sx={{ bgcolor: bg, color: "white", fontWeight: 600, "&:hover": { bgcolor: bg, filter: "brightness(1.1)" } }}
-                  />
-                ))}
-                <Box sx={{ flexGrow: 1 }} />
-                <Button
-                  variant="outlined"
-                  size="small"
-                  startIcon={<FIRefresh />}
-                  onClick={handleClearFilters}
-                  disabled={activeFiltersCount === 0}
-                  sx={{ borderColor: "#3030F9", color: "#3030F9", borderRadius: "10px", textTransform: "none", fontWeight: 600, "&:hover": { borderColor: "#2020C8", bgcolor: "rgba(48,48,249,0.06)" } }}
-                >
-                  Réinitialiser
-                </Button>
-              </Box>
+            ))}
+            <Box component="button" type="button" aria-label="Prix" title="Prix" onClick={(e) => setSegMenu({ key: "prix", el: e.currentTarget })} sx={segSx}>
+              <FIPayments sx={{ color: GREEN }} />
+              <Typography noWrap sx={{ flex: 1, fontFamily: FONT, fontSize: 15, color: prixActif ? NIGHT : MUTED, fontWeight: prixActif ? 600 : 500 }}>{prixLabel}</Typography>
+              <FIExpandMore sx={{ color: MUTED }} />
             </Box>
-          );
-        })()}
+            <Button
+              variant="contained"
+              disableElevation
+              startIcon={<FITune />}
+              onClick={() => setShowAdvanced((v) => !v)}
+              aria-expanded={showAdvanced}
+              sx={{ height: 52, px: 3, borderRadius: "12px", bgcolor: GREEN_DEEP, color: "#fff", fontFamily: FONT, textTransform: "none", fontWeight: 700, fontSize: 15, "&:hover": { bgcolor: GREEN_DARK } }}
+            >
+              Filtres{activeFiltersCount > 0 ? ` (${activeFiltersCount})` : ""}
+            </Button>
+          </Box>
+
+          {segments.map(({ key, options, all }) => (
+            <Menu
+              key={key}
+              anchorEl={segMenu.el}
+              open={segMenu.key === key && Boolean(segMenu.el)}
+              onClose={closeSeg}
+              slotProps={{ paper: { sx: { borderRadius: 3, mt: 0.5, minWidth: 220, maxHeight: 360 } } }}
+            >
+              <MenuItem selected={!filters[key]} onClick={() => { handleFilterChange(key, ""); closeSeg(); }}>
+                <em>{all}</em>
+              </MenuItem>
+              {options.map((o) => (
+                <MenuItem key={o.id} selected={filters[key] === o.id} onClick={() => { handleFilterChange(key, o.id); closeSeg(); }}>
+                  {o.nom}
+                </MenuItem>
+              ))}
+            </Menu>
+          ))}
+          <Popover
+            anchorEl={segMenu.el}
+            open={segMenu.key === "prix" && Boolean(segMenu.el)}
+            onClose={closeSeg}
+            anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+            slotProps={{ paper: { sx: popSx } }}
+          >
+            <Stack spacing={1.5}>
+              {[
+                { key: "prixMin", ph: "Prix min (FCFA)" },
+                { key: "prixMax", ph: "Prix max (FCFA)" },
+              ].map(({ key, ph }) => (
+                <TextField
+                  key={key}
+                  size="small"
+                  type="number"
+                  placeholder={ph}
+                  value={filters[key]}
+                  onChange={(e) => handleFilterChange(key, e.target.value)}
+                  inputProps={{ "aria-label": ph, title: ph }}
+                  InputProps={{ startAdornment: <InputAdornment position="start"><FIPayments fontSize="small" sx={{ color: GREEN }} /></InputAdornment> }}
+                />
+              ))}
+            </Stack>
+          </Popover>
+
+          {/* Panneau avancé */}
+          {showAdvanced && (
+            <Box
+              sx={{
+                mt: 1.5,
+                p: { xs: 2, md: 2.5 },
+                borderRadius: "16px",
+                bgcolor: "#fff",
+                border: "1px solid #E2E8F0",
+                display: "flex",
+                flexWrap: "wrap",
+                gap: 1.5,
+                "& .MuiOutlinedInput-root": { borderRadius: "12px", bgcolor: "#ffffff" },
+                "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: GREEN },
+                "& legend": { display: "none" },
+              }}
+            >
+              <FormControl size="small" sx={panelField}>
+                <Select
+                  value={filters.quartier || ""}
+                  onChange={(e) => handleFilterChange("quartier", e.target.value)}
+                  displayEmpty
+                  inputProps={{ "aria-label": "Quartier", title: "Quartier" }}
+                  startAdornment={<InputAdornment position="start"><FIPlace fontSize="small" sx={{ color: GREEN }} /></InputAdornment>}
+                  renderValue={(selected) => (!selected ? <span style={{ color: "rgba(0, 0, 0, 0.6)" }}>Tous les quartiers</span> : selected)}
+                >
+                  <MenuItem value=""><em>Tous les quartiers</em></MenuItem>
+                  {filterOptions.quartiers.map((quartier) => (
+                    <MenuItem key={quartier.id} value={quartier.nom}>{quartier.nom}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              <FormControl size="small" sx={panelField}>
+                <Select
+                  value={filters.agence || ""}
+                  onChange={(e) => handleFilterChange("agence", e.target.value)}
+                  displayEmpty
+                  inputProps={{ "aria-label": "Agence Immobilière", title: "Agence Immobilière" }}
+                  startAdornment={<InputAdornment position="start"><Business fontSize="small" sx={{ color: GREEN }} /></InputAdornment>}
+                  renderValue={(selected) =>
+                    !selected ? <span style={{ color: "rgba(0, 0, 0, 0.6)" }}>Toutes les agences</span> : optNom(filterOptions.agences, selected)
+                  }
+                >
+                  <MenuItem value=""><em>Toutes les agences</em></MenuItem>
+                  {filterOptions.agences.map((agence) => (
+                    <MenuItem key={agence.id} value={agence.id}>{agence.nom}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              {[
+                { key: "superficieMin", ph: "Superficie min (m²)" },
+                { key: "superficieMax", ph: "Superficie max (m²)" },
+              ].map(({ key, ph }) => (
+                <TextField
+                  key={key}
+                  size="small"
+                  type="number"
+                  placeholder={ph}
+                  value={filters[key]}
+                  onChange={(e) => handleFilterChange(key, e.target.value)}
+                  inputProps={{ "aria-label": ph, title: ph }}
+                  InputProps={{ startAdornment: <InputAdornment position="start"><FISquareFoot fontSize="small" sx={{ color: GREEN }} /></InputAdornment> }}
+                  sx={panelField}
+                />
+              ))}
+            </Box>
+          )}
+
+          {/* Filtres actifs + réinitialisation */}
+          {(chips.length > 0 || activeFiltersCount > 0) && (
+            <Box sx={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 1, mt: 1.5 }}>
+              {chips.map(({ key, label, Icon }) => (
+                <Chip
+                  key={key}
+                  label={label}
+                  size="small"
+                  icon={<Icon sx={{ color: "white !important", fontSize: 16 }} />}
+                  deleteIcon={<Close sx={{ color: "white !important", fontSize: 16 }} />}
+                  onDelete={() => handleFilterChange(key, "")}
+                  sx={{ bgcolor: GREEN, color: "white", fontWeight: 600, "&:hover": { bgcolor: GREEN_DEEP } }}
+                />
+              ))}
+              <Box sx={{ flexGrow: 1 }} />
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<FIRefresh />}
+                onClick={handleClearFilters}
+                disabled={activeFiltersCount === 0}
+                sx={{ borderColor: GREEN, color: GREEN, borderRadius: "10px", textTransform: "none", fontWeight: 600, "&:hover": { borderColor: GREEN_DEEP, bgcolor: "rgba(0,133,87,0.06)" } }}
+              >
+                Réinitialiser
+              </Button>
+            </Box>
+          )}
+        </Box>
+
+        {/* Barre de résultats : compteur + tri + carte */}
+        {!loading && !error && biens.length > 0 && (
+          <Box sx={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 1.5, mb: 2.5 }}>
+            <Typography sx={{ fontFamily: FONT, fontSize: 17, color: NIGHT }}>
+              <Box component="strong" sx={{ color: GREEN, fontWeight: 800 }}>{pagination.total}</Box>{" "}
+              bien{pagination.total > 1 ? "s" : ""} trouvé{pagination.total > 1 ? "s" : ""}
+            </Typography>
+            <Box sx={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 1, width: { xs: "100%", sm: "auto" }, "& .MuiOutlinedInput-root": { borderRadius: "10px", bgcolor: "#fff" }, "& legend": { display: "none" } }}>
+              <FormControl size="small" sx={{ flex: { xs: "1 1 140px", sm: "0 0 170px" }, minWidth: 0 }}>
+                <Select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  inputProps={{ "aria-label": "Trier par", title: "Trier par" }}
+                  startAdornment={<InputAdornment position="start"><FISort fontSize="small" sx={{ color: GREEN }} /></InputAdornment>}
+                >
+                  <MenuItem value="createdAt">Date d'ajout</MenuItem>
+                  <MenuItem value="prix">Prix</MenuItem>
+                  <MenuItem value="superficie">Superficie</MenuItem>
+                </Select>
+              </FormControl>
+              <FormControl size="small" sx={{ flex: { xs: "1 1 140px", sm: "0 0 168px" }, minWidth: 0 }}>
+                <Select
+                  value={sortOrder}
+                  onChange={(e) => setSortOrder(e.target.value)}
+                  inputProps={{ "aria-label": "Ordre", title: "Ordre" }}
+                  startAdornment={<InputAdornment position="start"><FISwapVert fontSize="small" sx={{ color: GREEN }} /></InputAdornment>}
+                >
+                  <MenuItem value="asc">Croissant</MenuItem>
+                  <MenuItem value="desc">Décroissant</MenuItem>
+                </Select>
+              </FormControl>
+              <Button
+                variant={showMap ? "contained" : "outlined"}
+                disableElevation
+                startIcon={<MapIcon />}
+                onClick={() => setShowMap(!showMap)}
+                sx={{ flex: { xs: "1 1 100%", sm: "0 0 auto" }, height: 40, borderRadius: "10px", textTransform: "none", fontFamily: FONT, fontWeight: 600, borderColor: GREEN, bgcolor: showMap ? GREEN : "#fff", color: showMap ? "#fff" : GREEN, "&:hover": { borderColor: GREEN_DEEP, bgcolor: showMap ? GREEN_DEEP : "rgba(0,133,87,0.06)" } }}
+              >
+                {showMap ? "Masquer la carte" : "Afficher sur la carte"}
+              </Button>
+            </Box>
+          </Box>
+        )}
 
         {/* Liste des biens */}
-        <Box>
-          {loading ? (
-            <Box display="flex" justifyContent="center" alignItems="center" minHeight={400}>
-              <CircularProgress />
-            </Box>
-          ) : biens.length === 0 ? (
-            <Alert severity="info">Aucun bien trouvé avec ces critères de recherche.</Alert>
-          ) : (
-            <>
-              <Box mb={2} display="flex" justifyContent="space-between" alignItems="center">
-                <Typography variant="body2" color="text.secondary">
-                  {pagination.total} bien{pagination.total > 1 ? "s" : ""} trouvé{pagination.total > 1 ? "s" : ""}
-                </Typography>
-                <Button
-                  variant={showMap ? "contained" : "outlined"}
-                  startIcon={<MapIcon />}
-                  onClick={() => setShowMap(!showMap)}
-                  size="small"
-                >
-                  {showMap ? "Masquer la carte" : "Afficher sur la carte"}
-                </Button>
-              </Box>
-
+        {loading ? (
+          <Box display="flex" justifyContent="center" alignItems="center" minHeight={240}>
+            <CircularProgress sx={{ color: GREEN }} />
+          </Box>
+        ) : error ? (
+          <Box sx={{ textAlign: "center", py: 6, px: 2, bgcolor: "#fff", borderRadius: "18px" }}>
+            <ErrorOutline sx={{ fontSize: 48, color: "#d32f2f" }} />
+            <Typography sx={{ fontFamily: FONT, fontWeight: 700, color: NIGHT, mt: 1 }}>Impossible de charger les biens.</Typography>
+            <Typography sx={{ fontFamily: FONT, color: MUTED, mb: 2 }}>Vérifiez votre connexion puis réessayez.</Typography>
+            <Button variant="contained" disableElevation onClick={searchBiens} sx={{ bgcolor: GREEN, textTransform: "none", fontWeight: 600, borderRadius: "10px", "&:hover": { bgcolor: GREEN_DEEP } }}>
+              Réessayer
+            </Button>
+          </Box>
+        ) : biens.length === 0 ? (
+          <Box sx={{ textAlign: "center", py: 6, px: 2, bgcolor: "#fff", borderRadius: "18px" }}>
+            <SearchOff sx={{ fontSize: 48, color: GREEN }} />
+            <Typography sx={{ fontFamily: FONT, fontWeight: 700, color: NIGHT, mt: 1 }}>
+              {activeFiltersCount > 0 ? "Aucun bien trouvé avec ces critères de recherche." : "Aucun bien n'est actuellement disponible à la vente."}
+            </Typography>
+            <Typography sx={{ fontFamily: FONT, color: MUTED, mt: 0.5, maxWidth: 480, mx: "auto" }}>
+              {activeFiltersCount > 0 ? "Modifiez ou réinitialisez vos filtres pour élargir la recherche." : "Revenez bientôt : de nouveaux biens seront publiés prochainement."}
+            </Typography>
+            {activeFiltersCount > 0 && (
+              <Button onClick={handleClearFilters} sx={{ mt: 1.5, color: GREEN, textTransform: "none", fontWeight: 600 }}>Réinitialiser les filtres</Button>
+            )}
+          </Box>
+        ) : (
+          <>
               {/* Carte avec marqueurs */}
               {showMap && (
                 <Box sx={{ mb: 4, height: "500px", borderRadius: 2, overflow: "hidden", border: "1px solid", borderColor: "divider" }}>
@@ -754,7 +807,7 @@ const SearchBiensPage = () => {
                               {/* En-tête avec nom et type */}
                               <Box
                                 sx={{
-                                  background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                                  background: "linear-gradient(135deg, #008557 0%, #005C48 100%)",
                                   color: "white",
                                   p: 2,
                                   borderRadius: bien.images && bien.images.length > 0 ? 0 : "4px 4px 0 0",
@@ -859,7 +912,7 @@ const SearchBiensPage = () => {
                                       sx={{
                                         textTransform: "none",
                                         fontWeight: 600,
-                                        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                                        background: "linear-gradient(135deg, #008557 0%, #005C48 100%)",
                                       }}
                                     >
                                       Voir détails
@@ -932,312 +985,183 @@ const SearchBiensPage = () => {
                 </Box>
               )}
 
-              {/* Conteneur Grid avec 3 cartes par ligne */}
-              <Box
-                sx={{
-                  mx: "auto",
-                  maxWidth: 1200,
-                  width: "100%",
-                }}
-              >
-                <Grid 
-                  container 
-                  spacing={3}
-                  sx={{
-                    width: "100%",
-                    margin: 0,
-                  }}
-                >
-                  {biens.slice(0, biensDisplayed).map((bien) => {
-                    // Transformer les données pour correspondre à la structure de HomePage
-                    const bienImage = bien.images && bien.images.length > 0 && bien.images[0] 
-                      ? fixImageUrl(typeof bien.images[0] === "string" ? bien.images[0] : bien.images[0].url || bien.images[0])
-                      : "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&h=600&fit=crop&q=90";
-                    const bienVille = bien.localisation?.ville || "Ville non spécifiée";
-                    const bienQuartier = bien.localisation?.quartier;
-                    const villeEtQuartier = bienQuartier ? `${bienVille}, ${bienQuartier}` : bienVille;
-                    const bienSuperficie = bien.superficie?.toString() || "0";
-                    const bienStatut = STATUTS_BIEN[bien.statut];
-                    const nbPhotos = bien.images?.length || 0;
-                    const nbChambres = bien.caracteristiques?.nbChambres;
-                    const nbSallesBain = bien.caracteristiques?.nbSallesBain;
-                    const indicateurs = [
-                      nbChambres ? { key: "ch", icon: Bed, label: `${nbChambres} ${nbChambres > 1 ? "chambres" : "chambre"}` } : null,
-                      nbSallesBain ? { key: "sdb", icon: Bathtub, label: `${nbSallesBain} ${nbSallesBain > 1 ? "salles de bain" : "salle de bain"}` } : null,
-                      Number(bienSuperficie) > 0 ? { key: "sup", icon: FISquareFoot, label: `${bienSuperficie} m²` } : null,
-                    ].filter(Boolean);
-
-                    return (
-                      <Grid 
-                        item 
-                        xs={12} 
-                        sm={6} 
-                        md={4}
-                        key={bien._id}
-                        sx={{
-                          display: "flex",
-                          flexBasis: { xs: "100%", sm: "calc(50% - 12px)", md: "calc(33.333% - 16px)" },
-                          maxWidth: { xs: "100%", sm: "calc(50% - 12px)", md: "calc(33.333% - 16px)" },
-                          flexGrow: 0,
-                          flexShrink: 0,
-                        }}
-                      >
-                        <Card
-                          elevation={0}
-                          sx={{
-                            width: "100%",
-                            height: "100%",
-                            display: "flex",
-                            flexDirection: "column",
-                            borderRadius: "16px",
-                            overflow: "hidden",
-                            bgcolor: "#fff",
-                            border: "1px solid #e5e7eb",
-                            boxShadow: "0 2px 12px rgba(15,23,42,0.08)",
-                            transition: "transform 0.2s ease, box-shadow 0.2s ease",
-                            "&:hover": {
-                              transform: { xs: "none", md: "translateY(-2px)" },
-                              boxShadow: "0 8px 22px rgba(15,23,42,0.14)",
-                            },
-                          }}
-                        >
-                        {/* Image */}
-                        <Box sx={{ height: 190, position: "relative", overflow: "hidden", bgcolor: "#d9e2ec" }}>
-                          <Box
-                            component="img"
-                            src={bienImage}
-                            alt={bien.titre}
-                            sx={{ width: "100%", height: "100%", objectFit: "cover" }}
-                          />
-
-                          {/* Badge type, en haut à gauche */}
-                          <Box
-                            sx={{
-                              position: "absolute",
-                              top: 12,
-                              left: 12,
-                              bgcolor: "#3030F9",
-                              color: "#fff",
-                              px: 1.4,
-                              py: 0.5,
-                              borderRadius: "999px",
-                              fontSize: "0.72rem",
-                              fontWeight: 700,
-                              textTransform: "uppercase",
-                              letterSpacing: 0.4,
-                              maxWidth: "55%",
-                              whiteSpace: "nowrap",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                            }}
-                          >
-                            {bien.type || "Bien immobilier"}
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: "minmax(0, 1fr)",
+                "@media (min-width:768px)": { gridTemplateColumns: "repeat(2, minmax(0, 1fr))" },
+                "@media (min-width:1024px)": { gridTemplateColumns: "repeat(3, minmax(0, 1fr))" },
+                gap: "24px",
+                alignItems: "stretch",
+              }}
+            >
+              {biens.slice(0, biensDisplayed).map((bien) => {
+                const firstImg = bien.images && bien.images.length > 0 ? bien.images[0] : null;
+                const photoUrl = firstImg ? fixImageUrl(typeof firstImg === "string" ? firstImg : firstImg.url || firstImg) : null;
+                const bienVille = bien.localisation?.ville;
+                const bienQuartier = bien.localisation?.quartier;
+                const localite = [bienQuartier, bienVille].filter(Boolean).join(", ");
+                const bienStatut = STATUTS_BIEN[bien.statut];
+                const dispoOk = bien.statut === "disponible";
+                const nbPhotos = bien.images?.length || 0;
+                const nbChambres = bien.caracteristiques?.nbChambres;
+                const nbSallesBain = bien.caracteristiques?.nbSallesBain;
+                const sup = Number(bien.superficie);
+                const metas = [
+                  localite && { key: "loc", Icon: LocationOn, text: localite },
+                  bien.type && { key: "type", Icon: Home, text: bien.type },
+                  sup > 0 && { key: "sup", Icon: FISquareFoot, text: `${fmtN(sup)} m²` },
+                  nbChambres && { key: "ch", Icon: Bed, text: `${nbChambres} ${nbChambres > 1 ? "chambres" : "chambre"}` },
+                  nbSallesBain && { key: "sdb", Icon: Bathtub, text: `${nbSallesBain} ${nbSallesBain > 1 ? "salles de bain" : "salle de bain"}` },
+                ].filter(Boolean);
+                return (
+                  <Card
+                    key={bien._id}
+                    elevation={0}
+                    onClick={() => handleOpenBienDetails(bien)}
+                    sx={{
+                      display: "flex",
+                      flexDirection: "column",
+                      cursor: "pointer",
+                      borderRadius: "18px",
+                      overflow: "hidden",
+                      bgcolor: "#fff",
+                      boxShadow: "0 4px 16px rgba(16,28,54,0.08)",
+                      transition: "transform 0.2s ease, box-shadow 0.2s ease",
+                      "&:hover": { transform: "translateY(-3px)", boxShadow: "0 12px 26px rgba(16,28,54,0.14)" },
+                    }}
+                  >
+                    {/* Photographie (réelle ou image illustrative) */}
+                    <Box sx={{ height: 205, position: "relative", overflow: "hidden", background: `linear-gradient(135deg, ${GREEN} 0%, ${GREEN_DARK} 100%)` }}>
+                      <Box sx={{ position: "absolute", inset: 0, backgroundImage: "url(/images/bien-placeholder.webp)", backgroundSize: "cover", backgroundPosition: "center" }} />
+                      {photoUrl ? (
+                        <Box
+                          component="img"
+                          src={photoUrl}
+                          alt={bien.titre}
+                          onError={(e) => { e.target.style.display = "none"; }}
+                          sx={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                        />
+                      ) : (
+                        <Box sx={{ position: "absolute", left: 12, bottom: 10, px: 1, py: 0.25, borderRadius: "6px", bgcolor: "rgba(16,28,54,0.55)", color: "#fff", fontSize: 11, fontFamily: FONT }}>
+                          Image illustrative
+                        </Box>
+                      )}
+                      <Box sx={{ position: "absolute", top: 12, left: 12, right: 12, display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 1 }}>
+                        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75, minWidth: 0 }}>
+                          <Box sx={{ bgcolor: GREEN, color: "#fff", px: 1.5, py: 0.5, borderRadius: "999px", fontSize: 12, fontWeight: 700, letterSpacing: 0.4, fontFamily: FONT, whiteSpace: "nowrap" }}>
+                            À VENDRE
                           </Box>
-
-                          {/* Badges statut / vérifié, en haut à droite */}
-                          <Box
-                            sx={{
-                              position: "absolute",
-                              top: 12,
-                              right: 12,
-                              display: "flex",
-                              flexDirection: "column",
-                              alignItems: "flex-end",
-                              gap: 0.75,
-                            }}
-                          >
-                            {bienStatut && (
-                              <Box
-                                sx={{
-                                  bgcolor: "#fff",
-                                  color: bienStatut.color,
-                                  px: 1.4,
-                                  py: 0.5,
-                                  borderRadius: "999px",
-                                  fontSize: "0.72rem",
-                                  fontWeight: 700,
-                                  boxShadow: "0 1px 4px rgba(15,23,42,0.18)",
-                                }}
-                              >
-                                {bienStatut.label}
-                              </Box>
-                            )}
-                            {bien.verified && (
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: 0.5,
-                                  bgcolor: "#fff",
-                                  color: "#0A7C4F",
-                                  px: 1.1,
-                                  py: 0.3,
-                                  borderRadius: "999px",
-                                  fontSize: "0.68rem",
-                                  fontWeight: 700,
-                                  boxShadow: "0 1px 4px rgba(15,23,42,0.18)",
-                                }}
-                              >
-                                <VerifiedUser sx={{ fontSize: 14 }} />
-                                Vérifié
-                              </Box>
-                            )}
-                          </Box>
-
-                          {/* Compteur de photos, en bas à droite */}
-                          {nbPhotos > 0 && (
-                            <Box
-                              sx={{
-                                position: "absolute",
-                                bottom: 10,
-                                right: 10,
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 0.5,
-                                bgcolor: "rgba(14,17,51,0.75)",
-                                color: "#fff",
-                                px: 1,
-                                py: 0.3,
-                                borderRadius: "999px",
-                                fontSize: "0.72rem",
-                                fontWeight: 600,
-                              }}
-                            >
-                              <PhotoCamera sx={{ fontSize: 14 }} />
-                              {nbPhotos}
+                          {bien.type && (
+                            <Box sx={{ bgcolor: "rgba(255,255,255,0.92)", color: GREEN_DEEP, px: 1.5, py: 0.5, borderRadius: "999px", fontSize: 12, fontWeight: 700, fontFamily: FONT, textTransform: "capitalize", maxWidth: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                              {bien.type}
                             </Box>
                           )}
                         </Box>
-
-                        {/* Contenu carte */}
-                        <CardContent
-                          sx={{
-                            p: "16px",
-                            "&:last-child": { pb: "16px" },
-                            display: "flex",
-                            flexDirection: "column",
-                            flex: 1,
-                          }}
-                        >
-                          <Typography
-                            sx={{ fontSize: 16, fontWeight: 700, color: "#0e1133", lineHeight: 1.3, mb: 1 }}
-                          >
-                            {bien.titre}
-                          </Typography>
-
-                          <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, mb: 1.5 }}>
-                            <LocationOn sx={{ fontSize: 18, color: "#3030F9" }} />
-                            <Typography sx={{ fontSize: 14, color: "#5b6573" }}>
-                              {villeEtQuartier}
-                            </Typography>
-                          </Box>
-
-                          {indicateurs.length > 0 && (
-                            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75, mb: 1.5 }}>
-                              {indicateurs.map((ind) => (
-                                <Box
-                                  key={ind.key}
-                                  sx={{
-                                    display: "inline-flex",
-                                    alignItems: "center",
-                                    gap: 0.5,
-                                    bgcolor: "#EAF0FF",
-                                    color: "#2020C8",
-                                    fontSize: 12.5,
-                                    fontWeight: 600,
-                                    px: 1.1,
-                                    py: 0.4,
-                                    borderRadius: "999px",
-                                  }}
-                                >
-                                  <ind.icon sx={{ fontSize: 16 }} />
-                                  {ind.label}
-                                </Box>
-                              ))}
+                        <Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 0.75, flexShrink: 0 }}>
+                          {bienStatut && (
+                            <Box sx={{ bgcolor: dispoOk ? "#E3F5EC" : "#fff", color: dispoOk ? GREEN_DEEP : bienStatut.color, px: 1.5, py: 0.5, borderRadius: "999px", fontSize: 12, fontWeight: 700, fontFamily: FONT, whiteSpace: "nowrap" }}>
+                              {bienStatut.label}
                             </Box>
                           )}
+                          {bien.verified && (
+                            <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, bgcolor: "#fff", color: GREEN, px: 1.1, py: 0.3, borderRadius: "999px", fontSize: 11.5, fontWeight: 700, fontFamily: FONT }}>
+                              <VerifiedUser sx={{ fontSize: 14 }} />
+                              Vérifié
+                            </Box>
+                          )}
+                        </Box>
+                      </Box>
+                      {nbPhotos > 0 && (
+                        <Box sx={{ position: "absolute", bottom: 10, right: 10, display: "flex", alignItems: "center", gap: 0.5, bgcolor: "rgba(16,28,54,0.75)", color: "#fff", px: 1, py: 0.3, borderRadius: "999px", fontSize: 12, fontWeight: 600, fontFamily: FONT }}>
+                          <PhotoCamera sx={{ fontSize: 14 }} />
+                          {nbPhotos}
+                        </Box>
+                      )}
+                    </Box>
 
-                          <Box sx={{ borderTop: "1px solid #eef1f5", pt: 1.5, mb: 1.75, mt: "auto" }}>
-                            <Box sx={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 1 }}>
-                              <Box>
-                                <Typography sx={{ fontSize: 10, fontWeight: 600, color: "#5b6573", textTransform: "uppercase", letterSpacing: 0.5 }}>
-                                  Prix
-                                </Typography>
-                                <Typography sx={{ fontSize: 18, fontWeight: 800, color: "#0e1133", lineHeight: 1.25 }}>
-                                  {new Intl.NumberFormat("fr-FR").format(bien.prix || 0)}{" "}
-                                  <Box component="span" sx={{ fontSize: 12, fontWeight: 600, color: "#5b6573" }}>
-                                    FCFA
-                                  </Box>
-                                </Typography>
-                              </Box>
-                              {bien.reference && (
-                                <Typography sx={{ fontSize: 11.5, color: "#5b6573", textAlign: "right", wordBreak: "break-all" }}>
-                                  Réf : {bien.reference}
-                                </Typography>
+                    <CardContent sx={{ p: "20px", "&:last-child": { pb: "20px" }, display: "flex", flexDirection: "column", gap: 1.75, flex: 1 }}>
+                      <Typography sx={{ fontFamily: FONT, fontSize: 21, fontWeight: 700, color: NIGHT, lineHeight: 1.25, overflowWrap: "anywhere" }}>
+                        {bien.titre}
+                      </Typography>
+
+                      <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                        {metas.map(({ key, Icon, text }) => (
+                          <Box key={key} sx={{ display: "grid", gridTemplateColumns: "20px minmax(0, 1fr)", alignItems: "start", columnGap: 1 }}>
+                            <Icon sx={{ fontSize: 19, color: GREEN }} />
+                            <Typography sx={{ fontFamily: FONT, fontSize: 14, fontWeight: 600, color: NIGHT, overflowWrap: "anywhere", textTransform: key === "type" ? "capitalize" : "none" }}>{text}</Typography>
+                          </Box>
+                        ))}
+                      </Box>
+
+                      {/* Prix + vendeur */}
+                      <Box sx={{ mt: "auto", pt: 1.75, borderTop: "1px solid #E8EDF3", display: "flex", flexWrap: "wrap", columnGap: 2, rowGap: 1.5, alignItems: "center", justifyContent: "space-between" }}>
+                        <Box>
+                          <Typography sx={{ fontFamily: FONT, fontSize: 12, fontWeight: 600, color: MUTED }}>Prix de vente</Typography>
+                          {bien.prix > 0 ? (
+                            <Typography sx={{ fontFamily: FONT, fontSize: 26, fontWeight: 800, color: GREEN_DEEP, lineHeight: 1.2 }}>
+                              {fmtN(bien.prix)}{" "}
+                              <Box component="span" sx={{ fontSize: 13, fontWeight: 700 }}>FCFA</Box>
+                            </Typography>
+                          ) : (
+                            <Typography sx={{ fontFamily: FONT, fontSize: 15, fontWeight: 600, color: MUTED }}>Prix sur demande</Typography>
+                          )}
+                        </Box>
+                        {bien.agenceId && bien.agenceId.nom && (
+                          <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, flex: "1 1 170px", minWidth: 0 }}>
+                            <Box sx={{ width: 38, height: 38, borderRadius: "10px", bgcolor: "#E3F5EC", color: GREEN_DEEP, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                              <Business sx={{ fontSize: 21 }} />
+                            </Box>
+                            <Box sx={{ minWidth: 0, overflowWrap: "anywhere" }}>
+                              <Typography sx={{ fontFamily: FONT, fontSize: 14, fontWeight: 700, color: NIGHT, lineHeight: 1.3 }}>{bien.agenceId.nom}</Typography>
+                              {bien.agenceId.telephone && (
+                                <Box
+                                  component="a"
+                                  href={`tel:${String(bien.agenceId.telephone).replace(/\s+/g, "")}`}
+                                  onClick={(e) => e.stopPropagation()}
+                                  sx={{ display: "inline-flex", alignItems: "center", gap: 0.5, color: GREEN, textDecoration: "none", fontFamily: FONT, fontSize: 13.5, fontWeight: 600, "&:hover": { textDecoration: "underline" } }}
+                                >
+                                  <Phone sx={{ fontSize: 15 }} />
+                                  {bien.agenceId.telephone}
+                                </Box>
                               )}
                             </Box>
                           </Box>
+                        )}
+                      </Box>
+                      {bien.reference && (
+                        <Typography sx={{ fontFamily: FONT, fontSize: 12, color: MUTED, overflowWrap: "anywhere", mt: -0.75 }}>Réf : {bien.reference}</Typography>
+                      )}
 
-                          <Button
-                            fullWidth
-                            variant="contained"
-                            disableElevation
-                            endIcon={<ArrowForward />}
-                            onClick={() => handleOpenBienDetails(bien)}
-                            sx={{
-                              py: { xs: 1.1, sm: 1.2 },
-                              borderRadius: 2,
-                              textTransform: "none",
-                              fontWeight: 700,
-                              fontSize: { xs: "0.9rem", sm: "0.95rem" },
-                              bgcolor: "#3030F9",
-                              color: "#fff",
-                              "&:hover": { bgcolor: "#2020C8" },
-                            }}
-                          >
-                            Voir le bien
-                          </Button>
-                        </CardContent>
-                      </Card>
-                      </Grid>
-                    );
-                  })}
-                </Grid>
+                      <Button
+                        fullWidth
+                        variant="contained"
+                        disableElevation
+                        endIcon={<ArrowForward />}
+                        sx={{ height: 46, borderRadius: "10px", textTransform: "none", fontFamily: FONT, fontWeight: 600, fontSize: 15.5, bgcolor: GREEN, color: "#fff", "&:hover": { bgcolor: GREEN_DEEP } }}
+                      >
+                        Voir le bien
+                      </Button>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </Box>
 
-                {/* Bouton "Afficher la suite" */}
-                {biensDisplayed < biens.length && (
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "center",
-                      mt: 4,
-                    }}
-                  >
-                    <Button
-                      variant="outlined"
-                      onClick={handleShowMoreBiens}
-                      sx={{
-                        px: 4,
-                        py: 1.5,
-                        fontSize: { xs: "0.9rem", md: "1rem" },
-                        fontWeight: 600,
-                        borderRadius: 3,
-                        textTransform: "none",
-                        borderWidth: 2,
-                        "&:hover": {
-                          borderWidth: 2,
-                        },
-                      }}
-                    >
-                      Afficher la suite
-                    </Button>
-                  </Box>
-                )}
+            {biensDisplayed < biens.length && (
+              <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+                <Button
+                  variant="outlined"
+                  onClick={handleShowMoreBiens}
+                  sx={{ px: 4, height: 48, fontFamily: FONT, fontSize: 15.5, fontWeight: 600, borderRadius: "12px", textTransform: "none", borderWidth: 2, borderColor: GREEN, color: GREEN, "&:hover": { borderWidth: 2, borderColor: GREEN_DEEP, bgcolor: "rgba(0,133,87,0.06)" } }}
+                >
+                  Afficher la suite
+                </Button>
               </Box>
-            </>
-          )}
-        </Box>
-      </Container>
+            )}
+          </>
+        )}
+      </Box>
       <Footer />
 
       {/* Drawer détails bien */}
