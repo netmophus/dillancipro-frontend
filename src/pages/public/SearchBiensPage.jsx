@@ -46,6 +46,7 @@ import {
   Email,
   Bed,
   Bathtub,
+  PhotoCamera,
   Close,
   Home,
   Image as ImageIcon,
@@ -97,6 +98,14 @@ const bienIcon = L.icon({
   iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png",
   shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
 });
+
+// Statut du bien : vert charte si disponible, couleurs fonctionnelles sinon
+const STATUTS_BIEN = {
+  disponible: { label: "Disponible", color: "#0A7C4F" },
+  en_cours_de_vente: { label: "En cours de vente", color: "#B45309" },
+  reserve: { label: "Réservé", color: "#B45309" },
+  vendu: { label: "Vendu", color: "#d32f2f" },
+};
 
 const SearchBiensPage = () => {
   const [loading, setLoading] = useState(false);
@@ -948,7 +957,16 @@ const SearchBiensPage = () => {
                     const bienQuartier = bien.localisation?.quartier;
                     const villeEtQuartier = bienQuartier ? `${bienVille}, ${bienQuartier}` : bienVille;
                     const bienSuperficie = bien.superficie?.toString() || "0";
-                    
+                    const bienStatut = STATUTS_BIEN[bien.statut];
+                    const nbPhotos = bien.images?.length || 0;
+                    const nbChambres = bien.caracteristiques?.nbChambres;
+                    const nbSallesBain = bien.caracteristiques?.nbSallesBain;
+                    const indicateurs = [
+                      nbChambres ? { key: "ch", icon: Bed, label: `${nbChambres} ${nbChambres > 1 ? "chambres" : "chambre"}` } : null,
+                      nbSallesBain ? { key: "sdb", icon: Bathtub, label: `${nbSallesBain} ${nbSallesBain > 1 ? "salles de bain" : "salle de bain"}` } : null,
+                      Number(bienSuperficie) > 0 ? { key: "sup", icon: FISquareFoot, label: `${bienSuperficie} m²` } : null,
+                    ].filter(Boolean);
+
                     return (
                       <Grid 
                         item 
@@ -965,44 +983,58 @@ const SearchBiensPage = () => {
                         }}
                       >
                         <Card
-                          elevation={3}
+                          elevation={0}
                           sx={{
                             width: "100%",
                             height: "100%",
                             display: "flex",
                             flexDirection: "column",
-                            borderRadius: 3,
+                            borderRadius: "16px",
                             overflow: "hidden",
-                            boxShadow: "0 10px 25px rgba(15,23,42,0.12)",
-                            transition: "transform 0.25s ease, box-shadow 0.25s ease",
+                            bgcolor: "#fff",
+                            border: "1px solid #e5e7eb",
+                            boxShadow: "0 2px 12px rgba(15,23,42,0.08)",
+                            transition: "transform 0.2s ease, box-shadow 0.2s ease",
                             "&:hover": {
-                              transform: { xs: "none", md: "translateY(-6px)" },
-                              boxShadow: "0 18px 40px rgba(15,23,42,0.18)",
+                              transform: { xs: "none", md: "translateY(-2px)" },
+                              boxShadow: "0 8px 22px rgba(15,23,42,0.14)",
                             },
                           }}
                         >
                         {/* Image */}
-                        <Box
-                          sx={{
-                            height: { xs: 200, sm: 210, md: 220 },
-                            position: "relative",
-                            overflow: "hidden",
-                          }}
-                        >
+                        <Box sx={{ height: 190, position: "relative", overflow: "hidden", bgcolor: "#d9e2ec" }}>
                           <Box
                             component="img"
                             src={bienImage}
                             alt={bien.titre}
-                            sx={{
-                              width: "100%",
-                              height: "100%",
-                              objectFit: "cover",
-                              transition: "transform 0.3s ease",
-                              "&:hover": { transform: "scale(1.05)" },
-                            }}
+                            sx={{ width: "100%", height: "100%", objectFit: "cover" }}
                           />
 
-                          {/* Tags en haut à droite */}
+                          {/* Badge type, en haut à gauche */}
+                          <Box
+                            sx={{
+                              position: "absolute",
+                              top: 12,
+                              left: 12,
+                              bgcolor: "#3030F9",
+                              color: "#fff",
+                              px: 1.4,
+                              py: 0.5,
+                              borderRadius: "999px",
+                              fontSize: "0.72rem",
+                              fontWeight: 700,
+                              textTransform: "uppercase",
+                              letterSpacing: 0.4,
+                              maxWidth: "55%",
+                              whiteSpace: "nowrap",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                            }}
+                          >
+                            {bien.type || "Bien immobilier"}
+                          </Box>
+
+                          {/* Badges statut / vérifié, en haut à droite */}
                           <Box
                             sx={{
                               position: "absolute",
@@ -1010,165 +1042,157 @@ const SearchBiensPage = () => {
                               right: 12,
                               display: "flex",
                               flexDirection: "column",
-                              gap: 0.75,
                               alignItems: "flex-end",
+                              gap: 0.75,
                             }}
                           >
-                            <Box
-                              sx={{
-                                px: 1.4,
-                                py: 0.6,
-                                borderRadius: 999,
-                                bgcolor: "rgba(15,23,42,0.85)",
-                              }}
-                            >
-                              <Typography
-                                variant="caption"
+                            {bienStatut && (
+                              <Box
                                 sx={{
-                                  color: "white",
-                                  fontWeight: 600,
-                                  fontSize: { xs: "0.68rem", sm: "0.72rem" },
-                                  textTransform: "uppercase",
-                                  letterSpacing: 0.4,
+                                  bgcolor: "#fff",
+                                  color: bienStatut.color,
+                                  px: 1.4,
+                                  py: 0.5,
+                                  borderRadius: "999px",
+                                  fontSize: "0.72rem",
+                                  fontWeight: 700,
+                                  boxShadow: "0 1px 4px rgba(15,23,42,0.18)",
                                 }}
                               >
-                                {bien.type || "Bien immobilier"}
-                              </Typography>
-                            </Box>
-
+                                {bienStatut.label}
+                              </Box>
+                            )}
                             {bien.verified && (
-                              <Chip
-                                icon={
-                                  <VerifiedUser
-                                    sx={{ fontSize: "0.85rem !important" }}
-                                  />
-                                }
-                                label="Vérifié"
-                                size="small"
-                                color="success"
+                              <Box
                                 sx={{
-                                  bgcolor: "rgba(255,255,255,0.95)",
-                                  fontWeight: 600,
-                                  fontSize: { xs: "0.65rem", sm: "0.7rem" },
-                                  height: 22,
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 0.5,
+                                  bgcolor: "#fff",
+                                  color: "#0A7C4F",
+                                  px: 1.1,
+                                  py: 0.3,
+                                  borderRadius: "999px",
+                                  fontSize: "0.68rem",
+                                  fontWeight: 700,
+                                  boxShadow: "0 1px 4px rgba(15,23,42,0.18)",
                                 }}
-                              />
+                              >
+                                <VerifiedUser sx={{ fontSize: 14 }} />
+                                Vérifié
+                              </Box>
                             )}
                           </Box>
+
+                          {/* Compteur de photos, en bas à droite */}
+                          {nbPhotos > 0 && (
+                            <Box
+                              sx={{
+                                position: "absolute",
+                                bottom: 10,
+                                right: 10,
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 0.5,
+                                bgcolor: "rgba(14,17,51,0.75)",
+                                color: "#fff",
+                                px: 1,
+                                py: 0.3,
+                                borderRadius: "999px",
+                                fontSize: "0.72rem",
+                                fontWeight: 600,
+                              }}
+                            >
+                              <PhotoCamera sx={{ fontSize: 14 }} />
+                              {nbPhotos}
+                            </Box>
+                          )}
                         </Box>
 
                         {/* Contenu carte */}
                         <CardContent
                           sx={{
-                            p: { xs: 2.2, sm: 2.5, md: 3 },
+                            p: "16px",
+                            "&:last-child": { pb: "16px" },
                             display: "flex",
                             flexDirection: "column",
                             flex: 1,
                           }}
                         >
                           <Typography
-                            variant="h6"
-                            fontWeight="bold"
-                            sx={{
-                              mb: 1.5,
-                              fontSize: {
-                                xs: "1.05rem",
-                                sm: "1.15rem",
-                                md: "1.2rem",
-                              },
-                              lineHeight: 1.3,
-                            }}
+                            sx={{ fontSize: 16, fontWeight: 700, color: "#0e1133", lineHeight: 1.3, mb: 1 }}
                           >
                             {bien.titre}
                           </Typography>
 
-                          <Stack spacing={1.1} mb={2.2}>
-                            <Box display="flex" alignItems="center" gap={1}>
-                              <LocationOn fontSize="small" color="primary" />
-                              <Typography
-                                variant="body2"
-                                color="text.secondary"
-                                sx={{
-                                  fontSize: {
-                                    xs: "0.85rem",
-                                    sm: "0.9rem",
-                                  },
-                                }}
-                              >
-                                {villeEtQuartier}
-                              </Typography>
+                          <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, mb: 1.5 }}>
+                            <LocationOn sx={{ fontSize: 18, color: "#3030F9" }} />
+                            <Typography sx={{ fontSize: 14, color: "#5b6573" }}>
+                              {villeEtQuartier}
+                            </Typography>
+                          </Box>
+
+                          {indicateurs.length > 0 && (
+                            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75, mb: 1.5 }}>
+                              {indicateurs.map((ind) => (
+                                <Box
+                                  key={ind.key}
+                                  sx={{
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: 0.5,
+                                    bgcolor: "#EAF0FF",
+                                    color: "#2020C8",
+                                    fontSize: 12.5,
+                                    fontWeight: 600,
+                                    px: 1.1,
+                                    py: 0.4,
+                                    borderRadius: "999px",
+                                  }}
+                                >
+                                  <ind.icon sx={{ fontSize: 16 }} />
+                                  {ind.label}
+                                </Box>
+                              ))}
                             </Box>
+                          )}
 
-                            <Box display="flex" alignItems="center" gap={1}>
-                              <Home fontSize="small" color="primary" />
-                              <Typography
-                                variant="body2"
-                                color="text.secondary"
-                                sx={{
-                                  fontSize: {
-                                    xs: "0.85rem",
-                                    sm: "0.9rem",
-                                  },
-                                }}
-                              >
-                                {bienSuperficie} m²
-                              </Typography>
+                          <Box sx={{ borderTop: "1px solid #eef1f5", pt: 1.5, mb: 1.75, mt: "auto" }}>
+                            <Box sx={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 1 }}>
+                              <Box>
+                                <Typography sx={{ fontSize: 10, fontWeight: 600, color: "#5b6573", textTransform: "uppercase", letterSpacing: 0.5 }}>
+                                  Prix
+                                </Typography>
+                                <Typography sx={{ fontSize: 18, fontWeight: 800, color: "#0e1133", lineHeight: 1.25 }}>
+                                  {new Intl.NumberFormat("fr-FR").format(bien.prix || 0)}{" "}
+                                  <Box component="span" sx={{ fontSize: 12, fontWeight: 600, color: "#5b6573" }}>
+                                    FCFA
+                                  </Box>
+                                </Typography>
+                              </Box>
+                              {bien.reference && (
+                                <Typography sx={{ fontSize: 11.5, color: "#5b6573", textAlign: "right", wordBreak: "break-all" }}>
+                                  Réf : {bien.reference}
+                                </Typography>
+                              )}
                             </Box>
-
-                            {bien.reference && (
-                              <Typography
-                                variant="body2"
-                                color="text.secondary"
-                                sx={{
-                                  fontSize: {
-                                    xs: "0.8rem",
-                                    sm: "0.9rem",
-                                  },
-                                }}
-                              >
-                                Réf : {bien.reference}
-                              </Typography>
-                            )}
-                          </Stack>
-
-                          <Divider sx={{ my: 1.5 }} />
-
-                          <Typography
-                            variant="h5"
-                            color="primary"
-                            fontWeight="bold"
-                            sx={{
-                              mb: 1.8,
-                              fontSize: {
-                                xs: "1.35rem",
-                                sm: "1.45rem",
-                                md: "1.6rem",
-                              },
-                            }}
-                          >
-                            {formatMoney(bien.prix || 0)}
-                          </Typography>
+                          </Box>
 
                           <Button
                             fullWidth
                             variant="contained"
+                            disableElevation
                             endIcon={<ArrowForward />}
                             onClick={() => handleOpenBienDetails(bien)}
                             sx={{
-                              mt: "auto",
                               py: { xs: 1.1, sm: 1.2 },
                               borderRadius: 2,
                               textTransform: "none",
                               fontWeight: 700,
-                              fontSize: {
-                                xs: "0.9rem",
-                                sm: "0.95rem",
-                              },
-                              background: "#3030F9",
-                              "&:hover": {
-                                background: "#2020C8",
-                                transform: { xs: "none", md: "translateY(-2px)" },
-                              },
+                              fontSize: { xs: "0.9rem", sm: "0.95rem" },
+                              bgcolor: "#3030F9",
+                              color: "#fff",
+                              "&:hover": { bgcolor: "#2020C8" },
                             }}
                           >
                             Voir le bien
