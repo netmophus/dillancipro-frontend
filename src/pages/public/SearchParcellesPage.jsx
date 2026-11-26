@@ -6,7 +6,6 @@ import {
   GridLegacy as Grid,
   Card,
   CardContent,
-  CardMedia,
   TextField,
   Button,
   Select,
@@ -34,14 +33,14 @@ import {
   Search,
   LocationOn,
   Business,
-  AttachMoney,
-  Square,
+  ArrowForward,
+  Dashboard as FIDashboard,
+  GridOn as FIGridOn,
   FilterList,
   Clear,
   Phone,
   Email,
   Map,
-  Image as ImageIcon,
   Close as CloseIcon,
   VideoLibrary,
   Description,
@@ -62,6 +61,14 @@ import Footer from "../../components/shared/Footer";
 import ParcelleDetailDrawer from "../../components/parcelles/ParcelleDetailDrawer";
 import api from "../../services/api";
 import { BASE_SERVER_URL } from "../../config/config";
+
+// Statut de la parcelle : vert charte si à vendre, couleurs fonctionnelles sinon
+const STATUTS_PARCELLE = {
+  avendre: { label: "À vendre", color: "#0A7C4F" },
+  vendue: { label: "Vendue", color: "#d32f2f" },
+  reserved: { label: "Réservée", color: "#B45309" },
+  reservee: { label: "Réservée", color: "#B45309" },
+};
 
 const SearchParcellesPage = () => {
   const navigate = useNavigate();
@@ -641,84 +648,215 @@ const SearchParcellesPage = () => {
                         }}
                       >
                         <Card
+                          elevation={0}
                           sx={{
                             width: "100%",
                             height: "100%",
                             display: "flex",
                             flexDirection: "column",
                             cursor: "pointer",
-                            transition: "all 0.3s ease",
+                            borderRadius: "16px",
+                            overflow: "hidden",
+                            bgcolor: "#fff",
+                            border: "1px solid #e5e7eb",
+                            boxShadow: "0 2px 12px rgba(15,23,42,0.08)",
+                            transition: "transform 0.2s ease, box-shadow 0.2s ease",
                             "&:hover": {
-                              transform: "translateY(-4px)",
-                              boxShadow: 4,
+                              transform: "translateY(-2px)",
+                              boxShadow: "0 8px 22px rgba(15,23,42,0.14)",
                             },
                           }}
                           onClick={() => handleParcelleClick(parcelle)}
                         >
-                        {parcelle.images && parcelle.images.length > 0 ? (
-                          <CardMedia
-                            component="img"
-                            height="200"
-                            image={parcelle.images[0]}
-                            alt={parcelle.numeroParcelle}
-                          />
-                        ) : (
+                        {/* Image */}
+                        <Box sx={{ height: 175, position: "relative", overflow: "hidden", bgcolor: "#d9e2ec" }}>
+                          {parcelle.images && parcelle.images.length > 0 ? (
+                            <Box
+                              component="img"
+                              src={parcelle.images[0]}
+                              alt={parcelle.numeroParcelle}
+                              sx={{ width: "100%", height: "100%", objectFit: "cover" }}
+                            />
+                          ) : (
+                            <Box sx={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                              <Map sx={{ fontSize: 56, color: "#9aa5b4" }} />
+                            </Box>
+                          )}
+
+                          {/* Badge type, en haut à gauche */}
                           <Box
                             sx={{
-                              height: 200,
-                              bgcolor: "grey.200",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
+                              position: "absolute",
+                              top: 12,
+                              left: 12,
+                              bgcolor: "#3030F9",
+                              color: "#fff",
+                              px: 1.4,
+                              py: 0.5,
+                              borderRadius: "999px",
+                              fontSize: "0.72rem",
+                              fontWeight: 700,
+                              textTransform: "uppercase",
+                              letterSpacing: 0.4,
                             }}
                           >
-                            <ImageIcon sx={{ fontSize: 60, color: "grey.400" }} />
+                            Parcelle
                           </Box>
-                        )}
-                        <CardContent sx={{ flexGrow: 1 }}>
-                          <Typography variant="h6" fontWeight="bold" gutterBottom>
-                            Parcelle {parcelle.numeroParcelle}
-                          </Typography>
-                          <Box display="flex" alignItems="center" gap={1} mb={1}>
-                            <LocationOn color="primary" fontSize="small" />
-                            <Typography variant="body2" color="text.secondary">
-                              {getLocationString(parcelle)}
+
+                          {/* Badge statut, en haut à droite */}
+                          {STATUTS_PARCELLE[parcelle.statut] && (
+                            <Box
+                              sx={{
+                                position: "absolute",
+                                top: 12,
+                                right: 12,
+                                bgcolor: "#fff",
+                                color: STATUTS_PARCELLE[parcelle.statut].color,
+                                px: 1.4,
+                                py: 0.5,
+                                borderRadius: "999px",
+                                fontSize: "0.72rem",
+                                fontWeight: 700,
+                                boxShadow: "0 1px 4px rgba(15,23,42,0.18)",
+                              }}
+                            >
+                              {STATUTS_PARCELLE[parcelle.statut].label}
+                            </Box>
+                          )}
+                        </Box>
+
+                        {/* Contenu carte */}
+                        <CardContent
+                          sx={{
+                            p: "16px",
+                            "&:last-child": { pb: "16px" },
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: 1.5,
+                            flex: 1,
+                          }}
+                        >
+                          {/* Titre + surface */}
+                          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1 }}>
+                            <Typography sx={{ fontSize: 17, fontWeight: 700, color: "#0e1133", lineHeight: 1.3 }}>
+                              Parcelle {parcelle.numeroParcelle}
                             </Typography>
-                          </Box>
-                          {parcelle.prix && (
-                            <Box display="flex" alignItems="center" gap={1} mb={1}>
-                              <AttachMoney color="success" fontSize="small" />
-                              <Typography variant="h6" color="success.main" fontWeight="bold">
-                                {parcelle.prix.toLocaleString()} FCFA
-                              </Typography>
-                            </Box>
-                          )}
-                          {parcelle.superficie && (
-                            <Box display="flex" alignItems="center" gap={1} mb={1}>
-                              <Square color="info" fontSize="small" />
-                              <Typography variant="body2">
+                            {parcelle.superficie > 0 && (
+                              <Box
+                                sx={{
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  gap: 0.5,
+                                  flexShrink: 0,
+                                  bgcolor: "#EAF0FF",
+                                  color: "#2020C8",
+                                  fontSize: 12.5,
+                                  fontWeight: 600,
+                                  px: 1.1,
+                                  py: 0.4,
+                                  borderRadius: "999px",
+                                }}
+                              >
+                                <FISquareFoot sx={{ fontSize: 16 }} />
                                 {parcelle.superficie} m²
-                              </Typography>
-                            </Box>
-                          )}
-                          {parcelle.agenceId && (
-                            <Box mt={1}>
-                              <Box display="flex" alignItems="center" gap={1} mb={0.5}>
-                                <Business color="warning" fontSize="small" />
-                                <Typography variant="caption" color="text.secondary">
-                                  {parcelle.agenceId.nom}
-                                </Typography>
                               </Box>
-                              {parcelle.agenceId.telephone && (
-                                <Box display="flex" alignItems="center" gap={1}>
-                                  <Phone color="primary" fontSize="small" />
-                                  <Typography variant="caption" color="primary.main" fontWeight="medium">
-                                    {parcelle.agenceId.telephone}
+                            )}
+                          </Box>
+
+                          {/* Hiérarchie : lotissement / îlot / localité */}
+                          <Box sx={{ bgcolor: "#f5f7fa", borderRadius: "10px", p: "10px 12px", display: "flex", flexDirection: "column", gap: 0.9 }}>
+                            {[
+                              { key: "lot", icon: FIDashboard, label: "Lotissement", value: parcelle.ilot?.lotissement?.nom },
+                              { key: "ilot", icon: FIGridOn, label: "Îlot", value: parcelle.ilot?.numeroIlot },
+                              {
+                                key: "loc",
+                                icon: LocationOn,
+                                label: "Localité",
+                                value: parcelle.ilot?.zone?.quartier?.ville ? getLocationString(parcelle) : null,
+                              },
+                            ]
+                              .filter((l) => l.value)
+                              .map((l) => (
+                                <Box key={l.key} sx={{ display: "flex", alignItems: "flex-start", gap: 1 }}>
+                                  <l.icon sx={{ fontSize: 18, color: "#3030F9", mt: "1px", flexShrink: 0 }} />
+                                  <Typography sx={{ fontSize: 12.5, color: "#5b6573", width: 76, flexShrink: 0, mt: "1px" }}>
+                                    {l.label}
+                                  </Typography>
+                                  <Typography sx={{ fontSize: 13.5, fontWeight: 700, color: "#0e1133", wordBreak: "break-word", minWidth: 0 }}>
+                                    {l.value}
                                   </Typography>
                                 </Box>
-                              )}
+                              ))}
+                          </Box>
+
+                          {/* Prix */}
+                          {parcelle.prix > 0 && (
+                            <Box sx={{ borderTop: "1px solid #eef1f5", pt: 1.5, mt: "auto" }}>
+                              <Typography sx={{ fontSize: 10, fontWeight: 600, color: "#5b6573", textTransform: "uppercase", letterSpacing: 0.5 }}>
+                                Prix
+                              </Typography>
+                              <Typography sx={{ fontSize: 19, fontWeight: 800, color: "#0e1133", lineHeight: 1.25 }}>
+                                {parcelle.prix.toLocaleString()}{" "}
+                                <Box component="span" sx={{ fontSize: 12, fontWeight: 600, color: "#5b6573" }}>
+                                  FCFA
+                                </Box>
+                              </Typography>
                             </Box>
                           )}
+
+                          {/* Agence */}
+                          {parcelle.agenceId && (
+                            <Box sx={{ bgcolor: "#f5f7fa", borderRadius: "10px", p: "10px 12px", display: "flex", alignItems: "center", gap: 1.25 }}>
+                              <Box
+                                sx={{
+                                  width: 32,
+                                  height: 32,
+                                  borderRadius: "8px",
+                                  bgcolor: "#0e1133",
+                                  color: "#fff",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  flexShrink: 0,
+                                }}
+                              >
+                                <Business sx={{ fontSize: 18 }} />
+                              </Box>
+                              <Box sx={{ minWidth: 0 }}>
+                                <Typography sx={{ fontSize: 13.5, fontWeight: 700, color: "#0e1133", lineHeight: 1.3, wordBreak: "break-word" }}>
+                                  {parcelle.agenceId.nom}
+                                </Typography>
+                                {parcelle.agenceId.telephone && (
+                                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                                    <Phone sx={{ fontSize: 14, color: "#3030F9" }} />
+                                    <Typography sx={{ fontSize: 12.5, color: "#3030F9", fontWeight: 600 }}>
+                                      {parcelle.agenceId.telephone}
+                                    </Typography>
+                                  </Box>
+                                )}
+                              </Box>
+                            </Box>
+                          )}
+
+                          {/* Le clic remonte à la carte : handleParcelleClick n'est appelé qu'une fois */}
+                          <Button
+                            fullWidth
+                            variant="contained"
+                            disableElevation
+                            endIcon={<ArrowForward />}
+                            sx={{
+                              py: 1.2,
+                              borderRadius: 2,
+                              textTransform: "none",
+                              fontWeight: 700,
+                              fontSize: "0.95rem",
+                              bgcolor: "#3030F9",
+                              color: "#fff",
+                              "&:hover": { bgcolor: "#2020C8" },
+                            }}
+                          >
+                            Voir la parcelle
+                          </Button>
                         </CardContent>
                       </Card>
                       </Grid>
