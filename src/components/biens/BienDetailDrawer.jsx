@@ -27,7 +27,12 @@ import {
   Phone,
   Event,
   Tune,
-  Straighten,
+  Info,
+  Apartment,
+  GpsFixed,
+  CalendarMonth,
+  Route,
+  Stairs,
   Directions,
   Elevator,
   Balcony,
@@ -139,13 +144,40 @@ const Panel = ({ children, sx }) => (
   <Box sx={{ bgcolor: "#fff", border: `1px solid ${BORDER}`, borderRadius: 3, p: 2.5, ...sx }}>{children}</Box>
 );
 
-// Ligne label / valeur sobre
-const InfoRow = ({ label, children }) => (
-  <Box sx={{ py: 1, borderBottom: `1px solid ${BORDER}`, "&:last-of-type": { borderBottom: "none" } }}>
-    <Typography sx={{ fontSize: 12, fontWeight: 600, color: "#5b6573", textTransform: "uppercase", letterSpacing: 0.3 }}>
-      {label}
-    </Typography>
-    <Typography component="div" sx={{ fontSize: 15, fontWeight: 600, color: NIGHT, wordBreak: "break-word", mt: 0.25 }}>
+// Carte avec en-tête coloré (colonnes Localisation / Informations)
+const InfoCard = ({ icon: Icon, title, headerBg, headerColor, children }) => (
+  <Box sx={{ bgcolor: "#fff", border: `1px solid ${BORDER}`, borderRadius: "14px", overflow: "hidden" }}>
+    <Box sx={{ bgcolor: headerBg, color: headerColor, display: "flex", alignItems: "center", gap: 1, px: 2, py: 1.5 }}>
+      <Icon sx={{ fontSize: 20 }} />
+      <Typography component="h3" sx={{ fontSize: 15, fontWeight: 700, color: headerColor }}>
+        {title}
+      </Typography>
+    </Box>
+    <Box sx={{ p: 2 }}>{children}</Box>
+  </Box>
+);
+
+// Ligne avec icône à gauche : label en petites majuscules + valeur en gras
+const IconRow = ({ icon: Icon, label, color, children }) => (
+  <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5, py: 1.1 }}>
+    <Icon sx={{ fontSize: 20, color, mt: 0.25, flexShrink: 0 }} />
+    <Box sx={{ minWidth: 0, flex: 1 }}>
+      <Typography sx={{ fontSize: 11, fontWeight: 600, color: "#5b6573", textTransform: "uppercase", letterSpacing: 0.4 }}>
+        {label}
+      </Typography>
+      <Typography component="div" sx={{ fontSize: 15, fontWeight: 700, color: NIGHT, wordBreak: "break-word" }}>
+        {children}
+      </Typography>
+    </Box>
+  </Box>
+);
+
+// Ligne label à gauche / valeur alignée à droite
+const SplitRow = ({ icon: Icon, label, color, children }) => (
+  <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, py: 1.1 }}>
+    <Icon sx={{ fontSize: 20, color, flexShrink: 0 }} />
+    <Typography sx={{ fontSize: 14, color: "#5b6573", flex: 1 }}>{label}</Typography>
+    <Typography component="div" sx={{ fontSize: 14.5, fontWeight: 700, color: NIGHT, textAlign: "right", wordBreak: "break-word" }}>
       {children}
     </Typography>
   </Box>
@@ -288,9 +320,9 @@ const BienDetailDrawer = ({ open, onClose, selectedBien, onBienUpdate }) => {
         },
       }}
     >
-      <Box sx={{ height: "100%", display: "flex", flexDirection: "column", bgcolor: GREY_BG }}>
+      <Box sx={{ minHeight: "100%", bgcolor: GREY_BG }}>
         {/* 1. En-tête en aplat bleu nuit */}
-        <Box sx={{ bgcolor: NIGHT, color: "#fff", p: { xs: 2, sm: 3 }, flexShrink: 0 }}>
+        <Box sx={{ bgcolor: NIGHT, color: "#fff", p: { xs: 2, sm: 3 } }}>
           <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5 }}>
             <Box
               sx={{
@@ -350,24 +382,24 @@ const BienDetailDrawer = ({ open, onClose, selectedBien, onBienUpdate }) => {
           {bien && (
             <Box sx={{ display: "grid", gridTemplateColumns: surface ? "1fr 1fr" : "1fr", gap: 1.5, mt: 2.5 }}>
               <Box sx={{ bgcolor: "rgba(255,255,255,0.08)", borderRadius: 2, p: 1.5 }}>
-                <Typography sx={{ fontSize: 12, color: "rgba(255,255,255,0.7)", fontWeight: 600, textTransform: "uppercase" }}>
+                <Typography sx={{ fontSize: 10, color: "rgba(255,255,255,0.65)", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>
                   Prix
                 </Typography>
-                <Typography sx={{ fontSize: { xs: 22, sm: 28 }, fontWeight: 800, color: "#fff", lineHeight: 1.2 }}>
+                <Typography sx={{ fontSize: 17, fontWeight: 800, color: "#fff", lineHeight: 1.3, mt: 0.25 }}>
                   {formatNumber(bien.prix)}{" "}
-                  <Box component="span" sx={{ fontSize: 14, fontWeight: 600, color: "rgba(255,255,255,0.8)" }}>
+                  <Box component="span" sx={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.8)" }}>
                     FCFA
                   </Box>
                 </Typography>
               </Box>
               {surface && (
                 <Box sx={{ bgcolor: "rgba(255,255,255,0.08)", borderRadius: 2, p: 1.5 }}>
-                  <Typography sx={{ fontSize: 12, color: "rgba(255,255,255,0.7)", fontWeight: 600, textTransform: "uppercase" }}>
+                  <Typography sx={{ fontSize: 10, color: "rgba(255,255,255,0.65)", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>
                     Surface
                   </Typography>
-                  <Typography sx={{ fontSize: { xs: 22, sm: 28 }, fontWeight: 800, color: "#fff", lineHeight: 1.2 }}>
+                  <Typography sx={{ fontSize: 17, fontWeight: 800, color: "#fff", lineHeight: 1.3, mt: 0.25 }}>
                     {surface}{" "}
-                    <Box component="span" sx={{ fontSize: 14, fontWeight: 600, color: "rgba(255,255,255,0.8)" }}>
+                    <Box component="span" sx={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.8)" }}>
                       m²
                     </Box>
                   </Typography>
@@ -377,8 +409,8 @@ const BienDetailDrawer = ({ open, onClose, selectedBien, onBienUpdate }) => {
           )}
         </Box>
 
-        {/* Contenu défilant */}
-        <Box sx={{ flex: 1, overflow: "auto", p: { xs: 2, sm: 3 } }}>
+        {/* Contenu : tout défile d'un seul bloc avec l'en-tête et les actions */}
+        <Box sx={{ p: { xs: 2, sm: 3 } }}>
           {bien ? (
             <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
               {/* 2. Galerie photos */}
@@ -386,7 +418,7 @@ const BienDetailDrawer = ({ open, onClose, selectedBien, onBienUpdate }) => {
                 <SectionTitle icon={PhotoCamera}>Photos du bien</SectionTitle>
                 <Box
                   sx={{
-                    height: 180,
+                    height: 260,
                     borderRadius: 3,
                     overflow: "hidden",
                     bgcolor: "#d9e2ec",
@@ -418,7 +450,7 @@ const BienDetailDrawer = ({ open, onClose, selectedBien, onBienUpdate }) => {
                         onClick={() => handleImageClick(index)}
                         sx={{
                           width: "100%",
-                          height: 64,
+                          height: 66,
                           objectFit: "cover",
                           borderRadius: 2,
                           cursor: "pointer",
@@ -439,7 +471,7 @@ const BienDetailDrawer = ({ open, onClose, selectedBien, onBienUpdate }) => {
                         }}
                         sx={{
                           position: "relative",
-                          height: 64,
+                          height: 66,
                           borderRadius: 2,
                           overflow: "hidden",
                           cursor: "pointer",
@@ -536,58 +568,77 @@ const BienDetailDrawer = ({ open, onClose, selectedBien, onBienUpdate }) => {
 
               {/* 4. Deux colonnes : Localisation / Informations */}
               <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: hasInfos ? "1fr 1fr" : "1fr" }, gap: 2.5, alignItems: "start" }}>
-                <Panel>
-                  <SectionTitle icon={LocationOn}>Localisation</SectionTitle>
-                  {quartierVille && <InfoRow label="Quartier / Ville">{quartierVille}</InfoRow>}
-                  {bien.adresse && <InfoRow label="Adresse">{bien.adresse}</InfoRow>}
+                <InfoCard icon={LocationOn} title="Localisation" headerBg={SKY} headerColor={BLUE_DARK}>
+                  {quartierVille && (
+                    <IconRow icon={Apartment} label="Quartier / Ville" color={BLUE}>{quartierVille}</IconRow>
+                  )}
+                  {bien.adresse && (
+                    <IconRow icon={MapIcon} label="Adresse" color={BLUE}>{bien.adresse}</IconRow>
+                  )}
                   {hasGps && (
-                    <InfoRow label="Coordonnées GPS">
-                      <Box component="span" sx={{ display: "block" }}>Lat: {bien.latitude}</Box>
-                      <Box component="span" sx={{ display: "block" }}>Lng: {bien.longitude}</Box>
+                    <IconRow icon={GpsFixed} label="Coordonnées GPS" color={BLUE}>
+                      <Box component="span" sx={{ display: "block" }}>
+                        Lat: {bien.latitude} / Lng: {bien.longitude}
+                      </Box>
                       {decimalToDMS(bien.latitude, "lat") && decimalToDMS(bien.longitude, "lon") && (
-                        <Box component="span" sx={{ display: "block", fontSize: 13, fontWeight: 500, color: "#5b6573", mt: 0.5 }}>
+                        <Box component="span" sx={{ display: "block", fontSize: 12.5, fontWeight: 500, color: "#5b6573", mt: 0.25 }}>
                           {decimalToDMS(bien.latitude, "lat")} / {decimalToDMS(bien.longitude, "lon")}
                         </Box>
                       )}
-                    </InfoRow>
+                    </IconRow>
                   )}
-                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mt: 1.5 }}>
+                  <Box sx={{ display: "flex", gap: 1, mt: 1.5 }}>
                     <Button
-                      size="small"
-                      variant="outlined"
+                      fullWidth
+                      disableElevation
                       startIcon={<MapIcon />}
                       onClick={handleVoirCarte}
-                      sx={{ textTransform: "none", fontWeight: 600, borderColor: BLUE, color: BLUE, "&:hover": { borderColor: BLUE_DARK, bgcolor: SKY } }}
+                      sx={{ textTransform: "none", fontWeight: 700, bgcolor: SKY, color: BLUE_DARK, "&:hover": { bgcolor: "#D9E4FF" } }}
                     >
-                      Voir sur la carte
+                      Carte
                     </Button>
                     {hasGps && (
                       <Button
-                        size="small"
+                        fullWidth
                         variant="contained"
                         disableElevation
                         startIcon={<Directions />}
                         onClick={handleItineraire}
-                        sx={{ textTransform: "none", fontWeight: 600, bgcolor: BLUE, "&:hover": { bgcolor: BLUE_DARK } }}
+                        sx={{ textTransform: "none", fontWeight: 700, bgcolor: BLUE, color: "#fff", "&:hover": { bgcolor: BLUE_DARK } }}
                       >
                         Itinéraire
                       </Button>
                     )}
                   </Box>
-                </Panel>
+                </InfoCard>
 
                 {hasInfos && (
-                  <Panel>
-                    <SectionTitle icon={Straighten}>Informations</SectionTitle>
-                    {infoRows.map((r) => (
-                      <InfoRow key={r.label} label={r.label}>{r.value}</InfoRow>
-                    ))}
-                    {bien.description && (
-                      <InfoRow label="Description">
-                        <Box component="span" sx={{ fontWeight: 500, lineHeight: 1.6 }}>{bien.description}</Box>
-                      </InfoRow>
+                  <InfoCard icon={Info} title="Informations" headerBg={GREEN_LIGHT} headerColor={GREEN_DARK}>
+                    {carac.anneeConstruction && (
+                      <SplitRow icon={CalendarMonth} label="Construction" color={GREEN}>{carac.anneeConstruction}</SplitRow>
                     )}
-                  </Panel>
+                    {carac.etatGeneral && (
+                      <SplitRow icon={CheckCircle} label="État général" color={GREEN}>
+                        <Box component="span" sx={{ display: "inline-block", bgcolor: GREEN_LIGHT, color: GREEN, fontSize: 13, fontWeight: 700, px: 1.25, py: 0.3, borderRadius: "999px" }}>
+                          {carac.etatGeneral}
+                        </Box>
+                      </SplitRow>
+                    )}
+                    {carac.acces && (
+                      <SplitRow icon={Route} label="Accès" color={GREEN}>{carac.acces}</SplitRow>
+                    )}
+                    {carac.etage && (
+                      <SplitRow icon={Stairs} label="Étage" color={GREEN}>{carac.etage}</SplitRow>
+                    )}
+                    {bien.description && (
+                      <Box sx={{ mt: 1, pt: 1.5, borderTop: `1px solid ${BORDER}` }}>
+                        <Typography sx={{ fontSize: 11, fontWeight: 600, color: "#5b6573", textTransform: "uppercase", letterSpacing: 0.4, mb: 0.5 }}>
+                          Description
+                        </Typography>
+                        <Typography sx={{ fontSize: 14.5, lineHeight: 1.6, color: NIGHT }}>{bien.description}</Typography>
+                      </Box>
+                    )}
+                  </InfoCard>
                 )}
               </Box>
 
@@ -691,14 +742,15 @@ const BienDetailDrawer = ({ open, onClose, selectedBien, onBienUpdate }) => {
           )}
         </Box>
 
-        {/* 7. Barre d'actions collée en bas */}
+        {/* 7. Barre d'actions : à la fin du contenu (non figée) */}
         {bien && (
           <Box
             sx={{
-              flexShrink: 0,
               bgcolor: GREY_BG,
               borderTop: `1px solid ${BORDER}`,
-              p: { xs: 1.5, sm: 2 },
+              px: { xs: 2, sm: 3 },
+              pt: 2,
+              pb: 3,
               display: "flex",
               gap: 1.5,
             }}
