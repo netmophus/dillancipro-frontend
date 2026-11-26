@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from "react";
 import {
-  Container,
   Box,
   Typography,
-  GridLegacy as Grid,
   Card,
   CardContent,
   TextField,
@@ -18,7 +16,6 @@ import {
   Slider,
   Avatar,
   Divider,
-  Alert,
   CircularProgress,
   InputAdornment,
   Menu,
@@ -49,6 +46,9 @@ import {
   Tune as FITune,
   ExpandMore as FIExpandMore,
   Refresh as FIRefresh,
+  ErrorOutline,
+  SearchOff,
+  LandscapeOutlined,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/shared/Navbar";
@@ -86,6 +86,7 @@ const SearchParcellesPage = () => {
     agences: [],
   });
   const [stats, setStats] = useState(null);
+  const [error, setError] = useState(false);
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 20,
@@ -154,6 +155,7 @@ const SearchParcellesPage = () => {
   const searchParcelles = async () => {
     try {
       setLoading(true);
+      setError(false);
       const params = {
         ...filters,
         page: pagination.page,
@@ -172,8 +174,9 @@ const SearchParcellesPage = () => {
       const response = await api.get("/public/parcelles/search", { params });
       setParcelles(response.data.parcelles || []);
       setPagination(response.data.pagination || pagination);
-    } catch (error) {
-      console.error("Erreur recherche parcelles:", error);
+    } catch (err) {
+      console.error("Erreur recherche parcelles:", err);
+      setError(true);
       setParcelles([]);
     } finally {
       setLoading(false);
@@ -288,610 +291,576 @@ const SearchParcellesPage = () => {
 
   const activeFiltersCount = Object.values(filters).filter((v) => v !== "").length;
 
+  const GREEN = "#008557";
+  const GREEN_DEEP = "#005C48";
+  const GREEN_DARK = "#004D40";
+  const LIME = "#84CC16";
+  const NIGHT = "#101C36";
+  const MUTED = "#475569";
+  const FONT = "'Manrope', 'Plus Jakarta Sans', 'DM Sans', system-ui, Arial, sans-serif";
+  const fmt = (n) => Number(n).toLocaleString("fr-FR").replace(/[  ]/g, " ");
+
+  const quartierOptions = filterOptions.quartiers.filter((q) => !filters.ville || q.ville === filters.ville);
+  const citeOptions = filterOptions.cites.filter(
+    (c) => (!filters.ville || c.ville === filters.ville) && (!filters.quartier || c.quartier === filters.quartier)
+  );
+  const prixLabel =
+    filters.prixMin || filters.prixMax
+      ? `Prix : ${filters.prixMin ? fmt(filters.prixMin) : "0"} - ${filters.prixMax ? fmt(filters.prixMax) : "max"}`
+      : "Prix";
+  const superficieLabel =
+    filters.superficieMin || filters.superficieMax
+      ? `${filters.superficieMin ? fmt(filters.superficieMin) : "0"} - ${filters.superficieMax ? fmt(filters.superficieMax) : "max"} m²`
+      : "Superficie";
+  const segments = [
+    { key: "ville", Icon: FILocationCity, label: filters.ville || "Toutes les villes", options: filterOptions.villes.map((v) => v.nom), all: "Toutes les villes" },
+    { key: "quartier", Icon: FIPlace, label: filters.quartier || "Tous les quartiers", options: quartierOptions.map((q) => q.nom), all: "Tous les quartiers" },
+  ];
+  const segSx = {
+    display: "flex",
+    alignItems: "center",
+    gap: 1,
+    px: 1.25,
+    height: 52,
+    minWidth: 0,
+    width: "100%",
+    boxSizing: "border-box",
+    cursor: "pointer",
+    border: "1px solid #E2E8F0",
+    borderRadius: "12px",
+    bgcolor: "#fff",
+    font: "inherit",
+    fontFamily: FONT,
+    textAlign: "left",
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+    "&:hover": { borderColor: GREEN },
+    "&:focus-visible": { outline: `2px solid ${GREEN}`, outlineOffset: 2 },
+  };
+  const panelField = { flex: "1 1 200px", minWidth: { xs: "100%", sm: 180 } };
+  const chips = [
+    filters.ville && { key: "ville", label: filters.ville, Icon: FILocationCity },
+    filters.quartier && { key: "quartier", label: filters.quartier, Icon: FIPlace },
+    filters.cite && { key: "cite", label: filters.cite, Icon: Map },
+    filters.agence && { key: "agence", label: `Agence: ${filterOptions.agences.find((a) => a.id === filters.agence)?.nom || filters.agence}`, Icon: Business },
+    filters.prixMin && { key: "prixMin", label: `Prix > ${fmt(filters.prixMin)}`, Icon: FIPayments },
+    filters.prixMax && { key: "prixMax", label: `Prix < ${fmt(filters.prixMax)}`, Icon: FIPayments },
+    filters.superficieMin && { key: "superficieMin", label: `Sup > ${filters.superficieMin} m²`, Icon: FISquareFoot },
+    filters.superficieMax && { key: "superficieMax", label: `Sup < ${filters.superficieMax} m²`, Icon: FISquareFoot },
+  ].filter(Boolean);
+
+  const closeSeg = () => setSegMenu({ key: null, el: null });
+  const rangeFields = (fields, Icon) => (
+    <Stack spacing={1.5}>
+      {fields.map(({ key, ph }) => (
+        <TextField
+          key={key}
+          size="small"
+          type="number"
+          placeholder={ph}
+          value={filters[key]}
+          onChange={(e) => handleFilterChange(key, e.target.value)}
+          inputProps={{ "aria-label": ph, title: ph }}
+          InputProps={{ startAdornment: <InputAdornment position="start"><Icon fontSize="small" sx={{ color: GREEN }} /></InputAdornment> }}
+        />
+      ))}
+    </Stack>
+  );
+
   return (
-    <Box sx={{ width: "100%", minHeight: "100vh", display: "flex", flexDirection: "column", bgcolor: "#e3f2fd" }}>
+    <Box sx={{ width: "100%", minHeight: "100vh", display: "flex", flexDirection: "column", bgcolor: "#F1F4F7", fontFamily: FONT }}>
       <Navbar />
-      <Box sx={{ background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)", py: 4, mb: 4, width: "100%" }}>
-        <Container maxWidth="xl">
-          <Typography variant="h3" fontWeight="bold" color="white" gutterBottom sx={{ lineHeight: 1.3 }}>
-            Recherche de Parcelles
+
+      {/* Bannière : photo à droite, voile vert profond à gauche */}
+      <Box
+        component="section"
+        sx={{
+          position: "relative",
+          width: "100%",
+          overflow: "hidden",
+          bgcolor: GREEN_DEEP,
+          backgroundImage: "url(/images/hero-parcelles.webp)",
+          backgroundSize: "cover",
+          backgroundPosition: "center right",
+          "&::before": {
+            content: '""',
+            position: "absolute",
+            inset: 0,
+            background: {
+              xs: `linear-gradient(180deg, rgba(0,77,64,0.94) 0%, rgba(0,92,72,0.86) 100%)`,
+              md: `linear-gradient(90deg, rgba(0,77,64,0.98) 0%, rgba(0,92,72,0.92) 38%, rgba(0,92,72,0.45) 62%, rgba(0,92,72,0) 85%)`,
+            },
+          },
+        }}
+      >
+        {/* Courbes décoratives (SVG) */}
+        <Box component="svg" viewBox="0 0 300 200" aria-hidden="true" sx={{ display: { xs: "none", md: "block" }, position: "absolute", right: 0, top: 0, width: 280, height: 190, pointerEvents: "none", zIndex: 1 }}>
+          <path d="M300 0 V120 C 250 110, 190 60, 170 0 Z" fill={LIME} fillOpacity="0.55" />
+          <path d="M300 0 V70 C 270 62, 230 30, 220 0 Z" fill="#fff" fillOpacity="0.18" />
+        </Box>
+        <Box
+          sx={{
+            position: "relative",
+            zIndex: 2,
+            boxSizing: "border-box",
+            maxWidth: 1440,
+            mx: "auto",
+            px: { xs: 2, sm: 3, md: 5 },
+            pt: { xs: 4, md: 6 },
+            pb: { xs: 10, md: 13 },
+            minHeight: { md: 280 },
+          }}
+        >
+          <Box sx={{ display: "inline-flex", alignItems: "center", gap: 1, px: 1.75, py: 0.75, mb: 2, borderRadius: "999px", bgcolor: "rgba(255,255,255,0.14)", border: "1px solid rgba(255,255,255,0.28)" }}>
+            <LandscapeOutlined sx={{ fontSize: 18, color: "#fff" }} />
+            <Typography sx={{ fontFamily: FONT, fontSize: 14, fontWeight: 600, color: "#fff", lineHeight: 1 }}>Parcelles au Niger</Typography>
+          </Box>
+          <Typography
+            variant="h1"
+            sx={{ fontFamily: FONT, fontWeight: 800, fontSize: "clamp(28px, 3.2vw, 48px)", lineHeight: 1.15, letterSpacing: "-0.02em", color: "#fff" }}
+          >
+            Recherche de <Box component="span" sx={{ color: LIME }}>Parcelles</Box>
           </Typography>
-          <Typography variant="h6" sx={{ color: "rgba(255,255,255,0.9)" }}>
-            Trouvez la parcelle idéale parmi {stats?.totalParcelles || 0} parcelles disponibles
+          <Box component="svg" viewBox="0 0 96 14" aria-hidden="true" sx={{ display: "block", width: 96, height: 14, mt: 1, mb: 1.5 }}>
+            <path d="M3 9 C 18 2, 32 2, 46 8 S 76 14, 93 5" fill="none" stroke={LIME} strokeWidth="4" strokeLinecap="round" />
+          </Box>
+          <Typography sx={{ fontFamily: FONT, fontSize: { xs: 16, md: 18 }, color: "#fff", lineHeight: 1.5, maxWidth: 560 }}>
+            Trouvez la parcelle idéale parmi les annonces disponibles.
           </Typography>
-        </Container>
+          {stats?.totalParcelles > 0 && (
+            <Typography sx={{ fontFamily: FONT, mt: 1, fontSize: 14.5, color: "#E2E8E5" }}>
+              <Box component="strong" sx={{ color: LIME }}>{stats.totalParcelles}</Box> parcelle{stats.totalParcelles > 1 ? "s" : ""} disponible{stats.totalParcelles > 1 ? "s" : ""}
+            </Typography>
+          )}
+        </Box>
       </Box>
 
-      <Container maxWidth="xl" sx={{ width: "100%", mb: 4 }}>
-        {/* Barre de filtres unifiée */}
-        {(() => {
-          const quartierOptions = filterOptions.quartiers.filter((q) => !filters.ville || q.ville === filters.ville);
-          const citeOptions = filterOptions.cites.filter(
-            (c) => (!filters.ville || c.ville === filters.ville) && (!filters.quartier || c.quartier === filters.quartier)
-          );
-          const fmt = (n) => Number(n).toLocaleString("fr-FR");
-          const prixLabel =
-            filters.prixMin || filters.prixMax
-              ? `Prix : ${filters.prixMin ? fmt(filters.prixMin) : "0"} - ${filters.prixMax ? fmt(filters.prixMax) : "max"}`
-              : "Prix";
-          const segments = [
-            { key: "ville", Icon: FILocationCity, color: "#3030F9", label: filters.ville || "Toutes les villes", options: filterOptions.villes.map((v) => v.nom), all: "Toutes les villes" },
-            { key: "quartier", Icon: Map, color: "#0A7C4F", label: filters.quartier || "Tous les quartiers", options: quartierOptions.map((q) => q.nom), all: "Tous les quartiers" },
-          ];
-          const segSx = {
-            display: "flex",
-            alignItems: "center",
-            gap: 1,
-            px: 2,
-            py: 1.4,
-            flex: "1 1 170px",
-            minWidth: 0,
-            cursor: "pointer",
-            border: 0,
-            bgcolor: "transparent",
-            font: "inherit",
-            textAlign: "left",
-            borderRight: { xs: "none", sm: "1px solid rgba(48,48,249,0.15)" },
-            borderBottom: { xs: "1px solid rgba(48,48,249,0.15)", sm: "none" },
-            "&:hover": { bgcolor: "rgba(48,48,249,0.04)" },
-          };
-          const panelField = { flex: "1 1 200px", minWidth: { xs: "100%", sm: 180 } };
-          const chips = [
-            filters.ville && { key: "ville", label: filters.ville, Icon: FILocationCity, bg: "#3030F9" },
-            filters.quartier && { key: "quartier", label: filters.quartier, Icon: FIPlace, bg: "#3030F9" },
-            filters.cite && { key: "cite", label: filters.cite, Icon: Map, bg: "#0A7C4F" },
-            filters.agence && { key: "agence", label: `Agence: ${filterOptions.agences.find((a) => a.id === filters.agence)?.nom || filters.agence}`, Icon: Business, bg: "#0e1133" },
-            filters.prixMin && { key: "prixMin", label: `Prix > ${fmt(filters.prixMin)}`, Icon: FIPayments, bg: "#3030F9" },
-            filters.prixMax && { key: "prixMax", label: `Prix < ${fmt(filters.prixMax)}`, Icon: FIPayments, bg: "#3030F9" },
-            filters.superficieMin && { key: "superficieMin", label: `Sup > ${filters.superficieMin} m²`, Icon: FISquareFoot, bg: "#0A7C4F" },
-            filters.superficieMax && { key: "superficieMax", label: `Sup < ${filters.superficieMax} m²`, Icon: FISquareFoot, bg: "#0A7C4F" },
-          ].filter(Boolean);
-          return (
-            <Box sx={{ mb: 3 }}>
-              {/* Barre principale */}
-              <Box
-                sx={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  alignItems: "stretch",
-                  bgcolor: "#ffffff",
-                  border: "1.5px solid #3030F9",
-                  borderRadius: "16px",
-                  boxShadow: "0 2px 8px rgba(15,23,42,0.05)",
-                  overflow: "hidden",
-                }}
-              >
-                {segments.map(({ key, Icon, color, label, all }) => (
-                  <Box
-                    key={key}
-                    component="button"
-                    type="button"
-                    aria-label={all}
-                    title={all}
-                    onClick={(e) => setSegMenu({ key, el: e.currentTarget })}
-                    sx={segSx}
-                  >
-                    <Icon sx={{ color }} />
-                    <Typography noWrap sx={{ flex: 1, color: filters[key] ? "#0e1133" : "text.secondary", fontWeight: filters[key] ? 600 : 400 }}>
-                      {label}
-                    </Typography>
-                    <FIExpandMore sx={{ color: "text.secondary" }} />
-                  </Box>
-                ))}
-                <Box
-                  component="button"
-                  type="button"
-                  aria-label="Prix"
-                  title="Prix"
-                  onClick={(e) => setSegMenu({ key: "prix", el: e.currentTarget })}
-                  sx={segSx}
-                >
-                  <FIPayments sx={{ color: "#3030F9" }} />
-                  <Typography noWrap sx={{ flex: 1, color: filters.prixMin || filters.prixMax ? "#0e1133" : "text.secondary", fontWeight: filters.prixMin || filters.prixMax ? 600 : 400 }}>
-                    {prixLabel}
-                  </Typography>
-                  <FIExpandMore sx={{ color: "text.secondary" }} />
-                </Box>
-                <Button
-                  variant="contained"
-                  disableElevation
-                  startIcon={<FITune />}
-                  onClick={() => setShowAdvanced((v) => !v)}
-                  aria-expanded={showAdvanced}
-                  sx={{
-                    bgcolor: "#3030F9",
-                    color: "white",
-                    borderRadius: 0,
-                    px: 3,
-                    py: 1.4,
-                    textTransform: "none",
-                    fontWeight: 700,
-                    flex: { xs: "1 1 100%", sm: "0 0 auto" },
-                    "&:hover": { bgcolor: "#2020C8" },
-                  }}
-                >
-                  Filtres{activeFiltersCount > 0 ? ` (${activeFiltersCount})` : ""}
-                </Button>
+      <Box sx={{ boxSizing: "border-box", width: "100%", maxWidth: 1440, mx: "auto", px: { xs: 2, sm: 3, md: 5 }, pb: 6 }}>
+        {/* Barre de recherche, à cheval sur la bannière */}
+        <Box sx={{ position: "relative", zIndex: 3, mt: { xs: -7, md: -8 }, mb: 3 }}>
+          <Box
+            sx={{
+              bgcolor: "#fff",
+              borderRadius: "20px",
+              boxShadow: "0 10px 30px rgba(16,28,54,0.12)",
+              p: "16px",
+              display: "grid",
+              gap: "12px",
+              gridTemplateColumns: { xs: "1fr", sm: "repeat(2, minmax(0, 1fr))" },
+              // Disposition adaptative : 1 colonne, 2 colonnes, 3 colonnes (Filtres sur 2), puis une seule ligne
+              "@media (min-width:768px)": { gridTemplateColumns: "repeat(3, minmax(0, 1fr))" },
+              "@media (min-width:1280px)": { gridTemplateColumns: "repeat(4, minmax(0, 1fr)) auto" },
+              alignItems: "center",
+            }}
+          >
+            {segments.map(({ key, Icon, label, all }) => (
+              <Box key={key} component="button" type="button" aria-label={all} title={all} onClick={(e) => setSegMenu({ key, el: e.currentTarget })} sx={segSx}>
+                <Icon sx={{ color: GREEN }} />
+                <Typography noWrap sx={{ flex: 1, fontFamily: FONT, fontSize: 15, color: filters[key] ? NIGHT : MUTED, fontWeight: filters[key] ? 600 : 500 }}>{label}</Typography>
+                <FIExpandMore sx={{ color: MUTED }} />
               </Box>
-
-              {/* Menus des segments */}
-              {segments.map(({ key, options, all }) => (
-                <Menu
-                  key={key}
-                  anchorEl={segMenu.el}
-                  open={segMenu.key === key && Boolean(segMenu.el)}
-                  onClose={() => setSegMenu({ key: null, el: null })}
-                  slotProps={{ paper: { sx: { borderRadius: 3, mt: 0.5, minWidth: 220, maxHeight: 360 } } }}
-                >
-                  <MenuItem
-                    selected={!filters[key]}
-                    onClick={() => { handleFilterChange(key, ""); setSegMenu({ key: null, el: null }); }}
-                  >
-                    <em>{all}</em>
-                  </MenuItem>
-                  {options.map((nom) => (
-                    <MenuItem
-                      key={nom}
-                      selected={filters[key] === nom}
-                      onClick={() => { handleFilterChange(key, nom); setSegMenu({ key: null, el: null }); }}
-                    >
-                      {nom}
-                    </MenuItem>
-                  ))}
-                </Menu>
-              ))}
-              <Popover
-                anchorEl={segMenu.el}
-                open={segMenu.key === "prix" && Boolean(segMenu.el)}
-                onClose={() => setSegMenu({ key: null, el: null })}
-                anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-                slotProps={{ paper: { sx: { borderRadius: 3, mt: 0.5, p: 2, width: 300, "& .MuiOutlinedInput-root": { borderRadius: "10px" }, "& legend": { display: "none" } } } }}
-              >
-                <Stack spacing={1.5}>
-                  {[
-                    { key: "prixMin", ph: "Prix min (FCFA)" },
-                    { key: "prixMax", ph: "Prix max (FCFA)" },
-                  ].map(({ key, ph }) => (
-                    <TextField
-                      key={key}
-                      size="small"
-                      type="number"
-                      placeholder={ph}
-                      value={filters[key]}
-                      onChange={(e) => handleFilterChange(key, e.target.value)}
-                      inputProps={{ "aria-label": ph, title: ph }}
-                      InputProps={{ startAdornment: <InputAdornment position="start"><FIPayments fontSize="small" sx={{ color: "#3030F9" }} /></InputAdornment> }}
-                    />
-                  ))}
-                </Stack>
-              </Popover>
-
-              {/* Panneau avancé */}
-              {showAdvanced && (
-                <Box
-                  sx={{
-                    mt: 1.5,
-                    p: { xs: 2, md: 2.5 },
-                    borderRadius: "14px",
-                    bgcolor: "rgba(48,48,249,0.05)",
-                    border: "1.5px solid rgba(48,48,249,0.25)",
-                    display: "flex",
-                    flexWrap: "wrap",
-                    gap: 1.5,
-                    "& .MuiOutlinedInput-root": { borderRadius: "10px", bgcolor: "#ffffff" },
-                    "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: "#3030F9" },
-                    "& legend": { display: "none" },
-                  }}
-                >
-                  <FormControl size="small" sx={panelField}>
-                    <Select
-                      value={filters.cite || ""}
-                      onChange={(e) => handleFilterChange("cite", e.target.value)}
-                      displayEmpty
-                      inputProps={{ "aria-label": "Citée/Zone", title: "Citée/Zone" }}
-                      startAdornment={<InputAdornment position="start"><Map fontSize="small" sx={{ color: "#0A7C4F" }} /></InputAdornment>}
-                      renderValue={(selected) => (!selected ? <span style={{ color: "rgba(0, 0, 0, 0.6)" }}>Toutes les cités</span> : selected)}
-                    >
-                      <MenuItem value=""><em>Toutes les cités</em></MenuItem>
-                      {citeOptions.map((cite) => (
-                        <MenuItem key={cite.id} value={cite.nom}>{cite.nom}</MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-
-                  <FormControl size="small" sx={panelField}>
-                    <Select
-                      value={filters.agence || ""}
-                      onChange={(e) => handleFilterChange("agence", e.target.value)}
-                      displayEmpty
-                      inputProps={{ "aria-label": "Agence Immobilière", title: "Agence Immobilière" }}
-                      startAdornment={<InputAdornment position="start"><Business fontSize="small" sx={{ color: "#0e1133" }} /></InputAdornment>}
-                      renderValue={(selected) =>
-                        !selected ? <span style={{ color: "rgba(0, 0, 0, 0.6)" }}>Toutes les agences</span> : filterOptions.agences.find((a) => a.id === selected)?.nom || selected
-                      }
-                    >
-                      <MenuItem value=""><em>Toutes les agences</em></MenuItem>
-                      {filterOptions.agences.map((agence) => (
-                        <MenuItem key={agence.id} value={agence.id}>{agence.nom}</MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-
-                  {[
-                    { key: "superficieMin", ph: "Superficie min (m²)" },
-                    { key: "superficieMax", ph: "Superficie max (m²)" },
-                  ].map(({ key, ph }) => (
-                    <TextField
-                      key={key}
-                      size="small"
-                      type="number"
-                      placeholder={ph}
-                      value={filters[key]}
-                      onChange={(e) => handleFilterChange(key, e.target.value)}
-                      inputProps={{ "aria-label": ph, title: ph }}
-                      InputProps={{ startAdornment: <InputAdornment position="start"><FISquareFoot fontSize="small" sx={{ color: "#0A7C4F" }} /></InputAdornment> }}
-                      sx={panelField}
-                    />
-                  ))}
-
-                  <FormControl size="small" sx={panelField}>
-                    <Select
-                      value={sortBy}
-                      onChange={(e) => setSortBy(e.target.value)}
-                      inputProps={{ "aria-label": "Trier par", title: "Trier par" }}
-                      startAdornment={<InputAdornment position="start"><FISort fontSize="small" sx={{ color: "#3030F9" }} /></InputAdornment>}
-                    >
-                      <MenuItem value="createdAt">Date d'ajout</MenuItem>
-                      <MenuItem value="prix">Prix</MenuItem>
-                      <MenuItem value="superficie">Superficie</MenuItem>
-                    </Select>
-                  </FormControl>
-
-                  <FormControl size="small" sx={panelField}>
-                    <Select
-                      value={sortOrder}
-                      onChange={(e) => setSortOrder(e.target.value)}
-                      inputProps={{ "aria-label": "Ordre", title: "Ordre" }}
-                      startAdornment={<InputAdornment position="start"><FISwapVert fontSize="small" sx={{ color: "#3030F9" }} /></InputAdornment>}
-                    >
-                      <MenuItem value="asc">Croissant</MenuItem>
-                      <MenuItem value="desc">Décroissant</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Box>
-              )}
-
-              {/* Filtres actifs + réinitialisation */}
-              {(
-                <Box sx={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 1, mt: 1.5 }}>
-                  {chips.map(({ key, label, Icon, bg }) => (
-                    <Chip
-                      key={key}
-                      label={label}
-                      size="small"
-                      icon={<Icon sx={{ color: "white !important", fontSize: 16 }} />}
-                      deleteIcon={<CloseIcon sx={{ color: "white !important", fontSize: 16 }} />}
-                      onDelete={() => handleFilterChange(key, "")}
-                      sx={{ bgcolor: bg, color: "white", fontWeight: 600, "&:hover": { bgcolor: bg, filter: "brightness(1.1)" } }}
-                    />
-                  ))}
-                  <Box sx={{ flexGrow: 1 }} />
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    startIcon={<FIRefresh />}
-                    onClick={handleClearFilters}
-                    disabled={activeFiltersCount === 0}
-                    sx={{ borderColor: "#3030F9", color: "#3030F9", borderRadius: "10px", textTransform: "none", fontWeight: 600, "&:hover": { borderColor: "#2020C8", bgcolor: "rgba(48,48,249,0.06)" } }}
-                  >
-                    Réinitialiser
-                  </Button>
-                </Box>
-              )}
+            ))}
+            <Box component="button" type="button" aria-label="Superficie" title="Superficie" onClick={(e) => setSegMenu({ key: "superficie", el: e.currentTarget })} sx={segSx}>
+              <FISquareFoot sx={{ color: GREEN }} />
+              <Typography noWrap sx={{ flex: 1, fontFamily: FONT, fontSize: 15, color: filters.superficieMin || filters.superficieMax ? NIGHT : MUTED, fontWeight: filters.superficieMin || filters.superficieMax ? 600 : 500 }}>{superficieLabel}</Typography>
+              <FIExpandMore sx={{ color: MUTED }} />
             </Box>
-          );
-        })()}
+            <Box component="button" type="button" aria-label="Prix" title="Prix" onClick={(e) => setSegMenu({ key: "prix", el: e.currentTarget })} sx={segSx}>
+              <FIPayments sx={{ color: GREEN }} />
+              <Typography noWrap sx={{ flex: 1, fontFamily: FONT, fontSize: 15, color: filters.prixMin || filters.prixMax ? NIGHT : MUTED, fontWeight: filters.prixMin || filters.prixMax ? 600 : 500 }}>{prixLabel}</Typography>
+              <FIExpandMore sx={{ color: MUTED }} />
+            </Box>
+            <Button
+              variant="contained"
+              disableElevation
+              startIcon={<FITune />}
+              onClick={() => setShowAdvanced((v) => !v)}
+              aria-expanded={showAdvanced}
+              sx={{
+                height: 52,
+                px: 3,
+                borderRadius: "12px",
+                bgcolor: GREEN_DEEP,
+                color: "#fff",
+                fontFamily: FONT,
+                textTransform: "none",
+                fontWeight: 700,
+                fontSize: 15,
+                gridColumn: { xs: "auto", sm: "1 / -1" },
+                "@media (min-width:768px)": { gridColumn: "span 2" },
+                "@media (min-width:1280px)": { gridColumn: "auto" },
+                "&:hover": { bgcolor: GREEN_DARK },
+              }}
+            >
+              Filtres{activeFiltersCount > 0 ? ` (${activeFiltersCount})` : ""}
+            </Button>
+          </Box>
+
+          {/* Menus des segments */}
+          {segments.map(({ key, options, all }) => (
+            <Menu
+              key={key}
+              anchorEl={segMenu.el}
+              open={segMenu.key === key && Boolean(segMenu.el)}
+              onClose={closeSeg}
+              slotProps={{ paper: { sx: { borderRadius: 3, mt: 0.5, minWidth: 220, maxHeight: 360 } } }}
+            >
+              <MenuItem selected={!filters[key]} onClick={() => { handleFilterChange(key, ""); closeSeg(); }}>
+                <em>{all}</em>
+              </MenuItem>
+              {options.map((nom) => (
+                <MenuItem key={nom} selected={filters[key] === nom} onClick={() => { handleFilterChange(key, nom); closeSeg(); }}>
+                  {nom}
+                </MenuItem>
+              ))}
+            </Menu>
+          ))}
+          <Popover
+            anchorEl={segMenu.el}
+            open={segMenu.key === "prix" && Boolean(segMenu.el)}
+            onClose={closeSeg}
+            anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+            slotProps={{ paper: { sx: { borderRadius: 3, mt: 0.5, p: 2, width: 300, maxWidth: "calc(100vw - 32px)", "& .MuiOutlinedInput-root": { borderRadius: "10px" }, "& legend": { display: "none" } } } }}
+          >
+            {rangeFields([{ key: "prixMin", ph: "Prix min (FCFA)" }, { key: "prixMax", ph: "Prix max (FCFA)" }], FIPayments)}
+          </Popover>
+          <Popover
+            anchorEl={segMenu.el}
+            open={segMenu.key === "superficie" && Boolean(segMenu.el)}
+            onClose={closeSeg}
+            anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+            slotProps={{ paper: { sx: { borderRadius: 3, mt: 0.5, p: 2, width: 300, maxWidth: "calc(100vw - 32px)", "& .MuiOutlinedInput-root": { borderRadius: "10px" }, "& legend": { display: "none" } } } }}
+          >
+            {rangeFields([{ key: "superficieMin", ph: "Superficie min (m²)" }, { key: "superficieMax", ph: "Superficie max (m²)" }], FISquareFoot)}
+          </Popover>
+
+          {/* Panneau avancé : cité et agence */}
+          {showAdvanced && (
+            <Box
+              sx={{
+                mt: 1.5,
+                p: { xs: 2, md: 2.5 },
+                borderRadius: "16px",
+                bgcolor: "#fff",
+                border: "1px solid #E2E8F0",
+                display: "flex",
+                flexWrap: "wrap",
+                gap: 1.5,
+                "& .MuiOutlinedInput-root": { borderRadius: "12px", bgcolor: "#ffffff" },
+                "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: GREEN },
+                "& legend": { display: "none" },
+              }}
+            >
+              <FormControl size="small" sx={panelField}>
+                <Select
+                  value={filters.cite || ""}
+                  onChange={(e) => handleFilterChange("cite", e.target.value)}
+                  displayEmpty
+                  inputProps={{ "aria-label": "Citée/Zone", title: "Citée/Zone" }}
+                  startAdornment={<InputAdornment position="start"><Map fontSize="small" sx={{ color: GREEN }} /></InputAdornment>}
+                  renderValue={(selected) => (!selected ? <span style={{ color: "rgba(0, 0, 0, 0.6)" }}>Toutes les cités</span> : selected)}
+                >
+                  <MenuItem value=""><em>Toutes les cités</em></MenuItem>
+                  {citeOptions.map((cite) => (
+                    <MenuItem key={cite.id} value={cite.nom}>{cite.nom}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <FormControl size="small" sx={panelField}>
+                <Select
+                  value={filters.agence || ""}
+                  onChange={(e) => handleFilterChange("agence", e.target.value)}
+                  displayEmpty
+                  inputProps={{ "aria-label": "Agence Immobilière", title: "Agence Immobilière" }}
+                  startAdornment={<InputAdornment position="start"><Business fontSize="small" sx={{ color: GREEN }} /></InputAdornment>}
+                  renderValue={(selected) =>
+                    !selected ? <span style={{ color: "rgba(0, 0, 0, 0.6)" }}>Toutes les agences</span> : filterOptions.agences.find((a) => a.id === selected)?.nom || selected
+                  }
+                >
+                  <MenuItem value=""><em>Toutes les agences</em></MenuItem>
+                  {filterOptions.agences.map((agence) => (
+                    <MenuItem key={agence.id} value={agence.id}>{agence.nom}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Box>
+          )}
+
+          {/* Filtres actifs + réinitialisation */}
+          {(chips.length > 0 || activeFiltersCount > 0) && (
+            <Box sx={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 1, mt: 1.5 }}>
+              {chips.map(({ key, label, Icon }) => (
+                <Chip
+                  key={key}
+                  label={label}
+                  size="small"
+                  icon={<Icon sx={{ color: "white !important", fontSize: 16 }} />}
+                  deleteIcon={<CloseIcon sx={{ color: "white !important", fontSize: 16 }} />}
+                  onDelete={() => handleFilterChange(key, "")}
+                  sx={{ bgcolor: GREEN, color: "white", fontWeight: 600, "&:hover": { bgcolor: GREEN_DEEP } }}
+                />
+              ))}
+              <Box sx={{ flexGrow: 1 }} />
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<FIRefresh />}
+                onClick={handleClearFilters}
+                disabled={activeFiltersCount === 0}
+                sx={{ borderColor: GREEN, color: GREEN, borderRadius: "10px", textTransform: "none", fontWeight: 600, "&:hover": { borderColor: GREEN_DEEP, bgcolor: "rgba(0,133,87,0.06)" } }}
+              >
+                Réinitialiser
+              </Button>
+            </Box>
+          )}
+        </Box>
+
+        {/* Barre de résultats : compteur + tri */}
+        {!loading && !error && (
+          <Box sx={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 1.5, mb: 2.5 }}>
+            <Typography sx={{ fontFamily: FONT, fontSize: 17, color: NIGHT }}>
+              <Box component="strong" sx={{ color: GREEN, fontWeight: 800 }}>{pagination.total}</Box>{" "}
+              parcelle{pagination.total > 1 ? "s" : ""} trouvée{pagination.total > 1 ? "s" : ""}
+            </Typography>
+            <Box sx={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 1, width: { xs: "100%", sm: "auto" }, "& .MuiOutlinedInput-root": { borderRadius: "10px", bgcolor: "#fff" }, "& legend": { display: "none" } }}>
+              <FormControl size="small" sx={{ flex: { xs: "1 1 140px", sm: "0 0 170px" }, minWidth: 0 }}>
+                <Select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  inputProps={{ "aria-label": "Trier par", title: "Trier par" }}
+                  startAdornment={<InputAdornment position="start"><FISort fontSize="small" sx={{ color: GREEN }} /></InputAdornment>}
+                >
+                  <MenuItem value="createdAt">Date d'ajout</MenuItem>
+                  <MenuItem value="prix">Prix</MenuItem>
+                  <MenuItem value="superficie">Superficie</MenuItem>
+                </Select>
+              </FormControl>
+              <FormControl size="small" sx={{ flex: { xs: "1 1 140px", sm: "0 0 168px" }, minWidth: 0 }}>
+                <Select
+                  value={sortOrder}
+                  onChange={(e) => setSortOrder(e.target.value)}
+                  inputProps={{ "aria-label": "Ordre", title: "Ordre" }}
+                  startAdornment={<InputAdornment position="start"><FISwapVert fontSize="small" sx={{ color: GREEN }} /></InputAdornment>}
+                >
+                  <MenuItem value="asc">Croissant</MenuItem>
+                  <MenuItem value="desc">Décroissant</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
+          </Box>
+        )}
 
         {/* Liste des parcelles */}
-        <Box>
-            {loading ? (
-              <Box display="flex" justifyContent="center" alignItems="center" minHeight={400}>
-                <CircularProgress />
-              </Box>
-            ) : parcelles.length === 0 ? (
-              <Alert severity="info">
-                Aucune parcelle trouvée avec ces critères de recherche.
-              </Alert>
-            ) : (
-              <>
-                <Box mb={2}>
-                  <Typography variant="body2" color="text.secondary">
-                    {pagination.total} parcelle{pagination.total > 1 ? "s" : ""} trouvée
-                    {pagination.total > 1 ? "s" : ""}
-                  </Typography>
-                </Box>
-
-                {/* Conteneur Grid avec 3 cartes par ligne */}
-                <Box
-                  sx={{
-                    mx: "auto",
-                    maxWidth: 1200,
-                    width: "100%",
-                  }}
-                >
-                  <Grid 
-                    container 
-                    spacing={3}
+        {loading ? (
+          <Box display="flex" justifyContent="center" alignItems="center" minHeight={320}>
+            <CircularProgress sx={{ color: GREEN }} />
+          </Box>
+        ) : error ? (
+          <Box sx={{ textAlign: "center", py: 8, px: 2, bgcolor: "#fff", borderRadius: "18px" }}>
+            <ErrorOutline sx={{ fontSize: 48, color: "#d32f2f" }} />
+            <Typography sx={{ fontFamily: FONT, fontWeight: 700, color: NIGHT, mt: 1 }}>Impossible de charger les parcelles.</Typography>
+            <Typography sx={{ fontFamily: FONT, color: MUTED, mb: 2 }}>Vérifiez votre connexion puis réessayez.</Typography>
+            <Button variant="contained" disableElevation onClick={searchParcelles} sx={{ bgcolor: GREEN, textTransform: "none", fontWeight: 600, borderRadius: "10px", "&:hover": { bgcolor: GREEN_DEEP } }}>
+              Réessayer
+            </Button>
+          </Box>
+        ) : parcelles.length === 0 ? (
+          <Box sx={{ textAlign: "center", py: 8, px: 2, bgcolor: "#fff", borderRadius: "18px" }}>
+            <SearchOff sx={{ fontSize: 48, color: GREEN }} />
+            <Typography sx={{ fontFamily: FONT, fontWeight: 700, color: NIGHT, mt: 1 }}>Aucune parcelle trouvée avec ces critères de recherche.</Typography>
+            {activeFiltersCount > 0 && (
+              <Button onClick={handleClearFilters} sx={{ mt: 1.5, color: GREEN, textTransform: "none", fontWeight: 600 }}>Réinitialiser les filtres</Button>
+            )}
+          </Box>
+        ) : (
+          <>
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: "minmax(0, 1fr)",
+                "@media (min-width:768px)": { gridTemplateColumns: "repeat(2, minmax(0, 1fr))" },
+                "@media (min-width:1024px)": { gridTemplateColumns: "repeat(3, minmax(0, 1fr))" },
+                gap: "24px",
+                alignItems: "stretch",
+              }}
+            >
+              {parcelles.slice(0, parcellesDisplayed).map((parcelle) => {
+                const statut = STATUTS_PARCELLE[parcelle.statut];
+                const aVendre = parcelle.statut === "avendre";
+                const hasPhoto = parcelle.images && parcelle.images.length > 0;
+                return (
+                  <Card
+                    key={parcelle._id}
+                    elevation={0}
+                    onClick={() => handleParcelleClick(parcelle)}
                     sx={{
-                      width: "100%",
-                      margin: 0,
+                      display: "flex",
+                      flexDirection: "column",
+                      cursor: "pointer",
+                      borderRadius: "18px",
+                      overflow: "hidden",
+                      bgcolor: "#fff",
+                      boxShadow: "0 4px 16px rgba(16,28,54,0.08)",
+                      transition: "transform 0.2s ease, box-shadow 0.2s ease",
+                      "&:hover": { transform: "translateY(-3px)", boxShadow: "0 12px 26px rgba(16,28,54,0.14)" },
                     }}
                   >
-                    {parcelles.slice(0, parcellesDisplayed).map((parcelle) => (
-                      <Grid 
-                        item 
-                        xs={12} 
-                        sm={6} 
-                        md={4}
-                        key={parcelle._id}
-                        sx={{
-                          display: "flex",
-                          flexBasis: { xs: "100%", sm: "calc(50% - 12px)", md: "calc(33.333% - 16px)" },
-                          maxWidth: { xs: "100%", sm: "calc(50% - 12px)", md: "calc(33.333% - 16px)" },
-                          flexGrow: 0,
-                          flexShrink: 0,
-                        }}
-                      >
-                        <Card
-                          elevation={0}
-                          sx={{
-                            width: "100%",
-                            height: "100%",
-                            display: "flex",
-                            flexDirection: "column",
-                            cursor: "pointer",
-                            borderRadius: "16px",
-                            overflow: "hidden",
-                            bgcolor: "#fff",
-                            border: "1px solid #e5e7eb",
-                            boxShadow: "0 2px 12px rgba(15,23,42,0.08)",
-                            transition: "transform 0.2s ease, box-shadow 0.2s ease",
-                            "&:hover": {
-                              transform: "translateY(-2px)",
-                              boxShadow: "0 8px 22px rgba(15,23,42,0.14)",
-                            },
-                          }}
-                          onClick={() => handleParcelleClick(parcelle)}
-                        >
-                        {/* Image */}
-                        <Box sx={{ height: 175, position: "relative", overflow: "hidden", bgcolor: "#d9e2ec" }}>
-                          {parcelle.images && parcelle.images.length > 0 ? (
-                            <Box
-                              component="img"
-                              src={parcelle.images[0]}
-                              alt={parcelle.numeroParcelle}
-                              sx={{ width: "100%", height: "100%", objectFit: "cover" }}
-                            />
-                          ) : (
-                            <Box sx={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                              <Map sx={{ fontSize: 56, color: "#9aa5b4" }} />
-                            </Box>
-                          )}
-
-                          {/* Badge type, en haut à gauche */}
-                          <Box
-                            sx={{
-                              position: "absolute",
-                              top: 12,
-                              left: 12,
-                              bgcolor: "#3030F9",
-                              color: "#fff",
-                              px: 1.4,
-                              py: 0.5,
-                              borderRadius: "999px",
-                              fontSize: "0.72rem",
-                              fontWeight: 700,
-                              textTransform: "uppercase",
-                              letterSpacing: 0.4,
-                            }}
-                          >
-                            Parcelle
-                          </Box>
-
-                          {/* Badge statut, en haut à droite */}
-                          {STATUTS_PARCELLE[parcelle.statut] && (
-                            <Box
-                              sx={{
-                                position: "absolute",
-                                top: 12,
-                                right: 12,
-                                bgcolor: "#fff",
-                                color: STATUTS_PARCELLE[parcelle.statut].color,
-                                px: 1.4,
-                                py: 0.5,
-                                borderRadius: "999px",
-                                fontSize: "0.72rem",
-                                fontWeight: 700,
-                                boxShadow: "0 1px 4px rgba(15,23,42,0.18)",
-                              }}
-                            >
-                              {STATUTS_PARCELLE[parcelle.statut].label}
-                            </Box>
-                          )}
-                        </Box>
-
-                        {/* Contenu carte */}
-                        <CardContent
-                          sx={{
-                            p: "16px",
-                            "&:last-child": { pb: "16px" },
-                            display: "flex",
-                            flexDirection: "column",
-                            gap: 1.5,
-                            flex: 1,
-                          }}
-                        >
-                          {/* Titre + surface */}
-                          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1 }}>
-                            <Typography sx={{ fontSize: 17, fontWeight: 700, color: "#0e1133", lineHeight: 1.3 }}>
-                              Parcelle {parcelle.numeroParcelle}
-                            </Typography>
-                            {parcelle.superficie > 0 && (
-                              <Box
-                                sx={{
-                                  display: "inline-flex",
-                                  alignItems: "center",
-                                  gap: 0.5,
-                                  flexShrink: 0,
-                                  bgcolor: "#EAF0FF",
-                                  color: "#2020C8",
-                                  fontSize: 12.5,
-                                  fontWeight: 600,
-                                  px: 1.1,
-                                  py: 0.4,
-                                  borderRadius: "999px",
-                                }}
-                              >
-                                <FISquareFoot sx={{ fontSize: 16 }} />
-                                {parcelle.superficie} m²
-                              </Box>
-                            )}
-                          </Box>
-
-                          {/* Hiérarchie : lotissement / îlot / localité */}
-                          <Box sx={{ bgcolor: "#f5f7fa", borderRadius: "10px", p: "10px 12px", display: "flex", flexDirection: "column", gap: 0.9 }}>
-                            {[
-                              { key: "lot", icon: FIDashboard, label: "Lotissement", value: parcelle.ilot?.lotissement?.nom },
-                              { key: "ilot", icon: FIGridOn, label: "Îlot", value: parcelle.ilot?.numeroIlot },
-                              {
-                                key: "loc",
-                                icon: LocationOn,
-                                label: "Localité",
-                                value: parcelle.ilot?.zone?.quartier?.ville ? getLocationString(parcelle) : null,
-                              },
-                            ]
-                              .filter((l) => l.value)
-                              .map((l) => (
-                                <Box key={l.key} sx={{ display: "flex", alignItems: "flex-start", gap: 1 }}>
-                                  <l.icon sx={{ fontSize: 18, color: "#3030F9", mt: "1px", flexShrink: 0 }} />
-                                  <Typography sx={{ fontSize: 12.5, color: "#5b6573", width: 76, flexShrink: 0, mt: "1px" }}>
-                                    {l.label}
-                                  </Typography>
-                                  <Typography sx={{ fontSize: 13.5, fontWeight: 700, color: "#0e1133", wordBreak: "break-word", minWidth: 0 }}>
-                                    {l.value}
-                                  </Typography>
-                                </Box>
-                              ))}
-                          </Box>
-
-                          {/* Prix */}
-                          {parcelle.prix > 0 && (
-                            <Box sx={{ borderTop: "1px solid #eef1f5", pt: 1.5, mt: "auto" }}>
-                              <Typography sx={{ fontSize: 10, fontWeight: 600, color: "#5b6573", textTransform: "uppercase", letterSpacing: 0.5 }}>
-                                Prix
-                              </Typography>
-                              <Typography sx={{ fontSize: 19, fontWeight: 800, color: "#0e1133", lineHeight: 1.25 }}>
-                                {parcelle.prix.toLocaleString()}{" "}
-                                <Box component="span" sx={{ fontSize: 12, fontWeight: 600, color: "#5b6573" }}>
-                                  FCFA
-                                </Box>
-                              </Typography>
-                            </Box>
-                          )}
-
-                          {/* Agence */}
-                          {parcelle.agenceId && (
-                            <Box sx={{ bgcolor: "#f5f7fa", borderRadius: "10px", p: "10px 12px", display: "flex", alignItems: "center", gap: 1.25 }}>
-                              <Box
-                                sx={{
-                                  width: 32,
-                                  height: 32,
-                                  borderRadius: "8px",
-                                  bgcolor: "#0e1133",
-                                  color: "#fff",
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "center",
-                                  flexShrink: 0,
-                                }}
-                              >
-                                <Business sx={{ fontSize: 18 }} />
-                              </Box>
-                              <Box sx={{ minWidth: 0 }}>
-                                <Typography sx={{ fontSize: 13.5, fontWeight: 700, color: "#0e1133", lineHeight: 1.3, wordBreak: "break-word" }}>
-                                  {parcelle.agenceId.nom}
-                                </Typography>
-                                {parcelle.agenceId.telephone && (
-                                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                                    <Phone sx={{ fontSize: 14, color: "#3030F9" }} />
-                                    <Typography sx={{ fontSize: 12.5, color: "#3030F9", fontWeight: 600 }}>
-                                      {parcelle.agenceId.telephone}
-                                    </Typography>
-                                  </Box>
-                                )}
-                              </Box>
-                            </Box>
-                          )}
-
-                          {/* Le clic remonte à la carte : handleParcelleClick n'est appelé qu'une fois */}
-                          <Button
-                            fullWidth
-                            variant="contained"
-                            disableElevation
-                            endIcon={<ArrowForward />}
-                            sx={{
-                              py: 1.2,
-                              borderRadius: 2,
-                              textTransform: "none",
-                              fontWeight: 700,
-                              fontSize: "0.95rem",
-                              bgcolor: "#3030F9",
-                              color: "#fff",
-                              "&:hover": { bgcolor: "#2020C8" },
-                            }}
-                          >
-                            Voir la parcelle
-                          </Button>
-                        </CardContent>
-                      </Card>
-                      </Grid>
-                    ))}
-                  </Grid>
-
-                  {/* Bouton "Afficher la suite" */}
-                  {parcellesDisplayed < parcelles.length && (
+                    {/* Photographie (réelle ou image illustrative) */}
                     <Box
                       sx={{
-                        display: "flex",
-                        justifyContent: "center",
-                        mt: 4,
+                        height: 205,
+                        position: "relative",
+                        overflow: "hidden",
+                        background: `linear-gradient(135deg, ${GREEN} 0%, ${GREEN_DARK} 100%)`,
                       }}
                     >
-                      <Button
-                        variant="outlined"
-                        onClick={handleShowMoreParcelles}
+                      {hasPhoto ? (
+                        <Box component="img" src={parcelle.images[0]} alt={`Parcelle ${parcelle.numeroParcelle}`} sx={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                      ) : (
+                        <>
+                          <Box
+                            sx={{ position: "absolute", inset: 0, backgroundImage: "url(/images/parcelle-placeholder.webp)", backgroundSize: "cover", backgroundPosition: "center" }}
+                          />
+                          <Box sx={{ position: "absolute", left: 12, bottom: 10, px: 1, py: 0.25, borderRadius: "6px", bgcolor: "rgba(16,28,54,0.55)", color: "#fff", fontSize: 11, fontFamily: FONT }}>
+                            Image illustrative
+                          </Box>
+                        </>
+                      )}
+                      <Box sx={{ position: "absolute", top: 12, left: 12, bgcolor: GREEN, color: "#fff", px: 1.5, py: 0.5, borderRadius: "999px", fontSize: 12, fontWeight: 700, letterSpacing: 0.4, fontFamily: FONT }}>
+                        PARCELLE
+                      </Box>
+                      {statut && (
+                        <Box
+                          sx={{
+                            position: "absolute",
+                            top: 12,
+                            right: 12,
+                            bgcolor: aVendre ? "#E3F5EC" : "#fff",
+                            color: aVendre ? GREEN_DEEP : statut.color,
+                            px: 1.5,
+                            py: 0.5,
+                            borderRadius: "999px",
+                            fontSize: 12,
+                            fontWeight: 700,
+                            fontFamily: FONT,
+                          }}
+                        >
+                          {statut.label}
+                        </Box>
+                      )}
+                    </Box>
+
+                    <CardContent sx={{ p: "20px", "&:last-child": { pb: "20px" }, display: "flex", flexDirection: "column", gap: 1.75, flex: 1 }}>
+                      {/* Titre + superficie */}
+                      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1, flexWrap: "wrap" }}>
+                        <Typography sx={{ fontFamily: FONT, fontSize: 21, fontWeight: 700, color: NIGHT, lineHeight: 1.25 }}>
+                          Parcelle {parcelle.numeroParcelle}
+                        </Typography>
+                        {parcelle.superficie > 0 && (
+                          <Box sx={{ display: "inline-flex", alignItems: "center", gap: 0.5, bgcolor: "#E3F5EC", color: GREEN_DEEP, fontSize: 13.5, fontWeight: 700, px: 1.25, py: 0.5, borderRadius: "999px", fontFamily: FONT }}>
+                            <FISquareFoot sx={{ fontSize: 16 }} />
+                            {fmt(parcelle.superficie)} m²
+                          </Box>
+                        )}
+                      </Box>
+
+                      {/* Lotissement / îlot / localité */}
+                      <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                        {[
+                          { key: "lot", icon: FIDashboard, label: "Lotissement", value: parcelle.ilot?.lotissement?.nom },
+                          { key: "ilot", icon: FIGridOn, label: "Îlot", value: parcelle.ilot?.numeroIlot },
+                          { key: "loc", icon: LocationOn, label: "Localité", value: parcelle.ilot?.zone?.quartier?.ville ? getLocationString(parcelle) : null },
+                        ]
+                          .filter((l) => l.value)
+                          .map((l) => (
+                            <Box key={l.key} sx={{ display: "grid", gridTemplateColumns: "20px 86px minmax(0, 1fr)", alignItems: "start", columnGap: 1 }}>
+                              <l.icon sx={{ fontSize: 19, color: GREEN }} />
+                              <Typography sx={{ fontFamily: FONT, fontSize: 13.5, color: MUTED }}>{l.label}</Typography>
+                              <Typography sx={{ fontFamily: FONT, fontSize: 14, fontWeight: 700, color: NIGHT, wordBreak: "break-word" }}>{l.value}</Typography>
+                            </Box>
+                          ))}
+                      </Box>
+
+                      {/* Prix + agence */}
+                      <Box
                         sx={{
-                          px: 4,
-                          py: 1.5,
-                          fontSize: { xs: "0.9rem", md: "1rem" },
-                          fontWeight: 600,
-                          borderRadius: 3,
-                          textTransform: "none",
-                          borderWidth: 2,
-                          "&:hover": {
-                            borderWidth: 2,
-                          },
+                          mt: "auto",
+                          pt: 1.75,
+                          borderTop: "1px solid #E8EDF3",
+                          display: "flex",
+                          flexWrap: "wrap",
+                          columnGap: 2,
+                          rowGap: 1.5,
+                          alignItems: "center",
+                          justifyContent: "space-between",
                         }}
                       >
-                        Afficher la suite
+                        <Box>
+                          <Typography sx={{ fontFamily: FONT, fontSize: 12, fontWeight: 600, color: MUTED }}>Prix</Typography>
+                          {parcelle.prix > 0 ? (
+                            <Typography sx={{ fontFamily: FONT, fontSize: 26, fontWeight: 800, color: GREEN_DEEP, lineHeight: 1.2 }}>
+                              {fmt(parcelle.prix)}{" "}
+                              <Box component="span" sx={{ fontSize: 13, fontWeight: 700 }}>FCFA</Box>
+                            </Typography>
+                          ) : (
+                            <Typography sx={{ fontFamily: FONT, fontSize: 15, fontWeight: 600, color: MUTED }}>Prix sur demande</Typography>
+                          )}
+                        </Box>
+                        {parcelle.agenceId && (
+                          <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, flex: "1 1 170px", minWidth: 0 }}>
+                            <Box sx={{ width: 38, height: 38, borderRadius: "10px", bgcolor: "#E3F5EC", color: GREEN_DEEP, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                              <Business sx={{ fontSize: 21 }} />
+                            </Box>
+                            <Box sx={{ minWidth: 0, overflowWrap: "anywhere" }}>
+                              <Typography sx={{ fontFamily: FONT, fontSize: 14, fontWeight: 700, color: NIGHT, lineHeight: 1.3 }}>
+                                {parcelle.agenceId.nom}
+                              </Typography>
+                              {parcelle.agenceId.telephone && (
+                                <Box
+                                  component="a"
+                                  href={`tel:${String(parcelle.agenceId.telephone).replace(/\s+/g, "")}`}
+                                  onClick={(e) => e.stopPropagation()}
+                                  sx={{ display: "inline-flex", alignItems: "center", gap: 0.5, color: GREEN, textDecoration: "none", fontFamily: FONT, fontSize: 13.5, fontWeight: 600, "&:hover": { textDecoration: "underline" } }}
+                                >
+                                  <Phone sx={{ fontSize: 15 }} />
+                                  {parcelle.agenceId.telephone}
+                                </Box>
+                              )}
+                            </Box>
+                          </Box>
+                        )}
+                      </Box>
+
+                      {/* Le clic remonte à la carte : handleParcelleClick n'est appelé qu'une fois */}
+                      <Button
+                        fullWidth
+                        variant="contained"
+                        disableElevation
+                        endIcon={<ArrowForward />}
+                        sx={{ height: 46, borderRadius: "10px", textTransform: "none", fontFamily: FONT, fontWeight: 600, fontSize: 15.5, bgcolor: GREEN, color: "#fff", "&:hover": { bgcolor: GREEN_DEEP } }}
+                      >
+                        Voir la parcelle
                       </Button>
-                    </Box>
-                  )}
-                </Box>
-              </>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </Box>
+
+            {/* Bouton "Afficher la suite" */}
+            {parcellesDisplayed < parcelles.length && (
+              <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+                <Button
+                  variant="outlined"
+                  onClick={handleShowMoreParcelles}
+                  sx={{ px: 4, height: 48, fontFamily: FONT, fontSize: 15.5, fontWeight: 600, borderRadius: "12px", textTransform: "none", borderWidth: 2, borderColor: GREEN, color: GREEN, "&:hover": { borderWidth: 2, borderColor: GREEN_DEEP, bgcolor: "rgba(0,133,87,0.06)" } }}
+                >
+                  Afficher la suite
+                </Button>
+              </Box>
             )}
-        </Box>
-      </Container>
+          </>
+        )}
+      </Box>
       <Footer />
 
       {/* Drawer pour les détails de la parcelle */}
