@@ -20,9 +20,10 @@ import {
   Directions,
   Business,
   Phone,
-  InsertDriveFile,
+  PictureAsPdf,
   OpenInNew,
   Notes,
+  Videocam,
 } from "@mui/icons-material";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
@@ -33,6 +34,8 @@ import { BASE_SERVER_URL } from "../../config/config";
 const BLUE = "#3030F9";
 const BLUE_DARK = "#2020C8";
 const GREEN = "#0A7C4F";
+const GREEN_DARK = "#065F3D";
+const GREEN_LIGHT = "#E3F5EC";
 const NIGHT = "#0e1133";
 const SKY = "#EAF0FF";
 const GREY_BG = "#f5f7fa";
@@ -177,34 +180,6 @@ const SectionTitle = ({ icon: Icon, children, color = NIGHT }) => (
     <Typography component="h3" sx={{ fontSize: 15, fontWeight: 700, color }}>
       {children}
     </Typography>
-  </Box>
-);
-
-// Carte blanche bordée avec en-tête coloré
-const InfoCard = ({ icon: Icon, title, headerBg, headerColor, children }) => (
-  <Box sx={{ bgcolor: "#fff", border: `1px solid ${BORDER}`, borderRadius: "14px", overflow: "hidden" }}>
-    <Box sx={{ bgcolor: headerBg, color: headerColor, display: "flex", alignItems: "center", gap: 1, px: 2, py: 1.5 }}>
-      <Icon sx={{ fontSize: 20 }} />
-      <Typography component="h3" sx={{ fontSize: 15, fontWeight: 700, color: headerColor }}>
-        {title}
-      </Typography>
-    </Box>
-    <Box sx={{ p: 2 }}>{children}</Box>
-  </Box>
-);
-
-// Ligne avec icône à gauche : label en petites majuscules + valeur en gras
-const IconRow = ({ icon: Icon, label, color, children }) => (
-  <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5, py: 1.1 }}>
-    <Icon sx={{ fontSize: 20, color, mt: 0.25, flexShrink: 0 }} />
-    <Box sx={{ minWidth: 0, flex: 1 }}>
-      <Typography sx={{ fontSize: 11, fontWeight: 600, color: "#5b6573", textTransform: "uppercase", letterSpacing: 0.4 }}>
-        {label}
-      </Typography>
-      <Typography component="div" sx={{ fontSize: 15, fontWeight: 700, color: NIGHT, wordBreak: "break-word" }}>
-        {children}
-      </Typography>
-    </Box>
   </Box>
 );
 
@@ -431,15 +406,15 @@ const ParcelleDetailDrawer = ({ open, onClose, selectedParcelle, onParcelleUpdat
               </Box>
 
               <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1.5, mt: 2 }}>
-                <Box sx={{ bgcolor: "rgba(255,255,255,0.08)", borderRadius: "12px", p: 1.75 }}>
-                  <Typography sx={{ fontSize: 10, color: "rgba(255,255,255,0.65)", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>
+                <Box sx={{ bgcolor: BLUE, borderRadius: "12px", p: 1.75 }}>
+                  <Typography sx={{ fontSize: 10, color: "#fff", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>
                     Prix
                   </Typography>
                   <Typography sx={{ fontSize: 17, fontWeight: 800, color: "#fff", lineHeight: 1.3, mt: 0.25 }}>
                     {localParcelle.prix > 0 ? (
                       <>
                         {new Intl.NumberFormat("fr-FR").format(localParcelle.prix)}{" "}
-                        <Box component="span" sx={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.8)" }}>
+                        <Box component="span" sx={{ fontSize: 12, fontWeight: 600, color: "#fff" }}>
                           FCFA
                         </Box>
                       </>
@@ -448,15 +423,15 @@ const ParcelleDetailDrawer = ({ open, onClose, selectedParcelle, onParcelleUpdat
                     )}
                   </Typography>
                 </Box>
-                <Box sx={{ bgcolor: "rgba(255,255,255,0.08)", borderRadius: "12px", p: 1.75 }}>
-                  <Typography sx={{ fontSize: 10, color: "rgba(255,255,255,0.65)", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>
+                <Box sx={{ bgcolor: GREEN, borderRadius: "12px", p: 1.75 }}>
+                  <Typography sx={{ fontSize: 10, color: "#fff", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>
                     Surface
                   </Typography>
                   <Typography sx={{ fontSize: 17, fontWeight: 800, color: "#fff", lineHeight: 1.3, mt: 0.25 }}>
                     {localParcelle.superficie > 0 ? (
                       <>
                         {localParcelle.superficie}{" "}
-                        <Box component="span" sx={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.8)" }}>
+                        <Box component="span" sx={{ fontSize: 12, fontWeight: 600, color: "#fff" }}>
                           m²
                         </Box>
                       </>
@@ -471,10 +446,10 @@ const ParcelleDetailDrawer = ({ open, onClose, selectedParcelle, onParcelleUpdat
         </Box>
 
         {localParcelle ? (
-          <Box sx={{ p: { xs: 2, sm: 3 }, display: "flex", flexDirection: "column", gap: 2.5 }}>
+          <Box sx={{ p: 1.5, display: "flex", flexDirection: "column", gap: 1.25 }}>
             {/* 2. Photos */}
             {localParcelle.images && localParcelle.images.length > 0 && (
-              <Box sx={{ bgcolor: "#fff", border: `1px solid ${BORDER}`, borderRadius: "14px", p: 2 }}>
+              <Box sx={{ bgcolor: "#fff", border: `1px solid ${BORDER}`, borderRadius: "14px", p: 1.5 }}>
                 <SectionTitle icon={MapIcon}>Photos de la parcelle</SectionTitle>
                 <Box sx={{ height: { xs: 220, sm: 260 }, borderRadius: "12px", overflow: "hidden", bgcolor: "#d9e2ec", mb: 1.5 }}>
                   <Box
@@ -518,39 +493,74 @@ const ParcelleDetailDrawer = ({ open, onClose, selectedParcelle, onParcelleUpdat
               </Box>
             )}
 
-            {/* 3. Localisation : lotissement, îlot, localité, adresse, GPS */}
-            <InfoCard icon={LocationOn} title="Localisation" headerBg={SKY} headerColor={BLUE_DARK}>
-              {localParcelle.lotissementNom && (
-                <IconRow icon={DashboardIcon} label="Lotissement" color={BLUE}>{localParcelle.lotissementNom}</IconRow>
-              )}
-              {ilotConnu && (
-                <IconRow icon={GridOn} label="Îlot" color={BLUE}>{localParcelle.ilot}</IconRow>
-              )}
-              {quartierVille && (
-                <IconRow icon={Apartment} label="Cité / Quartier / Ville" color={BLUE}>{quartierVille}</IconRow>
-              )}
-              {localParcelle.adresse && (
-                <IconRow icon={MapIcon} label="Adresse" color={BLUE}>{localParcelle.adresse}</IconRow>
-              )}
-              {hasGps && (
-                <IconRow icon={GpsFixed} label="Coordonnées GPS" color={BLUE}>
-                  <Box component="span" sx={{ display: "block" }}>
-                    Lat: {localParcelle.latitude} / Lng: {localParcelle.longitude}
-                  </Box>
-                  {decimalToDMS(localParcelle.latitude, "lat") && decimalToDMS(localParcelle.longitude, "lon") && (
-                    <Box component="span" sx={{ display: "block", fontSize: 12.5, fontWeight: 500, color: "#5b6573", mt: 0.25 }}>
-                      {decimalToDMS(localParcelle.latitude, "lat")} / {decimalToDMS(localParcelle.longitude, "lon")}
+            {/* 3. Localisation : cartes blanches en grille sur fond bleu ciel */}
+            <Box sx={{ bgcolor: SKY, borderRadius: "14px", p: 1.5 }}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1, color: BLUE_DARK, mb: 1.25 }}>
+                <LocationOn sx={{ fontSize: 20 }} />
+                <Typography component="h3" sx={{ fontSize: 15, fontWeight: 700, color: BLUE_DARK }}>
+                  Localisation
+                </Typography>
+              </Box>
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
+                  gap: "8px",
+                }}
+              >
+                {[
+                  localParcelle.lotissementNom && { key: "lot", icon: DashboardIcon, label: "Lotissement", value: localParcelle.lotissementNom },
+                  ilotConnu && { key: "ilot", icon: GridOn, label: "Îlot", value: localParcelle.ilot },
+                  quartierVille && { key: "loc", icon: Apartment, label: "Localité", value: quartierVille },
+                  localParcelle.adresse && { key: "adr", icon: MapIcon, label: "Adresse", value: localParcelle.adresse },
+                  hasGps && {
+                    key: "gps",
+                    icon: GpsFixed,
+                    label: "Coordonnées GPS",
+                    value: (
+                      <>
+                        <Box component="span" sx={{ display: "block" }}>
+                          Lat: {localParcelle.latitude} / Lng: {localParcelle.longitude}
+                        </Box>
+                        {decimalToDMS(localParcelle.latitude, "lat") && decimalToDMS(localParcelle.longitude, "lon") && (
+                          <Box component="span" sx={{ display: "block", fontSize: 11.5, fontWeight: 500, color: "#5b6573", mt: 0.25 }}>
+                            {decimalToDMS(localParcelle.latitude, "lat")} / {decimalToDMS(localParcelle.longitude, "lon")}
+                          </Box>
+                        )}
+                      </>
+                    ),
+                  },
+                ]
+                  .filter(Boolean)
+                  .map((info, idx, arr) => (
+                    <Box
+                      key={info.key}
+                      sx={{
+                        bgcolor: "#fff",
+                        borderRadius: "9px",
+                        p: "9px 11px",
+                        minWidth: 0,
+                        // Une info seule, ou la dernière d'un nombre impair : pleine largeur
+                        gridColumn: arr.length % 2 === 1 && idx === arr.length - 1 ? { xs: "auto", sm: "1 / -1" } : "auto",
+                      }}
+                    >
+                      <Typography sx={{ display: "flex", alignItems: "center", gap: 0.5, fontSize: 10, fontWeight: 600, color: "#5b6573", textTransform: "uppercase", letterSpacing: 0.5 }}>
+                        <info.icon sx={{ fontSize: 14, color: BLUE }} />
+                        {info.label}
+                      </Typography>
+                      <Typography component="div" sx={{ fontSize: 13.5, fontWeight: 700, color: NIGHT, mt: 0.25, wordBreak: "break-word" }}>
+                        {info.value}
+                      </Typography>
                     </Box>
-                  )}
-                </IconRow>
-              )}
-              <Box sx={{ display: "flex", gap: 1, mt: 1.5 }}>
+                  ))}
+              </Box>
+              <Box sx={{ display: "flex", gap: 1, mt: 1.25 }}>
                 <Button
                   fullWidth
                   disableElevation
                   startIcon={<MapIcon />}
                   onClick={handleVoirCarte}
-                  sx={{ textTransform: "none", fontWeight: 700, bgcolor: SKY, color: BLUE_DARK, "&:hover": { bgcolor: "#D9E4FF" } }}
+                  sx={{ textTransform: "none", fontWeight: 700, bgcolor: "#fff", color: BLUE_DARK, "&:hover": { bgcolor: "#f5f7fa" } }}
                 >
                   Carte
                 </Button>
@@ -567,24 +577,23 @@ const ParcelleDetailDrawer = ({ open, onClose, selectedParcelle, onParcelleUpdat
                   </Button>
                 )}
               </Box>
-            </InfoCard>
+            </Box>
 
             {/* 4. Carte interactive */}
             {hasGps && (
-              <Box sx={{ bgcolor: "#fff", border: `1px solid ${BORDER}`, borderRadius: "14px", overflow: "hidden" }}>
-                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1, px: 2, py: 1.25, borderBottom: `1px solid ${BORDER}` }}>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1, color: NIGHT }}>
+              <Box sx={{ border: `1px solid ${BORDER}`, borderRadius: "14px", overflow: "hidden", bgcolor: "#fff" }}>
+                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1, px: 2, py: 1.25, bgcolor: NIGHT }}>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1, color: "#fff" }}>
                     <MapIcon sx={{ fontSize: 20 }} />
-                    <Typography component="h3" sx={{ fontSize: 15, fontWeight: 700, color: NIGHT }}>
+                    <Typography component="h3" sx={{ fontSize: 15, fontWeight: 700, color: "#fff" }}>
                       Sur la carte
                     </Typography>
                   </Box>
                   <Button
                     size="small"
-                    disableElevation
                     endIcon={<OpenInNew sx={{ fontSize: 16 }} />}
                     onClick={openGoogleMaps}
-                    sx={{ textTransform: "none", fontWeight: 700, bgcolor: SKY, color: BLUE_DARK, "&:hover": { bgcolor: "#D9E4FF" } }}
+                    sx={{ textTransform: "none", fontWeight: 700, color: "#B5D4F4", "&:hover": { bgcolor: "rgba(255,255,255,0.1)" } }}
                   >
                     Google Maps
                   </Button>
@@ -643,9 +652,14 @@ const ParcelleDetailDrawer = ({ open, onClose, selectedParcelle, onParcelleUpdat
 
             {/* 5. Description */}
             {localParcelle.description && (
-              <Box sx={{ bgcolor: "#fff", border: `1px solid ${BORDER}`, borderRadius: "14px", p: 2 }}>
-                <SectionTitle icon={Notes}>Description</SectionTitle>
-                <Typography sx={{ fontSize: 14.5, lineHeight: 1.7, color: NIGHT }}>
+              <Box sx={{ bgcolor: GREEN_LIGHT, borderRadius: "14px", p: 1.5 }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1, color: GREEN_DARK, mb: 1 }}>
+                  <Notes sx={{ fontSize: 20 }} />
+                  <Typography component="h3" sx={{ fontSize: 15, fontWeight: 700, color: GREEN_DARK }}>
+                    Description
+                  </Typography>
+                </Box>
+                <Typography sx={{ fontSize: 14, lineHeight: 1.65, color: NIGHT }}>
                   {localParcelle.description}
                 </Typography>
               </Box>
@@ -653,13 +667,13 @@ const ParcelleDetailDrawer = ({ open, onClose, selectedParcelle, onParcelleUpdat
 
             {/* 6. Agence */}
             {localParcelle.agenceNom && (
-              <Box sx={{ bgcolor: GREY_BG, border: `1px solid ${BORDER}`, borderRadius: "14px", p: 2, display: "flex", alignItems: "center", gap: 1.5 }}>
+              <Box sx={{ bgcolor: NIGHT, borderRadius: "14px", p: 1.5, display: "flex", alignItems: "center", gap: 1.5 }}>
                 <Box
                   sx={{
                     width: 40,
                     height: 40,
                     borderRadius: "10px",
-                    bgcolor: NIGHT,
+                    bgcolor: "rgba(255,255,255,0.15)",
                     color: "#fff",
                     display: "flex",
                     alignItems: "center",
@@ -669,36 +683,43 @@ const ParcelleDetailDrawer = ({ open, onClose, selectedParcelle, onParcelleUpdat
                 >
                   <Business sx={{ fontSize: 22 }} />
                 </Box>
-                <Box sx={{ minWidth: 0 }}>
-                  <Typography sx={{ fontSize: 11, fontWeight: 600, color: "#5b6573", textTransform: "uppercase", letterSpacing: 0.4 }}>
+                <Box sx={{ minWidth: 0, flex: 1 }}>
+                  <Typography sx={{ fontSize: 10, fontWeight: 600, color: "#fff", opacity: 0.7, textTransform: "uppercase", letterSpacing: 0.5 }}>
                     Agence
                   </Typography>
-                  <Typography sx={{ fontSize: 15, fontWeight: 700, color: NIGHT, wordBreak: "break-word" }}>
+                  <Typography sx={{ fontSize: 15, fontWeight: 700, color: "#fff", wordBreak: "break-word" }}>
                     {localParcelle.agenceNom}
                   </Typography>
                   {localParcelle.agenceTelephone && (
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mt: 0.25 }}>
-                      <Phone sx={{ fontSize: 16, color: BLUE }} />
-                      <Typography sx={{ fontSize: 14, fontWeight: 600, color: BLUE }}>
-                        {localParcelle.agenceTelephone}
-                      </Typography>
-                    </Box>
+                    <Typography sx={{ fontSize: 12.5, color: "#fff", opacity: 0.85 }}>
+                      {localParcelle.agenceTelephone}
+                    </Typography>
                   )}
                 </Box>
+                {localParcelle.agenceTelephone && (
+                  <Button
+                    component="a"
+                    href={`tel:${String(localParcelle.agenceTelephone).replace(/[^\d+]/g, "")}`}
+                    variant="contained"
+                    disableElevation
+                    startIcon={<Phone />}
+                    sx={{ flexShrink: 0, textTransform: "none", fontWeight: 700, bgcolor: GREEN, color: "#fff", "&:hover": { bgcolor: GREEN_DARK } }}
+                  >
+                    Appeler
+                  </Button>
+                )}
               </Box>
             )}
 
             {/* 7. Documents et médias */}
-            {(hasDocs || hasVideos) && (
-              <Box sx={{ bgcolor: "#fff", border: `1px solid ${BORDER}`, borderRadius: "14px", p: 2 }}>
-                <SectionTitle icon={Description}>Documents et médias</SectionTitle>
-
-                {/* Vidéos */}
-                {hasVideos && (
-                  <Box sx={{ mb: hasDocs ? 2.5 : 0 }}>
-                    <Typography sx={{ fontSize: 12, fontWeight: 700, color: "#5b6573", textTransform: "uppercase", letterSpacing: 0.4, mb: 1 }}>
-                      Vidéos ({localParcelle.videos.length})
-                    </Typography>
+            {hasVideos && (
+              <Box sx={{ bgcolor: SKY, borderRadius: "14px", p: 1.5 }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1, color: BLUE_DARK, mb: 1.25 }}>
+                  <Videocam sx={{ fontSize: 20 }} />
+                  <Typography component="h3" sx={{ fontSize: 15, fontWeight: 700, color: BLUE_DARK }}>
+                    Vidéos ({localParcelle.videos.length})
+                  </Typography>
+                </Box>
                     <Stack spacing={2}>
                       {localParcelle.videos.map((videoUrl, idx) => {
                         const embedUrl = getVideoEmbedUrl(videoUrl);
@@ -751,50 +772,50 @@ const ParcelleDetailDrawer = ({ open, onClose, selectedParcelle, onParcelleUpdat
                   </Box>
                 )}
 
-                {/* Documents */}
-                {hasDocs && (
-                  <Box>
-                    <Typography sx={{ fontSize: 12, fontWeight: 700, color: "#5b6573", textTransform: "uppercase", letterSpacing: 0.4, mb: 1 }}>
-                      Documents ({localParcelle.documents.length})
-                    </Typography>
-                    <Stack spacing={1}>
-                      {localParcelle.documents.map((docUrl, idx) => {
-                        const fileName = getFileNameFromUrl(docUrl);
-                        const fullUrl = fixImageUrl(docUrl);
 
-                        return (
-                          <Box
-                            key={idx}
-                            component="a"
-                            href={fullUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            download={fileName}
-                            sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 1.25,
-                              px: 1.5,
-                              py: 1.1,
-                              bgcolor: GREY_BG,
-                              border: `1px solid ${BORDER}`,
-                              borderRadius: "10px",
-                              textDecoration: "none",
-                              color: NIGHT,
-                              "&:hover": { bgcolor: SKY, borderColor: BLUE },
-                            }}
-                          >
-                            <InsertDriveFile sx={{ fontSize: 20, color: BLUE, flexShrink: 0 }} />
-                            <Typography sx={{ fontSize: 14, fontWeight: 600, color: NIGHT, wordBreak: "break-word", flex: 1, minWidth: 0 }}>
-                              {fileName}
-                            </Typography>
-                            <OpenInNew sx={{ fontSize: 16, color: "#5b6573", flexShrink: 0 }} />
-                          </Box>
-                        );
-                      })}
-                    </Stack>
-                  </Box>
-                )}
+            {hasDocs && (
+              <Box sx={{ bgcolor: SKY, borderRadius: "14px", p: 1.5 }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1, color: BLUE_DARK, mb: 1.25 }}>
+                  <Description sx={{ fontSize: 20 }} />
+                  <Typography component="h3" sx={{ fontSize: 15, fontWeight: 700, color: BLUE_DARK }}>
+                    Documents ({localParcelle.documents.length})
+                  </Typography>
+                </Box>
+                <Stack spacing={0.75}>
+                  {localParcelle.documents.map((docUrl, idx) => {
+                    const fileName = getFileNameFromUrl(docUrl);
+                    const fullUrl = fixImageUrl(docUrl);
+
+                    return (
+                      <Box
+                        key={idx}
+                        component="a"
+                        href={fullUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        download={fileName}
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 1.25,
+                          px: 1.5,
+                          py: 1.1,
+                          bgcolor: "#fff",
+                          borderRadius: "8px",
+                          textDecoration: "none",
+                          color: NIGHT,
+                          "&:hover": { bgcolor: "#f5f7fa" },
+                        }}
+                      >
+                        <PictureAsPdf sx={{ fontSize: 22, color: "#d32f2f", flexShrink: 0 }} />
+                        <Typography sx={{ fontSize: 13.5, fontWeight: 600, color: NIGHT, wordBreak: "break-word", flex: 1, minWidth: 0 }}>
+                          {fileName}
+                        </Typography>
+                        <OpenInNew sx={{ fontSize: 18, color: BLUE_DARK, flexShrink: 0 }} />
+                      </Box>
+                    );
+                  })}
+                </Stack>
               </Box>
             )}
           </Box>
