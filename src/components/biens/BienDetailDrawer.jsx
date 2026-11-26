@@ -1,11 +1,5 @@
 import React, { useState } from "react";
-import {
-  Box,
-  Typography,
-  IconButton,
-  Drawer,
-  Button,
-} from "@mui/material";
+import { Box, Typography, IconButton, Drawer, Button } from "@mui/material";
 import {
   LocationOn,
   Close,
@@ -16,10 +10,10 @@ import {
   AcUnit,
   Kitchen,
   PhotoCamera,
-  Videocam,
   Map as MapIcon,
   Description,
   Star,
+  Check,
   CheckCircle,
   Bed,
   Bathtub,
@@ -44,30 +38,37 @@ import {
   Park,
   Yard,
   VideoLibrary,
+  PlayArrow,
+  Payments,
+  SquareFoot,
+  ChevronLeft,
+  ChevronRight,
+  Business,
+  VerifiedUser,
+  Villa,
 } from "@mui/icons-material";
 import { decimalToDMS } from "../../utils/coordinateUtils";
 import { BASE_SERVER_URL } from "../../config/config";
 
 // Charte Dillanci
-const BLUE = "#3030F9";
-const BLUE_DARK = "#2020C8";
-const GREEN = "#0A7C4F";
-const GREEN_DARK = "#065F3D";
-const NIGHT = "#0e1133";
-const SKY = "#EAF0FF";
-const GREEN_LIGHT = "#E3F5EC";
-const GREY_BG = "#f5f7fa";
-const BORDER = "#e5e7eb";
+const NIGHT = "#101C36";
+const GREEN = "#008557";
+const GREEN_DEEP = "#005C48";
+const GREEN_LIGHT = "#E5F3EC";
+const GREY = "#F1F4F7";
+const MUTED = "#64748B";
+const BORDER = "#E2E8F0";
+const FONT = "'Manrope', 'Plus Jakarta Sans', 'DM Sans', system-ui, Arial, sans-serif";
 
 // Fonction utilitaire pour corriger les URLs d'images
 const fixImageUrl = (imageUrl) => {
   if (!imageUrl) return null;
 
   // Corriger les séparateurs de chemin
-  const correctedPath = imageUrl.replace(/\\/g, '/');
+  const correctedPath = imageUrl.replace(/\\/g, "/");
 
   // Si l'URL commence déjà par http, la retourner telle quelle
-  if (correctedPath.startsWith('http')) {
+  if (correctedPath.startsWith("http")) {
     return correctedPath;
   }
 
@@ -75,8 +76,11 @@ const fixImageUrl = (imageUrl) => {
   return `${BASE_SERVER_URL}/${correctedPath}`;
 };
 
-// Nombre formaté (le libellé FCFA est affiché à part)
-const formatNumber = (amount) => new Intl.NumberFormat("fr-FR").format(amount);
+// Les photos peuvent être des chaînes ou des objets { url }
+const photoSrc = (image) => fixImageUrl(typeof image === "string" ? image : image?.url);
+
+// Nombre formaté (le libellé FCFA est affiché à part), espaces insécables
+const formatNumber = (amount) => new Intl.NumberFormat("fr-FR").format(amount).replace(/[  \s]/g, " ");
 
 // Fonction pour obtenir l'URL d'embed vidéo
 const getVideoEmbedUrl = (videoUrl) => {
@@ -101,13 +105,13 @@ const getVideoEmbedUrl = (videoUrl) => {
 
 // Statut fonctionnel du bien (seul endroit où des couleurs hors charte sont admises)
 const STATUTS = {
-  disponible: { label: "Disponible", bg: GREEN_LIGHT, color: GREEN },
+  disponible: { label: "Disponible", bg: GREEN_LIGHT, color: GREEN_DEEP },
   en_cours_de_vente: { label: "En cours de vente", bg: "#FFF3E0", color: "#B45309" },
   reserve: { label: "Réservé", bg: "#FFF3E0", color: "#B45309" },
   vendu: { label: "Vendu", bg: "#FDECEA", color: "#d32f2f" },
 };
 
-// Équipements affichés en petits chips compacts
+// Équipements affichés en petits badges sobres
 const EQUIPEMENTS = [
   { key: "garage", label: "Garage", icon: Garage },
   { key: "piscine", label: "Piscine", icon: Pool },
@@ -126,62 +130,107 @@ const EQUIPEMENTS = [
 ];
 
 // Nombre de miniatures visibles avant le "+N"
-const MAX_THUMBS = 4;
+const MAX_THUMBS = 5;
 
-// Titre de section avec icône
-const SectionTitle = ({ icon: Icon, children, color = NIGHT }) => (
+// Bloc blanc bordé
+const Panel = ({ children, sx }) => (
+  <Box sx={{ bgcolor: "#fff", border: `1px solid ${BORDER}`, borderRadius: "12px", p: 2, minWidth: 0, ...sx }}>{children}</Box>
+);
+
+// Titre de section avec icône verte
+const SectionTitle = ({ icon: Icon, children }) => (
   <Typography
     component="h3"
-    sx={{ display: "flex", alignItems: "center", gap: 1, fontSize: 16, fontWeight: 700, color, mb: 1.5 }}
+    sx={{ display: "flex", alignItems: "center", gap: 1, fontFamily: FONT, fontSize: 17, fontWeight: 700, color: NIGHT, mb: 1.5 }}
   >
-    <Icon sx={{ fontSize: 20 }} />
+    <Icon sx={{ fontSize: 22, color: GREEN }} />
     {children}
   </Typography>
 );
 
-// Carte bordée
-const Panel = ({ children, sx }) => (
-  <Box sx={{ bgcolor: "#fff", border: `1px solid ${BORDER}`, borderRadius: 3, p: 2.5, ...sx }}>{children}</Box>
-);
-
-// Carte avec en-tête coloré (colonnes Localisation / Informations)
-const InfoCard = ({ icon: Icon, title, headerBg, headerColor, children }) => (
-  <Box sx={{ bgcolor: "#fff", border: `1px solid ${BORDER}`, borderRadius: "14px", overflow: "hidden" }}>
-    <Box sx={{ bgcolor: headerBg, color: headerColor, display: "flex", alignItems: "center", gap: 1, px: 2, py: 1.5 }}>
-      <Icon sx={{ fontSize: 20 }} />
-      <Typography component="h3" sx={{ fontSize: 15, fontWeight: 700, color: headerColor }}>
-        {title}
-      </Typography>
+// Ligne d'information : icône + libellé à gauche, valeur à droite, séparateur discret
+const InfoRow = ({ icon: Icon, label, children }) => (
+  <Box
+    sx={{
+      display: "flex",
+      alignItems: "center",
+      flexWrap: "wrap",
+      columnGap: 1.5,
+      rowGap: 0.25,
+      py: 1.25,
+      borderBottom: `1px solid ${BORDER}`,
+      "&:last-of-type": { borderBottom: "none" },
+    }}
+  >
+    <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, flex: "1 1 130px", minWidth: 0 }}>
+      <Icon sx={{ fontSize: 20, color: GREEN, flexShrink: 0 }} />
+      <Typography sx={{ fontFamily: FONT, fontSize: 14, color: MUTED }}>{label}</Typography>
     </Box>
-    <Box sx={{ p: 2 }}>{children}</Box>
-  </Box>
-);
-
-// Ligne avec icône à gauche : label en petites majuscules + valeur en gras
-const IconRow = ({ icon: Icon, label, color, children }) => (
-  <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5, py: 1.1 }}>
-    <Icon sx={{ fontSize: 20, color, mt: 0.25, flexShrink: 0 }} />
-    <Box sx={{ minWidth: 0, flex: 1 }}>
-      <Typography sx={{ fontSize: 11, fontWeight: 600, color: "#5b6573", textTransform: "uppercase", letterSpacing: 0.4 }}>
-        {label}
-      </Typography>
-      <Typography component="div" sx={{ fontSize: 15, fontWeight: 700, color: NIGHT, wordBreak: "break-word" }}>
-        {children}
-      </Typography>
-    </Box>
-  </Box>
-);
-
-// Ligne label à gauche / valeur alignée à droite
-const SplitRow = ({ icon: Icon, label, color, children }) => (
-  <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, py: 1.1 }}>
-    <Icon sx={{ fontSize: 20, color, flexShrink: 0 }} />
-    <Typography sx={{ fontSize: 14, color: "#5b6573", flex: 1 }}>{label}</Typography>
-    <Typography component="div" sx={{ fontSize: 14.5, fontWeight: 700, color: NIGHT, textAlign: "right", wordBreak: "break-word" }}>
+    <Typography component="div" sx={{ fontFamily: FONT, fontSize: 14.5, fontWeight: 700, color: NIGHT, textAlign: "right", overflowWrap: "anywhere", flex: "0 1 auto", ml: "auto" }}>
       {children}
     </Typography>
   </Box>
 );
+
+// Vidéo : miniature + lecture au clic (jamais de lecture automatique au chargement)
+const VideoCard = ({ videoUrl, index }) => {
+  const [playing, setPlaying] = useState(false);
+  const url = typeof videoUrl === "string" ? videoUrl : videoUrl?.url || "";
+  const embedUrl = getVideoEmbedUrl(url);
+  const youTubeId = embedUrl && embedUrl.includes("youtube.com/embed/") ? embedUrl.split("/embed/")[1] : null;
+  const embeddable = Boolean(embedUrl);
+
+  return (
+    <Box sx={{ position: "relative", overflow: "hidden", borderRadius: "12px", border: `1px solid ${BORDER}`, bgcolor: NIGHT, aspectRatio: "16 / 9", width: "100%", maxWidth: 560 }}>
+      {embeddable && playing ? (
+        <Box
+          component="iframe"
+          src={`${embedUrl}${embedUrl.includes("?") ? "&" : "?"}autoplay=1`}
+          title={`Vidéo ${index + 1}`}
+          sx={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: "none", display: "block" }}
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        />
+      ) : (
+        <>
+          {youTubeId && (
+            <Box
+              component="img"
+              src={`https://img.youtube.com/vi/${youTubeId}/hqdefault.jpg`}
+              alt=""
+              sx={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+            />
+          )}
+          <Box sx={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 1, bgcolor: youTubeId ? "rgba(16,28,54,0.25)" : "transparent", color: "#fff", p: 2, textAlign: "center" }}>
+            {embeddable ? (
+              <IconButton
+                onClick={() => setPlaying(true)}
+                aria-label={`Lire la vidéo ${index + 1}`}
+                sx={{ width: 60, height: 60, bgcolor: GREEN, color: "#fff", "&:hover": { bgcolor: GREEN_DEEP } }}
+              >
+                <PlayArrow sx={{ fontSize: 34 }} />
+              </IconButton>
+            ) : (
+              <>
+                <VideoLibrary sx={{ fontSize: 40 }} />
+                <Button
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  disableElevation
+                  variant="contained"
+                  sx={{ bgcolor: "#fff", color: GREEN_DEEP, textTransform: "none", fontFamily: FONT, fontWeight: 700, "&:hover": { bgcolor: GREEN_LIGHT } }}
+                >
+                  Voir la vidéo
+                </Button>
+              </>
+            )}
+          </Box>
+        </>
+      )}
+    </Box>
+  );
+};
 
 // Contact WhatsApp (lien existant)
 const openWhatsApp = () => {
@@ -189,34 +238,17 @@ const openWhatsApp = () => {
   window.open(whatsappUrl, "_blank");
 };
 
-const BienDetailDrawer = ({ open, onClose, selectedBien, onBienUpdate }) => {
+const BienDetailDrawer = ({ open, onClose, selectedBien }) => {
   const [localBien, setLocalBien] = useState(selectedBien);
+  const [photoIndex, setPhotoIndex] = useState(0);
   const [showAllPhotos, setShowAllPhotos] = useState(false);
 
   // Mettre à jour le bien local quand selectedBien change
   React.useEffect(() => {
     setLocalBien(selectedBien);
+    setPhotoIndex(0);
     setShowAllPhotos(false);
   }, [selectedBien]);
-
-  const handleImageClick = (index) => {
-    if (!localBien || !localBien.images || localBien.images.length <= 1) return;
-
-    // Remplacer la photo principale par celle cliquée
-    const newImages = [...localBien.images];
-    [newImages[0], newImages[index + 1]] = [newImages[index + 1], newImages[0]];
-
-    const updatedBien = {
-      ...localBien,
-      image: fixImageUrl(newImages[0]),
-      images: newImages
-    };
-
-    setLocalBien(updatedBien);
-    if (onBienUpdate) {
-      onBienUpdate(updatedBien);
-    }
-  };
 
   // Carte (coordonnées si disponibles, sinon recherche par adresse / ville)
   const handleVoirCarte = () => {
@@ -272,7 +304,7 @@ const BienDetailDrawer = ({ open, onClose, selectedBien, onBienUpdate }) => {
         {
           enableHighAccuracy: true,
           timeout: 15000,
-          maximumAge: 0
+          maximumAge: 0,
         }
       );
     } catch (error) {
@@ -283,30 +315,53 @@ const BienDetailDrawer = ({ open, onClose, selectedBien, onBienUpdate }) => {
 
   const bien = localBien;
   const carac = bien?.caracteristiques || {};
-  const hasCarac = bien?.caracteristiques && Object.keys(bien.caracteristiques).length > 0;
   const equipements = EQUIPEMENTS.filter((e) => (e.test ? e.test(carac) : carac[e.key]));
+  const surface = bien && bien.superficie && String(bien.superficie) !== "0" ? bien.superficie : null;
   const tuiles = [
-    { value: carac.nbChambres, label: "Chambres", icon: Bed, bg: BLUE },
-    { value: carac.nbSallesBain, label: "Salles de bain", icon: Bathtub, bg: GREEN },
-    { value: carac.nbSalons, label: "Salons", icon: Weekend, bg: NIGHT },
-  ].filter((t) => t.value);
+    { value: carac.nbChambres, label: carac.nbChambres > 1 ? "Chambres" : "Chambre", icon: Bed },
+    { value: carac.nbSallesBain, label: carac.nbSallesBain > 1 ? "Salles de bain" : "Salle de bain", icon: Bathtub },
+    { value: carac.nbSalons, label: carac.nbSalons > 1 ? "Salons" : "Salon", icon: Weekend },
+    surface && { value: `${surface} m²`, label: "Superficie", icon: SquareFoot },
+  ].filter((t) => t && t.value);
+  const hasArbres = carac.typesArbres && carac.typesArbres.length > 0;
+  const hasCaracBlock = tuiles.length > 0 || equipements.length > 0 || hasArbres || Boolean(carac.elementsJardin);
   const infoRows = bien
     ? [
-        { label: "Année de construction", value: carac.anneeConstruction },
-        { label: "État général", value: carac.etatGeneral },
-        { label: "Accès", value: carac.acces },
-        { label: "Étage", value: carac.etage },
+        { label: "Année de construction", value: carac.anneeConstruction, icon: CalendarMonth },
+        { label: "État général", value: carac.etatGeneral, icon: CheckCircle, badge: true },
+        { label: "Type de bien", value: bien.type, icon: Home, capitalize: true },
+        { label: "Accès", value: carac.acces, icon: Route },
+        { label: "Étage", value: carac.etage, icon: Stairs },
       ].filter((r) => r.value)
     : [];
   const hasInfos = infoRows.length > 0 || Boolean(bien?.description);
-  const surface = bien && bien.superficie && String(bien.superficie) !== "0" ? bien.superficie : null;
   const statut = bien ? STATUTS[bien.statut] : null;
   const quartierVille = bien ? [bien.quartier, bien.ville].filter(Boolean).join(", ") : "";
   const hasGps = Boolean(bien?.latitude && bien?.longitude);
-  const others = bien?.images && bien.images.length > 1 ? bien.images.slice(1) : [];
-  const overflow = others.length > MAX_THUMBS;
-  const visibleThumbs = overflow && !showAllPhotos ? others.slice(0, MAX_THUMBS - 1) : others;
-  const hiddenCount = others.length - (MAX_THUMBS - 1);
+  const photos = bien?.images || [];
+  const nbPhotos = photos.length;
+  const currentPhoto = nbPhotos > 0 ? photoSrc(photos[Math.min(photoIndex, nbPhotos - 1)]) : null;
+  const overflow = nbPhotos > MAX_THUMBS;
+  const visibleThumbs = overflow && !showAllPhotos ? photos.slice(0, MAX_THUMBS - 1) : photos;
+  const hiddenCount = nbPhotos - (MAX_THUMBS - 1);
+  const agence = bien?.agenceId && bien.agenceId.nom ? bien.agenceId : null;
+  const hasAgenceBlock = Boolean(agence || bien?.reference);
+  const videos = bien?.videos || [];
+  const atouts = bien?.atoutsMajeurs || [];
+
+  const goPhoto = (delta) => {
+    if (nbPhotos < 2) return;
+    setPhotoIndex((i) => (i + delta + nbPhotos) % nbPhotos);
+  };
+
+  // Grille à deux colonnes quand la largeur réelle du contenu le permet
+  const twoCols = (cols) => ({
+    display: "grid",
+    gridTemplateColumns: "minmax(0, 1fr)",
+    gap: "16px",
+    alignItems: "stretch",
+    "@container (min-width: 760px)": { gridTemplateColumns: cols },
+  });
 
   return (
     <Drawer
@@ -315,422 +370,388 @@ const BienDetailDrawer = ({ open, onClose, selectedBien, onBienUpdate }) => {
       onClose={onClose}
       sx={{
         "& .MuiDrawer-paper": {
-          width: { xs: "100%", sm: "80%", md: "70%", lg: "60%" },
-          maxWidth: "1200px",
+          width: { xs: "100%", sm: "min(92vw, 1100px)" },
+          maxWidth: "1100px",
+          height: "100dvh",
+          display: "flex",
+          flexDirection: "column",
+          bgcolor: GREY,
+          fontFamily: FONT,
         },
       }}
     >
-      <Box sx={{ minHeight: "100%", bgcolor: GREY_BG }}>
-        {/* 1. En-tête en aplat bleu nuit */}
-        <Box sx={{ bgcolor: NIGHT, color: "#fff", p: { xs: 2, sm: 3 } }}>
-          <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5 }}>
-            <Box
-              sx={{
-                width: 40,
-                height: 40,
-                borderRadius: "10px",
-                bgcolor: "rgba(255,255,255,0.12)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                flexShrink: 0,
-              }}
-            >
-              <Home />
-            </Box>
-            <Box sx={{ flex: 1, minWidth: 0 }}>
-              <Typography
-                component="h2"
-                sx={{ fontSize: 19, fontWeight: 700, lineHeight: 1.3, wordBreak: "break-word" }}
-              >
-                {bien ? bien.titre : "Détails du Bien Immobilier"}
-              </Typography>
-              {bien && (
-                <Box sx={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 1, mt: 1 }}>
-                  {bien.type && (
-                    <Box sx={{ bgcolor: BLUE, color: "#fff", fontSize: 12, fontWeight: 700, px: 1.25, py: 0.4, borderRadius: "999px" }}>
-                      {bien.type}
-                    </Box>
-                  )}
-                  {quartierVille && (
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, color: "rgba(255,255,255,0.85)", fontSize: 13 }}>
-                      <LocationOn sx={{ fontSize: 16 }} />
-                      {quartierVille}
-                    </Box>
-                  )}
-                  {statut && (
-                    <Box sx={{ bgcolor: statut.bg, color: statut.color, fontSize: 12, fontWeight: 700, px: 1.25, py: 0.4, borderRadius: "999px" }}>
-                      {statut.label}
-                    </Box>
-                  )}
-                </Box>
-              )}
-            </Box>
-            <IconButton
-              onClick={onClose}
-              aria-label="Fermer"
-              sx={{
-                bgcolor: "rgba(255,255,255,0.12)",
-                color: "#fff",
-                "&:hover": { bgcolor: "rgba(255,255,255,0.22)" },
-              }}
-            >
-              <Close />
-            </IconButton>
+      {/* 1. En-tête fixe : bleu nuit, titre, méta, prix et surface */}
+      <Box sx={{ bgcolor: NIGHT, color: "#fff", flexShrink: 0, containerType: "inline-size", p: { xs: "14px 16px 16px", sm: "18px 20px 20px" } }}>
+        <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5 }}>
+          <Box sx={{ width: { xs: 40, sm: 48 }, height: { xs: 40, sm: 48 }, borderRadius: "12px", bgcolor: "rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <Home sx={{ fontSize: { xs: 24, sm: 28 } }} />
           </Box>
-
-          {bien && (
-            <Box sx={{ display: "grid", gridTemplateColumns: surface ? "1fr 1fr" : "1fr", gap: 1.5, mt: 2.5 }}>
-              <Box sx={{ bgcolor: "rgba(255,255,255,0.08)", borderRadius: 2, p: 1.5 }}>
-                <Typography sx={{ fontSize: 10, color: "rgba(255,255,255,0.65)", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>
-                  Prix
-                </Typography>
-                <Typography sx={{ fontSize: 17, fontWeight: 800, color: "#fff", lineHeight: 1.3, mt: 0.25 }}>
-                  {formatNumber(bien.prix)}{" "}
-                  <Box component="span" sx={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.8)" }}>
-                    FCFA
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Typography component="h2" sx={{ fontFamily: FONT, fontSize: { xs: 20, sm: 24 }, fontWeight: 700, lineHeight: 1.25, overflowWrap: "anywhere", color: "#fff" }}>
+              {bien ? bien.titre : "Détails du bien immobilier"}
+            </Typography>
+            {bien && (
+              <Box sx={{ display: "flex", flexWrap: "wrap", alignItems: "center", columnGap: 1.5, rowGap: 0.75, mt: 1, fontFamily: FONT, fontSize: 13.5, color: "rgba(255,255,255,0.88)" }}>
+                {bien.type && (
+                  <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 0.5, textTransform: "capitalize" }}>
+                    <Villa sx={{ fontSize: 17 }} />
+                    {bien.type}
                   </Box>
-                </Typography>
-              </Box>
-              {surface && (
-                <Box sx={{ bgcolor: "rgba(255,255,255,0.08)", borderRadius: 2, p: 1.5 }}>
-                  <Typography sx={{ fontSize: 10, color: "rgba(255,255,255,0.65)", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>
-                    Surface
-                  </Typography>
-                  <Typography sx={{ fontSize: 17, fontWeight: 800, color: "#fff", lineHeight: 1.3, mt: 0.25 }}>
-                    {surface}{" "}
-                    <Box component="span" sx={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.8)" }}>
-                      m²
-                    </Box>
-                  </Typography>
-                </Box>
-              )}
-            </Box>
-          )}
-        </Box>
-
-        {/* Contenu : tout défile d'un seul bloc avec l'en-tête et les actions */}
-        <Box sx={{ p: { xs: 2, sm: 3 } }}>
-          {bien ? (
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
-              {/* 2. Galerie photos */}
-              <Box>
-                <SectionTitle icon={PhotoCamera}>Photos du bien</SectionTitle>
-                <Box
-                  sx={{
-                    height: 260,
-                    borderRadius: 3,
-                    overflow: "hidden",
-                    bgcolor: "#d9e2ec",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  {bien.image ? (
-                    <Box
-                      component="img"
-                      src={bien.image}
-                      alt={bien.titre}
-                      sx={{ width: "100%", height: "100%", objectFit: "cover" }}
-                    />
-                  ) : (
-                    <PhotoCamera sx={{ fontSize: 48, color: "#9aa5b4" }} />
-                  )}
-                </Box>
-
-                {others.length > 0 && (
-                  <Box sx={{ display: "grid", gridTemplateColumns: `repeat(${MAX_THUMBS}, 1fr)`, gap: 1, mt: 1 }}>
-                    {visibleThumbs.map((image, index) => (
-                      <Box
-                        key={index}
-                        component="img"
-                        src={fixImageUrl(image)}
-                        alt={`${bien.titre} - Photo ${index + 2}`}
-                        onClick={() => handleImageClick(index)}
-                        sx={{
-                          width: "100%",
-                          height: 66,
-                          objectFit: "cover",
-                          borderRadius: 2,
-                          cursor: "pointer",
-                          border: `1px solid ${BORDER}`,
-                          transition: "transform .2s ease",
-                          "&:hover": { transform: "scale(1.04)" },
-                        }}
-                      />
-                    ))}
-                    {overflow && !showAllPhotos && (
-                      <Box
-                        role="button"
-                        tabIndex={0}
-                        aria-label={`Afficher ${hiddenCount} photos de plus`}
-                        onClick={() => setShowAllPhotos(true)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" || e.key === " ") setShowAllPhotos(true);
-                        }}
-                        sx={{
-                          position: "relative",
-                          height: 66,
-                          borderRadius: 2,
-                          overflow: "hidden",
-                          cursor: "pointer",
-                          bgcolor: NIGHT,
-                          color: "#fff",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          fontWeight: 700,
-                          fontSize: 18,
-                        }}
-                      >
-                        +{hiddenCount}
-                      </Box>
-                    )}
+                )}
+                {quartierVille && (
+                  <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 0.5 }}>
+                    <LocationOn sx={{ fontSize: 17 }} />
+                    {quartierVille}
+                  </Box>
+                )}
+                {statut && (
+                  <Box component="span" sx={{ bgcolor: statut.bg, color: statut.color, fontSize: 12, fontWeight: 700, px: 1.25, py: 0.35, borderRadius: "8px" }}>
+                    {statut.label}
+                  </Box>
+                )}
+                {bien.verified && (
+                  <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 0.5, bgcolor: "#fff", color: GREEN, fontSize: 12, fontWeight: 700, px: 1.1, py: 0.35, borderRadius: "8px" }}>
+                    <VerifiedUser sx={{ fontSize: 15 }} />
+                    Vérifié
                   </Box>
                 )}
               </Box>
+            )}
+          </Box>
+          <IconButton
+            onClick={onClose}
+            aria-label="Fermer"
+            sx={{ width: 40, height: 40, flexShrink: 0, bgcolor: "rgba(255,255,255,0.14)", color: "#fff", "&:hover": { bgcolor: "rgba(255,255,255,0.26)" } }}
+          >
+            <Close />
+          </IconButton>
+        </Box>
 
-              {/* 3. Caractéristiques */}
-              {hasCarac && (
-                <Panel>
-                  <SectionTitle icon={Tune}>Caractéristiques du bien</SectionTitle>
+        {bien && (
+          <Box
+            sx={{
+              mt: 2,
+              display: "grid",
+              gridTemplateColumns: "minmax(0, 1fr)",
+              borderRadius: "10px",
+              bgcolor: "rgba(255,255,255,0.08)",
+              overflow: "hidden",
+              "@container (min-width: 480px)": { gridTemplateColumns: surface ? "minmax(0, 1fr) minmax(0, 1fr)" : "minmax(0, 1fr)" },
+            }}
+          >
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, p: "12px 16px", minWidth: 0 }}>
+              <Payments sx={{ fontSize: 26, color: "#8DDBC0", flexShrink: 0 }} />
+              <Box sx={{ minWidth: 0 }}>
+                <Typography sx={{ fontFamily: FONT, fontSize: 12.5, color: "rgba(255,255,255,0.75)", fontWeight: 600 }}>Prix de vente</Typography>
+                {bien.prix > 0 ? (
+                  <Typography sx={{ fontFamily: FONT, fontSize: { xs: 22, sm: 27 }, fontWeight: 800, color: "#fff", lineHeight: 1.2, overflowWrap: "anywhere" }}>
+                    {formatNumber(bien.prix)}{" "}
+                    <Box component="span" sx={{ fontSize: 14, fontWeight: 700, color: "rgba(255,255,255,0.85)", whiteSpace: "nowrap" }}>FCFA</Box>
+                  </Typography>
+                ) : (
+                  <Typography sx={{ fontFamily: FONT, fontSize: 18, fontWeight: 700, color: "#fff" }}>Prix sur demande</Typography>
+                )}
+              </Box>
+            </Box>
+            {surface && (
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1.5,
+                  p: "12px 16px",
+                  minWidth: 0,
+                  borderTop: "1px solid rgba(255,255,255,0.16)",
+                  "@container (min-width: 480px)": { borderTop: "none", borderLeft: "1px solid rgba(255,255,255,0.16)" },
+                }}
+              >
+                <SquareFoot sx={{ fontSize: 26, color: "#8DDBC0", flexShrink: 0 }} />
+                <Box sx={{ minWidth: 0 }}>
+                  <Typography sx={{ fontFamily: FONT, fontSize: 12.5, color: "rgba(255,255,255,0.75)", fontWeight: 600 }}>Surface</Typography>
+                  <Typography sx={{ fontFamily: FONT, fontSize: { xs: 22, sm: 27 }, fontWeight: 800, color: "#fff", lineHeight: 1.2 }}>
+                    {surface}{" "}
+                    <Box component="span" sx={{ fontSize: 14, fontWeight: 700, color: "rgba(255,255,255,0.85)" }}>m²</Box>
+                  </Typography>
+                </Box>
+              </Box>
+            )}
+          </Box>
+        )}
+      </Box>
 
-                  {tuiles.length > 0 && (
-                    <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr 1fr", sm: `repeat(${tuiles.length}, 1fr)` }, gap: 1.5, mb: equipements.length > 0 ? 2 : 0 }}>
-                      {tuiles.map((t) => (
-                        <Box key={t.label} sx={{ bgcolor: t.bg, color: "#fff", borderRadius: 2, p: 1.5, textAlign: "center" }}>
-                          <Typography sx={{ fontSize: 28, fontWeight: 800, lineHeight: 1.1 }}>{t.value}</Typography>
-                          <Typography sx={{ fontSize: 13, display: "flex", alignItems: "center", justifyContent: "center", gap: 0.5, mt: 0.5, opacity: 0.95 }}>
-                            <t.icon sx={{ fontSize: 17 }} />
-                            {t.label}
-                          </Typography>
-                        </Box>
-                      ))}
-                    </Box>
-                  )}
-
-                  {equipements.length > 0 && (
-                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75 }}>
-                      {equipements.map((e) => (
-                        <Box
-                          key={e.key}
-                          sx={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: 0.5,
-                            bgcolor: SKY,
-                            color: BLUE_DARK,
-                            fontSize: 12.5,
-                            fontWeight: 600,
-                            px: 1.1,
-                            py: 0.4,
-                            borderRadius: "999px",
-                          }}
+      {/* 2. Contenu : défilement interne */}
+      <Box sx={{ flex: 1, minHeight: 0, overflowY: "auto", overscrollBehavior: "contain" }}>
+        <Box sx={{ containerType: "inline-size", p: { xs: "16px", sm: "20px" }, pb: { xs: "24px", sm: "28px" } }}>
+          {bien ? (
+            <Box sx={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              {/* Galerie + caractéristiques */}
+              <Box sx={twoCols(hasCaracBlock ? "minmax(0, 65fr) minmax(0, 35fr)" : "minmax(0, 1fr)")}>
+                <Panel sx={{ p: 1.5 }}>
+                  <Box sx={{ position: "relative", height: { xs: 240, sm: 300 }, borderRadius: "12px", overflow: "hidden", bgcolor: GREEN_DEEP }}>
+                    <Box sx={{ position: "absolute", inset: 0, backgroundImage: "url(/images/bien-placeholder.webp)", backgroundSize: "cover", backgroundPosition: "center" }} />
+                    {currentPhoto ? (
+                      <Box component="img" src={currentPhoto} alt={bien.titre} sx={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                    ) : (
+                      <Box sx={{ position: "absolute", left: 12, bottom: 12, px: 1, py: 0.25, borderRadius: "6px", bgcolor: "rgba(16,28,54,0.6)", color: "#fff", fontSize: 11.5, fontFamily: FONT }}>
+                        Image illustrative
+                      </Box>
+                    )}
+                    {nbPhotos > 1 && (
+                      <>
+                        <IconButton
+                          onClick={() => goPhoto(-1)}
+                          aria-label="Photo précédente"
+                          sx={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", width: 38, height: 38, bgcolor: "#fff", color: NIGHT, "&:hover": { bgcolor: GREEN_LIGHT } }}
                         >
-                          <e.icon sx={{ fontSize: 15 }} />
-                          {typeof e.label === "function" ? e.label(carac) : e.label}
-                        </Box>
-                      ))}
-                    </Box>
-                  )}
+                          <ChevronLeft />
+                        </IconButton>
+                        <IconButton
+                          onClick={() => goPhoto(1)}
+                          aria-label="Photo suivante"
+                          sx={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", width: 38, height: 38, bgcolor: "#fff", color: NIGHT, "&:hover": { bgcolor: GREEN_LIGHT } }}
+                        >
+                          <ChevronRight />
+                        </IconButton>
+                      </>
+                    )}
+                    {nbPhotos > 0 && (
+                      <Box sx={{ position: "absolute", right: 10, bottom: 10, display: "flex", alignItems: "center", gap: 0.5, bgcolor: NIGHT, color: "#fff", px: 1.25, py: 0.4, borderRadius: "999px", fontFamily: FONT, fontSize: 12.5, fontWeight: 600 }}>
+                        <PhotoCamera sx={{ fontSize: 16 }} />
+                        {Math.min(photoIndex, nbPhotos - 1) + 1} / {nbPhotos}
+                      </Box>
+                    )}
+                  </Box>
 
-                  {/* Types d'arbres (pour jardin) */}
-                  {carac.typesArbres && carac.typesArbres.length > 0 && (
-                    <Box sx={{ mt: 2, pt: 1.5, borderTop: `1px solid ${BORDER}` }}>
-                      <Typography sx={{ fontSize: 12, fontWeight: 600, color: "#5b6573", textTransform: "uppercase", mb: 0.75 }}>
-                        Types d'arbres
-                      </Typography>
-                      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75 }}>
-                        {carac.typesArbres.map((arbre, index) => (
+                  {nbPhotos > 1 && (
+                    <Box sx={{ display: "flex", gap: "8px", mt: 1, overflowX: "auto", pb: 0.5, scrollbarWidth: "thin" }}>
+                      {visibleThumbs.map((image, index) => {
+                        const selected = index === Math.min(photoIndex, nbPhotos - 1);
+                        return (
                           <Box
                             key={index}
-                            sx={{ bgcolor: GREEN_LIGHT, color: GREEN, fontSize: 12.5, fontWeight: 600, px: 1.1, py: 0.4, borderRadius: "999px" }}
+                            component="button"
+                            type="button"
+                            onClick={() => setPhotoIndex(index)}
+                            aria-label={`Afficher la photo ${index + 1}`}
+                            aria-current={selected ? "true" : undefined}
+                            sx={{ flex: "0 0 auto", width: 84, height: 60, p: 0, borderRadius: "8px", overflow: "hidden", cursor: "pointer", bgcolor: GREY, border: `2px solid ${selected ? GREEN : "transparent"}`, outline: "none", "&:focus-visible": { boxShadow: `0 0 0 2px ${GREEN}` } }}
                           >
-                            {`${arbre.type || arbre}: ${arbre.nombre || ""}`}
+                            <Box component="img" src={photoSrc(image)} alt="" sx={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                           </Box>
-                        ))}
-                      </Box>
-                    </Box>
-                  )}
-
-                  {/* Éléments du jardin */}
-                  {carac.elementsJardin && (
-                    <Box sx={{ mt: 2, pt: 1.5, borderTop: `1px solid ${BORDER}` }}>
-                      <Typography sx={{ fontSize: 12, fontWeight: 600, color: "#5b6573", textTransform: "uppercase", mb: 0.75 }}>
-                        Éléments du jardin
-                      </Typography>
-                      <Typography sx={{ fontSize: 14, color: NIGHT }}>{carac.elementsJardin}</Typography>
+                        );
+                      })}
+                      {overflow && !showAllPhotos && (
+                        <Box
+                          component="button"
+                          type="button"
+                          onClick={() => setShowAllPhotos(true)}
+                          aria-label={`Afficher ${hiddenCount} photos de plus`}
+                          sx={{ flex: "0 0 auto", width: 84, height: 60, p: 0, border: "none", borderRadius: "8px", cursor: "pointer", bgcolor: NIGHT, color: "#fff", fontFamily: FONT, fontWeight: 700, fontSize: 17 }}
+                        >
+                          +{hiddenCount}
+                        </Box>
+                      )}
                     </Box>
                   )}
                 </Panel>
-              )}
 
-              {/* 4. Deux colonnes : Localisation / Informations */}
-              <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: hasInfos ? "1fr 1fr" : "1fr" }, gap: 2.5, alignItems: "start" }}>
-                <InfoCard icon={LocationOn} title="Localisation" headerBg={SKY} headerColor={BLUE_DARK}>
-                  {quartierVille && (
-                    <IconRow icon={Apartment} label="Quartier / Ville" color={BLUE}>{quartierVille}</IconRow>
-                  )}
-                  {bien.adresse && (
-                    <IconRow icon={MapIcon} label="Adresse" color={BLUE}>{bien.adresse}</IconRow>
-                  )}
-                  {hasGps && (
-                    <IconRow icon={GpsFixed} label="Coordonnées GPS" color={BLUE}>
-                      <Box component="span" sx={{ display: "block" }}>
-                        Lat: {bien.latitude} / Lng: {bien.longitude}
+                {hasCaracBlock && (
+                  <Panel>
+                    <SectionTitle icon={Tune}>Caractéristiques du bien</SectionTitle>
+
+                    {tuiles.length > 0 && (
+                      <Box sx={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "10px", mb: equipements.length > 0 ? 2 : 0 }}>
+                        {tuiles.map((t) => (
+                          <Box key={t.label} sx={{ bgcolor: GREEN_LIGHT, borderRadius: "12px", p: "12px 14px", minWidth: 0 }}>
+                            <t.icon sx={{ fontSize: 26, color: GREEN }} />
+                            <Typography sx={{ fontFamily: FONT, fontSize: 20, fontWeight: 800, color: NIGHT, lineHeight: 1.2, mt: 0.5, overflowWrap: "anywhere" }}>{t.value}</Typography>
+                            <Typography sx={{ fontFamily: FONT, fontSize: 13, color: MUTED }}>{t.label}</Typography>
+                          </Box>
+                        ))}
                       </Box>
-                      {decimalToDMS(bien.latitude, "lat") && decimalToDMS(bien.longitude, "lon") && (
-                        <Box component="span" sx={{ display: "block", fontSize: 12.5, fontWeight: 500, color: "#5b6573", mt: 0.25 }}>
-                          {decimalToDMS(bien.latitude, "lat")} / {decimalToDMS(bien.longitude, "lon")}
+                    )}
+
+                    {equipements.length > 0 && (
+                      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75 }}>
+                        {equipements.map((e) => (
+                          <Box key={e.key} sx={{ display: "inline-flex", alignItems: "center", gap: 0.5, bgcolor: GREY, color: NIGHT, fontFamily: FONT, fontSize: 13, fontWeight: 600, px: 1.25, py: 0.6, borderRadius: "8px" }}>
+                            <e.icon sx={{ fontSize: 17, color: GREEN }} />
+                            {typeof e.label === "function" ? e.label(carac) : e.label}
+                          </Box>
+                        ))}
+                      </Box>
+                    )}
+
+                    {/* Types d'arbres (pour jardin) */}
+                    {hasArbres && (
+                      <Box sx={{ mt: 2, pt: 1.5, borderTop: `1px solid ${BORDER}` }}>
+                        <Typography sx={{ fontFamily: FONT, fontSize: 12, fontWeight: 700, color: MUTED, textTransform: "uppercase", mb: 0.75 }}>Types d'arbres</Typography>
+                        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75 }}>
+                          {carac.typesArbres.map((arbre, index) => (
+                            <Box key={index} sx={{ bgcolor: GREEN_LIGHT, color: GREEN_DEEP, fontFamily: FONT, fontSize: 13, fontWeight: 600, px: 1.25, py: 0.5, borderRadius: "8px" }}>
+                              {`${arbre.type || arbre}: ${arbre.nombre || ""}`}
+                            </Box>
+                          ))}
                         </Box>
-                      )}
-                    </IconRow>
-                  )}
-                  <Box sx={{ display: "flex", gap: 1, mt: 1.5 }}>
+                      </Box>
+                    )}
+
+                    {/* Éléments du jardin */}
+                    {carac.elementsJardin && (
+                      <Box sx={{ mt: 2, pt: 1.5, borderTop: `1px solid ${BORDER}` }}>
+                        <Typography sx={{ fontFamily: FONT, fontSize: 12, fontWeight: 700, color: MUTED, textTransform: "uppercase", mb: 0.75 }}>Éléments du jardin</Typography>
+                        <Typography sx={{ fontFamily: FONT, fontSize: 14, color: NIGHT }}>{carac.elementsJardin}</Typography>
+                      </Box>
+                    )}
+                  </Panel>
+                )}
+              </Box>
+
+              {/* Localisation + informations */}
+              <Box sx={twoCols(hasInfos ? "minmax(0, 1fr) minmax(0, 1fr)" : "minmax(0, 1fr)")}>
+                <Panel sx={{ display: "flex", flexDirection: "column" }}>
+                  <SectionTitle icon={LocationOn}>Localisation</SectionTitle>
+                  <Box sx={{ flex: 1 }}>
+                    {quartierVille && <InfoRow icon={Apartment} label="Quartier / Ville">{quartierVille}</InfoRow>}
+                    {bien.adresse && <InfoRow icon={MapIcon} label="Adresse">{bien.adresse}</InfoRow>}
+                    {hasGps && (
+                      <InfoRow icon={GpsFixed} label="Coordonnées GPS">
+                        <Box component="span" sx={{ display: "block" }}>Lat : {bien.latitude} / Lng : {bien.longitude}</Box>
+                        {decimalToDMS(bien.latitude, "lat") && decimalToDMS(bien.longitude, "lon") && (
+                          <Box component="span" sx={{ display: "block", fontSize: 12.5, fontWeight: 500, color: MUTED, mt: 0.25 }}>
+                            {decimalToDMS(bien.latitude, "lat")} / {decimalToDMS(bien.longitude, "lon")}
+                          </Box>
+                        )}
+                      </InfoRow>
+                    )}
+                  </Box>
+                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mt: 1.5 }}>
                     <Button
-                      fullWidth
                       disableElevation
                       startIcon={<MapIcon />}
                       onClick={handleVoirCarte}
-                      sx={{ textTransform: "none", fontWeight: 700, bgcolor: SKY, color: BLUE_DARK, "&:hover": { bgcolor: "#D9E4FF" } }}
+                      sx={{ flex: "1 1 140px", height: 44, borderRadius: "10px", textTransform: "none", fontFamily: FONT, fontWeight: 700, fontSize: 14.5, bgcolor: GREY, color: GREEN, "&:hover": { bgcolor: GREEN_LIGHT } }}
                     >
-                      Carte
+                      Voir sur la carte
                     </Button>
                     {hasGps && (
                       <Button
-                        fullWidth
                         variant="contained"
                         disableElevation
                         startIcon={<Directions />}
                         onClick={handleItineraire}
-                        sx={{ textTransform: "none", fontWeight: 700, bgcolor: BLUE, color: "#fff", "&:hover": { bgcolor: BLUE_DARK } }}
+                        sx={{ flex: "1 1 140px", height: 44, borderRadius: "10px", textTransform: "none", fontFamily: FONT, fontWeight: 700, fontSize: 14.5, bgcolor: GREEN, color: "#fff", "&:hover": { bgcolor: GREEN_DEEP } }}
                       >
                         Itinéraire
                       </Button>
                     )}
                   </Box>
-                </InfoCard>
+                </Panel>
 
                 {hasInfos && (
-                  <InfoCard icon={Info} title="Informations" headerBg={GREEN_LIGHT} headerColor={GREEN_DARK}>
-                    {carac.anneeConstruction && (
-                      <SplitRow icon={CalendarMonth} label="Construction" color={GREEN}>{carac.anneeConstruction}</SplitRow>
-                    )}
-                    {carac.etatGeneral && (
-                      <SplitRow icon={CheckCircle} label="État général" color={GREEN}>
-                        <Box component="span" sx={{ display: "inline-block", bgcolor: GREEN_LIGHT, color: GREEN, fontSize: 13, fontWeight: 700, px: 1.25, py: 0.3, borderRadius: "999px" }}>
-                          {carac.etatGeneral}
-                        </Box>
-                      </SplitRow>
-                    )}
-                    {carac.acces && (
-                      <SplitRow icon={Route} label="Accès" color={GREEN}>{carac.acces}</SplitRow>
-                    )}
-                    {carac.etage && (
-                      <SplitRow icon={Stairs} label="Étage" color={GREEN}>{carac.etage}</SplitRow>
-                    )}
+                  <Panel>
+                    <SectionTitle icon={Info}>Informations</SectionTitle>
+                    {infoRows.map((r) => (
+                      <InfoRow key={r.label} icon={r.icon} label={r.label}>
+                        {r.badge ? (
+                          <Box component="span" sx={{ display: "inline-block", bgcolor: GREEN_LIGHT, color: GREEN_DEEP, fontSize: 13, fontWeight: 700, px: 1.25, py: 0.3, borderRadius: "8px" }}>{r.value}</Box>
+                        ) : r.capitalize ? (
+                          <Box component="span" sx={{ textTransform: "capitalize" }}>{r.value}</Box>
+                        ) : (
+                          r.value
+                        )}
+                      </InfoRow>
+                    ))}
                     {bien.description && (
                       <Box sx={{ mt: 1, pt: 1.5, borderTop: `1px solid ${BORDER}` }}>
-                        <Typography sx={{ fontSize: 11, fontWeight: 600, color: "#5b6573", textTransform: "uppercase", letterSpacing: 0.4, mb: 0.5 }}>
-                          Description
-                        </Typography>
-                        <Typography sx={{ fontSize: 14.5, lineHeight: 1.6, color: NIGHT }}>{bien.description}</Typography>
+                        <Typography sx={{ fontFamily: FONT, fontSize: 12, fontWeight: 700, color: MUTED, textTransform: "uppercase", letterSpacing: 0.4, mb: 0.5 }}>Description</Typography>
+                        <Typography sx={{ fontFamily: FONT, fontSize: 14.5, lineHeight: 1.6, color: NIGHT, overflowWrap: "anywhere" }}>{bien.description}</Typography>
                       </Box>
                     )}
-                  </InfoCard>
+                  </Panel>
                 )}
               </Box>
 
-              {/* 5. Sections descriptives */}
-              {bien.situationGeographique && (
-                <Box sx={{ bgcolor: GREEN_LIGHT, border: `1px solid ${BORDER}`, borderRadius: 3, p: 2.5 }}>
-                  <SectionTitle icon={MapIcon} color={GREEN_DARK}>Situation géographique du Terrain</SectionTitle>
-                  <Typography sx={{ lineHeight: 1.7, color: GREEN_DARK, fontSize: 14.5 }}>
-                    {bien.situationGeographique}
-                  </Typography>
+              {/* Situation géographique + description physique */}
+              {(bien.situationGeographique || bien.descriptionPhysique) && (
+                <Box sx={twoCols(bien.situationGeographique && bien.descriptionPhysique ? "minmax(0, 1fr) minmax(0, 1fr)" : "minmax(0, 1fr)")}>
+                  {bien.situationGeographique && (
+                    <Panel sx={{ bgcolor: GREEN_LIGHT }}>
+                      <SectionTitle icon={MapIcon}>Situation géographique du terrain</SectionTitle>
+                      <Typography sx={{ fontFamily: FONT, lineHeight: 1.65, color: NIGHT, fontSize: 14.5, overflowWrap: "anywhere" }}>{bien.situationGeographique}</Typography>
+                    </Panel>
+                  )}
+                  {bien.descriptionPhysique && (
+                    <Panel>
+                      <SectionTitle icon={Description}>Description physique</SectionTitle>
+                      <Typography sx={{ fontFamily: FONT, lineHeight: 1.65, color: "#334155", fontSize: 14.5, overflowWrap: "anywhere" }}>{bien.descriptionPhysique}</Typography>
+                    </Panel>
+                  )}
                 </Box>
               )}
 
-              {bien.descriptionPhysique && (
-                <Box sx={{ bgcolor: SKY, border: `1px solid ${BORDER}`, borderRadius: 3, p: 2.5 }}>
-                  <SectionTitle icon={Description} color={BLUE_DARK}>Description physique</SectionTitle>
-                  <Typography sx={{ lineHeight: 1.7, color: BLUE_DARK, fontSize: 14.5 }}>
-                    {bien.descriptionPhysique}
-                  </Typography>
-                </Box>
-              )}
-
-              {bien.atoutsMajeurs && bien.atoutsMajeurs.length > 0 && (
-                <Panel>
-                  <SectionTitle icon={Star}>Atouts majeurs</SectionTitle>
-                  <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 1 }}>
-                    {bien.atoutsMajeurs.map((atout, index) => (
-                      <Box key={index} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                        <CheckCircle sx={{ fontSize: 20, color: GREEN, flexShrink: 0 }} />
-                        <Typography sx={{ fontSize: 14.5, color: NIGHT }}>
-                          {typeof atout === "string" ? atout : atout.nom || atout}
-                        </Typography>
+              {/* Atouts majeurs + agence */}
+              {(atouts.length > 0 || hasAgenceBlock) && (
+                <Box sx={twoCols(atouts.length > 0 && hasAgenceBlock ? "minmax(0, 1fr) minmax(0, 1fr)" : "minmax(0, 1fr)")}>
+                  {atouts.length > 0 && (
+                    <Panel>
+                      <SectionTitle icon={Star}>Atouts majeurs</SectionTitle>
+                      <Box sx={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "10px 16px" }}>
+                        {atouts.map((atout, index) => (
+                          <Box key={index} sx={{ display: "flex", alignItems: "center", gap: 1.25, minWidth: 0 }}>
+                            <Box sx={{ width: 22, height: 22, borderRadius: "50%", bgcolor: GREEN, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                              <Check sx={{ fontSize: 15, color: "#fff" }} />
+                            </Box>
+                            <Typography sx={{ fontFamily: FONT, fontSize: 14.5, color: NIGHT, overflowWrap: "anywhere" }}>
+                              {typeof atout === "string" ? atout : atout.nom || atout}
+                            </Typography>
+                          </Box>
+                        ))}
                       </Box>
+                    </Panel>
+                  )}
+
+                  {hasAgenceBlock && (
+                    <Panel>
+                      <SectionTitle icon={Business}>{agence ? "Agence vendeuse" : "Référence du bien"}</SectionTitle>
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, minWidth: 0 }}>
+                        {agence && (
+                          <Box sx={{ width: 48, height: 48, borderRadius: "50%", bgcolor: GREEN_LIGHT, color: GREEN_DEEP, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                            <Business sx={{ fontSize: 26 }} />
+                          </Box>
+                        )}
+                        <Box sx={{ minWidth: 0 }}>
+                          {agence && <Typography sx={{ fontFamily: FONT, fontSize: 16, fontWeight: 800, color: NIGHT, overflowWrap: "anywhere" }}>{agence.nom}</Typography>}
+                          {agence?.telephone && (
+                            <Box
+                              component="a"
+                              href={`tel:${String(agence.telephone).replace(/\s+/g, "")}`}
+                              sx={{ display: "inline-flex", alignItems: "center", gap: 0.5, color: GREEN, textDecoration: "none", fontFamily: FONT, fontSize: 14.5, fontWeight: 600, "&:hover": { textDecoration: "underline" } }}
+                            >
+                              <Phone sx={{ fontSize: 17 }} />
+                              {agence.telephone}
+                            </Box>
+                          )}
+                          {bien.reference && (
+                            <Typography sx={{ fontFamily: FONT, fontSize: 13, color: MUTED, overflowWrap: "anywhere" }}>Réf. : {bien.reference}</Typography>
+                          )}
+                        </Box>
+                      </Box>
+                    </Panel>
+                  )}
+                </Box>
+              )}
+
+              {/* Vidéo(s) */}
+              {videos.length > 0 && (
+                <Panel>
+                  <SectionTitle icon={VideoLibrary}>{videos.length > 1 ? "Vidéos du bien" : "Vidéo du bien"}</SectionTitle>
+                  <Box sx={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr)", gap: "12px", "@container (min-width: 760px)": { gridTemplateColumns: videos.length > 1 ? "repeat(2, minmax(0, 1fr))" : "minmax(0, 1fr)" } }}>
+                    {videos.map((videoUrl, index) => (
+                      <VideoCard key={index} videoUrl={videoUrl} index={index} />
                     ))}
                   </Box>
                 </Panel>
-              )}
-
-              {/* 6. Vidéos */}
-              {bien.videos && bien.videos.length > 0 && (
-                <Box>
-                  <SectionTitle icon={Videocam}>Vidéos du bien</SectionTitle>
-                  <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" }, gap: 2 }}>
-                    {bien.videos.map((videoUrl, index) => {
-                      const videoUrlStr = typeof videoUrl === "string" ? videoUrl : videoUrl.url || videoUrl;
-                      const embedUrl = getVideoEmbedUrl(videoUrlStr);
-                      const isYouTube = embedUrl && embedUrl.includes('youtube.com/embed');
-                      const isVimeo = embedUrl && embedUrl.includes('vimeo.com/video');
-
-                      return (
-                        <Box key={index} sx={{ overflow: "hidden", borderRadius: 3, border: `1px solid ${BORDER}`, bgcolor: "#fff" }}>
-                          {embedUrl && (isYouTube || isVimeo) ? (
-                            <Box
-                              component="iframe"
-                              src={embedUrl}
-                              title={`Vidéo ${index + 1}`}
-                              sx={{ width: "100%", height: 220, border: "none", display: "block" }}
-                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                              allowFullScreen
-                            />
-                          ) : (
-                            <Box
-                              sx={{
-                                width: "100%",
-                                height: 220,
-                                display: "flex",
-                                flexDirection: "column",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                bgcolor: BLUE,
-                                color: "#fff",
-                                p: 3,
-                              }}
-                            >
-                              <VideoLibrary sx={{ fontSize: 44, mb: 1.5 }} />
-                              <Typography sx={{ fontSize: 16, fontWeight: 700, mb: 1 }}>Vidéo {index + 1}</Typography>
-                              <Button
-                                variant="contained"
-                                href={videoUrlStr}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                sx={{ bgcolor: "#fff", color: BLUE, textTransform: "none", fontWeight: 600, "&:hover": { bgcolor: SKY } }}
-                              >
-                                Voir la vidéo
-                              </Button>
-                            </Box>
-                          )}
-                        </Box>
-                      );
-                    })}
-                  </Box>
-                </Box>
               )}
             </Box>
           ) : (
@@ -741,43 +762,31 @@ const BienDetailDrawer = ({ open, onClose, selectedBien, onBienUpdate }) => {
             </Box>
           )}
         </Box>
-
-        {/* 7. Barre d'actions : à la fin du contenu (non figée) */}
-        {bien && (
-          <Box
-            sx={{
-              bgcolor: GREY_BG,
-              borderTop: `1px solid ${BORDER}`,
-              px: { xs: 2, sm: 3 },
-              pt: 2,
-              pb: 3,
-              display: "flex",
-              gap: 1.5,
-            }}
-          >
-            <Button
-              fullWidth
-              variant="contained"
-              disableElevation
-              startIcon={<Phone />}
-              onClick={openWhatsApp}
-              sx={{ py: 1.2, textTransform: "none", fontWeight: 700, bgcolor: GREEN, "&:hover": { bgcolor: GREEN_DARK } }}
-            >
-              Contacter
-            </Button>
-            <Button
-              fullWidth
-              variant="contained"
-              disableElevation
-              startIcon={<Event />}
-              onClick={openWhatsApp}
-              sx={{ py: 1.2, textTransform: "none", fontWeight: 700, bgcolor: BLUE, "&:hover": { bgcolor: BLUE_DARK } }}
-            >
-              Demander une visite
-            </Button>
-          </Box>
-        )}
       </Box>
+
+      {/* 3. Barre d'actions fixe */}
+      {bien && (
+        <Box sx={{ flexShrink: 0, bgcolor: "#fff", borderTop: `1px solid ${BORDER}`, boxShadow: "0 -2px 8px rgba(16,28,54,0.06)", p: { xs: "12px 16px", sm: "14px 20px" }, display: "flex", flexWrap: "wrap", gap: "12px" }}>
+          <Button
+            variant="outlined"
+            disableElevation
+            startIcon={<Phone />}
+            onClick={openWhatsApp}
+            sx={{ flex: "1 1 180px", height: 46, borderRadius: "10px", textTransform: "none", fontFamily: FONT, fontWeight: 700, fontSize: 15, border: `1.5px solid ${GREEN}`, color: GREEN, bgcolor: "#fff", "&:hover": { border: `1.5px solid ${GREEN_DEEP}`, bgcolor: GREEN_LIGHT } }}
+          >
+            Contacter l'agence
+          </Button>
+          <Button
+            variant="contained"
+            disableElevation
+            startIcon={<Event />}
+            onClick={openWhatsApp}
+            sx={{ flex: "1 1 180px", height: 46, borderRadius: "10px", textTransform: "none", fontFamily: FONT, fontWeight: 700, fontSize: 15, bgcolor: GREEN, color: "#fff", "&:hover": { bgcolor: GREEN_DEEP } }}
+          >
+            Demander une visite
+          </Button>
+        </Box>
+      )}
     </Drawer>
   );
 };
