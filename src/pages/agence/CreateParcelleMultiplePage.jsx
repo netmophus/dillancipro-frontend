@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { ThemeProvider, createTheme } from "@mui/material/styles";
 import {
-  Container,
   Box,
   Typography,
   Button,
@@ -46,12 +46,55 @@ import {
   Close,
   Description,
 } from "@mui/icons-material";
+import { Info, Checklist } from "@mui/icons-material";
 import { Flag as FIFlag, Notes as FINotes, AttachMoney as FIAttachMoney, MyLocation as FIMyLocation, Explore as FIExplore } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import AgenceLayout from "../../components/agence/AgenceLayout";
-import SectionCard from "../../components/admin/SectionCard";
-import AgencePageHeader from "../../components/agence/AgencePageHeader";
 import api from "../../services/api";
+
+const FONT = "'Manrope', 'Plus Jakarta Sans', 'DM Sans', system-ui, Arial, sans-serif";
+const NIGHT = "#101C36";
+const MUTED = "#64748B";
+const BORDER = "#E2E8F0";
+const PRIMARY = "#008557";
+
+// Thème local : palette Dillanci, uniquement sur cette page
+const multiTheme = createTheme({
+  palette: {
+    primary: { main: PRIMARY, dark: "#005C48", contrastText: "#ffffff" },
+    secondary: { main: "#1859C9" },
+    success: { main: PRIMARY },
+    warning: { main: "#C26716" },
+    info: { main: "#1859C9" },
+    error: { main: "#C62828" },
+    text: { primary: NIGHT, secondary: MUTED },
+  },
+  typography: { fontFamily: FONT },
+  components: {
+    MuiButton: { styleOverrides: { root: { textTransform: "none", fontWeight: 700, borderRadius: 10 } } },
+    MuiOutlinedInput: { styleOverrides: { root: { borderRadius: 10 } } },
+    MuiAlert: { styleOverrides: { root: { borderRadius: 10 } } },
+    MuiChip: { styleOverrides: { root: { fontWeight: 600 } } },
+  },
+});
+
+const SECTION_ICONS = { info: Info, location: LocationOn, description: Description, checklist: Checklist };
+
+// Section de formulaire : fond blanc, bordure fine, entête à pastille d'icône
+const SectionCard = ({ title, icon = "info", sx, children }) => {
+  const Icon = SECTION_ICONS[icon] || Info;
+  return (
+    <Box sx={{ bgcolor: "#fff", border: `1px solid ${BORDER}`, borderRadius: "14px", boxShadow: "0 1px 3px rgba(16,28,54,0.05)", p: "20px", ...sx }}>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, mb: 2.5 }}>
+        <Box sx={{ width: 38, height: 38, borderRadius: "10px", bgcolor: "#E5F3EC", color: PRIMARY, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <Icon sx={{ fontSize: 22 }} />
+        </Box>
+        <Typography component="h2" sx={{ fontFamily: FONT, fontSize: 17, fontWeight: 700, color: NIGHT }}>{title}</Typography>
+      </Box>
+      {children}
+    </Box>
+  );
+};
 
 const CreateParcelleMultiplePage = () => {
   const navigate = useNavigate();
@@ -231,17 +274,38 @@ const CreateParcelleMultiplePage = () => {
 
   return (
     <AgenceLayout>
-      <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
-        {/* En-tête */}
-        <AgencePageHeader
-          icon={Square}
-          title="Créer Parcelles Multiples"
-          subtitle="Créez plusieurs parcelles avec coordonnées et médias individuels"
-        />
+      <ThemeProvider theme={multiTheme}>
+      <Box sx={{ fontFamily: FONT }}>
+        {/* Bandeau de la page */}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 2,
+            mb: 2.5,
+            p: { xs: "18px 16px", sm: "24px" },
+            minHeight: 110,
+            bgcolor: "#005C48",
+            color: "#fff",
+            borderRadius: "14px",
+          }}
+        >
+          <Box sx={{ width: { xs: 48, sm: 60 }, height: { xs: 48, sm: 60 }, borderRadius: "14px", bgcolor: "rgba(255,255,255,0.14)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <Square sx={{ fontSize: { xs: 26, sm: 32 } }} />
+          </Box>
+          <Box sx={{ minWidth: 0 }}>
+            <Typography component="h1" sx={{ fontFamily: FONT, fontSize: { xs: 22, sm: 30 }, fontWeight: 700, lineHeight: 1.2 }}>
+              Créer des parcelles multiples
+            </Typography>
+            <Typography sx={{ fontFamily: FONT, fontSize: 15, color: "#CFE9E0", mt: 0.5 }}>
+              Créez plusieurs parcelles avec coordonnées et médias individuels
+            </Typography>
+          </Box>
+        </Box>
 
         {/* Alertes */}
-        {success && <Alert severity="success" sx={{ mb: 3 }}>{success}</Alert>}
-        {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
+        {success && <Alert severity="success" sx={{ mb: 2.5 }}>{success}</Alert>}
+        {error && <Alert severity="error" sx={{ mb: 2.5 }}>{error}</Alert>}
 
         <Card elevation={0} sx={{ bgcolor: "transparent", border: "none", boxShadow: "none" }}>
           <CardContent sx={{ p: 0, "&:last-child": { pb: 0 }, "& .MuiOutlinedInput-root": { borderRadius: 2 }, "& legend": { display: "none" } }}>
@@ -251,9 +315,10 @@ const CreateParcelleMultiplePage = () => {
               sx={{
                 mb: 4,
                 "& .MuiStepLabel-label": { fontWeight: 600 },
-                "& .MuiStepLabel-label.Mui-active": { color: "#3030F9" },
-                "& .MuiStepIcon-root.Mui-active": { color: "#3030F9" },
-                "& .MuiStepIcon-root.Mui-completed": { color: "#0A7C4F" },
+                "& .MuiStepLabel-label:not(.Mui-active)": { display: { xs: "none", sm: "block" } },
+                "& .MuiStepLabel-label.Mui-active": { color: PRIMARY },
+                "& .MuiStepIcon-root.Mui-active": { color: PRIMARY },
+                "& .MuiStepIcon-root.Mui-completed": { color: "#005C48" },
               }}
             >
               {steps.map((label) => (
@@ -265,7 +330,7 @@ const CreateParcelleMultiplePage = () => {
 
             {/* ÉTAPE 1 : Informations communes */}
             {currentStep === 0 && (
-              <SectionCard title="Informations communes à toutes les parcelles" color="#3030F9" icon="info" sx={{ mb: 0 }}>
+              <SectionCard title="Informations communes à toutes les parcelles" icon="info" sx={{ mb: 0 }}>
                 <Grid container spacing={3}>
                   <Grid item xs={12} md={6}>
                     <TextField
@@ -387,7 +452,7 @@ const CreateParcelleMultiplePage = () => {
 
             {/* ÉTAPE 2 : Liste des numéros */}
             {currentStep === 1 && (
-              <SectionCard title="Numéros des parcelles à créer" color="#0A7C4F" icon="checklist" sx={{ mb: 0 }}>
+              <SectionCard title="Numéros des parcelles à créer" icon="checklist" sx={{ mb: 0 }}>
                 <TextField
                   inputProps={{ "aria-label": "Liste des numéros", title: "Liste des numéros" }}
                   value={numeroList}
@@ -424,7 +489,7 @@ const CreateParcelleMultiplePage = () => {
 
             {/* ÉTAPE 3 : Coordonnées & Documents par parcelle */}
             {currentStep === 2 && (
-              <SectionCard title="Coordonnées & Documents pour chaque parcelle" color="#0e1133" icon="location" sx={{ mb: 0 }}>
+              <SectionCard title="Coordonnées & Documents pour chaque parcelle" icon="location" sx={{ mb: 0 }}>
                 <Alert severity="info" sx={{ mb: 3 }}>
                   Pour chaque parcelle, vous pouvez ajouter ses coordonnées GPS et documents (tous optionnels). Les photos et vidéos sont déjà intégrées dans l'îlot.
                 </Alert>
@@ -570,7 +635,7 @@ const CreateParcelleMultiplePage = () => {
 
             {/* ÉTAPE 4 : Confirmation */}
             {currentStep === 3 && (
-              <SectionCard title="Récapitulatif" color="#3030F9" icon="description" sx={{ mb: 0 }}>
+              <SectionCard title="Récapitulatif" icon="description" sx={{ mb: 0 }}>
                 
                 <Alert severity="info" sx={{ mb: 3 }}>
                   Vous allez créer <strong>{parcelles.length} parcelles</strong>
@@ -581,13 +646,13 @@ const CreateParcelleMultiplePage = () => {
                     <TableHead
                       sx={{
                         "& th": {
-                          bgcolor: "#f6f8fb",
+                          bgcolor: "#F1F4F7",
                           color: "text.secondary",
                           fontWeight: 700,
                           fontSize: "0.75rem",
                           textTransform: "uppercase",
                           letterSpacing: 0.5,
-                          borderBottom: "2px solid #e3e8ef",
+                          borderBottom: `2px solid ${BORDER}`,
                         },
                       }}
                     >
@@ -685,7 +750,8 @@ const CreateParcelleMultiplePage = () => {
             </Box>
           </CardContent>
         </Card>
-      </Container>
+      </Box>
+      </ThemeProvider>
     </AgenceLayout>
   );
 };

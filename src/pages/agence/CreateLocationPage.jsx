@@ -1,7 +1,7 @@
 import React, { useState } from "react";
+import { ThemeProvider, createTheme } from "@mui/material/styles";
 import {
   Box,
-  Container,
   Typography,
   Card,
   CardContent,
@@ -30,12 +30,55 @@ import {
   Description,
   CheckCircle,
 } from "@mui/icons-material";
+import { Info, Tune, Checklist } from "@mui/icons-material";
 import { AttachMoney as FIAttachMoney, Bathtub as FIBathtub, Bed as FIBed, CalendarMonth as FICalendarMonth, Explore as FIExplore, Flag as FIFlag, Home as FIHome, LocationCity as FILocationCity, LocationOn as FILocationOn, MarkunreadMailbox as FIMarkunreadMailbox, MyLocation as FIMyLocation, Notes as FINotes, Place as FIPlace, Receipt as FIReceipt, Savings as FISavings, Schedule as FISchedule, Square as FISquare, Title as FITitle, Videocam as FIVideocam } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import AgenceLayout from "../../components/agence/AgenceLayout";
-import SectionCard from "../../components/admin/SectionCard";
-import AgencePageHeader from "../../components/agence/AgencePageHeader";
 import api from "../../services/api";
+
+const FONT = "'Manrope', 'Plus Jakarta Sans', 'DM Sans', system-ui, Arial, sans-serif";
+const NIGHT = "#101C36";
+const MUTED = "#64748B";
+const BORDER = "#E2E8F0";
+const PRIMARY = "#008557";
+
+// Thème local : palette Dillanci, uniquement sur cette page
+const locationTheme = createTheme({
+  palette: {
+    primary: { main: PRIMARY, dark: "#005C48", contrastText: "#ffffff" },
+    secondary: { main: "#1859C9" },
+    success: { main: PRIMARY },
+    warning: { main: "#C26716" },
+    info: { main: "#1859C9" },
+    error: { main: "#C62828" },
+    text: { primary: NIGHT, secondary: MUTED },
+  },
+  typography: { fontFamily: FONT },
+  components: {
+    MuiButton: { styleOverrides: { root: { textTransform: "none", fontWeight: 700, borderRadius: 10 } } },
+    MuiOutlinedInput: { styleOverrides: { root: { borderRadius: 10 } } },
+    MuiAlert: { styleOverrides: { root: { borderRadius: 10 } } },
+    MuiChip: { styleOverrides: { root: { fontWeight: 600 } } },
+  },
+});
+
+const SECTION_ICONS = { info: Info, location: LocationOn, tune: Tune, description: Description, photo: PhotoCamera, checklist: Checklist };
+
+// Section de formulaire : fond blanc, bordure fine, entete a pastille d'icone
+const SectionCard = ({ title, icon = "info", sx, children }) => {
+  const Icon = SECTION_ICONS[icon] || Info;
+  return (
+    <Box sx={{ bgcolor: "#fff", border: `1px solid ${BORDER}`, borderRadius: "14px", boxShadow: "0 1px 3px rgba(16,28,54,0.05)", p: "20px", ...sx }}>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, mb: 2.5 }}>
+        <Box sx={{ width: 38, height: 38, borderRadius: "10px", bgcolor: "#E5F3EC", color: PRIMARY, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <Icon sx={{ fontSize: 22 }} />
+        </Box>
+        <Typography component="h2" sx={{ fontFamily: FONT, fontSize: 17, fontWeight: 700, color: NIGHT }}>{title}</Typography>
+      </Box>
+      {children}
+    </Box>
+  );
+};
 
 const CreateLocationPage = () => {
   const navigate = useNavigate();
@@ -103,12 +146,12 @@ const CreateLocationPage = () => {
   ];
 
   const STEP_CARDS = [
-    { title: "Informations de base", color: "#3030F9", icon: "info" },
-    { title: "Localisation", color: "#0A7C4F", icon: "location" },
-    { title: "Caractéristiques", color: "#0e1133", icon: "tune" },
-    { title: "Prix et conditions", color: "#3030F9", icon: "description" },
-    { title: "Médias et documents", color: "#0A7C4F", icon: "photo" },
-    { title: "Validation", color: "#0e1133", icon: "checklist" },
+    { title: "Informations de base", icon: "info" },
+    { title: "Localisation", icon: "location" },
+    { title: "Caractéristiques", icon: "tune" },
+    { title: "Prix et conditions", icon: "description" },
+    { title: "Médias et documents", icon: "photo" },
+    { title: "Validation", icon: "checklist" },
   ];
 
   const typesLogement = [
@@ -167,7 +210,13 @@ const CreateLocationPage = () => {
           latitude: parseFloat(formData.latitude) || 0,
           longitude: parseFloat(formData.longitude) || 0
         },
-        dateDisponibilite: new Date(formData.dateDisponibilite)
+        dateDisponibilite: new Date(formData.dateDisponibilite),
+        // Noms de champs attendus par le contrôleur backend (createLocation)
+        typeBien: formData.type,
+        nombreChambres: parseInt(formData.chambres),
+        nombreSallesDeBain: parseInt(formData.salleDeBain),
+        nombreSalons: formData.salon ? 1 : 0,
+        depotGarantie: parseInt(formData.caution)
       };
 
       const response = await api.post("/agence/locations", locationData);
@@ -181,7 +230,10 @@ const CreateLocationPage = () => {
       
     } catch (error) {
       console.error("❌ Erreur création location:", error);
-      setError(error.response?.data?.message || "Erreur lors de la création de la location");
+      setError(
+        [error.response?.data?.message, error.response?.data?.error].filter(Boolean).join(" : ") ||
+          "Erreur lors de la création de la location"
+      );
     } finally {
       setLoading(false);
     }
@@ -767,7 +819,7 @@ const CreateLocationPage = () => {
       case 5:
         return (
           <Box>
-            <Card elevation={0} sx={{ mb: 3, borderRadius: 3, border: "1px solid rgba(15,23,42,0.08)" }}>
+            <Card elevation={0} sx={{ mb: 3, borderRadius: "14px", border: `1px solid ${BORDER}`, boxShadow: "0 1px 3px rgba(16,28,54,0.05)" }}>
               <CardContent>
                 <Typography variant="h5" gutterBottom>
                   {formData.titre}
@@ -817,13 +869,35 @@ const CreateLocationPage = () => {
 
   return (
     <AgenceLayout>
-      <Container maxWidth="lg">
-        <Box sx={{ py: 4 }}>
-          <AgencePageHeader
-            icon={Home}
-            title="Créer une nouvelle location"
-            subtitle="Ajoutez votre logement à la plateforme pour le proposer à la location"
-          />
+      <ThemeProvider theme={locationTheme}>
+      <Box sx={{ fontFamily: FONT }}>
+        <Box>
+          {/* Bandeau de la page */}
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 2,
+              mb: 2.5,
+              p: { xs: "18px 16px", sm: "24px" },
+              minHeight: 110,
+              bgcolor: "#005C48",
+              color: "#fff",
+              borderRadius: "14px",
+            }}
+          >
+            <Box sx={{ width: { xs: 48, sm: 60 }, height: { xs: 48, sm: 60 }, borderRadius: "14px", bgcolor: "rgba(255,255,255,0.14)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <Home sx={{ fontSize: { xs: 26, sm: 32 } }} />
+            </Box>
+            <Box sx={{ minWidth: 0 }}>
+              <Typography component="h1" sx={{ fontFamily: FONT, fontSize: { xs: 22, sm: 30 }, fontWeight: 700, lineHeight: 1.2 }}>
+                Créer une nouvelle location
+              </Typography>
+              <Typography sx={{ fontFamily: FONT, fontSize: 15, color: "#CFE9E0", mt: 0.5 }}>
+                Ajoutez votre logement à la plateforme pour le proposer à la location
+              </Typography>
+            </Box>
+          </Box>
 
           <Card elevation={0} sx={{ bgcolor: "transparent", border: "none", boxShadow: "none" }}>
             <CardContent sx={{ p: 0, "&:last-child": { pb: 0 }, "& .MuiOutlinedInput-root": { borderRadius: 2 }, "& legend": { display: "none" } }}>
@@ -832,8 +906,12 @@ const CreateLocationPage = () => {
                 sx={{
                   mb: 4,
                   "& .MuiStepLabel-label": { fontWeight: 600 },
-                  "& .MuiStepIcon-root.Mui-active": { color: "#3030F9" },
-                  "& .MuiStepIcon-root.Mui-completed": { color: "#0A7C4F" },
+                  "& .MuiStepLabel-label:not(.Mui-active)": { display: { xs: "none", lg: "block" } },
+                  "& .MuiStepConnector-root": { display: { xs: "none", lg: "block" } },
+                  "& .MuiStep-root": { px: { xs: 0, lg: 1 } },
+                  justifyContent: { xs: "space-between", lg: "initial" },
+                  "& .MuiStepIcon-root.Mui-active": { color: PRIMARY },
+                  "& .MuiStepIcon-root.Mui-completed": { color: "#005C48" },
                 }}
               >
                 {steps.map((label) => (
@@ -844,7 +922,7 @@ const CreateLocationPage = () => {
               </Stepper>
 
               {error && (
-                <Alert severity="error" sx={{ mb: 3 }}>
+                <Alert severity="error" sx={{ mb: 2.5 }}>
                   {error}
                 </Alert>
               )}
@@ -852,7 +930,6 @@ const CreateLocationPage = () => {
               <Box sx={{ minHeight: 400, mb: 4 }}>
                 <SectionCard
                   title={STEP_CARDS[activeStep].title}
-                  color={STEP_CARDS[activeStep].color}
                   icon={STEP_CARDS[activeStep].icon}
                   sx={{ mb: 0 }}
                 >
@@ -888,7 +965,8 @@ const CreateLocationPage = () => {
             </CardContent>
           </Card>
         </Box>
-      </Container>
+      </Box>
+      </ThemeProvider>
     </AgenceLayout>
   );
 };

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { ThemeProvider, createTheme } from "@mui/material/styles";
 import {
-  Container,
   Box,
   Typography,
   Button,
@@ -56,13 +56,57 @@ import {
   VideoLibrary,
   Close,
 } from "@mui/icons-material";
+import { Info } from "@mui/icons-material";
 import { MyLocation as FIMyLocation, Explore as FIExplore, Flag as FIFlag } from "@mui/icons-material";
 import { useNavigate, useLocation } from "react-router-dom";
 import AgenceLayout from "../../components/agence/AgenceLayout";
-import SectionCard from "../../components/admin/SectionCard";
-import AgencePageHeader from "../../components/agence/AgencePageHeader";
 import api from "../../services/api";
 import { BASE_SERVER_URL } from "../../config/config";
+
+const FONT = "'Manrope', 'Plus Jakarta Sans', 'DM Sans', system-ui, Arial, sans-serif";
+const NIGHT = "#101C36";
+const MUTED = "#64748B";
+const BORDER = "#E2E8F0";
+const PRIMARY = "#008557";
+
+// Thème local : palette Dillanci, uniquement sur cette page
+const parcelleTheme = createTheme({
+  palette: {
+    primary: { main: PRIMARY, dark: "#005C48", contrastText: "#ffffff" },
+    secondary: { main: "#1859C9" },
+    success: { main: PRIMARY },
+    warning: { main: "#C26716" },
+    info: { main: "#1859C9" },
+    error: { main: "#C62828" },
+    text: { primary: NIGHT, secondary: MUTED },
+  },
+  typography: { fontFamily: FONT },
+  components: {
+    MuiButton: { styleOverrides: { root: { textTransform: "none", fontWeight: 700, borderRadius: 10 } } },
+    MuiOutlinedInput: { styleOverrides: { root: { borderRadius: 10 } } },
+    MuiAlert: { styleOverrides: { root: { borderRadius: 10 } } },
+    MuiDialog: { styleOverrides: { paper: { borderRadius: 14 } } },
+    MuiChip: { styleOverrides: { root: { fontWeight: 600 } } },
+  },
+});
+
+const SECTION_ICONS = { info: Info, location: LocationOn, description: Description };
+
+// Section de formulaire : fond blanc, bordure fine, entête à pastille d'icône
+const SectionCard = ({ title, icon = "info", sx, children }) => {
+  const Icon = SECTION_ICONS[icon] || Info;
+  return (
+    <Box sx={{ bgcolor: "#fff", border: `1px solid ${BORDER}`, borderRadius: "14px", boxShadow: "0 1px 3px rgba(16,28,54,0.05)", p: "20px", ...sx }}>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, mb: 2.5 }}>
+        <Box sx={{ width: 38, height: 38, borderRadius: "10px", bgcolor: "#E5F3EC", color: PRIMARY, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <Icon sx={{ fontSize: 22 }} />
+        </Box>
+        <Typography component="h2" sx={{ fontFamily: FONT, fontSize: 17, fontWeight: 700, color: NIGHT }}>{title}</Typography>
+      </Box>
+      {children}
+    </Box>
+  );
+};
 
 const CreateParcellePage = () => {
   const navigate = useNavigate();
@@ -405,21 +449,42 @@ const CreateParcellePage = () => {
 
   return (
     <AgenceLayout>
-      <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
-        {/* En-tête */}
-        <AgencePageHeader
-          icon={Map}
-          title="Gestion des Parcelles"
-          subtitle="Créez et gérez vos parcelles immobilières"
-        />
+      <ThemeProvider theme={parcelleTheme}>
+      <Box sx={{ fontFamily: FONT }}>
+        {/* Bandeau de la page */}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 2,
+            mb: 2.5,
+            p: { xs: "18px 16px", sm: "24px" },
+            minHeight: 110,
+            bgcolor: "#005C48",
+            color: "#fff",
+            borderRadius: "14px",
+          }}
+        >
+          <Box sx={{ width: { xs: 48, sm: 60 }, height: { xs: 48, sm: 60 }, borderRadius: "14px", bgcolor: "rgba(255,255,255,0.14)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <Map sx={{ fontSize: { xs: 26, sm: 32 } }} />
+          </Box>
+          <Box sx={{ minWidth: 0 }}>
+            <Typography component="h1" sx={{ fontFamily: FONT, fontSize: { xs: 22, sm: 30 }, fontWeight: 700, lineHeight: 1.2 }}>
+              Gestion des parcelles
+            </Typography>
+            <Typography sx={{ fontFamily: FONT, fontSize: 15, color: "#CFE9E0", mt: 0.5 }}>
+              Créez et gérez vos parcelles immobilières
+            </Typography>
+          </Box>
+        </Box>
 
         {/* Onglets principaux */}
-        <Paper elevation={0} sx={{ mb: 3, borderRadius: 3, border: "1px solid #e3e8ef", overflow: "hidden" }}>
+        <Paper elevation={0} sx={{ mb: 2.5, borderRadius: "14px", border: `1px solid ${BORDER}`, boxShadow: "0 1px 3px rgba(16,28,54,0.05)", overflow: "hidden" }}>
           <Tabs
             value={activeTab}
             onChange={(_, newValue) => setActiveTab(newValue)}
             variant="fullWidth"
-            TabIndicatorProps={{ sx: { height: 3, bgcolor: "#3030F9" } }}
+            TabIndicatorProps={{ sx: { height: 3, bgcolor: PRIMARY } }}
             sx={{
               "& .MuiTab-root": {
                 fontWeight: "bold",
@@ -427,7 +492,7 @@ const CreateParcellePage = () => {
                 textTransform: "none",
                 py: 1.75,
               },
-              "& .Mui-selected": { color: "#3030F9 !important" },
+              "& .Mui-selected": { color: `${PRIMARY} !important` },
             }}
           >
             <Tab icon={<Add />} label="Créer" iconPosition="start" />
@@ -439,22 +504,22 @@ const CreateParcellePage = () => {
         {activeTab === 0 && (
           <Card elevation={0} sx={{ bgcolor: "transparent", border: "none", boxShadow: "none" }}>
             <CardContent sx={{ p: 0, "&:last-child": { pb: 0 }, "& .MuiOutlinedInput-root": { borderRadius: 2 } }}>
-              {success && <Alert severity="success" sx={{ mb: 3 }}>{success}</Alert>}
-              {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
+              {success && <Alert severity="success" sx={{ mb: 2.5 }}>{success}</Alert>}
+              {error && <Alert severity="error" sx={{ mb: 2.5 }}>{error}</Alert>}
 
               {/* Mode de création */}
               <Alert severity="info" sx={{ mb: 3 }}>
                 <Typography variant="body2" fontWeight="bold" gutterBottom>
                   Besoin de créer plusieurs parcelles ?
                 </Typography>
-                <Typography variant="caption">
+                <Typography variant="caption" component="p" sx={{ display: "block", mb: 1, lineHeight: 1.5 }}>
                   Utilisez le mode "Parcelles multiples" pour ajouter des coordonnées GPS et photos spécifiques à chaque parcelle
                 </Typography>
                 <Button
                   variant="outlined"
                   size="small"
                   onClick={() => navigate("/agence/create-parcelle-multiple")}
-                  sx={{ mt: 1 }}
+                  sx={{ mt: 0.5, display: "inline-flex" }}
                   startIcon={<Square />}
                 >
                   Créer parcelles multiples
@@ -469,9 +534,10 @@ const CreateParcellePage = () => {
                 sx={{
                   mb: 4,
                   "& .MuiStepLabel-label": { fontWeight: 600 },
-                  "& .MuiStepLabel-label.Mui-active": { color: "#3030F9" },
-                  "& .MuiStepIcon-root.Mui-active": { color: "#3030F9" },
-                  "& .MuiStepIcon-root.Mui-completed": { color: "#0A7C4F" },
+                  "& .MuiStepLabel-label:not(.Mui-active)": { display: { xs: "none", sm: "block" } },
+                  "& .MuiStepLabel-label.Mui-active": { color: PRIMARY },
+                  "& .MuiStepIcon-root.Mui-active": { color: PRIMARY },
+                  "& .MuiStepIcon-root.Mui-completed": { color: "#005C48" },
                 }}
               >
                 {steps.map((label) => (
@@ -494,7 +560,7 @@ const CreateParcellePage = () => {
               >
                 {/* ÉTAPE 1 : Informations de base */}
                 {currentStep === 0 && (
-                  <SectionCard title="Informations de base" color="#3030F9" icon="info" sx={{ mb: 0 }}>
+                  <SectionCard title="Informations de base" icon="info" sx={{ mb: 0 }}>
                     <Grid container spacing={3}>
                       {/* Numéro de parcelle */}
                       <Grid item xs={12} md={6}>
@@ -637,7 +703,7 @@ const CreateParcellePage = () => {
 
                 {/* ÉTAPE 2 : Localisation */}
                 {currentStep === 1 && (
-                  <SectionCard title="Points de localisation" color="#0A7C4F" icon="location" sx={{ mb: 0 }}>
+                  <SectionCard title="Points de localisation" icon="location" sx={{ mb: 0 }}>
                     
                     {localisations.map((loc, index) => (
                       <Card key={index} variant="outlined" sx={{ mb: 2, p: 2 }}>
@@ -703,7 +769,7 @@ const CreateParcellePage = () => {
 
                 {/* ÉTAPE 3 : Documents */}
                 {currentStep === 2 && (
-                  <SectionCard title="Documents" color="#0e1133" icon="description" sx={{ mb: 0 }}>
+                  <SectionCard title="Documents" icon="description" sx={{ mb: 0 }}>
                     <Alert severity="info" sx={{ mb: 3 }}>
                       <Typography variant="body2">
                         <strong>Note importante :</strong> Les photos et vidéos sont gérées au niveau de l'îlot et seront automatiquement partagées par toutes les parcelles de cet îlot. 
@@ -813,7 +879,7 @@ const CreateParcellePage = () => {
 
         {/* ONGLET 2 : Liste */}
         {activeTab === 1 && (
-          <Card elevation={0} sx={{ borderRadius: 3, border: "1px solid #e3e8ef" }}>
+          <Card elevation={0} sx={{ borderRadius: "14px", border: `1px solid ${BORDER}`, boxShadow: "0 1px 3px rgba(16,28,54,0.05)" }}>
             <CardContent>
               <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
                 <Typography variant="h6" fontWeight="bold">
@@ -842,13 +908,13 @@ const CreateParcellePage = () => {
                       <TableHead
                         sx={{
                           "& th": {
-                            bgcolor: "#f6f8fb",
+                            bgcolor: "#F1F4F7",
                             color: "text.secondary",
                             fontWeight: 700,
                             fontSize: "0.75rem",
                             textTransform: "uppercase",
                             letterSpacing: 0.5,
-                            borderBottom: "2px solid #e3e8ef",
+                            borderBottom: `2px solid ${BORDER}`,
                           },
                         }}
                       >
@@ -929,7 +995,7 @@ const CreateParcellePage = () => {
             </CardContent>
           </Card>
         )}
-      </Container>
+      </Box>
 
       {/* Dialog d'édition */}
       <Dialog open={editDialog} onClose={() => setEditDialog(false)} maxWidth="md" fullWidth>
@@ -1338,6 +1404,7 @@ const CreateParcellePage = () => {
           </Button>
         </DialogActions>
       </Dialog>
+      </ThemeProvider>
     </AgenceLayout>
   );
 };

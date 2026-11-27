@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { ThemeProvider, createTheme } from "@mui/material/styles";
 import {
-  Container,
   Box,
   Typography,
   Button,
@@ -46,7 +46,6 @@ import {
 import { AttachMoney as FIAttachMoney } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import AgenceLayout from "../../components/agence/AgenceLayout";
-import AgencePageHeader from "../../components/agence/AgencePageHeader";
 import Star from "@mui/icons-material/Star";
 import Whatshot from "@mui/icons-material/Whatshot";
 import KingBed from "@mui/icons-material/KingBed";
@@ -57,6 +56,33 @@ import SellIcon from "@mui/icons-material/Sell";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import api from "../../services/api";
+
+const FONT = "'Manrope', 'Plus Jakarta Sans', 'DM Sans', system-ui, Arial, sans-serif";
+const NIGHT = "#101C36";
+const MUTED = "#64748B";
+const BORDER = "#E2E8F0";
+const PRIMARY = "#008557";
+
+// Thème local : palette Dillanci, uniquement sur cette page
+const mesBiensTheme = createTheme({
+  palette: {
+    primary: { main: PRIMARY, dark: "#005C48", contrastText: "#ffffff" },
+    secondary: { main: "#1859C9" },
+    success: { main: PRIMARY },
+    warning: { main: "#C26716" },
+    info: { main: "#1859C9" },
+    error: { main: "#C62828" },
+    text: { primary: NIGHT, secondary: MUTED },
+  },
+  typography: { fontFamily: FONT },
+  components: {
+    MuiButton: { styleOverrides: { root: { textTransform: "none", fontWeight: 700, borderRadius: 10 } } },
+    MuiOutlinedInput: { styleOverrides: { root: { borderRadius: 10 } } },
+    MuiAlert: { styleOverrides: { root: { borderRadius: 10 } } },
+    MuiDialog: { styleOverrides: { paper: { borderRadius: 14 } } },
+    MuiChip: { styleOverrides: { root: { fontWeight: 600 } } },
+  },
+});
 
 const MesBiensPage = () => {
   const navigate = useNavigate();
@@ -264,35 +290,57 @@ const MesBiensPage = () => {
 
   return (
     <AgenceLayout>
-      <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
-        {/* En-tête */}
-        <AgencePageHeader
-          icon={Home}
-          title="Mes Biens Immobiliers"
-          subtitle={`Gérez votre catalogue de biens (${filteredBiens.length} bien${filteredBiens.length > 1 ? "s" : ""})`}
-          action={
-            <Button
-              variant="contained"
-              startIcon={<Add />}
-              onClick={() => navigate("/agence/create-bien")}
-              sx={{ bgcolor: "white", color: "#0D2B4E", fontWeight: "bold", "&:hover": { bgcolor: "#e3e8ef" } }}
-            >
-              Nouveau bien
-            </Button>
-          }
-        />
+      <ThemeProvider theme={mesBiensTheme}>
+      <Box sx={{ fontFamily: FONT }}>
+        {/* Bandeau de la page */}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: 2,
+            mb: 2.5,
+            p: { xs: "18px 16px", sm: "24px" },
+            minHeight: 110,
+            bgcolor: "#005C48",
+            color: "#fff",
+            borderRadius: "14px",
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2, minWidth: 0, flex: "1 1 260px" }}>
+            <Box sx={{ width: { xs: 48, sm: 60 }, height: { xs: 48, sm: 60 }, borderRadius: "14px", bgcolor: "rgba(255,255,255,0.14)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <Home sx={{ fontSize: { xs: 26, sm: 32 } }} />
+            </Box>
+            <Box sx={{ minWidth: 0 }}>
+              <Typography component="h1" sx={{ fontFamily: FONT, fontSize: { xs: 22, sm: 30 }, fontWeight: 700, lineHeight: 1.2 }}>
+                Mes biens immobiliers
+              </Typography>
+              <Typography sx={{ fontFamily: FONT, fontSize: 15, color: "#CFE9E0", mt: 0.5 }}>
+                {`Gérez votre catalogue de biens (${filteredBiens.length} bien${filteredBiens.length > 1 ? "s" : ""})`}
+              </Typography>
+            </Box>
+          </Box>
+          <Button
+            startIcon={<Add />}
+            onClick={() => navigate("/agence/create-bien")}
+            sx={{ height: 44, px: 2.5, bgcolor: "#fff", color: "#005C48", "&:hover": { bgcolor: "#E5F3EC" } }}
+          >
+            Nouveau bien
+          </Button>
+        </Box>
 
         {/* Alertes */}
         {success && (
           <Fade in={!!success}>
-            <Alert severity="success" sx={{ mb: 3 }} onClose={() => setSuccess("")}>
+            <Alert severity="success" sx={{ mb: 2.5 }} onClose={() => setSuccess("")}>
               {success}
             </Alert>
           </Fade>
         )}
         {error && (
           <Fade in={!!error}>
-            <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError("")}>
+            <Alert severity="error" sx={{ mb: 2.5 }} onClose={() => setError("")}>
               {error}
             </Alert>
           </Fade>
@@ -301,20 +349,20 @@ const MesBiensPage = () => {
         {/* Statistiques du catalogue */}
         <Grid container spacing={2.5} sx={{ mb: 3 }}>
           {[
-            { label: "Total biens", value: biens.length, icon: ApartmentIcon, color: "#3030F9" },
-            { label: "Disponibles", value: biens.filter((b) => b.statut === "disponible").length, icon: CheckCircle, color: "#0A7C4F" },
-            { label: "Vendus", value: biens.filter((b) => b.statut === "vendu").length, icon: SellIcon, color: "#0e1133" },
-            { label: "Valeur catalogue", value: new Intl.NumberFormat("fr-FR").format(biens.reduce((s, b) => s + (b.prix || 0), 0)) + " FCFA", icon: TrendingUpIcon, color: "#3030F9" },
+            { label: "Total biens", value: biens.length, icon: ApartmentIcon, color: "#1859C9" },
+            { label: "Disponibles", value: biens.filter((b) => b.statut === "disponible").length, icon: CheckCircle, color: "#008557" },
+            { label: "Vendus", value: biens.filter((b) => b.statut === "vendu").length, icon: SellIcon, color: "#101C36" },
+            { label: "Valeur catalogue", value: new Intl.NumberFormat("fr-FR").format(biens.reduce((s, b) => s + (b.prix || 0), 0)) + " FCFA", icon: TrendingUpIcon, color: "#C26716" },
           ].map((kpi) => (
-            <Grid item xs={6} md={3} key={kpi.label}>
-              <Card elevation={0} sx={{ borderRadius: 4, border: "1px solid rgba(15,23,42,0.08)", boxShadow: "0 2px 8px rgba(15,23,42,0.05)" }}>
+            <Grid item xs={6} md={3} key={kpi.label} sx={{ "@media (max-width:374px)": { flexBasis: "100%", maxWidth: "100%" } }}>
+              <Card elevation={0} sx={{ height: "100%", borderRadius: "14px", border: `1px solid ${BORDER}`, boxShadow: "0 1px 3px rgba(16,28,54,0.05)" }}>
                 <CardContent>
                   <Stack direction="row" justifyContent="space-between" alignItems="center">
                     <Box sx={{ minWidth: 0 }}>
                       <Typography variant="body2" color="text.secondary">{kpi.label}</Typography>
-                      <Typography variant="h5" fontWeight="bold" sx={{ color: kpi.color }} noWrap>{kpi.value}</Typography>
+                      <Typography sx={{ fontFamily: FONT, fontSize: { xs: 18, sm: 24 }, fontWeight: 800, color: kpi.color, lineHeight: 1.25, overflowWrap: "break-word" }}>{kpi.value}</Typography>
                     </Box>
-                    <Avatar sx={{ bgcolor: `${kpi.color}15`, color: kpi.color, width: 44, height: 44 }}>
+                    <Avatar variant="rounded" sx={{ bgcolor: `${kpi.color}1A`, color: kpi.color, width: 44, height: 44, borderRadius: "12px", ml: 1, flexShrink: 0 }}>
                       <kpi.icon />
                     </Avatar>
                   </Stack>
@@ -325,11 +373,11 @@ const MesBiensPage = () => {
         </Grid>
 
         {/* Filtres */}
-        <Card elevation={0} sx={{ mb: 4, borderRadius: 4, border: "1px solid rgba(15,23,42,0.08)", boxShadow: "0 2px 8px rgba(15,23,42,0.05)" }}>
+        <Card elevation={0} sx={{ mb: 3, borderRadius: "14px", border: `1px solid ${BORDER}`, boxShadow: "0 1px 3px rgba(16,28,54,0.05)" }}>
           <CardContent sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2, bgcolor: "#ffffff" }, "& legend": { display: "none" } }}>
             <Box display="flex" alignItems="center" gap={1} mb={2.5}>
               <FilterList color="primary" />
-              <Typography variant="h6" fontWeight="bold" sx={{ color: "#3030F9" }}>
+              <Typography variant="h6" fontWeight="bold" sx={{ color: NIGHT }}>
                 Filtres
               </Typography>
             </Box>
@@ -428,7 +476,7 @@ const MesBiensPage = () => {
                   variant="outlined"
                   onClick={resetFilters}
                   startIcon={<RestartAltIcon />}
-                  sx={{ height: "100%", minHeight: 56, borderRadius: 2 }}
+                  sx={{ height: "100%", minHeight: 56 }}
                 >
                   Réinitialiser
                 </Button>
@@ -443,9 +491,9 @@ const MesBiensPage = () => {
             <CircularProgress />
           </Box>
         ) : filteredBiens.length === 0 ? (
-          <Card elevation={0} sx={{ borderRadius: 3, border: "1px solid #e3e8ef" }}>
+          <Card elevation={0} sx={{ borderRadius: "14px", border: `1px solid ${BORDER}` }}>
             <CardContent sx={{ textAlign: "center", py: 8 }}>
-              <Home sx={{ fontSize: 80, color: "text.secondary", mb: 2 }} />
+              <Home sx={{ fontSize: 56, color: "#A8B3C1", mb: 2 }} />
               <Typography variant="h6" color="text.secondary" gutterBottom>
                 Aucun bien trouvé
               </Typography>
@@ -467,12 +515,12 @@ const MesBiensPage = () => {
                   elevation={0}
                   sx={{
                     height: "100%",
-                    borderRadius: 3,
-                    border: "1px solid #e3e8ef",
+                    borderRadius: "14px",
+                    border: `1px solid ${BORDER}`,
+                    boxShadow: "0 1px 3px rgba(16,28,54,0.05)",
+                    overflow: "hidden",
                     display: "flex",
                     flexDirection: "column",
-                    transition: "all 0.25s",
-                    "&:hover": { transform: "translateY(-8px)", boxShadow: "0 12px 28px rgba(13,43,78,0.12)" },
                   }}
                 >
                   {/* Image */}
@@ -480,7 +528,7 @@ const MesBiensPage = () => {
                     <CardMedia
                       component="img"
                       height="200"
-                      image={bien.images?.[0] || "https://via.placeholder.com/400x200?text=Pas+d'image"}
+                      image={bien.images?.[0] || "/images/bien-placeholder.webp"}
                       alt={bien.titre}
                     />
                     
@@ -503,7 +551,7 @@ const MesBiensPage = () => {
                         position: "absolute",
                         bottom: 8,
                         left: 8,
-                        ...(bien.statut === "disponible" && { bgcolor: "#0A7C4F", color: "white" }),
+                        ...(bien.statut === "disponible" && { bgcolor: "#008557", color: "white" }),
                       }}
                     />
                   </Box>
@@ -619,7 +667,7 @@ const MesBiensPage = () => {
             ))}
           </Grid>
         )}
-      </Container>
+      </Box>
 
       {/* DIALOG AFFECTATION */}
       <Dialog
@@ -909,7 +957,7 @@ const MesBiensPage = () => {
                               borderColor: "success.main",
                             }}
                           >
-                            <CheckCircle fontSize="small" sx={{ color: "#0A7C4F" }} />
+                            <CheckCircle fontSize="small" sx={{ color: "#008557" }} />
                             <Typography variant="body2">{String(atout)}</Typography>
                           </Box>
                         ))}
@@ -948,9 +996,9 @@ const MesBiensPage = () => {
                       {selectedBien.caracteristiques.nbChambres && (
                         <Chip label={`${selectedBien.caracteristiques.nbChambres} chambres`} />
                       )}
-                      {selectedBien.caracteristiques.garage && <Chip label="Garage" sx={{ bgcolor: "#0A7C4F", color: "white" }} />}
-                      {selectedBien.caracteristiques.piscine && <Chip label="Piscine" sx={{ bgcolor: "#0e1133", color: "white" }} />}
-                      {selectedBien.caracteristiques.jardin && <Chip label="Jardin" sx={{ bgcolor: "#0A7C4F", color: "white" }} />}
+                      {selectedBien.caracteristiques.garage && <Chip label="Garage" sx={{ bgcolor: "#008557", color: "white" }} />}
+                      {selectedBien.caracteristiques.piscine && <Chip label="Piscine" sx={{ bgcolor: "#101C36", color: "white" }} />}
+                      {selectedBien.caracteristiques.jardin && <Chip label="Jardin" sx={{ bgcolor: "#008557", color: "white" }} />}
                       {selectedBien.caracteristiques.climatisation && (
                         <Chip label="Climatisation" color="primary" />
                       )}
@@ -974,6 +1022,7 @@ const MesBiensPage = () => {
           </>
         )}
       </Dialog>
+      </ThemeProvider>
     </AgenceLayout>
   );
 };

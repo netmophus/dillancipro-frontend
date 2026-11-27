@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { ThemeProvider, createTheme } from "@mui/material/styles";
 import {
-  Container,
   Box,
   Typography,
   TextField,
@@ -47,19 +47,62 @@ import {
 import { AddRoad as FIAddRoad, Bathtub as FIBathtub, Bed as FIBed, CalendarMonth as FICalendarMonth, Chair as FIChair, Explore as FIExplore, Flag as FIFlag, Info as FIInfo, Kitchen as FIKitchen, Language as FILanguage, LocationCity as FILocationCity, LocationOn as FILocationOn, Map as FIMap, MyLocation as FIMyLocation, Notes as FINotes, Park as FIPark, Place as FIPlace, Stairs as FIStairs, Title as FITitle } from "@mui/icons-material";
 import { useParams, useNavigate } from "react-router-dom";
 import AgenceLayout from "../../components/agence/AgenceLayout";
-import SectionCard from "../../components/admin/SectionCard";
-import AgencePageHeader from "../../components/agence/AgencePageHeader";
 import Star from "@mui/icons-material/Star";
 import api from "../../services/api";
 import { parseDMSString, isDMSFormat, decimalToDMS } from "../../utils/coordinateUtils";
 import CategoryIcon from "@mui/icons-material/Category";
 import TuneIcon from "@mui/icons-material/Tune";
+import Inventory2Icon from "@mui/icons-material/Inventory2";
 import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
+
+const FONT = "'Manrope', 'Plus Jakarta Sans', 'DM Sans', system-ui, Arial, sans-serif";
+const NIGHT = "#101C36";
+const MUTED = "#64748B";
+const BORDER = "#E2E8F0";
+const PRIMARY = "#008557";
+
+// Thème local : palette Dillanci, uniquement sur cette page
+const bienTheme = createTheme({
+  palette: {
+    primary: { main: PRIMARY, dark: "#005C48", contrastText: "#ffffff" },
+    secondary: { main: "#1859C9" },
+    success: { main: PRIMARY },
+    warning: { main: "#C26716" },
+    info: { main: "#1859C9" },
+    error: { main: "#C62828" },
+    text: { primary: NIGHT, secondary: MUTED },
+  },
+  typography: { fontFamily: FONT },
+  components: {
+    MuiButton: { styleOverrides: { root: { textTransform: "none", fontWeight: 700, borderRadius: 10 } } },
+    MuiOutlinedInput: { styleOverrides: { root: { borderRadius: 10 } } },
+    MuiAlert: { styleOverrides: { root: { borderRadius: 10 } } },
+    MuiChip: { styleOverrides: { root: { fontWeight: 600 } } },
+  },
+});
+
+const SECTION_ICONS = { inventory: Inventory2Icon, description: Description, location: LocationOn, tune: TuneIcon, photo: PhotoCameraIcon };
+
+// Section de formulaire : fond blanc, bordure fine, entête à pastille d'icône
+const SectionCard = ({ title, icon = "description", sx, children }) => {
+  const Icon = SECTION_ICONS[icon] || Description;
+  return (
+    <Box sx={{ bgcolor: "#fff", border: `1px solid ${BORDER}`, borderRadius: "14px", boxShadow: "0 1px 3px rgba(16,28,54,0.05)", p: "20px", ...sx }}>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, mb: 2.5 }}>
+        <Box sx={{ width: 38, height: 38, borderRadius: "10px", bgcolor: "#E5F3EC", color: PRIMARY, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <Icon sx={{ fontSize: 22 }} />
+        </Box>
+        <Typography component="h2" sx={{ fontFamily: FONT, fontSize: 17, fontWeight: 700, color: NIGHT }}>{title}</Typography>
+      </Box>
+      {children}
+    </Box>
+  );
+};
 
 // En-tête d'étape uniforme (avatar-icône + titre + sous-titre)
 const StepHeader = ({ icon: Icon, title, subtitle }) => (
   <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 3 }}>
-    <Avatar sx={{ bgcolor: "#27AE6018", color: "#27AE60", width: 42, height: 42 }}>
+    <Avatar sx={{ bgcolor: "#E5F3EC", color: "#008557", width: 42, height: 42 }}>
       <Icon />
     </Avatar>
     <Box>
@@ -141,13 +184,13 @@ const CreateBienPage = () => {
   const steps = ["Type de bien", "Informations générales", "Localisation", "Caractéristiques", "Médias"];
 
   const typesLabels = {
-    maison: { label: "Maison", icon: Home, color: "#3030F9" },
-    villa: { label: "Villa", icon: Villa, color: "#0A7C4F" },
-    duplex: { label: "Duplex", icon: Home, color: "#0e1133" },
-    appartement: { label: "Appartement", icon: Apartment, color: "#3030F9" },
-    jardin: { label: "Jardin", icon: Park, color: "#0A7C4F" },
-    terrain: { label: "Terrain", icon: Square, color: "#0e1133" },
-    autre: { label: "Autre", icon: Home, color: "#3030F9" },
+    maison: { label: "Maison", icon: Home, color: "#1859C9" },
+    villa: { label: "Villa", icon: Villa, color: "#008557" },
+    duplex: { label: "Duplex", icon: Home, color: "#101C36" },
+    appartement: { label: "Appartement", icon: Apartment, color: "#1859C9" },
+    jardin: { label: "Jardin", icon: Park, color: "#008557" },
+    terrain: { label: "Terrain", icon: Square, color: "#101C36" },
+    autre: { label: "Autre", icon: Home, color: "#C26716" },
   };
 
   const handleChange = (e) => {
@@ -607,41 +650,64 @@ const CreateBienPage = () => {
   if (loadingData) {
     return (
       <AgenceLayout>
-        <Container maxWidth="lg" sx={{ mt: 4, mb: 4, display: "flex", justifyContent: "center", alignItems: "center", minHeight: "400px" }}>
-          <Box textAlign="center">
-            <CircularProgress size={60} />
-            <Typography variant="h6" sx={{ mt: 2 }}>
-              Chargement des données du bien...
-            </Typography>
+        <ThemeProvider theme={bienTheme}>
+          <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: 400 }}>
+            <Box textAlign="center">
+              <CircularProgress size={60} />
+              <Typography variant="h6" sx={{ mt: 2 }}>
+                Chargement des données du bien...
+              </Typography>
+            </Box>
           </Box>
-        </Container>
+        </ThemeProvider>
       </AgenceLayout>
     );
   }
 
   return (
     <AgenceLayout>
-      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-        {/* En-tête */}
-        <AgencePageHeader
-          icon={Home}
-          title={isEditMode ? "Modifier un Bien Immobilier" : "Créer un Bien Immobilier"}
-          subtitle={isEditMode
-            ? "Modifiez les informations de votre bien immobilier"
-            : "Ajoutez des maisons, jardins, terrains et plus à votre catalogue"}
-        />
+      <ThemeProvider theme={bienTheme}>
+      <Box sx={{ fontFamily: FONT }}>
+        {/* Bandeau de la page */}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 2,
+            mb: 2.5,
+            p: { xs: "18px 16px", sm: "24px" },
+            minHeight: 110,
+            bgcolor: "#005C48",
+            color: "#fff",
+            borderRadius: "14px",
+          }}
+        >
+          <Box sx={{ width: { xs: 48, sm: 60 }, height: { xs: 48, sm: 60 }, borderRadius: "14px", bgcolor: "rgba(255,255,255,0.14)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <Home sx={{ fontSize: { xs: 26, sm: 32 } }} />
+          </Box>
+          <Box sx={{ minWidth: 0 }}>
+            <Typography component="h1" sx={{ fontFamily: FONT, fontSize: { xs: 22, sm: 30 }, fontWeight: 700, lineHeight: 1.2 }}>
+              {isEditMode ? "Modifier un bien immobilier" : "Créer un bien immobilier"}
+            </Typography>
+            <Typography sx={{ fontFamily: FONT, fontSize: 15, color: "#CFE9E0", mt: 0.5 }}>
+              {isEditMode
+                ? "Modifiez les informations de votre bien immobilier"
+                : "Ajoutez des maisons, jardins, terrains et plus à votre catalogue"}
+            </Typography>
+          </Box>
+        </Box>
 
         {/* Alertes */}
         {success && (
           <Fade in={!!success}>
-            <Alert severity="success" sx={{ mb: 3 }} onClose={() => setSuccess("")}>
+            <Alert severity="success" sx={{ mb: 2.5 }} onClose={() => setSuccess("")}>
               {success}
             </Alert>
           </Fade>
         )}
         {error && (
           <Fade in={!!error}>
-            <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError("")}>
+            <Alert severity="error" sx={{ mb: 2.5 }} onClose={() => setError("")}>
               {error}
             </Alert>
           </Fade>
@@ -655,9 +721,12 @@ const CreateBienPage = () => {
               sx={{
                 mb: 4,
                 "& .MuiStepLabel-label": { fontWeight: 600 },
-                "& .MuiStepLabel-label.Mui-active": { color: "#3030F9" },
-                "& .MuiStepIcon-root.Mui-active": { color: "#3030F9" },
-                "& .MuiStepIcon-root.Mui-completed": { color: "#0A7C4F" },
+                "& .MuiStepLabel-label:not(.Mui-active)": { display: { xs: "none", sm: "block" } },
+                "& .MuiStepConnector-root": { display: { xs: "none", sm: "block" } },
+                "& .MuiStep-root": { px: { xs: 0.25, sm: 1 } },
+                "& .MuiStepLabel-label.Mui-active": { color: PRIMARY },
+                "& .MuiStepIcon-root.Mui-active": { color: PRIMARY },
+                "& .MuiStepIcon-root.Mui-completed": { color: "#005C48" },
               }}
             >
               {steps.map((label) => (
@@ -673,7 +742,7 @@ const CreateBienPage = () => {
             }}>
               {/* ÉTAPE 1 : Type de bien */}
               {currentStep === 0 && (
-                <SectionCard title="Type de bien" color="#3030F9" icon="inventory" sx={{ mb: 0 }}>
+                <SectionCard title="Type de bien" icon="inventory" sx={{ mb: 0 }}>
                   <Typography variant="body2" color="text.secondary" sx={{ mt: -1.5, mb: 3 }}>Sélectionnez la catégorie du bien à publier</Typography>
                   <Grid container spacing={2}>
                     {Object.keys(typesLabels).map((type) => {
@@ -684,12 +753,12 @@ const CreateBienPage = () => {
                             variant="outlined"
                             sx={{
                               cursor: "pointer",
-                              borderRadius: 3,
+                              borderRadius: "14px",
                               border: formData.type === type ? 2 : 1,
-                              borderColor: formData.type === type ? typesLabels[type].color : "#e3e8ef",
+                              borderColor: formData.type === type ? typesLabels[type].color : BORDER,
                               bgcolor: formData.type === type ? `${typesLabels[type].color}0a` : "transparent",
                               transition: "all 0.25s",
-                              "&:hover": { boxShadow: "0 8px 24px rgba(13,43,78,0.10)", transform: "translateY(-4px)" },
+                              "&:hover": { boxShadow: "0 2px 8px rgba(16,28,54,0.10)" },
                             }}
                             onClick={() => setFormData({ ...formData, type })}
                           >
@@ -722,7 +791,7 @@ const CreateBienPage = () => {
 
               {/* ÉTAPE 2 : Informations générales */}
               {currentStep === 1 && (
-                <SectionCard title="Informations générales" color="#0A7C4F" icon="description" sx={{ mb: 0 }}>
+                <SectionCard title="Informations générales" icon="description" sx={{ mb: 0 }}>
                   <Typography variant="body2" color="text.secondary" sx={{ mt: -1.5, mb: 3 }}>Titre, prix, description et atouts du bien</Typography>
                   <Grid container spacing={3}>
                     <Grid item xs={12}>
@@ -946,7 +1015,7 @@ const CreateBienPage = () => {
 
               {/* ÉTAPE 3 : Localisation */}
               {currentStep === 2 && (
-                <SectionCard title="Localisation du bien" color="#0e1133" icon="location" sx={{ mb: 0 }}>
+                <SectionCard title="Localisation du bien" icon="location" sx={{ mb: 0 }}>
                   <Typography variant="body2" color="text.secondary" sx={{ mt: -1.5, mb: 3 }}>Adresse et coordonnées GPS</Typography>
                   <Grid container spacing={3}>
                     <Grid item xs={12}>
@@ -1067,7 +1136,7 @@ const CreateBienPage = () => {
 
               {/* ÉTAPE 4 : Caractéristiques */}
               {currentStep === 3 && (
-                <SectionCard title="Caractéristiques du bien" color="#3030F9" icon="tune" sx={{ mb: 0 }}>
+                <SectionCard title="Caractéristiques du bien" icon="tune" sx={{ mb: 0 }}>
                   <Typography variant="body2" color="text.secondary" sx={{ mt: -1.5, mb: 3 }}>Optionnel — renseignez les caractéristiques pertinentes pour votre bien</Typography>
                   <Grid container spacing={3}>
                     {/* Champs pour Maison/Villa/Duplex/Appartement */}
@@ -1438,7 +1507,7 @@ const CreateBienPage = () => {
 
               {/* ÉTAPE 5 : Médias */}
               {currentStep === 4 && (
-                <SectionCard title="Médias et documents" color="#0A7C4F" icon="photo" sx={{ mb: 0 }}>
+                <SectionCard title="Médias et documents" icon="photo" sx={{ mb: 0 }}>
                   <Typography variant="body2" color="text.secondary" sx={{ mt: -1.5, mb: 3 }}>Photos, vidéos et documents du bien</Typography>
                   <Grid container spacing={4}>
                     {/* Images */}
@@ -1695,7 +1764,8 @@ const CreateBienPage = () => {
             </Box>
           </CardContent>
         </Card>
-      </Container>
+      </Box>
+      </ThemeProvider>
     </AgenceLayout>
   );
 };

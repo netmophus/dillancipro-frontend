@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
+import { ThemeProvider, createTheme } from "@mui/material/styles";
 import {
-  Container,
   Box,
   Typography,
   TextField,
   Button,
-  Grid,
+  GridLegacy as Grid,
   Card,
   CardContent,
   Alert,
@@ -59,8 +59,33 @@ import {
   Landscape,
 } from "@mui/icons-material";
 import AgenceLayout from "../../components/agence/AgenceLayout";
-import AgencePageHeader from "../../components/agence/AgencePageHeader";
 import api from "../../services/api";
+
+const FONT = "'Manrope', 'Plus Jakarta Sans', 'DM Sans', system-ui, Arial, sans-serif";
+const NIGHT = "#101C36";
+const MUTED = "#64748B";
+const BORDER = "#E2E8F0";
+
+// Thème local : remplace le bleu/orange/violet par la palette Dillanci, uniquement sur cette page
+const ilotTheme = createTheme({
+  palette: {
+    primary: { main: "#008557", dark: "#005C48", contrastText: "#ffffff" },
+    secondary: { main: "#1859C9" },
+    success: { main: "#008557" },
+    warning: { main: "#C26716" },
+    info: { main: "#1859C9" },
+    error: { main: "#C62828" },
+    text: { primary: NIGHT, secondary: MUTED },
+  },
+  typography: { fontFamily: FONT },
+  components: {
+    MuiButton: { styleOverrides: { root: { textTransform: "none", fontWeight: 700, borderRadius: 10 } } },
+    MuiOutlinedInput: { styleOverrides: { root: { borderRadius: 10 } } },
+    MuiAlert: { styleOverrides: { root: { borderRadius: 10 } } },
+    MuiDialog: { styleOverrides: { paper: { borderRadius: 14 } } },
+    MuiChip: { styleOverrides: { root: { fontWeight: 600 } } },
+  },
+});
 
 const CreateIlotPage = () => {
   const [formData, setFormData] = useState({
@@ -411,25 +436,46 @@ const CreateIlotPage = () => {
 
   return (
     <AgenceLayout>
-      <Container maxWidth="xl" sx={{ mb: 4 }}>
-        {/* En-tête */}
-        <AgencePageHeader
-          icon={GridView}
-          title="Gestion des Îlots"
-          subtitle="Organisez vos îlots par zone et quartier"
-        />
+      <ThemeProvider theme={ilotTheme}>
+      <Box sx={{ fontFamily: FONT }}>
+        {/* Bandeau de la page */}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 2,
+            mb: 2.5,
+            p: { xs: "18px 16px", sm: "24px" },
+            minHeight: 110,
+            bgcolor: "#005C48",
+            color: "#fff",
+            borderRadius: "14px",
+          }}
+        >
+          <Box sx={{ width: { xs: 48, sm: 60 }, height: { xs: 48, sm: 60 }, borderRadius: "14px", bgcolor: "rgba(255,255,255,0.14)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <GridView sx={{ fontSize: { xs: 26, sm: 32 } }} />
+          </Box>
+          <Box sx={{ minWidth: 0 }}>
+            <Typography component="h1" sx={{ fontFamily: FONT, fontSize: { xs: 22, sm: 30 }, fontWeight: 700, lineHeight: 1.2 }}>
+              Gestion des îlots
+            </Typography>
+            <Typography sx={{ fontFamily: FONT, fontSize: 15, color: "#CFE9E0", mt: 0.5 }}>
+              Organisez vos îlots par zone et quartier
+            </Typography>
+          </Box>
+        </Box>
 
         {/* Alertes */}
         {success && (
           <Fade in={!!success}>
-            <Alert severity="success" sx={{ mb: 3 }} onClose={() => setSuccess("")}>
+            <Alert severity="success" sx={{ mb: 2.5 }} onClose={() => setSuccess("")}>
               {success}
             </Alert>
           </Fade>
         )}
         {error && (
           <Fade in={!!error}>
-            <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError("")}>
+            <Alert severity="error" sx={{ mb: 2.5 }} onClose={() => setError("")}>
               {error}
             </Alert>
           </Fade>
@@ -438,7 +484,7 @@ const CreateIlotPage = () => {
         <Grid container spacing={3}>
           {/* FORMULAIRE DE CRÉATION */}
           <Grid item xs={12} lg={4}>
-            <Card elevation={0} sx={{ position: "sticky", top: 20, borderRadius: 3, border: "1px solid #e3e8ef" }}>
+            <Card elevation={0} sx={{ position: "sticky", top: 20, borderRadius: "14px", border: `1px solid ${BORDER}`, boxShadow: "0 1px 3px rgba(16,28,54,0.05)" }}>
               <CardContent sx={{ p: 3 }}>
                 <Box display="flex" alignItems="center" gap={1} mb={3}>
                   <Add color="warning" />
@@ -715,7 +761,7 @@ const CreateIlotPage = () => {
             </Card>
 
             {/* Statistiques */}
-            <Card elevation={0} sx={{ mt: 3, borderRadius: 3, border: "1px solid #e3e8ef" }}>
+            <Card elevation={0} sx={{ mt: 3, borderRadius: "14px", border: `1px solid ${BORDER}`, boxShadow: "0 1px 3px rgba(16,28,54,0.05)" }}>
               <CardContent>
                 <Stack direction="row" alignItems="center" spacing={1} mb={1}>
                   <Assessment fontSize="small" color="action" />
@@ -750,9 +796,9 @@ const CreateIlotPage = () => {
 
           {/* LISTE DES ÎLOTS */}
           <Grid item xs={12} lg={8}>
-            <Card elevation={0} sx={{ borderRadius: 3, border: "1px solid #e3e8ef" }}>
+            <Card elevation={0} sx={{ borderRadius: "14px", border: `1px solid ${BORDER}`, boxShadow: "0 1px 3px rgba(16,28,54,0.05)" }}>
               <CardContent sx={{ p: 3 }}>
-                <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+                <Box display="flex" justifyContent="space-between" alignItems="center" flexWrap="wrap" gap={1.5} mb={3}>
                   <Stack direction="row" alignItems="center" spacing={1}>
                     <FormatListBulleted color="action" />
                     <Typography variant="h6" fontWeight="bold">
@@ -766,7 +812,7 @@ const CreateIlotPage = () => {
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     size="small"
-                    sx={{ width: 300 }}
+                    sx={{ width: { xs: "100%", sm: 300 } }}
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
@@ -785,7 +831,7 @@ const CreateIlotPage = () => {
                   <>
                     <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 2 }}>
                       <Table>
-                        <TableHead sx={{ bgcolor: "grey.100" }}>
+                        <TableHead sx={{ bgcolor: "#F1F4F7" }}>
                           <TableRow>
                             <TableCell><strong>Numéro</strong></TableCell>
                             <TableCell><strong>Zone</strong></TableCell>
@@ -895,7 +941,8 @@ const CreateIlotPage = () => {
             </Card>
           </Grid>
         </Grid>
-      </Container>
+      </Box>
+      </ThemeProvider>
 
       {/* DIALOG PARCELLES */}
       <Dialog open={openParcelles} onClose={() => setOpenParcelles(false)} fullWidth maxWidth="md">
@@ -914,7 +961,7 @@ const CreateIlotPage = () => {
             </Typography>
           ) : (
             <Table size="small">
-              <TableHead sx={{ bgcolor: "grey.100" }}>
+              <TableHead sx={{ bgcolor: "#F1F4F7" }}>
                 <TableRow>
                   <TableCell><strong>Numéro</strong></TableCell>
                   <TableCell><strong>Superficie</strong></TableCell>

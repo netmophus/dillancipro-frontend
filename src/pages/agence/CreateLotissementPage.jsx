@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
 import {
-  Container,
   Box,
   Typography,
   TextField,
@@ -41,15 +40,36 @@ import {
   Clear,
   ViewList,
   AddCircle,
+  Info,
 } from "@mui/icons-material";
 import AgenceLayout from "../../components/agence/AgenceLayout";
-import SectionCard from "../../components/admin/SectionCard";
 import api from "../../services/api";
 
-const BLUE = "#3030F9";
-const BLUE_HOVER = "#2020C8";
-const GREEN = "#0A7C4F";
-const NIGHT = "#0e1133";
+const BLUE = "#1859C9";
+const PRIMARY = "#008557";
+const PRIMARY_HOVER = "#005C48";
+const GREEN = "#008557";
+const NIGHT = "#101C36";
+const MUTED = "#64748B";
+const BORDER = "#E2E8F0";
+const FONT = "'Manrope', 'Plus Jakarta Sans', 'DM Sans', system-ui, Arial, sans-serif";
+
+// Section de formulaire (locale à cette page) : fond blanc, bordure fine, entête à pastille d'icône
+const FORM_ICONS = { info: Info, location: LocationOn, photo: PhotoLibrary };
+const FormSection = ({ title, icon = "info", children }) => {
+  const Icon = FORM_ICONS[icon] || Info;
+  return (
+    <Box sx={{ bgcolor: "#fff", border: `1px solid ${BORDER}`, borderRadius: "14px", boxShadow: "0 1px 3px rgba(16,28,54,0.05)", p: "20px", mb: 2.5 }}>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, mb: 2.5 }}>
+        <Box sx={{ width: 38, height: 38, borderRadius: "10px", bgcolor: "#E5F3EC", color: PRIMARY, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <Icon sx={{ fontSize: 22 }} />
+        </Box>
+        <Typography component="h2" sx={{ fontFamily: FONT, fontSize: 17, fontWeight: 700, color: NIGHT }}>{title}</Typography>
+      </Box>
+      {children}
+    </Box>
+  );
+};
 
 const EMPTY_FORM = {
   nom: "",
@@ -77,20 +97,20 @@ const StatTile = ({ icon: Icon, label, value, color }) => (
     sx={{
       display: "flex",
       alignItems: "center",
-      gap: 2,
-      p: 2.5,
+      gap: { xs: 1.25, sm: 2 },
+      p: { xs: 1.5, sm: 2.5 },
       bgcolor: "#fff",
-      borderRadius: 4,
-      border: "1px solid rgba(15,23,42,0.08)",
-      boxShadow: "0 2px 8px rgba(15,23,42,0.05)",
+      borderRadius: "14px",
+      border: `1px solid ${BORDER}`,
+      boxShadow: "0 1px 3px rgba(16,28,54,0.05)",
     }}
   >
     <Box
       sx={{
-        width: 46,
-        height: 46,
-        borderRadius: "50%",
-        bgcolor: `${color}14`,
+        width: { xs: 38, sm: 46 },
+        height: { xs: 38, sm: 46 },
+        borderRadius: "12px",
+        bgcolor: `${color}1A`,
         color,
         display: "flex",
         alignItems: "center",
@@ -101,10 +121,10 @@ const StatTile = ({ icon: Icon, label, value, color }) => (
       <Icon />
     </Box>
     <Box sx={{ minWidth: 0 }}>
-      <Typography variant="h5" fontWeight="bold" sx={{ color: NIGHT, lineHeight: 1.1 }}>
+      <Typography sx={{ fontFamily: FONT, fontSize: { xs: 20, sm: 26 }, fontWeight: 800, color, lineHeight: 1.1, whiteSpace: "nowrap" }}>
         {value}
       </Typography>
-      <Typography variant="body2" color="text.secondary" noWrap>
+      <Typography sx={{ fontFamily: FONT, fontSize: 13.5, color: MUTED, lineHeight: 1.3 }}>
         {label}
       </Typography>
     </Box>
@@ -146,13 +166,11 @@ const LotissementCard = ({ lot, onEdit, onDelete }) => {
         height: "100%",
         display: "flex",
         flexDirection: "column",
-        borderRadius: "16px",
+        borderRadius: "14px",
         overflow: "hidden",
         bgcolor: "#fff",
-        border: "1px solid #e5e7eb",
-        boxShadow: "0 2px 12px rgba(15,23,42,0.08)",
-        transition: "transform .2s ease, box-shadow .2s ease",
-        "&:hover": { transform: "translateY(-3px)", boxShadow: "0 8px 20px rgba(15,23,42,0.12)" },
+        border: `1px solid ${BORDER}`,
+        boxShadow: "0 1px 3px rgba(16,28,54,0.05)",
       }}
     >
       {/* 1. Image en bandeau : visible en entier (contain) sur fond neutre */}
@@ -160,7 +178,7 @@ const LotissementCard = ({ lot, onEdit, onDelete }) => {
         sx={{
           position: "relative",
           height: 160,
-          bgcolor: "#d9e2ec",
+          bgcolor: "#F1F4F7",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -202,9 +220,9 @@ const LotissementCard = ({ lot, onEdit, onDelete }) => {
           {lot.zone?.nom && (
             <Chip
               size="small"
-              icon={<Apartment sx={{ color: "#2020C8 !important" }} />}
+              icon={<Apartment sx={{ color: "#005C48 !important" }} />}
               label={lot.zone.nom}
-              sx={{ bgcolor: "#EAF0FF", color: "#2020C8", fontWeight: 600 }}
+              sx={{ bgcolor: "#E5F3EC", color: "#005C48", fontWeight: 600 }}
             />
           )}
           {lot.quartier?.nom && (
@@ -218,13 +236,13 @@ const LotissementCard = ({ lot, onEdit, onDelete }) => {
         </Stack>
 
         <Stack direction="row" spacing={1} sx={{ alignItems: "stretch" }}>
-          <Box sx={{ flex: 1, minWidth: 0, bgcolor: "#E3F5EC", borderRadius: "10px", p: 1.25 }}>
-            <Typography sx={{ fontSize: 12, color: "#065F3D", fontWeight: 600 }}>Surface totale</Typography>
+          <Box sx={{ flex: 1, minWidth: 0, bgcolor: "#E5F3EC", borderRadius: "10px", p: 1.25 }}>
+            <Typography sx={{ fontSize: 12, color: "#005C48", fontWeight: 600 }}>Surface totale</Typography>
             <Typography sx={{ fontSize: 18, fontWeight: 700, color: GREEN, lineHeight: 1.3 }}>
               {lot.surfaceTotale > 0 ? `${fmt(lot.surfaceTotale)} m²` : "Non renseignée"}
             </Typography>
           </Box>
-          <Box sx={{ flex: 1, minWidth: 0, bgcolor: "#f1f3f7", borderRadius: "10px", p: 1.25 }}>
+          <Box sx={{ flex: 1, minWidth: 0, bgcolor: "#F1F4F7", borderRadius: "10px", p: 1.25 }}>
             <Typography sx={{ fontSize: 12, color: "#5b6573", fontWeight: 600 }}>Composition</Typography>
             <Typography
               sx={{
@@ -258,14 +276,14 @@ const LotissementCard = ({ lot, onEdit, onDelete }) => {
           <Button
             startIcon={<Edit fontSize="small" />}
             onClick={() => onEdit(lot)}
-            sx={{ flex: 1, minWidth: 0, px: 1, bgcolor: "rgba(48,48,249,0.08)", color: BLUE, borderRadius: "8px", textTransform: "none", fontWeight: 600, "&:hover": { bgcolor: "rgba(48,48,249,0.16)" } }}
+            sx={{ flex: 1, minWidth: 0, px: 1, bgcolor: "#E5F3EC", color: PRIMARY_HOVER, borderRadius: "8px", textTransform: "none", fontWeight: 600, "&:hover": { bgcolor: "#D3EBDD" } }}
           >
             Modifier
           </Button>
           <Button
             startIcon={<Delete fontSize="small" />}
             onClick={() => onDelete(lot)}
-            sx={{ flex: 1, minWidth: 0, px: 1, bgcolor: "rgba(211,47,47,0.08)", color: "#d32f2f", borderRadius: "8px", textTransform: "none", fontWeight: 600, "&:hover": { bgcolor: "rgba(211,47,47,0.16)" } }}
+            sx={{ flex: 1, minWidth: 0, px: 1, bgcolor: "#FDECEC", color: "#C62828", borderRadius: "8px", textTransform: "none", fontWeight: 600, "&:hover": { bgcolor: "#FADADA" } }}
           >
             Supprimer
           </Button>
@@ -497,51 +515,41 @@ const CreateLotissementPage = () => {
 
   return (
     <AgenceLayout>
-      <Container maxWidth="xl" sx={{ mb: 4 }}>
-        {/* Bandeau local en aplat bleu nuit */}
+      <Box sx={{ fontFamily: FONT, "& .MuiTypography-root, & .MuiButton-root, & .MuiInputBase-root, & .MuiTab-root, & .MuiChip-root": { fontFamily: "inherit" } }}>
+        {/* Bandeau de la page */}
         <Box
           sx={{
             display: "flex",
             alignItems: "center",
-            gap: 2.5,
-            mb: 3.5,
-            p: { xs: 2.5, md: 3.5 },
-            bgcolor: NIGHT,
+            gap: 2,
+            mb: 2.5,
+            p: { xs: "18px 16px", sm: "24px" },
+            minHeight: 110,
+            bgcolor: PRIMARY_HOVER,
             color: "#fff",
-            borderRadius: 4,
+            borderRadius: "14px",
           }}
         >
-          <Box
-            sx={{
-              width: 56,
-              height: 56,
-              borderRadius: "50%",
-              bgcolor: "rgba(255,255,255,0.15)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              flexShrink: 0,
-            }}
-          >
-            <Landscape fontSize="large" />
+          <Box sx={{ width: { xs: 48, sm: 60 }, height: { xs: 48, sm: 60 }, borderRadius: "14px", bgcolor: "rgba(255,255,255,0.14)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <Landscape sx={{ fontSize: { xs: 26, sm: 32 } }} />
           </Box>
           <Box sx={{ minWidth: 0 }}>
-            <Typography variant="h4" fontWeight="bold">
-              Gestion des Lotissements
+            <Typography component="h1" sx={{ fontFamily: FONT, fontSize: { xs: 22, sm: 30 }, fontWeight: 700, lineHeight: 1.2 }}>
+              Gestion des lotissements
             </Typography>
-            <Typography variant="body1" sx={{ color: "rgba(255,255,255,0.85)", mt: 0.5 }}>
+            <Typography sx={{ fontFamily: FONT, fontSize: 15, color: "#CFE9E0", mt: 0.5 }}>
               Regroupez vos îlots par lotissement au sein d'une zone
             </Typography>
           </Box>
         </Box>
 
         {success && (
-          <Alert severity="success" sx={{ mb: 3, borderRadius: 3 }} onClose={() => setSuccess("")}>
+          <Alert severity="success" sx={{ mb: 2.5, borderRadius: "10px" }} onClose={() => setSuccess("")}>
             {success}
           </Alert>
         )}
         {error && (
-          <Alert severity="error" sx={{ mb: 3, borderRadius: 3 }} onClose={() => setError("")}>
+          <Alert severity="error" sx={{ mb: 2.5, borderRadius: "10px" }} onClose={() => setError("")}>
             {error}
           </Alert>
         )}
@@ -558,18 +566,18 @@ const CreateLotissementPage = () => {
             <StatTile icon={Square} label="Surface totale (m²)" value={fmt(stats.surface)} color={GREEN} />
           </Grid>
           <Grid item xs={6} md={3}>
-            <StatTile icon={PhotoLibrary} label="Photos" value={stats.photos} color={BLUE} />
+            <StatTile icon={PhotoLibrary} label="Photos" value={stats.photos} color="#C26716" />
           </Grid>
         </Grid>
 
         {/* Onglets */}
         <Box
           sx={{
-            mb: 3,
+            mb: 2.5,
             bgcolor: "#fff",
-            borderRadius: 4,
-            border: "1px solid rgba(15,23,42,0.08)",
-            boxShadow: "0 2px 8px rgba(15,23,42,0.05)",
+            borderRadius: "14px",
+            border: `1px solid ${BORDER}`,
+            boxShadow: "0 1px 3px rgba(16,28,54,0.05)",
             px: 1,
           }}
         >
@@ -579,10 +587,10 @@ const CreateLotissementPage = () => {
             variant="scrollable"
             scrollButtons="auto"
             aria-label="Gestion des lotissements"
-            TabIndicatorProps={{ sx: { bgcolor: BLUE, height: 3, borderRadius: 2 } }}
+            TabIndicatorProps={{ sx: { bgcolor: PRIMARY, height: 3, borderRadius: 2 } }}
             sx={{
-              "& .MuiTab-root": { textTransform: "none", fontWeight: 600, color: "rgba(15,23,42,0.6)", minHeight: 52 },
-              "& .MuiTab-root.Mui-selected": { color: BLUE },
+              "& .MuiTab-root": { textTransform: "none", fontWeight: 600, color: MUTED, minHeight: 52 },
+              "& .MuiTab-root.Mui-selected": { color: PRIMARY },
             }}
           >
             <Tab
@@ -605,8 +613,8 @@ const CreateLotissementPage = () => {
         {/* Panneau 1 : formulaire (reste monté pour conserver la saisie) */}
         <Box role="tabpanel" hidden={tab !== 1} id="lot-panel-1" aria-labelledby="lot-tab-1" sx={{ maxWidth: 820, mx: "auto" }}>
           <Box>
-            <Box component="form" onSubmit={handleSubmit}>
-              <SectionCard title="Nouveau lotissement" color={BLUE} icon="info" sx={{ "& legend": { display: "none" } }}>
+            <Box component="form" onSubmit={handleSubmit} sx={{ "& legend": { display: "none" }, "& .MuiOutlinedInput-root": { borderRadius: "10px" }, "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: PRIMARY } }}>
+              <FormSection title="Nouveau lotissement" icon="info">
                 <Stack spacing={2.5}>
                   <TextField
                     {...ph("Nom du lotissement *")}
@@ -660,9 +668,9 @@ const CreateLotissementPage = () => {
                     minRows={2}
                   />
                 </Stack>
-              </SectionCard>
+              </FormSection>
 
-              <SectionCard title="Localisation" color={GREEN} icon="location" sx={{ "& legend": { display: "none" } }}>
+              <FormSection title="Localisation" icon="location">
                 <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
                   <TextField
                     {...ph("Latitude", { step: "any", min: -90, max: 90 })}
@@ -685,9 +693,9 @@ const CreateLotissementPage = () => {
                 <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 1 }}>
                   Facultatif. Renseignez la latitude et la longitude ensemble.
                 </Typography>
-              </SectionCard>
+              </FormSection>
 
-              <SectionCard title="Photos et vidéos" color={NIGHT} icon="photo">
+              <FormSection title="Photos et vidéos" icon="photo">
                 <input
                   accept="image/jpeg,image/png,image/webp"
                   id="lotissement-image-upload"
@@ -702,7 +710,7 @@ const CreateLotissementPage = () => {
                     component="span"
                     startIcon={<CloudUpload />}
                     fullWidth
-                    sx={{ bgcolor: "#fff", borderColor: NIGHT, color: NIGHT, borderRadius: "10px", textTransform: "none", fontWeight: 600, "&:hover": { borderColor: NIGHT, bgcolor: "rgba(14,17,51,0.04)" } }}
+                    sx={{ bgcolor: "#fff", borderColor: PRIMARY, color: PRIMARY, borderRadius: "10px", textTransform: "none", fontWeight: 600, "&:hover": { borderColor: PRIMARY, bgcolor: "#E5F3EC" } }}
                   >
                     Ajouter des photos (JPEG, PNG, WebP)
                   </Button>
@@ -744,7 +752,7 @@ const CreateLotissementPage = () => {
                   <Button
                     variant="outlined"
                     onClick={addVideo}
-                    sx={{ bgcolor: "#fff", borderColor: NIGHT, color: NIGHT, borderRadius: "10px", textTransform: "none", fontWeight: 600, "&:hover": { borderColor: NIGHT, bgcolor: "rgba(14,17,51,0.04)" } }}
+                    sx={{ bgcolor: "#fff", borderColor: PRIMARY, color: PRIMARY, borderRadius: "10px", textTransform: "none", fontWeight: 600, "&:hover": { borderColor: PRIMARY, bgcolor: "#E5F3EC" } }}
                   >
                     Ajouter
                   </Button>
@@ -757,12 +765,12 @@ const CreateLotissementPage = () => {
                         size="small"
                         label={v.length > 32 ? `${v.substring(0, 32)}...` : v}
                         onDelete={() => setVideos((prev) => prev.filter((_, idx) => idx !== i))}
-                        sx={{ bgcolor: "#fff", fontWeight: 600 }}
+                        sx={{ bgcolor: "#E5F3EC", color: "#005C48", fontWeight: 600 }}
                       />
                     ))}
                   </Box>
                 )}
-              </SectionCard>
+              </FormSection>
 
               <Button
                 type="submit"
@@ -771,7 +779,7 @@ const CreateLotissementPage = () => {
                 fullWidth
                 startIcon={!submitting && <Add />}
                 disabled={submitting}
-                sx={{ bgcolor: BLUE, borderRadius: "10px", py: 1.4, fontWeight: 700, textTransform: "none", "&:hover": { bgcolor: BLUE_HOVER } }}
+                sx={{ bgcolor: PRIMARY, borderRadius: "10px", py: 1.4, minHeight: 48, fontWeight: 700, textTransform: "none", "&:hover": { bgcolor: PRIMARY_HOVER } }}
               >
                 {submitting ? <CircularProgress size={22} color="inherit" /> : "Créer le lotissement"}
               </Button>
@@ -789,16 +797,16 @@ const CreateLotissementPage = () => {
                 alignItems: "center",
                 gap: 1.5,
                 p: 2,
-                mb: 3,
+                mb: 2.5,
                 bgcolor: "#fff",
-                borderRadius: 4,
-                border: "1px solid rgba(15,23,42,0.08)",
-                boxShadow: "0 2px 8px rgba(15,23,42,0.05)",
+                borderRadius: "14px",
+                border: `1px solid ${BORDER}`,
+                boxShadow: "0 1px 3px rgba(16,28,54,0.05)",
                 "& .MuiOutlinedInput-root": { borderRadius: "10px" },
-                "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: BLUE },
+                "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: PRIMARY },
               }}
             >
-              <Typography variant="h6" fontWeight="bold" sx={{ color: NIGHT, mr: "auto" }}>
+              <Typography component="h2" sx={{ fontFamily: FONT, fontSize: 18, fontWeight: 700, color: NIGHT, mr: "auto" }}>
                 Mes lotissements ({filtered.length})
               </Typography>
               <TextField
@@ -841,7 +849,7 @@ const CreateLotissementPage = () => {
                     setSearchTerm("");
                     setZoneFilter("");
                   }}
-                  sx={{ borderColor: BLUE, color: BLUE, borderRadius: "10px", textTransform: "none", fontWeight: 600, "&:hover": { borderColor: BLUE_HOVER, bgcolor: "rgba(48,48,249,0.06)" } }}
+                  sx={{ borderColor: PRIMARY, color: PRIMARY, borderRadius: "10px", textTransform: "none", fontWeight: 600, "&:hover": { borderColor: PRIMARY, bgcolor: "#E5F3EC" } }}
                 >
                   Réinitialiser
                 </Button>
@@ -850,7 +858,7 @@ const CreateLotissementPage = () => {
 
             {loading ? (
               <Box display="flex" justifyContent="center" py={8}>
-                <CircularProgress sx={{ color: BLUE }} />
+                <CircularProgress sx={{ color: PRIMARY }} />
               </Box>
             ) : filtered.length === 0 ? (
               <Box
@@ -859,15 +867,15 @@ const CreateLotissementPage = () => {
                   py: 8,
                   px: 3,
                   bgcolor: "#fff",
-                  borderRadius: 4,
-                  border: "1px dashed rgba(15,23,42,0.18)",
+                  borderRadius: "14px",
+                  border: `1px dashed ${BORDER}`,
                 }}
               >
-                <Landscape sx={{ fontSize: 56, color: BLUE, opacity: 0.4 }} />
-                <Typography variant="h6" fontWeight="bold" sx={{ color: NIGHT, mt: 1 }}>
+                <Landscape sx={{ fontSize: 48, color: "#A8B3C1" }} />
+                <Typography sx={{ fontFamily: FONT, fontSize: 17, fontWeight: 700, color: NIGHT, mt: 1 }}>
                   {lotissements.length === 0 ? "Aucun lotissement pour le moment" : "Aucun résultat"}
                 </Typography>
-                <Typography color="text.secondary">
+                <Typography sx={{ color: MUTED, fontSize: 14 }}>
                   {lotissements.length === 0
                     ? "Créez votre premier lotissement avec le formulaire."
                     : "Modifiez votre recherche ou réinitialisez les filtres."}
@@ -886,7 +894,7 @@ const CreateLotissementPage = () => {
         </Box>
 
         {/* Modale d'édition */}
-        <Dialog open={!!editing} onClose={() => setEditing(null)} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 4, "& legend": { display: "none" } } }}>
+        <Dialog open={!!editing} onClose={() => setEditing(null)} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: "14px", "& legend": { display: "none" }, "& .MuiOutlinedInput-root": { borderRadius: "10px" } } }}>
           <DialogTitle sx={{ fontWeight: "bold", color: NIGHT }}>Modifier le lotissement</DialogTitle>
           <DialogContent>
             <Stack spacing={2.5} sx={{ mt: 1 }}>
@@ -921,13 +929,13 @@ const CreateLotissementPage = () => {
               variant="contained"
               onClick={handleSaveEdit}
               disabled={savingEdit}
-              sx={{ bgcolor: BLUE, borderRadius: "10px", textTransform: "none", fontWeight: 700, "&:hover": { bgcolor: BLUE_HOVER } }}
+              sx={{ bgcolor: PRIMARY, borderRadius: "10px", textTransform: "none", fontWeight: 700, "&:hover": { bgcolor: PRIMARY_HOVER } }}
             >
               Enregistrer
             </Button>
           </DialogActions>
         </Dialog>
-      </Container>
+      </Box>
     </AgenceLayout>
   );
 };
