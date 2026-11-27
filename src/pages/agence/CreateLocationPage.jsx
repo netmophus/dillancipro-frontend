@@ -169,7 +169,8 @@ const CreateLocationPage = () => {
   ];
 
   const typesLogement = [
-    "Villa", "Appartement", "Studio", "Maison", "Duplex", "Chambre", "Autre"
+    "Villa", "Appartement", "Studio", "Maison", "Duplex", "Chambre",
+    "Boutique", "Local commercial", "Magasin", "Entrepot", "Bureau", "Autre"
   ];
 
   const villes = [
