@@ -319,6 +319,34 @@ const SearchLocationsPage = () => {
   const NIGHT = "#101C36";
   const MUTED = "#475569";
   const FONT = "'Manrope', 'Plus Jakarta Sans', 'DM Sans', system-ui, Arial, sans-serif";
+
+  // Panneau déroulant des listes de tri, aux couleurs Dillanci
+  const SORT_MENU_PROPS = {
+    slotProps: {
+      paper: {
+        elevation: 0,
+        sx: {
+          mt: 0.75,
+          borderRadius: "12px",
+          border: "1px solid #E2E8F0",
+          boxShadow: "0 12px 28px rgba(16,28,54,0.14)",
+          "& .MuiMenu-list": { p: 0.75 },
+          "& .MuiMenuItem-root": {
+            fontFamily: FONT,
+            fontSize: 14.5,
+            fontWeight: 600,
+            color: NIGHT,
+            minHeight: 42,
+            borderRadius: "8px",
+            "&:hover": { bgcolor: "#F1F4F7" },
+            "&.Mui-selected": { bgcolor: "#E5F3EC", color: GREEN, "&:hover": { bgcolor: "#E5F3EC" } },
+            "&.Mui-focusVisible": { outline: `2px solid ${GREEN}`, outlineOffset: -2 },
+          },
+        },
+      },
+    },
+  };
+
   const fmtN = (n) => Number(n).toLocaleString("fr-FR").replace(/[  ]/g, " ");
   const closeSeg = () => setSegMenu({ key: null, el: null });
   const optNom = (list, id) => list.find((o) => o.id === id)?.nom || id;
@@ -666,10 +694,11 @@ const SearchLocationsPage = () => {
               <Box component="strong" sx={{ color: GREEN, fontWeight: 800 }}>{pagination.total}</Box>{" "}
               location{pagination.total > 1 ? "s" : ""} trouvée{pagination.total > 1 ? "s" : ""}
             </Typography>
-            <Box sx={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 1, width: { xs: "100%", sm: "auto" }, "& .MuiOutlinedInput-root": { borderRadius: "10px", bgcolor: "#fff" }, "& legend": { display: "none" } }}>
-              <FormControl size="small" sx={{ flex: { xs: "1 1 140px", sm: "0 0 180px" }, minWidth: 0 }}>
+            <Box sx={{ display: "flex", flexDirection: "row", flexWrap: "nowrap", alignItems: "center", gap: 1, width: { xs: "100%", sm: "auto" }, "& .MuiOutlinedInput-root": { borderRadius: "10px", bgcolor: "#fff" }, "& legend": { display: "none" } }}>
+              <FormControl size="small" sx={{ flex: { xs: "1 1 0", sm: "0 0 190px" }, minWidth: 0 }}>
                 <Select
                   value={sortBy}
+                  MenuProps={SORT_MENU_PROPS}
                   onChange={(e) => setSortBy(e.target.value)}
                   inputProps={{ "aria-label": "Trier par", title: "Trier par" }}
                   startAdornment={<InputAdornment position="start"><FISort fontSize="small" sx={{ color: GREEN }} /></InputAdornment>}
@@ -679,9 +708,10 @@ const SearchLocationsPage = () => {
                   <MenuItem value="superficie">Superficie</MenuItem>
                 </Select>
               </FormControl>
-              <FormControl size="small" sx={{ flex: { xs: "1 1 140px", sm: "0 0 168px" }, minWidth: 0 }}>
+              <FormControl size="small" sx={{ flex: { xs: "1 1 0", sm: "0 0 190px" }, minWidth: 0 }}>
                 <Select
                   value={sortOrder}
+                  MenuProps={SORT_MENU_PROPS}
                   onChange={(e) => setSortOrder(e.target.value)}
                   inputProps={{ "aria-label": "Ordre", title: "Ordre" }}
                   startAdornment={<InputAdornment position="start"><FISwapVert fontSize="small" sx={{ color: GREEN }} /></InputAdornment>}
