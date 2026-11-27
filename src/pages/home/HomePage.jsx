@@ -71,6 +71,7 @@ import {
   ChevronRight,
   AutoAwesome,
   Gavel,
+  AccessTime as ClockIcon,
   HourglassEmpty,
   Mail,
 } from "@mui/icons-material";
@@ -88,9 +89,19 @@ L.Icon.Default.mergeOptions({
   shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
 });
 
+// Popup "Devenir partenaire" : charte Dillanci
+const PARTENAIRE_TYPES = {
+  agence: { Icon: Business, subtitle: "Rejoignez notre réseau d'agences" },
+  banque: { Icon: AccountBalance, subtitle: "Rejoignez notre réseau de banques" },
+  notaire: { Icon: Gavel, subtitle: "Rejoignez notre réseau de notaires" },
+  generic: { Icon: Business, subtitle: "Rejoignez notre réseau de partenaires" },
+};
+const PARTENAIRE_FONT = "'Plus Jakarta Sans', 'Manrope', 'DM Sans', system-ui, Arial, sans-serif";
+
 const HomePage = () => {
   const navigate = useNavigate();
   const [openPartenaireDialog, setOpenPartenaireDialog] = useState(false);
+  const [partenaireType, setPartenaireType] = useState("generic");
   
   // États pour les locations dynamiques de la page d'accueil
   
@@ -348,7 +359,10 @@ const HomePage = () => {
       main: "#A31550",
       light: "#FDF2F6",
       Icon: HomeWork,
-      action: () => setOpenPartenaireDialog(true),
+      action: () => {
+        setPartenaireType("agence");
+        setOpenPartenaireDialog(true);
+      },
     },
     {
       key: "banques",
@@ -357,7 +371,10 @@ const HomePage = () => {
       main: "#008557",
       light: "#EFF8F3",
       Icon: AccountBalance,
-      action: () => setOpenPartenaireDialog(true),
+      action: () => {
+        setPartenaireType("banque");
+        setOpenPartenaireDialog(true);
+      },
     },
     {
       key: "notaires",
@@ -366,7 +383,10 @@ const HomePage = () => {
       main: "#1859E8",
       light: "#EFF5FF",
       Icon: Balance,
-      action: () => setOpenPartenaireDialog(true),
+      action: () => {
+        setPartenaireType("notaire");
+        setOpenPartenaireDialog(true);
+      },
     },
     {
       key: "particuliers",
@@ -1353,7 +1373,10 @@ const HomePage = () => {
         <Button
           variant="contained"
           endIcon={<ArrowForward />}
-          onClick={() => setOpenPartenaireDialog(true)}
+          onClick={() => {
+            setPartenaireType("generic");
+            setOpenPartenaireDialog(true);
+          }}
           sx={{
             px: { xs: 4, md: 5 },
             py: { xs: 1.2, md: 1.5 },
@@ -3071,332 +3094,114 @@ const HomePage = () => {
         </Box>
       </Box>
 
-      {/* Dialogue Devenir Partenaire - Moderne et Responsive */}
+      {/* Dialogue Devenir Partenaire */}
       <Dialog
         open={openPartenaireDialog}
         onClose={() => setOpenPartenaireDialog(false)}
-        maxWidth="sm"
-        fullWidth
+        maxWidth={false}
         TransitionComponent={Fade}
+        aria-labelledby="partenaire-title"
         PaperProps={{
           sx: {
-            borderRadius: { xs: 0, sm: 4 },
-            background: "#3030F9",
-            color: "white",
+            width: "calc(100% - 32px)",
+            maxWidth: 360,
+            m: 2,
+            borderRadius: "16px",
+            bgcolor: "#fff",
+            color: "#0e1133",
             overflow: "hidden",
-            position: "relative",
-            maxHeight: { xs: "100vh", sm: "90vh" },
-            margin: { xs: 0, sm: 2 },
-            "&::before": {
-              content: '""',
-              position: "absolute",
-              top: -100,
-              right: -100,
-              width: 300,
-              height: 300,
-              background: "none",
-              borderRadius: "50%",
-              zIndex: 0,
-            },
-            "&::after": {
-              content: '""',
-              position: "absolute",
-              bottom: -80,
-              left: -80,
-              width: 250,
-              height: 250,
-              background: "none",
-              borderRadius: "50%",
-              zIndex: 0,
-            },
-          }
+            boxShadow: "0 16px 40px rgba(14,17,51,0.28)",
+            maxHeight: "calc(100dvh - 32px)",
+            fontFamily: PARTENAIRE_FONT,
+          },
         }}
       >
-        {/* Bouton de fermeture moderne */}
-        <IconButton
-          onClick={() => setOpenPartenaireDialog(false)}
-          sx={{
-            position: "absolute",
-            top: { xs: 8, sm: 16 },
-            right: { xs: 8, sm: 16 },
-            zIndex: 10,
-            bgcolor: "rgba(255, 255, 255, 0.2)",
-            color: "white",
-            backdropFilter: "blur(10px)",
-            border: "1px solid rgba(255, 255, 255, 0.3)",
-            "&:hover": {
-              bgcolor: "rgba(255, 255, 255, 0.3)",
-              transform: "rotate(90deg)",
-            },
-            transition: "all 0.3s ease",
-            width: { xs: 36, sm: 40 },
-            height: { xs: 36, sm: 40 },
-          }}
-        >
-          <CloseIcon />
-        </IconButton>
+        {(() => {
+          const pt = PARTENAIRE_TYPES[partenaireType] || PARTENAIRE_TYPES.generic;
+          const TypeIcon = pt.Icon;
+          return (
+            <>
+              {/* En-tête */}
+              <Box sx={{ position: "relative", bgcolor: "#0e1133", color: "#fff", textAlign: "center", px: 2.5, pt: { xs: 3, sm: 3.5 }, pb: { xs: 2.5, sm: 3 } }}>
+                <IconButton
+                  onClick={() => setOpenPartenaireDialog(false)}
+                  aria-label="Fermer"
+                  sx={{
+                    position: "absolute",
+                    top: 8,
+                    right: 8,
+                    width: 36,
+                    height: 36,
+                    bgcolor: "rgba(255,255,255,0.14)",
+                    color: "#fff",
+                    "&:hover": { bgcolor: "rgba(255,255,255,0.26)" },
+                  }}
+                >
+                  <CloseIcon sx={{ fontSize: 20 }} />
+                </IconButton>
+                <Box sx={{ width: { xs: 52, sm: 58 }, height: { xs: 52, sm: 58 }, borderRadius: "16px", bgcolor: "#3030F9", display: "flex", alignItems: "center", justifyContent: "center", mx: "auto", mb: 1.5 }}>
+                  <TypeIcon sx={{ fontSize: { xs: 28, sm: 32 }, color: "#fff" }} />
+                </Box>
+                <Typography id="partenaire-title" component="h2" sx={{ fontFamily: PARTENAIRE_FONT, fontSize: 18, fontWeight: 800, lineHeight: 1.3, color: "#fff", px: 3 }}>
+                  Devenir partenaire
+                </Typography>
+                <Typography sx={{ fontFamily: PARTENAIRE_FONT, fontSize: { xs: 13.5, sm: 14 }, color: "rgba(255,255,255,0.8)", mt: 0.5, lineHeight: 1.4 }}>
+                  {pt.subtitle}
+                </Typography>
+              </Box>
 
-        <DialogTitle 
-          sx={{ 
-            textAlign: "center", 
-            pb: { xs: 2, sm: 3 }, 
-            pt: { xs: 4, sm: 5 },
-            px: { xs: 2, sm: 4 },
-            position: "relative", 
-            zIndex: 1 
-          }}
-        >
-          <Box 
-            display="flex" 
-            flexDirection={{ xs: "column", sm: "row" }}
-            alignItems="center" 
-            justifyContent="center" 
-            gap={{ xs: 2, sm: 2.5 }}
-            mb={{ xs: 1, sm: 2 }}
-          >
-            <Avatar 
-              sx={{ 
-                bgcolor: "rgba(255,255,255,0.25)", 
-                width: { xs: 70, sm: 80 },
-                height: { xs: 70, sm: 80 },
-                boxShadow: "0 8px 24px rgba(0,0,0,0.2)",
-                border: "3px solid rgba(255,255,255,0.3)",
-              }}
-            >
-              <Business sx={{ fontSize: { xs: "2rem", sm: "2.5rem" } }} />
-            </Avatar>
-            <Box textAlign={{ xs: "center", sm: "left" }}>
-              <Typography 
-                variant="h4" 
-                fontWeight="bold" 
-                sx={{ 
-                  textShadow: "0 2px 8px rgba(0,0,0,0.3)",
-                  fontSize: {
-                    xs: "clamp(1.5rem, 5vw, 1.8rem)",
-                    sm: "clamp(1.8rem, 3vw, 2rem)",
-                    md: "2.2rem",
-                  },
-                }}
-              >
-                <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}><Business fontSize="inherit" />Devenir Partenaire</Box>
-              </Typography>
-              <Typography 
-                variant="body1" 
-                sx={{ 
-                  opacity: 0.95, 
-                  mt: { xs: 0.5, sm: 1 },
-                  fontSize: {
-                    xs: "clamp(0.9rem, 3vw, 1rem)",
-                    sm: "1.05rem",
-                  },
-                }}
-              >
-                Rejoignez notre réseau d'agences immobilières
-              </Typography>
-            </Box>
-          </Box>
-        </DialogTitle>
+              {/* Contenu */}
+              <Box sx={{ p: { xs: 2, sm: 2.5 }, overflowY: "auto", minHeight: 0 }}>
+                <Box sx={{ bgcolor: "#EAF0FF", borderRadius: "12px", p: { xs: 2, sm: 2.5 }, textAlign: "center" }}>
+                  <Typography sx={{ fontFamily: PARTENAIRE_FONT, fontSize: 11.5, fontWeight: 700, letterSpacing: 0.9, textTransform: "uppercase", color: "#64748B" }}>
+                    Contactez-nous
+                  </Typography>
+                  <Typography sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 1, fontFamily: PARTENAIRE_FONT, fontSize: { xs: 19, sm: 22 }, fontWeight: 800, color: "#0e1133", mt: 0.75, lineHeight: 1.2, whiteSpace: "nowrap" }}>
+                    <Phone sx={{ fontSize: { xs: 21, sm: 24 }, color: "#3030F9" }} />
+                    +227 80 64 83 83
+                  </Typography>
+                  <Typography sx={{ fontFamily: PARTENAIRE_FONT, fontSize: 13.5, color: "#64748B", mt: 0.75, lineHeight: 1.45 }}>
+                    Appelez-nous pour discuter de votre intégration
+                  </Typography>
+                  <Box sx={{ display: "flex", gap: 1, mt: 2 }}>
+                    <Button
+                      disableElevation
+                      variant="contained"
+                      startIcon={<Call />}
+                      onClick={() => window.open("tel:+22780648383")}
+                      sx={{ flex: 1, minWidth: 0, height: 46, borderRadius: "10px", textTransform: "none", fontFamily: PARTENAIRE_FONT, fontWeight: 700, fontSize: { xs: 14, sm: 15 }, bgcolor: "#3030F9", color: "#fff", "&:hover": { bgcolor: "#2424D6" }, "& .MuiButton-startIcon": { mr: 0.75 } }}
+                    >
+                      Appeler
+                    </Button>
+                    <Button
+                      disableElevation
+                      variant="contained"
+                      startIcon={<WhatsApp />}
+                      onClick={() => window.open("https://wa.me/22780648383")}
+                      sx={{ flex: 1, minWidth: 0, height: 46, borderRadius: "10px", textTransform: "none", fontFamily: PARTENAIRE_FONT, fontWeight: 700, fontSize: { xs: 14, sm: 15 }, bgcolor: "#0A7C4F", color: "#fff", "&:hover": { bgcolor: "#086640" }, "& .MuiButton-startIcon": { mr: 0.75 } }}
+                    >
+                      WhatsApp
+                    </Button>
+                  </Box>
+                </Box>
 
-        <DialogContent 
-          sx={{ 
-            textAlign: "center", 
-            position: "relative", 
-            zIndex: 1,
-            px: { xs: 2, sm: 4 },
-            pb: { xs: 2, sm: 3 },
-          }}
-        >
-          <Box sx={{ 
-            bgcolor: "rgba(255,255,255,0.18)", 
-            borderRadius: { xs: 2.5, sm: 3 }, 
-            p: { xs: 2.5, sm: 3.5 }, 
-            mb: { xs: 2.5, sm: 3 },
-            backdropFilter: "blur(15px)",
-            border: "2px solid rgba(255,255,255,0.25)",
-            boxShadow: "0 8px 32px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.2)",
-          }}>
-            <Typography 
-              variant="h4" 
-              fontWeight="bold" 
-              sx={{ 
-                mb: { xs: 1.5, sm: 2 }, 
-                textShadow: "0 2px 8px rgba(0,0,0,0.3)",
-                fontSize: {
-                  xs: "clamp(1.5rem, 6vw, 1.8rem)",
-                  sm: "clamp(1.8rem, 4vw, 2.2rem)",
-                  md: "2.5rem",
-                },
-                wordBreak: "break-word",
-              }}
-            >
-              <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}><Phone fontSize="inherit" />+227 80 64 83 83</Box>
-            </Typography>
-            <Typography 
-              variant="body1" 
-              sx={{ 
-                opacity: 0.95, 
-                mb: { xs: 2, sm: 2.5 },
-                fontSize: {
-                  xs: "clamp(0.9rem, 3vw, 1rem)",
-                  sm: "1.05rem",
-                },
-                lineHeight: 1.6,
-              }}
-            >
-              Appelez-nous pour discuter de votre intégration
-            </Typography>
-            
-            <Stack 
-              direction={{ xs: "column", sm: "row" }}
-              spacing={{ xs: 1.5, sm: 2 }} 
-              justifyContent="center"
-              alignItems="stretch"
-              sx={{ width: "100%" }}
-            >
-              <Button
-                variant="contained"
-                startIcon={<Call />}
-                onClick={() => window.open("tel:+22780648383")}
-                fullWidth={isMobile}
-                sx={{
-                  bgcolor: "rgba(255,255,255,0.25)",
-                  color: "white",
-                  fontWeight: 600,
-                  px: { xs: 2, sm: 3 },
-                  py: { xs: 1.2, sm: 1.5 },
-                  fontSize: {
-                    xs: "clamp(0.85rem, 2.5vw, 0.95rem)",
-                    sm: "1rem",
-                  },
-                  borderRadius: { xs: 2, sm: 2.5 },
-                  backdropFilter: "blur(10px)",
-                  border: "1px solid rgba(255,255,255,0.3)",
-                  boxShadow: "0 4px 16px rgba(0,0,0,0.2)",
-                  "&:hover": {
-                    bgcolor: "rgba(255,255,255,0.35)",
-                    transform: { xs: "none", sm: "translateY(-2px) scale(1.02)" },
-                    boxShadow: "0 6px 20px rgba(0,0,0,0.3)",
-                  },
-                  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                }}
-              >
-                Appeler
-              </Button>
-              <Button
-                variant="contained"
-                startIcon={<WhatsApp />}
-                onClick={() => window.open("https://wa.me/22780648383")}
-                fullWidth={isMobile}
-                sx={{
-                  bgcolor: "#25D366",
-                  color: "white",
-                  fontWeight: 600,
-                  px: { xs: 2, sm: 3 },
-                  py: { xs: 1.2, sm: 1.5 },
-                  fontSize: {
-                    xs: "clamp(0.85rem, 2.5vw, 0.95rem)",
-                    sm: "1rem",
-                  },
-                  borderRadius: { xs: 2, sm: 2.5 },
-                  boxShadow: "0 4px 16px rgba(37, 211, 102, 0.3)",
-                  "&:hover": {
-                    bgcolor: "#128C7E",
-                    transform: { xs: "none", sm: "translateY(-2px) scale(1.02)" },
-                    boxShadow: "0 6px 20px rgba(37, 211, 102, 0.4)",
-                  },
-                  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                }}
-              >
-                WhatsApp
-              </Button>
-              <Button
-                variant="outlined"
-                startIcon={<ContentCopy />}
-                onClick={() => {
-                  navigator.clipboard.writeText("+22780648383");
-                }}
-                fullWidth={isMobile}
-                sx={{
-                  borderColor: "rgba(255,255,255,0.4)",
-                  borderWidth: 2,
-                  color: "white",
-                  fontWeight: 600,
-                  px: { xs: 2, sm: 3 },
-                  py: { xs: 1.2, sm: 1.5 },
-                  fontSize: {
-                    xs: "clamp(0.85rem, 2.5vw, 0.95rem)",
-                    sm: "1rem",
-                  },
-                  borderRadius: { xs: 2, sm: 2.5 },
-                  backdropFilter: "blur(10px)",
-                  bgcolor: "rgba(255,255,255,0.1)",
-                  "&:hover": {
-                    borderColor: "rgba(255,255,255,0.6)",
-                    bgcolor: "rgba(255,255,255,0.2)",
-                    transform: { xs: "none", sm: "translateY(-2px) scale(1.02)" },
-                  },
-                  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                }}
-              >
-                Copier
-              </Button>
-            </Stack>
-          </Box>
+                <Typography sx={{ display: "flex", alignItems: "flex-start", justifyContent: "center", gap: 0.75, textAlign: "center", fontFamily: PARTENAIRE_FONT, fontSize: 13.5, color: "#64748B", mt: 2, lineHeight: 1.45 }}>
+                  <ClockIcon sx={{ fontSize: 18, color: "#3030F9", mt: "1px", flexShrink: 0 }} />
+                  <span>Disponible du lundi au vendredi, 8h-18h</span>
+                </Typography>
 
-          <Typography 
-            variant="body2" 
-            sx={{ 
-              opacity: 0.85, 
-              fontStyle: "italic",
-              fontSize: {
-                xs: "clamp(0.8rem, 2.5vw, 0.9rem)",
-                sm: "0.95rem",
-              },
-              px: { xs: 1, sm: 2 },
-            }}
-          >
-            Nos équipes sont disponibles du lundi au vendredi, de 8h à 18h
-          </Typography>
-        </DialogContent>
-
-        <DialogActions 
-          sx={{ 
-            justifyContent: "center", 
-            pb: { xs: 2, sm: 3 },
-            px: { xs: 2, sm: 4 },
-            position: "relative", 
-            zIndex: 1 
-          }}
-        >
-          <Button
-            onClick={() => setOpenPartenaireDialog(false)}
-            variant="outlined"
-            fullWidth={isMobile}
-            sx={{
-              borderColor: "rgba(255,255,255,0.4)",
-              borderWidth: 2,
-              color: "white",
-              fontWeight: 600,
-              px: { xs: 3, sm: 4 },
-              py: { xs: 1.2, sm: 1.5 },
-              fontSize: {
-                xs: "clamp(0.9rem, 2.5vw, 1rem)",
-                sm: "1.05rem",
-              },
-              borderRadius: { xs: 2, sm: 2.5 },
-              backdropFilter: "blur(10px)",
-              bgcolor: "rgba(255,255,255,0.1)",
-              "&:hover": {
-                borderColor: "rgba(255,255,255,0.6)",
-                bgcolor: "rgba(255,255,255,0.2)",
-                transform: { xs: "none", sm: "translateY(-2px)" },
-              },
-              transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-            }}
-          >
-            Fermer
-          </Button>
-        </DialogActions>
+                <Button
+                  disableElevation
+                  fullWidth
+                  onClick={() => setOpenPartenaireDialog(false)}
+                  sx={{ mt: 2, height: 44, borderRadius: "10px", textTransform: "none", fontFamily: PARTENAIRE_FONT, fontWeight: 700, fontSize: 15, bgcolor: "#f5f7fa", color: "#0e1133", border: "1px solid #E2E8F0", "&:hover": { bgcolor: "#EDF0F5" } }}
+                >
+                  Fermer
+                </Button>
+              </Box>
+            </>
+          );
+        })()}
       </Dialog>
 
       {/* Drawer des banques partenaires - Moderne et Responsive */}
