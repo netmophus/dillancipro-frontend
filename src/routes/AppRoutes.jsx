@@ -41,6 +41,7 @@ import CreateBienPage from "../pages/agence/CreateBienPage";
 import MesBiensPage from "../pages/agence/MesBiensPage";
 import CreateLocationPage from "../pages/agence/CreateLocationPage";
 import LocationsPage from "../pages/agence/LocationsPage";
+import LocationDetailPage from "../pages/agence/LocationDetailPage";
 
 import AffecterCommercialPage from "../pages/agence/AffecterCommercialPage";
 import MesParcellesPage from "../pages/agence/MesParcellesPage";
@@ -536,6 +537,15 @@ const AppRoutes = () => {
   element={
     <ProtectRoute allowedRoles={["Agence"]}>
       <CreateLocationPage />
+    </ProtectRoute>
+  }
+/>
+
+<Route
+  path="/agence/locations/:id"
+  element={
+    <ProtectRoute allowedRoles={["Agence"]}>
+      <LocationDetailPage />
     </ProtectRoute>
   }
 />

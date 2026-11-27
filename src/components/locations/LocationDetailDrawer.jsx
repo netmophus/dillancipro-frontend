@@ -67,10 +67,10 @@ const fixImageUrl = (imageUrl) => {
 };
 
 // Les photos peuvent être des chaînes ou des objets { url }
-const photoSrc = (image) => fixImageUrl(typeof image === "string" ? image : image?.url);
+export const photoSrc = (image) => fixImageUrl(typeof image === "string" ? image : image?.url);
 
 // Nombre formaté, espaces insécables (le libellé FCFA est affiché à part)
-const formatNumber = (amount) => new Intl.NumberFormat("fr-FR").format(amount).replace(/[  ]/g, " ");
+export const formatNumber = (amount) => new Intl.NumberFormat("fr-FR").format(amount).replace(/[  ]/g, " ");
 
 // Statut de la location (seul endroit où des couleurs hors charte sont admises)
 const STATUTS = {
@@ -81,7 +81,7 @@ const STATUTS = {
 };
 
 // Équipements réellement enregistrés sur la location
-const EQUIPEMENTS = [
+export const EQUIPEMENTS = [
   { key: "meuble", label: "Meublé", icon: Chair },
   { key: "climatisation", label: "Climatisation", icon: AcUnit },
   { key: "chauffage", label: "Chauffage", icon: Whatshot },
