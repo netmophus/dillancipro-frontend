@@ -37,7 +37,7 @@ import {
   Instagram,
   Gavel,
 } from "@mui/icons-material";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import AgenceMenu from "../agence/AgenceMenu";
 import NotificationPanel from "./NotificationPanel";
@@ -67,9 +67,10 @@ const navLinkSx = {
   "&:hover": { bgcolor: GREY_LIGHT, color: BLUE },
 };
 
-const Navbar = () => {
+const Navbar = ({ hideTopBar = false }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const [anchorEl, setAnchorEl] = useState(null);
   const [mobileMenuAnchor, setMobileMenuAnchor] = useState(null);
   const [notificationPanelOpen, setNotificationPanelOpen] = useState(false);
@@ -213,6 +214,7 @@ const Navbar = () => {
           width: "100%",
           boxSizing: "border-box",
           height: { xs: 46, sm: 54, md: 64 },
+          display: hideTopBar ? "none" : "block",
           bgcolor: NIGHT,
           borderBottom: `3px solid ${TOPBAR_GREEN}`,
           overflow: "hidden",
@@ -337,7 +339,7 @@ const Navbar = () => {
           }}
         >
         {/* Logo à gauche */}
-        <Box sx={{ flexGrow: 1, display: "flex", alignItems: "center" }}>
+        <Box sx={{ flexGrow: 1, display: "flex", alignItems: "center", ...(hideTopBar && { "@media (max-width:359px)": { flexGrow: 0, width: 160, "& > a": { transform: "scale(0.8)", transformOrigin: "left center" } } }) }}>
           <LogoDillanci />
         </Box>
 
@@ -403,9 +405,11 @@ const Navbar = () => {
               component={Link}
               to={getDashboardPath()}
               startIcon={<Dashboard />}
+              aria-current={pathname === getDashboardPath() ? "page" : undefined}
               sx={{
                 display: { xs: "none", md: "flex" },
                 ...navLinkSx,
+                ...(pathname === getDashboardPath() && { bgcolor: "rgba(24,89,232,0.10)", color: BLUE, fontWeight: 700 }),
               }}
             >
               Dashboard
@@ -686,6 +690,7 @@ const Navbar = () => {
               <IconButton
                 color="inherit"
                 onClick={() => setNotificationPanelOpen(true)}
+                sx={hideTopBar ? { "@media (max-width:359px)": { p: "6px" } } : undefined}
               >
                 <Badge badgeContent={notificationCount} color="error">
                   <Notifications />
@@ -697,6 +702,7 @@ const Navbar = () => {
                 onClick={handleMenu}
                 sx={{
                   border: "2px solid #E6EAF0",
+                  ...(hideTopBar && { "@media (max-width:359px)": { p: "4px" } }),
                 }}
               >
                 <Avatar
@@ -717,7 +723,7 @@ const Navbar = () => {
             color="inherit"
             onClick={handleMobileMenuOpen}
             aria-label="menu"
-            sx={{ ml: 0.5 }}
+            sx={{ ml: 0.5, ...(hideTopBar && { "@media (max-width:359px)": { p: "6px", ml: 0 } }) }}
           >
             <MenuIcon />
           </IconButton>

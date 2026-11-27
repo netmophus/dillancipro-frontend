@@ -1,20 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  Typography,
-  Box,
-  Card,
-  CardContent,
-  Grid,
-  Avatar,
-  Stack,
-  LinearProgress,
-  Chip,
-  Skeleton,
-  Alert,
-  Divider,
-  IconButton,
-  Tooltip,
-} from "@mui/material";
+import { Typography, Box, Skeleton, Alert, Button, CircularProgress } from "@mui/material";
 import {
   Business,
   AccountBalance,
@@ -25,24 +10,72 @@ import {
   Home,
   Apartment,
   Refresh,
-  Assessment,
-  CheckCircle,
+  Dashboard as DashboardIcon,
   HourglassEmpty,
+  NotificationsActive,
+  CheckCircle,
+  ChevronRight,
 } from "@mui/icons-material";
+import { Link as RouterLink } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import AdminLayout from "../../components/admin/AdminLayout";
 import API from "../../api";
 
+const NIGHT = "#101C36";
+const GREEN = "#008557";
+const GREEN_DEEP = "#005C48";
+const MUTED = "#64748B";
+const BORDER = "#E2E8F0";
+const FONT = "'Manrope', 'Plus Jakarta Sans', 'DM Sans', system-ui, Arial, sans-serif";
+
+// Une couleur sobre par rôle
 const ROLE_COLORS = {
-  Admin: "#9c27b0",
-  Agence: "#1976d2",
-  Banque: "#388e3c",
-  Ministere: "#0288d1",
-  Commercial: "#ff9800",
-  Notaire: "#7b1fa2",
-  User: "#607d8b",
-  Client: "#607d8b",
+  Admin: "#101C36",
+  Agence: "#1859C9",
+  Banque: "#008557",
+  Ministere: "#0E7490",
+  Commercial: "#C26716",
+  Notaire: "#7041A5",
+  User: "#64748B",
+  Client: "#64748B",
 };
+
+const fmt = (n) => Number(n ?? 0).toLocaleString("fr-FR").replace(/[  ]/g, " ");
+
+// Barre de répartition : libellé à gauche, nombre et pourcentage à droite, barre dessous
+const DistroBar = ({ label, value, total, color }) => {
+  const pct = total > 0 ? Math.round((value / total) * 100) : 0;
+  return (
+    <Box sx={{ mb: "14px", "&:last-child": { mb: 0 } }}>
+      <Box sx={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 1, mb: 0.75 }}>
+        <Typography sx={{ fontFamily: FONT, fontSize: 14, fontWeight: 600, color: NIGHT, overflowWrap: "anywhere" }}>{label}</Typography>
+        <Typography sx={{ fontFamily: FONT, fontSize: 13.5, color: MUTED, whiteSpace: "nowrap" }}>
+          <Box component="strong" sx={{ color: NIGHT }}>{fmt(value)}</Box> · {pct} %
+        </Typography>
+      </Box>
+      <Box role="progressbar" aria-label={label} aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100} sx={{ height: 9, borderRadius: "999px", bgcolor: "#E8EDF2", overflow: "hidden" }}>
+        <Box sx={{ width: `${pct}%`, height: "100%", bgcolor: color, borderRadius: "999px" }} />
+      </Box>
+    </Box>
+  );
+};
+
+// Panneau statistique : entête homogène + contenu
+const Panel = ({ title, icon: Icon, children }) => (
+  <Box sx={{ bgcolor: "#fff", border: `1px solid ${BORDER}`, borderRadius: "14px", display: "flex", flexDirection: "column", minWidth: 0, boxShadow: "0 1px 3px rgba(16,28,54,0.04)" }}>
+    <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, p: "14px 20px", borderBottom: `1px solid ${BORDER}` }}>
+      <Box sx={{ width: 36, height: 36, borderRadius: "10px", bgcolor: "#E5F3EC", color: GREEN, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+        <Icon sx={{ fontSize: 21 }} />
+      </Box>
+      <Typography component="h2" sx={{ fontFamily: FONT, fontSize: 17, fontWeight: 700, color: NIGHT }}>{title}</Typography>
+    </Box>
+    <Box sx={{ p: "18px 20px 20px", flex: 1 }}>{children}</Box>
+  </Box>
+);
+
+const GroupTitle = ({ children }) => (
+  <Typography sx={{ fontFamily: FONT, fontSize: 12, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase", color: MUTED, mb: 1.5 }}>{children}</Typography>
+);
 
 const AdminDashboardPage = () => {
   const { user } = useAuth();
@@ -58,7 +91,11 @@ const AdminDashboardPage = () => {
       setStats(res.data);
     } catch (err) {
       console.error("Erreur stats:", err);
-      setError("Impossible de charger les statistiques. Vérifiez que le serveur est démarré.");
+      setError(
+        err?.response?.status === 401
+          ? "Votre session a expiré. Veuillez vous reconnecter."
+          : "Impossible de charger les statistiques. Vérifiez que le serveur est démarré."
+      );
     } finally {
       setLoading(false);
     }
@@ -68,228 +105,207 @@ const AdminDashboardPage = () => {
     fetchStats();
   }, []);
 
-  // Cartes KPI principales
+  // Cartes KPI : quatre par ligne sur deux lignes
   const kpis = stats
     ? [
-        { label: "Utilisateurs", value: stats.utilisateurs.total, sub: `${stats.utilisateurs.actifs} actifs`, color: "#f57c00", icon: People },
-        { label: "Agences", value: stats.agences.total, sub: `${stats.agences.actives} actives`, color: "#1976d2", icon: Business },
-        { label: "Banques", value: stats.banques.total, sub: "partenaires", color: "#388e3c", icon: AccountBalance },
-        { label: "Notaires", value: stats.notaires.total, sub: "partenaires", color: "#7b1fa2", icon: Gavel },
-        { label: "Parcelles", value: stats.parcelles.total, sub: `${stats.parcelles.vendues} vendues`, color: "#2e7d32", icon: Landscape },
-        { label: "Biens", value: stats.biens.total, sub: `${stats.biens.vendus} vendus`, color: "#5e35b1", icon: Apartment },
-        { label: "Locations", value: stats.locations.total, sub: "offres", color: "#ff5722", icon: Home },
-        { label: "Ventes patrimoine", value: stats.ventes.total, sub: "au total", color: "#c2185b", icon: AttachMoney },
+        { label: "Utilisateurs", value: stats.utilisateurs?.total, sub: `${fmt(stats.utilisateurs?.actifs)} actifs`, color: "#C26716", bg: "#FFF0DF", icon: People },
+        { label: "Agences", value: stats.agences?.total, sub: `${fmt(stats.agences?.actives)} actives`, color: "#1859C9", bg: "#E8F0FD", icon: Business },
+        { label: "Banques", value: stats.banques?.total, sub: "partenaires", color: "#008557", bg: "#E5F3EC", icon: AccountBalance },
+        { label: "Notaires", value: stats.notaires?.total, sub: "partenaires", color: "#7041A5", bg: "#F1EAF8", icon: Gavel },
+        { label: "Parcelles", value: stats.parcelles?.total, sub: `${fmt(stats.parcelles?.vendues)} vendues`, color: "#397B35", bg: "#EAF3E7", icon: Landscape },
+        { label: "Biens immobiliers", value: stats.biens?.total, sub: `${fmt(stats.biens?.vendus)} vendus`, color: "#3659A2", bg: "#E8EEF9", icon: Apartment },
+        { label: "Locations", value: stats.locations?.total, sub: "offres", color: "#C75232", bg: "#FCEDE7", icon: Home },
+        { label: "Ventes patrimoine", value: stats.ventes?.total, sub: "au total", color: "#A62C55", bg: "#F9E8EF", icon: AttachMoney },
       ]
     : [];
 
-  // Barre de répartition réutilisable
-  const DistroBar = ({ label, value, total, color }) => {
-    const pct = total > 0 ? Math.round((value / total) * 100) : 0;
-    return (
-      <Box mb={1.5}>
-        <Stack direction="row" justifyContent="space-between" mb={0.5}>
-          <Typography variant="body2" sx={{ fontWeight: 500 }}>{label}</Typography>
-          <Typography variant="body2" color="text.secondary">
-            <strong>{value}</strong> ({pct}%)
-          </Typography>
-        </Stack>
-        <LinearProgress
-          variant="determinate"
-          value={pct}
-          sx={{
-            height: 8,
-            borderRadius: 5,
-            bgcolor: "#eef2f7",
-            "& .MuiLinearProgress-bar": { bgcolor: color, borderRadius: 5 },
-          }}
-        />
-      </Box>
-    );
+  const rolesEntries = stats ? Object.entries(stats.utilisateurs?.parRole || {}).sort((a, b) => b[1] - a[1]) : [];
+  const ventesEntries = stats ? Object.entries(stats.ventes?.parStatut || {}) : [];
+
+  const kpiGrid = {
+    display: "grid",
+    gridTemplateColumns: "minmax(0, 1fr)",
+    gap: "16px",
+    "@media (min-width:375px)": { gridTemplateColumns: "repeat(2, minmax(0, 1fr))" },
+    "@media (min-width:1024px)": { gridTemplateColumns: "repeat(4, minmax(0, 1fr))" },
   };
-
-  const PanelCard = ({ title, icon: Icon, color, children }) => (
-    <Card elevation={0} sx={{ height: "100%", borderRadius: 3, border: "1px solid #e3e8ef" }}>
-      <CardContent sx={{ p: 3 }}>
-        <Stack direction="row" alignItems="center" spacing={1.5} mb={2.5}>
-          <Avatar sx={{ bgcolor: `${color}15`, color, width: 40, height: 40 }}>
-            <Icon />
-          </Avatar>
-          <Typography variant="h6" fontWeight="bold">{title}</Typography>
-        </Stack>
-        {children}
-      </CardContent>
-    </Card>
-  );
-
-  const rolesEntries = stats ? Object.entries(stats.utilisateurs.parRole || {}) : [];
-  const ventesEntries = stats ? Object.entries(stats.ventes.parStatut || {}) : [];
 
   return (
     <AdminLayout>
-      {/* Bandeau de bienvenue */}
-      <Card
-        elevation={0}
-        sx={{
-          mb: 3.5,
-          borderRadius: 4,
-          background: "linear-gradient(135deg, #0D2B4E 0%, #1B5285 55%, #27AE60 165%)",
-          color: "white",
-        }}
-      >
-        <CardContent sx={{ p: { xs: 3, md: 4 } }}>
-          <Stack direction="row" alignItems="center" justifyContent="space-between" flexWrap="wrap" gap={2}>
-            <Stack direction="row" alignItems="center" spacing={2.5}>
-              <Avatar sx={{ width: 64, height: 64, bgcolor: "rgba(255,255,255,0.15)", border: "3px solid rgba(255,255,255,0.4)" }}>
-                <Assessment fontSize="large" />
-              </Avatar>
-              <Box>
-                <Typography variant="h4" fontWeight="bold">Tableau de bord</Typography>
-                <Typography variant="body1" sx={{ opacity: 0.9, mt: 0.5 }}>
-                  Bonjour {user?.fullName || user?.phone} • Vue d'ensemble de la plateforme
-                </Typography>
-              </Box>
-            </Stack>
-            <Tooltip title="Rafraîchir">
-              <IconButton onClick={fetchStats} sx={{ color: "white", border: "1px solid rgba(255,255,255,0.3)" }}>
-                <Refresh />
-              </IconButton>
-            </Tooltip>
-          </Stack>
-        </CardContent>
-      </Card>
+      <Box sx={{ display: "flex", flexDirection: "column", gap: "20px", fontFamily: FONT }}>
+        {/* Bandeau Tableau de bord */}
+        <Box
+          sx={{
+            bgcolor: GREEN_DEEP,
+            color: "#fff",
+            borderRadius: "14px",
+            p: { xs: "18px 16px", sm: "24px" },
+            minHeight: { sm: 120 },
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: 2,
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 1.5, sm: 2 }, minWidth: 0, flex: "1 1 260px" }}>
+            <Box sx={{ width: { xs: 48, sm: 60 }, height: { xs: 48, sm: 60 }, borderRadius: "14px", bgcolor: "rgba(255,255,255,0.14)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <DashboardIcon sx={{ fontSize: { xs: 26, sm: 32 }, color: "#fff" }} />
+            </Box>
+            <Box sx={{ minWidth: 0 }}>
+              <Typography component="h1" sx={{ fontFamily: FONT, fontSize: { xs: 24, sm: 30 }, fontWeight: 700, lineHeight: 1.2, color: "#fff" }}>
+                Tableau de bord
+              </Typography>
+              <Typography sx={{ fontFamily: FONT, fontSize: 15, color: "#fff", mt: 0.5, overflowWrap: "anywhere" }}>
+                Bonjour {user?.fullName || user?.phone || ""}
+              </Typography>
+              <Typography sx={{ fontFamily: FONT, fontSize: 14, color: "#CFE9E0", mt: 0.25 }}>
+                Vue d'ensemble de la plateforme Dillanci
+              </Typography>
+            </Box>
+          </Box>
+          <Button
+            onClick={fetchStats}
+            disabled={loading}
+            aria-label="Actualiser les statistiques"
+            startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <Refresh sx={{ fontSize: "22px !important" }} />}
+            sx={{ height: 44, px: 2, borderRadius: "10px", textTransform: "none", fontFamily: FONT, fontWeight: 700, fontSize: 14.5, color: "#fff", border: "1px solid rgba(255,255,255,0.45)", "&:hover": { bgcolor: "rgba(255,255,255,0.12)", border: "1px solid #fff" }, "&.Mui-disabled": { color: "rgba(255,255,255,0.8)", border: "1px solid rgba(255,255,255,0.3)" } }}
+          >
+            {loading ? "Actualisation…" : "Actualiser"}
+          </Button>
+        </Box>
 
-      {error && <Alert severity="warning" sx={{ mb: 3, borderRadius: 2 }}>{error}</Alert>}
+        {error && (
+          <Alert
+            severity="warning"
+            sx={{ borderRadius: "10px", fontFamily: FONT }}
+            action={<Button color="inherit" size="small" onClick={fetchStats} sx={{ textTransform: "none", fontWeight: 700 }}>Réessayer</Button>}
+          >
+            {error}
+          </Alert>
+        )}
 
-      {/* KPIs principaux */}
-      <Grid container spacing={2.5} mb={1}>
-        {loading
-          ? Array.from({ length: 8 }).map((_, i) => (
-              <Grid item xs={6} sm={4} md={3} key={i}>
-                <Skeleton variant="rounded" height={118} sx={{ borderRadius: 3 }} />
-              </Grid>
-            ))
-          : kpis.map((stat, index) => (
-              <Grid item xs={6} sm={4} md={3} key={index}>
-                <Card
-                  elevation={0}
-                  sx={{
-                    borderRadius: 3,
-                    border: "1px solid #e3e8ef",
-                    transition: "all 0.25s",
-                    "&:hover": { transform: "translateY(-3px)", boxShadow: "0 8px 24px rgba(13,43,78,0.08)" },
-                  }}
+        {/* Huit indicateurs : 4 + 4 */}
+        <Box sx={kpiGrid}>
+          {loading && !stats
+            ? Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} variant="rounded" height={118} sx={{ borderRadius: "14px" }} />)
+            : kpis.map((k) => (
+                <Box
+                  key={k.label}
+                  sx={{ bgcolor: "#fff", border: `1px solid ${BORDER}`, borderRadius: "14px", boxShadow: "0 1px 3px rgba(16,28,54,0.05)", p: { xs: "14px", sm: "16px 20px" }, minHeight: 118, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1, minWidth: 0 }}
                 >
-                  <CardContent>
-                    <Stack direction="row" justifyContent="space-between" alignItems="center">
-                      <Box>
-                        <Typography color="text.secondary" variant="body2">{stat.label}</Typography>
-                        <Typography variant="h4" fontWeight="bold" sx={{ color: stat.color }}>{stat.value}</Typography>
-                        <Typography variant="caption" color="text.secondary">{stat.sub}</Typography>
-                      </Box>
-                      <Avatar sx={{ bgcolor: `${stat.color}15`, color: stat.color, width: 46, height: 46 }}>
-                        <stat.icon />
-                      </Avatar>
-                    </Stack>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
-      </Grid>
+                  <Box sx={{ minWidth: 0 }}>
+                    <Typography sx={{ fontFamily: FONT, fontSize: 14.5, fontWeight: 600, color: MUTED, lineHeight: 1.25 }}>{k.label}</Typography>
+                    <Typography sx={{ fontFamily: FONT, fontSize: { xs: 28, sm: 32 }, fontWeight: 800, color: k.color, lineHeight: 1.2, mt: 0.25 }}>{fmt(k.value)}</Typography>
+                    <Typography sx={{ fontFamily: FONT, fontSize: 12.5, color: MUTED, mt: 0.25 }}>{k.sub}</Typography>
+                  </Box>
+                  <Box sx={{ width: { xs: 44, sm: 54 }, height: { xs: 44, sm: 54 }, borderRadius: "14px", bgcolor: k.bg, color: k.color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <k.icon sx={{ fontSize: { xs: 26, sm: 30 } }} />
+                  </Box>
+                </Box>
+              ))}
+        </Box>
 
-      {/* Répartitions */}
-      <Grid container spacing={2.5} mt={1}>
-        {/* Utilisateurs par rôle */}
-        <Grid item xs={12} md={4}>
-          <PanelCard title="Utilisateurs par rôle" icon={People} color="#f57c00">
-            {loading ? (
+        {/* Trois panneaux statistiques */}
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: "minmax(0, 1fr)",
+            gap: "20px",
+            alignItems: "stretch",
+            "@media (min-width:768px)": { gridTemplateColumns: "repeat(2, minmax(0, 1fr))", "& > :last-child": { gridColumn: "1 / -1" } },
+            "@media (min-width:1280px)": { gridTemplateColumns: "repeat(3, minmax(0, 1fr))", "& > :last-child": { gridColumn: "auto" } },
+          }}
+        >
+          <Panel title="Utilisateurs par rôle" icon={People}>
+            {loading && !stats ? (
               <Skeleton variant="rounded" height={180} />
             ) : rolesEntries.length === 0 ? (
-              <Typography variant="body2" color="text.secondary">Aucune donnée.</Typography>
+              <Typography sx={{ fontFamily: FONT, fontSize: 14, color: MUTED }}>Aucune donnée.</Typography>
             ) : (
-              rolesEntries
-                .sort((a, b) => b[1] - a[1])
-                .map(([role, count]) => (
-                  <DistroBar
-                    key={role}
-                    label={role}
-                    value={count}
-                    total={stats.utilisateurs.total}
-                    color={ROLE_COLORS[role] || "#607d8b"}
-                  />
-                ))
+              rolesEntries.map(([role, count]) => (
+                <DistroBar key={role} label={role} value={count} total={stats.utilisateurs?.total || 0} color={ROLE_COLORS[role] || "#64748B"} />
+              ))
             )}
-          </PanelCard>
-        </Grid>
+          </Panel>
 
-        {/* Foncier */}
-        <Grid item xs={12} md={4}>
-          <PanelCard title="Foncier & immobilier" icon={Landscape} color="#2e7d32">
-            {loading ? (
+          <Panel title="Foncier & immobilier" icon={Landscape}>
+            {loading && !stats ? (
               <Skeleton variant="rounded" height={180} />
-            ) : (
+            ) : stats ? (
               <>
-                <Typography variant="overline" color="text.secondary">Parcelles</Typography>
-                <DistroBar label="Vendues" value={stats.parcelles.vendues} total={stats.parcelles.total} color="#2e7d32" />
-                <DistroBar label="À vendre" value={stats.parcelles.aVendre} total={stats.parcelles.total} color="#66bb6a" />
-                <Divider sx={{ my: 1.5 }} />
-                <Typography variant="overline" color="text.secondary">Biens immobiliers</Typography>
-                <DistroBar label="Disponibles" value={stats.biens.disponibles} total={stats.biens.total} color="#5e35b1" />
-                <DistroBar label="Vendus" value={stats.biens.vendus} total={stats.biens.total} color="#9575cd" />
+                <GroupTitle>Parcelles</GroupTitle>
+                <DistroBar label="Parcelles vendues" value={stats.parcelles?.vendues ?? 0} total={stats.parcelles?.total ?? 0} color="#3659A2" />
+                <DistroBar label="Parcelles à vendre" value={stats.parcelles?.aVendre ?? 0} total={stats.parcelles?.total ?? 0} color={GREEN} />
+                <Box sx={{ my: 2.25, borderTop: `1px solid ${BORDER}` }} />
+                <GroupTitle>Biens immobiliers</GroupTitle>
+                <DistroBar label="Biens disponibles" value={stats.biens?.disponibles ?? 0} total={stats.biens?.total ?? 0} color={GREEN} />
+                <DistroBar label="Biens vendus" value={stats.biens?.vendus ?? 0} total={stats.biens?.total ?? 0} color="#3659A2" />
               </>
-            )}
-          </PanelCard>
-        </Grid>
-
-        {/* Éléments à traiter + ventes */}
-        <Grid item xs={12} md={4}>
-          <PanelCard title="À traiter" icon={HourglassEmpty} color="#e53935">
-            {loading ? (
-              <Skeleton variant="rounded" height={180} />
             ) : (
-              <Stack spacing={1.5}>
-                <Stack direction="row" alignItems="center" justifyContent="space-between"
-                  sx={{ p: 1.5, borderRadius: 2, bgcolor: "#fff5f5", border: "1px solid #ffd6d6" }}>
-                  <Stack direction="row" alignItems="center" spacing={1}>
-                    <HourglassEmpty sx={{ color: "#e53935" }} fontSize="small" />
-                    <Typography variant="body2">Agences en attente</Typography>
-                  </Stack>
-                  <Chip label={stats.agences.enAttente} size="small" sx={{ bgcolor: "#e53935", color: "white", fontWeight: 700 }} />
-                </Stack>
-                <Stack direction="row" alignItems="center" justifyContent="space-between"
-                  sx={{ p: 1.5, borderRadius: 2, bgcolor: "#fff8ec", border: "1px solid #ffe2b3" }}>
-                  <Stack direction="row" alignItems="center" spacing={1}>
-                    <HourglassEmpty sx={{ color: "#ff9800" }} fontSize="small" />
-                    <Typography variant="body2">Parcelles non vérifiées</Typography>
-                  </Stack>
-                  <Chip label={stats.parcelles.nonVerifiees} size="small" sx={{ bgcolor: "#ff9800", color: "white", fontWeight: 700 }} />
-                </Stack>
-
-                <Divider sx={{ my: 0.5 }} />
-                <Typography variant="overline" color="text.secondary">Ventes par statut</Typography>
-                {ventesEntries.length === 0 ? (
-                  <Typography variant="body2" color="text.secondary">Aucune vente.</Typography>
-                ) : (
-                  ventesEntries.map(([statut, count]) => (
-                    <Stack key={statut} direction="row" alignItems="center" justifyContent="space-between">
-                      <Stack direction="row" alignItems="center" spacing={1}>
-                        <CheckCircle sx={{ color: "#27AE60", fontSize: 16 }} />
-                        <Typography variant="body2" sx={{ textTransform: "capitalize" }}>{statut}</Typography>
-                      </Stack>
-                      <Chip label={count} size="small" variant="outlined" />
-                    </Stack>
-                  ))
-                )}
-              </Stack>
+              <Typography sx={{ fontFamily: FONT, fontSize: 14, color: MUTED }}>Aucune donnée.</Typography>
             )}
-          </PanelCard>
-        </Grid>
-      </Grid>
+          </Panel>
 
-      {stats?.generatedAt && (
-        <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 3, textAlign: "right" }}>
-          Mis à jour le {new Date(stats.generatedAt).toLocaleString("fr-FR")}
-        </Typography>
-      )}
+          <Panel title="À traiter" icon={NotificationsActive}>
+            {loading && !stats ? (
+              <Skeleton variant="rounded" height={180} />
+            ) : stats ? (
+              <Box sx={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                <Box
+                  component={RouterLink}
+                  to="/admin/verification-agences"
+                  sx={{ display: "flex", alignItems: "center", gap: 1.25, p: "12px 14px", borderRadius: "10px", bgcolor: "#FDECEC", border: "1px solid #F8CACA", color: "#9B1C1C", textDecoration: "none", "&:hover": { bgcolor: "#FBE0E0" }, "&:focus-visible": { outline: "2px solid #9B1C1C", outlineOffset: 2 } }}
+                >
+                  <HourglassEmpty sx={{ fontSize: 22, flexShrink: 0 }} />
+                  <Typography sx={{ fontFamily: FONT, fontSize: 14.5, fontWeight: 600, flex: 1, minWidth: 0, color: "inherit" }}>Agences en attente</Typography>
+                  <Box sx={{ minWidth: 30, height: 30, px: 0.75, borderRadius: "999px", bgcolor: "#D92D20", color: "#fff", fontFamily: FONT, fontWeight: 800, fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center", boxSizing: "border-box" }}>
+                    {fmt(stats.agences?.enAttente)}
+                  </Box>
+                  <ChevronRight sx={{ fontSize: 20, flexShrink: 0 }} />
+                </Box>
+
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, p: "12px 14px", borderRadius: "10px", bgcolor: "#FFF4E5", border: "1px solid #FFE0B2", color: "#9A5B00" }}>
+                  <HourglassEmpty sx={{ fontSize: 22, flexShrink: 0 }} />
+                  <Typography sx={{ fontFamily: FONT, fontSize: 14.5, fontWeight: 600, flex: 1, minWidth: 0, color: "inherit" }}>Parcelles non vérifiées</Typography>
+                  <Box sx={{ minWidth: 30, height: 30, px: 0.75, borderRadius: "999px", bgcolor: "#E8890C", color: "#fff", fontFamily: FONT, fontWeight: 800, fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center", boxSizing: "border-box" }}>
+                    {fmt(stats.parcelles?.nonVerifiees)}
+                  </Box>
+                </Box>
+
+                <Box sx={{ mt: 0.5, pt: 2, borderTop: `1px solid ${BORDER}` }}>
+                  <GroupTitle>Ventes par statut</GroupTitle>
+                  {ventesEntries.length === 0 ? (
+                    <Typography sx={{ fontFamily: FONT, fontSize: 14, color: MUTED }}>Aucune vente enregistrée</Typography>
+                  ) : (
+                    <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                      {ventesEntries.map(([statut, count]) => (
+                        <Box key={statut} sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1 }}>
+                          <Box sx={{ display: "flex", alignItems: "center", gap: 1, minWidth: 0 }}>
+                            <CheckCircle sx={{ fontSize: 18, color: GREEN, flexShrink: 0 }} />
+                            <Typography sx={{ fontFamily: FONT, fontSize: 14, color: NIGHT, textTransform: "capitalize", overflowWrap: "anywhere" }}>{String(statut).replace(/_/g, " ")}</Typography>
+                          </Box>
+                          <Box sx={{ minWidth: 28, height: 26, px: 1, borderRadius: "999px", bgcolor: "#E5F3EC", color: GREEN_DEEP, fontFamily: FONT, fontWeight: 700, fontSize: 13, display: "flex", alignItems: "center", justifyContent: "center", boxSizing: "border-box" }}>
+                            {fmt(count)}
+                          </Box>
+                        </Box>
+                      ))}
+                    </Box>
+                  )}
+                </Box>
+              </Box>
+            ) : (
+              <Typography sx={{ fontFamily: FONT, fontSize: 14, color: MUTED }}>Aucune donnée.</Typography>
+            )}
+          </Panel>
+        </Box>
+
+        {stats?.generatedAt && (
+          <Typography sx={{ fontFamily: FONT, fontSize: 12.5, color: MUTED, textAlign: "right" }}>
+            Dernière actualisation : {new Date(stats.generatedAt).toLocaleString("fr-FR")}
+          </Typography>
+        )}
+      </Box>
     </AdminLayout>
   );
 };
