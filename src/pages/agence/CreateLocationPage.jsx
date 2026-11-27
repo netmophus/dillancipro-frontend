@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import {
   Box,
@@ -21,6 +21,7 @@ import {
   Stack,
   Alert,
   CircularProgress,
+  IconButton,
 } from "@mui/material";
 import {
   Home,
@@ -30,7 +31,7 @@ import {
   Description,
   CheckCircle,
 } from "@mui/icons-material";
-import { Info, Tune, Checklist } from "@mui/icons-material";
+import { Info, Tune, Checklist, Close } from "@mui/icons-material";
 import { AttachMoney as FIAttachMoney, Bathtub as FIBathtub, Bed as FIBed, CalendarMonth as FICalendarMonth, Explore as FIExplore, Flag as FIFlag, Home as FIHome, LocationCity as FILocationCity, LocationOn as FILocationOn, MarkunreadMailbox as FIMarkunreadMailbox, MyLocation as FIMyLocation, Notes as FINotes, Place as FIPlace, Receipt as FIReceipt, Savings as FISavings, Schedule as FISchedule, Square as FISquare, Title as FITitle, Videocam as FIVideocam } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import AgenceLayout from "../../components/agence/AgenceLayout";
@@ -80,11 +81,24 @@ const SectionCard = ({ title, icon = "info", sx, children }) => {
   );
 };
 
+// Limites alignées sur le serveur (uploadLocations.js : 8 images, 5 Mo chacune)
+const MAX_IMAGES = 8;
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
+const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"];
+
 const CreateLocationPage = () => {
   const navigate = useNavigate();
   const [activeStep, setActiveStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  // Deux tableaux parallèles : fichiers à envoyer et aperçus (même longueur)
+  const [imageFiles, setImageFiles] = useState([]);
+  const [imagePreviews, setImagePreviews] = useState([]);
+  const previewsRef = useRef([]);
+  previewsRef.current = imagePreviews;
+
+  // Libère les URL d'aperçu au démontage
+  useEffect(() => () => previewsRef.current.forEach((u) => URL.revokeObjectURL(u)), []);
 
   const [formData, setFormData] = useState({
     // Informations de base
@@ -169,6 +183,42 @@ const CreateLocationPage = () => {
     }));
   };
 
+  const handleImageSelect = (e) => {
+    const selected = Array.from(e.target.files || []);
+    e.target.value = ""; // permet de re-sélectionner le même fichier
+    if (selected.length === 0) return;
+
+    const errors = [];
+    const valid = [];
+    for (const file of selected) {
+      if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+        errors.push(`${file.name} : format non accepté (JPEG, PNG, WEBP ou GIF)`);
+      } else if (file.size > MAX_IMAGE_SIZE) {
+        errors.push(`${file.name} : dépasse 5 Mo`);
+      } else {
+        valid.push(file);
+      }
+    }
+
+    const room = MAX_IMAGES - imagePreviews.length;
+    const accepted = valid.slice(0, Math.max(room, 0));
+    if (valid.length > accepted.length) {
+      errors.push(`${MAX_IMAGES} photos maximum : ${valid.length - accepted.length} photo(s) ignorée(s)`);
+    }
+
+    if (accepted.length > 0) {
+      setImageFiles((prev) => [...prev, ...accepted]);
+      setImagePreviews((prev) => [...prev, ...accepted.map((f) => URL.createObjectURL(f))]);
+    }
+    setError(errors.join(" · "));
+  };
+
+  const removeImage = (index) => {
+    URL.revokeObjectURL(imagePreviews[index]);
+    setImageFiles((prev) => prev.filter((_, i) => i !== index));
+    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
+  };
+
   const handleNext = () => {
     setActiveStep(prev => prev + 1);
   };
@@ -195,31 +245,54 @@ const CreateLocationPage = () => {
         }
       }
 
-      // Préparation des données
-      const locationData = {
-        ...formData,
-        superficie: parseInt(formData.superficie),
-        chambres: parseInt(formData.chambres),
-        salleDeBain: parseInt(formData.salleDeBain),
-        prixMensuel: parseInt(formData.prixMensuel),
-        caution: parseInt(formData.caution),
-        charges: parseInt(formData.charges) || 0,
-        dureeMinimale: parseInt(formData.dureeMinimale),
-        dureeMaximale: formData.dureeMaximale ? parseInt(formData.dureeMaximale) : null,
-        coordonnees: {
-          latitude: parseFloat(formData.latitude) || 0,
-          longitude: parseFloat(formData.longitude) || 0
-        },
-        dateDisponibilite: new Date(formData.dateDisponibilite),
-        // Noms de champs attendus par le contrôleur backend (createLocation)
-        typeBien: formData.type,
-        nombreChambres: parseInt(formData.chambres),
-        nombreSallesDeBain: parseInt(formData.salleDeBain),
-        nombreSalons: formData.salon ? 1 : 0,
-        depotGarantie: parseInt(formData.caution)
+      // Envoi en multipart : le serveur lit les textes dans req.body et les images dans le champ "images"
+      const fd = new FormData();
+      const add = (k, v) => {
+        if (v !== undefined && v !== null && v !== "" && !(typeof v === "number" && Number.isNaN(v))) fd.append(k, v);
       };
+      add("titre", formData.titre);
+      add("description", formData.description);
+      add("type", formData.type);
+      add("typeBien", formData.type);
+      add("ville", formData.ville);
+      add("quartier", formData.quartier);
+      add("adresse", formData.adresse);
+      add("codePostal", formData.codePostal);
+      add("latitude", formData.latitude);
+      add("longitude", formData.longitude);
+      add("superficie", parseFloat(formData.superficie));
+      add("chambres", parseInt(formData.chambres));
+      add("salleDeBain", parseInt(formData.salleDeBain));
+      add("nombreChambres", parseInt(formData.chambres));
+      add("nombreSallesDeBain", parseInt(formData.salleDeBain));
+      add("nombreSalons", formData.salon ? 1 : 0);
+      add("prixMensuel", parseFloat(formData.prixMensuel));
+      add("caution", parseFloat(formData.caution));
+      add("depotGarantie", parseFloat(formData.caution));
+      add("charges", parseInt(formData.charges) || 0);
+      add("chargesIncluses", formData.chargesIncluses);
+      add("meuble", formData.meuble);
+      add("statut", formData.statut);
+      add("dateDisponibilite", formData.dateDisponibilite);
+      add("dureeMinimale", parseInt(formData.dureeMinimale));
+      add("dureeMaximale", formData.dureeMaximale ? parseInt(formData.dureeMaximale) : "");
+      add("videoUrl", formData.videoUrl);
+      fd.append(
+        "services",
+        JSON.stringify({
+          climatisation: !!formData.climatisation,
+          wifi: !!formData.internet,
+          parking: !!formData.parking,
+          ascenseur: !!formData.ascenseur,
+          balcon: !!formData.balcon,
+          gardiennage: !!formData.garage,
+        })
+      );
+      imageFiles.forEach((file) => fd.append("images", file));
 
-      const response = await api.post("/agence/locations", locationData);
+      const response = await api.post("/agence/locations", fd, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
       
       console.log("✅ Location créée:", response.data);
       
@@ -769,15 +842,39 @@ const CreateLocationPage = () => {
                 fullWidth
                 sx={{ py: 2 }}
               >
-                Ajouter des photos
+                Ajouter des photos ({imageFiles.length}/{MAX_IMAGES})
                 <input
                   type="file"
                   hidden
                   multiple
-                  accept="image/*"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  onChange={handleImageSelect}
                 />
               </Button>
+              <Typography variant="caption" color="text.secondary" component="p" sx={{ mt: 1 }}>
+                {MAX_IMAGES} photos maximum, 5 Mo chacune (JPEG, PNG, WEBP, GIF)
+              </Typography>
             </Grid>
+
+            {imagePreviews.length > 0 && (
+              <Grid item xs={12}>
+                <Box sx={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(110px, 1fr))", gap: 1.5 }}>
+                  {imagePreviews.map((src, index) => (
+                    <Box key={src} sx={{ position: "relative", aspectRatio: "1 / 1", borderRadius: "10px", overflow: "hidden", border: `1px solid ${BORDER}` }}>
+                      <Box component="img" src={src} alt={`Photo ${index + 1}`} sx={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                      <IconButton
+                        size="small"
+                        aria-label={`Retirer la photo ${index + 1}`}
+                        onClick={() => removeImage(index)}
+                        sx={{ position: "absolute", top: 4, right: 4, bgcolor: "rgba(16,28,54,0.7)", color: "#fff", "&:hover": { bgcolor: "rgba(198,40,40,0.9)" } }}
+                      >
+                        <Close fontSize="small" />
+                      </IconButton>
+                    </Box>
+                  ))}
+                </Box>
+              </Grid>
+            )}
             
             <Grid item xs={12}>
               <TextField
