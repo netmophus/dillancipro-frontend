@@ -14,6 +14,7 @@ import {
   Tooltip,
   Chip,
   Divider,
+  Drawer,
   ListItemIcon,
   ListItemText,
 } from "@mui/material";
@@ -36,6 +37,10 @@ import {
   LinkedIn,
   Instagram,
   Gavel,
+  Close as CloseIcon,
+  Map as MapIcon,
+  Key as KeyIcon,
+  ChevronRight,
 } from "@mui/icons-material";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
@@ -66,6 +71,59 @@ const navLinkSx = {
   "& .MuiButton-startIcon": { mr: 0.75, "& > *:nth-of-type(1)": { fontSize: 18 } },
   "&:hover": { bgcolor: GREY_LIGHT, color: BLUE },
 };
+
+// Menu mobile : charte Dillanci
+const M_BLUE = "#3030F9";
+const M_BLUE_TEXT = "#2020C8";
+const M_NIGHT = "#0e1133";
+const M_GREEN = "#0A7C4F";
+const M_SKY = "#EAF0FF";
+const M_GREEN_LIGHT = "#E3F5EC";
+const M_MUTED = "#64748B";
+const M_BORDER = "#E2E8F0";
+
+const MobileSectionLabel = ({ children }) => (
+  <Typography sx={{ px: 1.5, pt: 2, pb: 0.75, fontFamily: NAV_FONT, fontSize: 12, fontWeight: 700, letterSpacing: 0.9, textTransform: "uppercase", color: M_MUTED }}>
+    {children}
+  </Typography>
+);
+
+// Ligne de navigation : pastille d'icône, libellé, chevron
+const MobileNavItem = ({ to, onClick, icon: Icon, label, iconBg = M_SKY, iconColor = M_BLUE, active = false, badge, danger = false }) => (
+  <Box
+    component={to ? Link : "button"}
+    {...(to ? { to } : { type: "button" })}
+    onClick={onClick}
+    aria-current={active ? "page" : undefined}
+    sx={{
+      display: "flex",
+      alignItems: "center",
+      gap: 1.5,
+      width: "100%",
+      boxSizing: "border-box",
+      p: "10px 12px",
+      border: "none",
+      borderRadius: "10px",
+      cursor: "pointer",
+      textDecoration: "none",
+      textAlign: "left",
+      fontFamily: NAV_FONT,
+      bgcolor: active ? M_SKY : "transparent",
+      color: danger ? "#C62828" : M_NIGHT,
+      "&:hover": { bgcolor: active ? M_SKY : "#f5f7fa" },
+      "&:focus-visible": { outline: `2px solid ${M_BLUE}`, outlineOffset: 1 },
+    }}
+  >
+    <Box sx={{ width: 34, height: 34, borderRadius: "10px", bgcolor: danger ? "#FDECEA" : iconBg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+      <Icon sx={{ fontSize: 20, color: danger ? "#C62828" : iconColor }} />
+    </Box>
+    <Typography component="span" sx={{ flex: 1, minWidth: 0, fontFamily: NAV_FONT, fontSize: 15, fontWeight: active ? 700 : 600, lineHeight: 1.3, overflowWrap: "anywhere", color: "inherit" }}>
+      {label}
+    </Typography>
+    {badge > 0 && <Chip size="small" color="error" label={badge} />}
+    <ChevronRight sx={{ fontSize: 20, color: active ? M_BLUE : "#94A3B8", flexShrink: 0 }} />
+  </Box>
+);
 
 const Navbar = ({ hideTopBar = false }) => {
   const { user, logout } = useAuth();
@@ -731,166 +789,129 @@ const Navbar = ({ hideTopBar = false }) => {
       </Toolbar>
       </AppBar>
       
-      <Menu
-        anchorEl={mobileMenuAnchor}
+      <Drawer
+        anchor="right"
         open={Boolean(mobileMenuAnchor)}
         onClose={handleMobileMenuClose}
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-        transformOrigin={{ vertical: "top", horizontal: "right" }}
-        PaperProps={{
-          sx: {
-            mt: 1,
-            minWidth: 220,
-            borderRadius: 2,
+        sx={{
+          display: { md: "none" },
+          "& .MuiDrawer-paper": {
+            width: "min(88vw, 360px)",
+            maxWidth: "100%",
+            boxSizing: "border-box",
+            bgcolor: "#fff",
+            display: "flex",
+            flexDirection: "column",
+            height: "100dvh",
           },
         }}
       >
-        {user && (
-          <MenuItem
-            component={Link}
-            to={getDashboardPath()}
-            onClick={handleMobileMenuClose}
-          >
-            <ListItemIcon>
-              <Dashboard fontSize="small" />
-            </ListItemIcon>
-            <ListItemText>Dashboard</ListItemText>
-          </MenuItem>
-        )}
-        {user && hasRole("Agence") && (
-          <MenuItem
-            component={Link}
-            to="/agence/dashboard"
-            onClick={handleMobileMenuClose}
-          >
-            <ListItemIcon>
-              <Business fontSize="small" />
-            </ListItemIcon>
-            <ListItemText>Espace agence</ListItemText>
-          </MenuItem>
-        )}
-        {user && (
-          <MenuItem
-            onClick={() => {
-              setNotificationPanelOpen(true);
-              handleMobileMenuClose();
-            }}
-          >
-            <ListItemIcon>
-              <Notifications fontSize="small" />
-            </ListItemIcon>
-            <ListItemText>Notifications</ListItemText>
-            {notificationCount > 0 && (
-              <Chip
-                size="small"
-                color="error"
-                label={notificationCount}
-                sx={{ ml: 1 }}
+        {/* En-tête */}
+        <Box sx={{ bgcolor: M_NIGHT, color: "#fff", flexShrink: 0, p: "14px 14px 14px 16px", display: "flex", alignItems: "center", gap: 1.5 }}>
+          <Box sx={{ width: 46, height: 46, borderRadius: "12px", bgcolor: "#fff", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <Box component="svg" viewBox="0 0 64 50" aria-hidden="true" sx={{ width: 32, height: "auto", display: "block" }}>
+              <rect x="44" y="6" width="5.5" height="12" rx="1" fill={M_BLUE} />
+              <path d="M4 25 32 4 60 25" fill="none" stroke={M_BLUE} strokeWidth="5.5" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M11 24v21a3 3 0 0 0 3 3h36a3 3 0 0 0 3-3V24" fill="none" stroke={M_BLUE} strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round" />
+              <rect x="17" y="27" width="7" height="7" rx="1.2" fill={M_BLUE} />
+              <rect x="26" y="27" width="7" height="7" rx="1.2" fill={M_BLUE} />
+              <rect x="17" y="36" width="7" height="7" rx="1.2" fill={M_BLUE} />
+              <rect x="26" y="36" width="7" height="7" rx="1.2" fill={M_BLUE} />
+              <rect x="39" y="29" width="9" height="19" rx="1.8" fill={M_BLUE} />
+            </Box>
+          </Box>
+          <Box sx={{ minWidth: 0, flex: 1 }}>
+            <Typography noWrap sx={{ fontFamily: NAV_FONT, fontSize: 20, fontWeight: 800, lineHeight: 1.2, color: "#fff" }}>Dillanci</Typography>
+            <Typography noWrap sx={{ fontFamily: NAV_FONT, fontSize: 12.5, color: "rgba(255,255,255,0.78)", lineHeight: 1.3 }}>Immobilier du Niger</Typography>
+          </Box>
+          <IconButton onClick={handleMobileMenuClose} aria-label="Fermer le menu" sx={{ width: 40, height: 40, bgcolor: "rgba(255,255,255,0.14)", color: "#fff", "&:hover": { bgcolor: "rgba(255,255,255,0.24)" } }}>
+            <CloseIcon />
+          </IconButton>
+        </Box>
+
+        {/* Contenu défilant */}
+        <Box sx={{ flex: 1, minHeight: 0, overflowY: "auto", p: "14px 14px 8px" }}>
+          {!user && (
+            <Box sx={{ display: "flex", gap: 1 }}>
+              <Button
+                component={Link}
+                to="/register"
+                onClick={handleMobileMenuClose}
+                disableElevation
+                sx={{ flex: 1, minWidth: 0, height: 46, borderRadius: "10px", textTransform: "none", fontFamily: NAV_FONT, fontWeight: 700, fontSize: 15, bgcolor: M_BLUE, color: "#fff", "&:hover": { bgcolor: "#2424D6" } }}
+              >
+                Inscription
+              </Button>
+              <Button
+                component={Link}
+                to="/login"
+                onClick={handleMobileMenuClose}
+                disableElevation
+                sx={{ flex: 1, minWidth: 0, height: 46, borderRadius: "10px", textTransform: "none", fontFamily: NAV_FONT, fontWeight: 700, fontSize: 15, bgcolor: M_SKY, color: M_BLUE_TEXT, "&:hover": { bgcolor: "#DCE6FF" } }}
+              >
+                Connexion
+              </Button>
+            </Box>
+          )}
+
+          {user && (
+            <>
+              <MobileSectionLabel>Mon compte</MobileSectionLabel>
+              <MobileNavItem to={getDashboardPath()} onClick={handleMobileMenuClose} icon={Dashboard} label="Dashboard" active={pathname === getDashboardPath()} />
+              {hasRole("Agence") && (
+                <MobileNavItem to="/agence/dashboard" onClick={handleMobileMenuClose} icon={Business} label="Espace agence" active={pathname === "/agence/dashboard"} />
+              )}
+              <MobileNavItem
+                onClick={() => {
+                  setNotificationPanelOpen(true);
+                  handleMobileMenuClose();
+                }}
+                icon={Notifications}
+                label="Notifications"
+                badge={notificationCount}
               />
-            )}
-          </MenuItem>
-        )}
-        {user && <Divider sx={{ my: 1 }} />}
-        {user && (
-          <MenuItem
-            component={Link}
-            to="/profile"
-            onClick={handleMobileMenuClose}
-          >
-            <ListItemIcon>
-              <Person fontSize="small" />
-            </ListItemIcon>
-            <ListItemText>Mon profil</ListItemText>
-          </MenuItem>
-        )}
-        {user && (hasRole("User") || hasRole("Client")) && (
-          <MenuItem
-            component={Link}
-            to="/user/mon-patrimoine"
-            onClick={handleMobileMenuClose}
-          >
-            <ListItemIcon>
-              <Landscape fontSize="small" />
-            </ListItemIcon>
-            <ListItemText>Mon patrimoine</ListItemText>
-          </MenuItem>
-        )}
-        {user && <Divider sx={{ my: 1 }} />}
-        {user && (
-          <MenuItem onClick={handleMobileLogout} sx={{ color: "error.main" }}>
-            <ListItemIcon>
-              <Logout fontSize="small" color="error" />
-            </ListItemIcon>
-            <ListItemText>Déconnexion</ListItemText>
-          </MenuItem>
-        )}
-        {!user && (
-          <MenuItem
-            component={Link}
-            to="/login"
-            onClick={handleMobileMenuClose}
-          >
-            <ListItemText>Connexion</ListItemText>
-          </MenuItem>
-        )}
-        {!user && (
-          <MenuItem
-            component={Link}
-            to="/register"
-            onClick={handleMobileMenuClose}
-          >
-            <ListItemText>Inscription</ListItemText>
-          </MenuItem>
-        )}
-        {!user && <Divider sx={{ my: 1 }} />}
-        {!user && (
-          <MenuItem
-            component={Link}
-            to="/"
-            onClick={handleMobileMenuClose}
-          >
-            <ListItemIcon>
-              <Home fontSize="small" />
-            </ListItemIcon>
-            <ListItemText>Accueil</ListItemText>
-          </MenuItem>
-        )}
-        {/* Menus de recherche - Visibles seulement pour User/Client/Admin ou non connectés */}
-        {(canSeeAllMenus() || !user) && (
-          <>
-            <MenuItem
-              component={Link}
-              to="/parcelles"
-              onClick={handleMobileMenuClose}
-            >
-              <ListItemIcon>
-                <Landscape fontSize="small" />
-              </ListItemIcon>
-              <ListItemText>Rechercher des parcelles à vendre</ListItemText>
-            </MenuItem>
-            <MenuItem
-              component={Link}
-              to="/locations"
-              onClick={handleMobileMenuClose}
-            >
-              <ListItemIcon>
-                <Home fontSize="small" />
-              </ListItemIcon>
-              <ListItemText>Rechercher des locations</ListItemText>
-            </MenuItem>
-            <MenuItem
-              component={Link}
-              to="/biens"
-              onClick={handleMobileMenuClose}
-            >
-              <ListItemIcon>
-                <Business fontSize="small" />
-              </ListItemIcon>
-              <ListItemText>Rechercher des biens à vendre</ListItemText>
-            </MenuItem>
-          </>
-        )}
-      </Menu>
+              <MobileNavItem to="/profile" onClick={handleMobileMenuClose} icon={Person} label="Mon profil" active={pathname === "/profile"} />
+              {(hasRole("User") || hasRole("Client")) && (
+                <MobileNavItem to="/user/mon-patrimoine" onClick={handleMobileMenuClose} icon={Landscape} label="Mon patrimoine" active={pathname === "/user/mon-patrimoine"} />
+              )}
+            </>
+          )}
+
+          <MobileSectionLabel>Navigation</MobileSectionLabel>
+          {!user && <MobileNavItem to="/" onClick={handleMobileMenuClose} icon={Home} label="Accueil" active={pathname === "/"} />}
+          {/* Menus de recherche - Visibles seulement pour User/Client/Admin ou non connectés */}
+          {(canSeeAllMenus() || !user) && (
+            <>
+              <MobileNavItem to="/parcelles" onClick={handleMobileMenuClose} icon={MapIcon} label="Parcelles à vendre" active={pathname === "/parcelles"} />
+              <MobileNavItem to="/locations" onClick={handleMobileMenuClose} icon={KeyIcon} iconBg={M_GREEN_LIGHT} iconColor={M_GREEN} label="Rechercher des locations" active={pathname === "/locations"} />
+              <MobileNavItem to="/biens" onClick={handleMobileMenuClose} icon={Business} label="Biens à vendre" active={pathname === "/biens"} />
+            </>
+          )}
+
+          {user && (
+            <Box sx={{ mt: 1.5, pt: 1.5, borderTop: `1px solid ${M_BORDER}` }}>
+              <MobileNavItem onClick={handleMobileLogout} icon={Logout} label="Déconnexion" danger />
+            </Box>
+          )}
+        </Box>
+
+        {/* Réseaux sociaux */}
+        <Box sx={{ flexShrink: 0, p: "12px 16px 16px", borderTop: `1px solid ${M_BORDER}` }}>
+          <Typography sx={{ fontFamily: NAV_FONT, fontSize: 13, fontWeight: 700, color: M_MUTED, mb: 1 }}>Suivez-nous</Typography>
+          <Box sx={{ display: "flex", gap: 1 }}>
+            {[
+              { Icon: Facebook, label: "Facebook" },
+              { Icon: Twitter, label: "Twitter" },
+              { Icon: LinkedIn, label: "LinkedIn" },
+              { Icon: Instagram, label: "Instagram" },
+            ].map(({ Icon, label }) => (
+              <IconButton key={label} aria-label={label} sx={{ width: 40, height: 40, bgcolor: M_SKY, color: M_BLUE, "&:hover": { bgcolor: "#DCE6FF" } }}>
+                <Icon sx={{ fontSize: 22 }} />
+              </IconButton>
+            ))}
+          </Box>
+        </Box>
+      </Drawer>
       
       {/* Panel de notifications */}
       <NotificationPanel 
